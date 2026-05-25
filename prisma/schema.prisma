@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                     String          @id @default(cuid())
+  name                   String
+  email                  String          @unique
+  passwordHash           String?
+  image                  String?
+  status                 UserStatus      @default(OFFLINE)
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  receivedFriendRequests FriendRequest[] @relation("FriendRequestReceiver")
+  sentFriendRequests     FriendRequest[] @relation("FriendRequestSender")
+  friendshipsAsUserOne   Friendship[]    @relation("FriendshipUserOne")
+  friendshipsAsUserTwo   Friendship[]    @relation("FriendshipUserTwo")
+  groupMemberships       GroupMember[]
+  ownedGroups            Group[]         @relation("GroupOwner")
+  receivedGroupInvites   GroupInvite[]   @relation("GroupInviteReceiver")
+  sentGroupInvites       GroupInvite[]   @relation("GroupInviteInviter")
+  messages               Message[]
+
+  @@index([status])
+  @@map("users")
+}
+
+model FriendRequest {
+  id         String              @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     FriendRequestStatus @default(PENDING)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  receiver   User                @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User                @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([status])
+  @@map("friend_requests")
+}
+
+model Friendship {
+  id        String   @id @default(cuid())
+  userOneId String
+  userTwoId String
+  createdAt DateTime @default(now())
+  userOne   User     @relation("FriendshipUserOne", fields: [userOneId], references: [id], onDelete: Cascade)
+  userTwo   User     @relation("FriendshipUserTwo", fields: [userTwoId], references: [id], onDelete: Cascade)
+
+  @@unique([userOneId, userTwoId])
+  @@index([userOneId])
+  @@index([userTwoId])
+  @@map("friendships")
+}
+
+model Group {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  image       String?
+  ownerId     String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  channels    Channel[]
+  invites     GroupInvite[]
+  members     GroupMember[]
+  owner       User          @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@map("groups")
+}
+
+model GroupMember {
+  id        String    @id @default(cuid())
+  groupId   String
+  userId    String
+  role      GroupRole @default(MEMBER)
+  createdAt DateTime  @default(now())
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+  @@index([role])
+  @@map("group_members")
+}
+
+model GroupInvite {
+  id         String            @id @default(cuid())
+  groupId    String
+  inviterId  String
+  receiverId String
+  status     GroupInviteStatus @default(PENDING)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  group      Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  inviter    User              @relation("GroupInviteInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  receiver   User              @relation("GroupInviteReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, receiverId])
+  @@index([groupId])
+  @@index([inviterId])
+  @@index([receiverId])
+  @@index([status])
+  @@map("group_invites")
+}
+
+model Channel {
+  id        String      @id @default(cuid())
+  groupId   String
+  name      String
+  type      ChannelType @default(TEXT)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  group     Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@unique([groupId, name])
+  @@index([groupId])
+  @@index([type])
+  @@map("channels")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  channelId String
+  senderId  String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([channelId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+enum UserStatus {
+  ONLINE
+  OFFLINE
+  IDLE
+  DO_NOT_DISTURB
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum GroupRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum GroupInviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum ChannelType {
+  TEXT
+  VOICE
+}
