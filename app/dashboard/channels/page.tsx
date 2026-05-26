@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { getCurrentUser } from "@/lib/auth";
+import { getDashboardSession } from "@/lib/dashboard-data";
 import { prisma } from "@/lib/prisma";
 
 export default async function ChannelsPage() {
-  const user = await getCurrentUser();
+  const session = await getDashboardSession();
 
-  if (!user) {
+  if (!session) {
     redirect("/login");
   }
 
@@ -15,7 +15,7 @@ export default async function ChannelsPage() {
     where: {
       members: {
         some: {
-          userId: user.id,
+          userId: session.userId,
         },
       },
     },
@@ -39,16 +39,5 @@ export default async function ChannelsPage() {
     },
   });
 
-  return (
-    <DashboardShell
-      groups={groups}
-      activeSection="channels"
-      user={{
-        name: user.name,
-        email: user.email,
-        image: user.image,
-        status: user.status,
-      }}
-    />
-  );
+  return <DashboardShell groups={groups} activeSection="channels" />;
 }

@@ -153,18 +153,18 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
   );
 
   return (
-    <main className="min-h-screen bg-[#070a12] text-slate-100">
-      <header className="flex min-h-16 items-center justify-between gap-4 border-b border-white/8 bg-[#0b1020]/95 px-5 py-3">
-        <div>
+    <main className="min-h-[100dvh] overflow-x-hidden bg-[#050705] text-slate-100">
+      <header className="flex min-h-12 items-center justify-between gap-3 border-b border-white/20 bg-[#050505] px-3 py-3 sm:px-5">
+        <div className="min-w-0">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#FF5F25]">
             Friends
           </p>
-          <h1 className="text-lg font-semibold text-white">People you know</h1>
+          <h1 className="truncate text-lg font-semibold text-white">People you know</h1>
         </div>
         <div aria-hidden="true" />
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl gap-6 px-5 py-8">
+      <div className="mx-auto grid w-full max-w-6xl gap-4 px-3 py-4 sm:gap-6 sm:px-5 sm:py-8">
         {params?.message ? <Alert>{params.message}</Alert> : null}
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-black/20">

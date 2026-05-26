@@ -13,13 +13,15 @@ export function getInitials(value: string) {
   return initials || "?";
 }
 
+const readableTimestampFormatter = new Intl.DateTimeFormat("en", {
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+});
+
 export function formatReadableTimestamp(value: Date | string) {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return readableTimestampFormatter.format(new Date(value));
 }
 
 export function formatUserStatus(status?: string) {

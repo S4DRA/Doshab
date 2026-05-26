@@ -22,8 +22,8 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const params = await searchParams;
 
   return (
-    <main className="min-h-screen bg-[#070a12] text-slate-100">
-      <header className="flex min-h-16 flex-col gap-4 border-b border-white/8 bg-[#0b1020]/95 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+    <main className="min-h-[100dvh] overflow-x-hidden bg-[#050705] text-slate-100">
+      <header className="flex min-h-12 flex-col gap-3 border-b border-white/20 bg-[#050505] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div>
           {/* <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#FF5F25]">
             Profile settings
@@ -36,7 +36,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         <div aria-hidden="true" />
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl gap-6 px-5 py-8 lg:grid-cols-[1.4fr_0.9fr]">
+      <div className="mx-auto grid w-full max-w-6xl gap-4 px-3 py-4 sm:gap-6 sm:px-5 sm:py-8 lg:grid-cols-[1.4fr_0.9fr]">
         <div className="space-y-5">
           {params?.error ? <Alert tone="error">{params.error}</Alert> : null}
           {params?.message ? <Alert tone="success">{params.message}</Alert> : null}

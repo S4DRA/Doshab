@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { getCurrentUser } from "@/lib/auth";
+import { getDashboardSession } from "@/lib/dashboard-data";
 import { prisma } from "@/lib/prisma";
 
 type ChannelPageProps = {
@@ -12,79 +12,47 @@ type ChannelPageProps = {
 };
 
 export default async function ChannelPage({ params }: ChannelPageProps) {
-  const user = await getCurrentUser();
+  const session = await getDashboardSession();
 
-  if (!user) {
+  if (!session) {
     redirect("/login");
   }
 
   const { groupId, channelId } = await params;
 
-  const [groups, selectedGroup, membership, selectedChannel] = await Promise.all([
-    prisma.group.findMany({
-      where: {
-        members: {
-          some: {
-            userId: user.id,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-      },
-    }),
-    prisma.group.findFirst({
-      where: {
-        id: groupId,
-        members: {
-          some: {
-            userId: user.id,
-          },
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        channels: {
-          orderBy: {
-            createdAt: "asc",
-          },
-          select: {
-            id: true,
-            name: true,
-            type: true,
-          },
-        },
-      },
-    }),
+  const [membership, selectedChannel] = await Promise.all([
     prisma.groupMember.findUnique({
       where: {
         groupId_userId: {
           groupId,
-          userId: user.id,
+          userId: session.userId,
         },
       },
       select: {
         role: true,
+        group: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            channels: {
+              orderBy: {
+                createdAt: "asc",
+              },
+              select: {
+                id: true,
+                name: true,
+                type: true,
+              },
+            },
+          },
+        },
       },
     }),
     prisma.channel.findFirst({
       where: {
         id: channelId,
         groupId,
-        group: {
-          members: {
-            some: {
-              userId: user.id,
-            },
-          },
-        },
       },
       select: {
         id: true,
@@ -94,7 +62,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
           orderBy: {
             createdAt: "desc",
           },
-          take: 100,
+          take: 50,
           select: {
             id: true,
             content: true,
@@ -113,7 +81,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
     }),
   ]);
 
-  if (!selectedGroup || !membership) {
+  if (!membership) {
     redirect("/dashboard");
   }
 
@@ -128,17 +96,11 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
 
   return (
     <DashboardShell
-      groups={groups}
+      groups={[]}
       selectedChannel={channelWithChronologicalMessages}
       selectedGroup={{
-        ...selectedGroup,
+        ...membership.group,
         currentUserRole: membership.role,
-      }}
-      user={{
-        name: user.name,
-        email: user.email,
-        image: user.image,
-        status: user.status,
       }}
     />
   );

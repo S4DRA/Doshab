@@ -8,7 +8,7 @@ import { CreateGroupForm } from "@/components/groups/create-group-form";
 import { GroupMembersList } from "@/components/groups/group-members-list";
 import { InviteFriendForm } from "@/components/groups/invite-friend-form";
 import { Alert } from "@/components/ui/alert";
-import { LiveKitVoiceRoom } from "@/components/voice/livekit-voice-room";
+import { LazyLiveKitVoiceRoom } from "@/components/voice/lazy-livekit-voice-room";
 import type {
   ChatMessage,
   DashboardGroup,
@@ -17,15 +17,7 @@ import type {
   GroupMemberItem,
 } from "@/types";
 
-type DashboardUser = {
-  name: string;
-  email: string;
-  image?: string | null;
-  status: "ONLINE" | "IDLE" | "DO_NOT_DISTURB" | "OFFLINE";
-};
-
 type DashboardShellProps = {
-  user: DashboardUser;
   groups: DashboardGroup[];
   selectedGroup?: DashboardGroup & {
     channels: GroupChannel[];
@@ -51,7 +43,7 @@ export function DashboardShell({
     selectedGroup?.currentUserRole === "ADMIN";
 
   return (
-    <main className="flex h-[100dvh] min-h-[520px] w-full overflow-hidden bg-[#050705]/95 text-slate-100">
+    <main className="flex h-[100dvh] min-h-0 w-full overflow-hidden bg-[#050705]/95 text-slate-100">
       <aside className="hidden w-64 flex-col border-r border-black bg-[#0d0f0d] p-4 lg:flex">
         {selectedGroup ? (
           <>
@@ -105,12 +97,12 @@ export function DashboardShell({
       </aside>
 
       <section className="flex min-w-0 flex-1 flex-col">
-        <header className="flex min-h-12 items-center justify-between gap-4 border-b border-black bg-[#050505] px-5 py-1.5 pl-5 lg:pl-5">
-          <div>
+        <header className="flex min-h-12 items-center justify-between gap-3 border-b border-black bg-[#050505] px-3 py-1.5 sm:px-5">
+          <div className="min-w-0">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#FF5F25]">
               {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : "Dashboard"}
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="truncate text-xs text-slate-400">
               {selectedChannel
                 ? selectedChannel.type === "TEXT"
                   ? "Text channel"
@@ -165,7 +157,7 @@ function MobileSpaceSwitcher({
   selectedGroup?: DashboardGroup & { channels: GroupChannel[] };
 }) {
   return (
-    <div className="border-b border-black bg-[#0d0f0d] px-3 py-2 lg:hidden">
+    <div className="border-b border-black bg-[#0d0f0d] px-2 py-2 sm:px-3 lg:hidden">
       <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <Link
           className={`inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-sm font-semibold ${
@@ -229,7 +221,7 @@ function ChannelsHome({
   );
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+    <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
       <div className="mx-auto w-full max-w-5xl space-y-4">
         <section className="rounded-2xl border border-white/10 bg-[#050505] p-5 shadow-[0_30px_80px_-50px_rgba(0,0,0,0.7)]">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
@@ -274,12 +266,12 @@ function ChannelMain({
   messages: ChatMessage[];
 }) {
   if (channel.type === "VOICE") {
-    return <LiveKitVoiceRoom channelId={channel.id} channelName={channel.name} />;
+    return <LazyLiveKitVoiceRoom channelId={channel.id} channelName={channel.name} />;
   }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
         <section className="rounded-xl border border-white/10 bg-[#050505] p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
             Text channel
@@ -297,7 +289,7 @@ function ChannelMain({
           />
         </div>
       </div>
-      <div className="border-t border-white/10 bg-[#050505] px-4 py-3">
+      <div className="border-t border-white/10 bg-[#050505] px-3 py-2.5 sm:px-4 sm:py-3">
         <MessageInput channelId={channel.id} channelName={channel.name} />
       </div>
     </div>
@@ -306,7 +298,7 @@ function ChannelMain({
 
 function DashboardHome({ groups }: { groups: DashboardGroup[] }) {
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+    <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
       <div className="w-full space-y-4">
         <section className="rounded-2xl border border-white/10 bg-[#050505] p-5 shadow-[0_30px_120px_-50px_rgba(0,0,0,0.75)]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -314,7 +306,7 @@ function DashboardHome({ groups }: { groups: DashboardGroup[] }) {
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
                 Welcome back
               </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white">
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
                 Create spaces
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
@@ -339,11 +331,11 @@ function DashboardHome({ groups }: { groups: DashboardGroup[] }) {
             </div>
             <div className="rounded-xl border border-white/10 bg-[#181818] p-4">
               <p className="text-sm text-slate-400">Voice rooms</p>
-              <p className="mt-2 text-3xl font-semibold text-white">Always ready</p>
+              <p className="mt-2 text-2xl font-semibold text-white sm:text-3xl">Always ready</p>
             </div>
             <div className="rounded-xl border border-white/10 bg-[#181818] p-4">
               <p className="text-sm text-slate-400">Invites</p>
-              <p className="mt-2 text-3xl font-semibold text-white">Private</p>
+              <p className="mt-2 text-2xl font-semibold text-white sm:text-3xl">Private</p>
             </div>
           </div>
         </section>
@@ -386,7 +378,7 @@ function GroupMain({
   canDeleteGroup: boolean;
 }) {
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+    <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
       <div className="grid w-full gap-4">
         {group.notice ? <Alert>{group.notice}</Alert> : null}
         <section className="rounded-2xl border border-white/10 bg-[#050505] p-5 shadow-[0_25px_80px_-50px_rgba(0,0,0,0.7)]">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
@@ -14,36 +14,39 @@ const defaultSettings: ProfileSettings = {
   shareOnlineStatus: true,
 };
 
-function getInitialSettings(): ProfileSettings {
-  if (typeof window === "undefined") {
-    return defaultSettings;
-  }
-
-  const stored = window.localStorage.getItem("doshabProfileSettings");
-
-  if (!stored) {
-    return defaultSettings;
-  }
-
-  try {
-    const parsedSettings = JSON.parse(stored) as Partial<ProfileSettings>;
-
-    return {
-      ...defaultSettings,
-      ...parsedSettings,
-    };
-  } catch {
-    return defaultSettings;
-  }
-}
-
 export function ProfileSettingsPanel() {
-  const [settings, setSettings] = useState(getInitialSettings);
+  const [settings, setSettings] = useState(defaultSettings);
   const [saved, setSaved] = useState(false);
+  const loadedSettingsRef = useRef(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("doshabProfileSettings", JSON.stringify(settings));
+    const frame = window.requestAnimationFrame(() => {
+      const stored = window.localStorage.getItem("doshabProfileSettings");
+
+      if (stored) {
+        try {
+          const parsedSettings = JSON.parse(stored) as Partial<ProfileSettings>;
+          setSettings({
+            ...defaultSettings,
+            ...parsedSettings,
+          });
+        } catch {
+          window.localStorage.removeItem("doshabProfileSettings");
+        }
+      }
+
+      loadedSettingsRef.current = true;
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    if (loadedSettingsRef.current) {
+      window.localStorage.setItem(
+        "doshabProfileSettings",
+        JSON.stringify(settings),
+      );
     }
   }, [settings]);
 

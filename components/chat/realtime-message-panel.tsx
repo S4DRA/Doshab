@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { MessageList } from "@/components/chat/message-list";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -23,7 +23,10 @@ export function RealtimeMessagePanel({
   const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
   const [subscriptionError, setSubscriptionError] = useState<string | null>(null);
   const knownMessageIdsRef = useRef(new Set(initialMessages.map((message) => message.id)));
-  const messages = mergeMessages(initialMessages, liveMessages);
+  const messages = useMemo(
+    () => mergeMessages(initialMessages, liveMessages),
+    [initialMessages, liveMessages],
+  );
 
   useEffect(() => {
     knownMessageIdsRef.current = new Set(
@@ -67,7 +70,7 @@ export function RealtimeMessagePanel({
           }
 
           knownMessageIdsRef.current.add(message.id);
-          return [...currentMessages, message];
+          return [...currentMessages, message].slice(-100);
         });
       } catch {
         if (isMounted) {

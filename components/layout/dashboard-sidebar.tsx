@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { LogoMark } from "@/components/ui/logo-mark";
-import type { DashboardGroup } from "@/types";
 
 const navItems = [
   {
@@ -32,24 +31,73 @@ const navItems = [
   },
 ];
 
-type DashboardSidebarProps = {
-  groups: DashboardGroup[];
+type SidebarGroup = {
+  id: string;
+  name: string;
 };
 
-export function DashboardSidebar({ groups }: DashboardSidebarProps) {
+export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [groups, setGroups] = useState<SidebarGroup[]>([]);
   const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
-    [
-      ...navItems,
-      ...groups.map((group) => ({ href: `/dashboard/groups/${group.id}` })),
-      { href: "/dashboard/profile" },
-    ].forEach((item) => {
+    [...navItems, { href: "/dashboard/profile" }].forEach((item) => {
       router.prefetch(item.href);
     });
-  }, [groups, router]);
+  }, [router]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadGroups() {
+      const cachedGroups = window.sessionStorage.getItem("doshab-sidebar-groups");
+
+      if (cachedGroups) {
+        try {
+          const parsedGroups = JSON.parse(cachedGroups) as SidebarGroup[];
+
+          if (isMounted) {
+            setGroups(parsedGroups);
+          }
+        } catch {
+          window.sessionStorage.removeItem("doshab-sidebar-groups");
+        }
+      }
+
+      try {
+        const response = await fetch("/api/dashboard/sidebar", {
+          headers: {
+            accept: "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as { groups?: SidebarGroup[] };
+
+        if (isMounted) {
+          const nextGroups = data.groups ?? [];
+          setGroups(nextGroups);
+          window.sessionStorage.setItem(
+            "doshab-sidebar-groups",
+            JSON.stringify(nextGroups),
+          );
+        }
+      } catch {
+        // Sidebar shortcuts are progressive enhancement; page navigation still works.
+      }
+    }
+
+    void loadGroups();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (!pathname.startsWith("/dashboard")) {
     return null;
@@ -58,17 +106,20 @@ export function DashboardSidebar({ groups }: DashboardSidebarProps) {
   const profileActive = pathname.startsWith("/dashboard/profile");
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 flex w-16 flex-col items-center border-r border-white/70 bg-[#050505] px-2 py-3 text-white">
+    <aside className="fixed inset-y-0 left-0 z-50 flex w-14 flex-col items-center border-r border-white/70 bg-[#050505] px-1.5 py-2 text-white sm:w-16 sm:px-2 sm:py-3">
       <Link
         aria-label="Dashboard"
-        className="grid size-11 place-items-center rounded-xl transition hover:bg-white/10"
+        className="grid size-10 place-items-center rounded-xl transition hover:bg-white/10 sm:size-11"
         href="/dashboard"
         onMouseEnter={() => router.prefetch("/dashboard")}
       >
-        <LogoMark className="h-10 w-10" />
+        <LogoMark className="h-9 w-9 sm:h-10 sm:w-10" />
       </Link>
 
-      <nav className="mt-4 flex flex-1 flex-col items-center gap-2" aria-label="Dashboard">
+      <nav
+        className="mt-3 flex min-h-0 flex-1 flex-col items-center gap-1.5 overflow-y-auto overscroll-contain pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:mt-4 sm:gap-2 [&::-webkit-scrollbar]:hidden"
+        aria-label="Dashboard"
+      >
         {navItems.map((item) => {
           const active =
             pathname === item.href ||
@@ -77,7 +128,7 @@ export function DashboardSidebar({ groups }: DashboardSidebarProps) {
           return (
             <Link
               aria-label={item.label}
-              className={`grid size-11 place-items-center rounded-xl border transition ${
+              className={`grid size-10 shrink-0 place-items-center rounded-xl border transition sm:size-11 ${
                 active
                   ? "border-[#FF5F25] text-[#FF5F25]"
                   : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
@@ -92,7 +143,7 @@ export function DashboardSidebar({ groups }: DashboardSidebarProps) {
           );
         })}
         {groups.length ? (
-          <div className="my-2 h-px w-8 bg-white/50" />
+          <div className="my-1.5 h-px w-8 shrink-0 bg-white/50 sm:my-2" />
         ) : null}
         {groups.map((group) => {
           const href = `/dashboard/groups/${group.id}`;
@@ -101,7 +152,7 @@ export function DashboardSidebar({ groups }: DashboardSidebarProps) {
           return (
             <Link
               aria-label={`${group.name} group`}
-              className={`grid size-11 place-items-center rounded-xl border text-sm font-black transition ${
+              className={`grid size-10 shrink-0 place-items-center rounded-xl border text-sm font-black transition sm:size-11 ${
                 active
                   ? "border-[#FF5F25] text-[#FF5F25]"
                   : "border-transparent bg-white/7 text-slate-200 hover:border-white/40 hover:bg-white/10 hover:text-white"
@@ -119,7 +170,7 @@ export function DashboardSidebar({ groups }: DashboardSidebarProps) {
 
       <div className="relative">
         {profileOpen ? (
-          <div className="absolute bottom-0 left-14 w-44 rounded-2xl border border-white/30 bg-[#111111] p-2">
+          <div className="absolute bottom-0 left-12 w-[calc(100vw-4.25rem)] max-w-44 rounded-2xl border border-white/30 bg-[#111111] p-2 shadow-2xl shadow-black/50 sm:left-14">
             <Link
               className="block rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
               href="/dashboard/profile"
@@ -140,7 +191,7 @@ export function DashboardSidebar({ groups }: DashboardSidebarProps) {
         <button
           aria-expanded={profileOpen}
           aria-label="Profile menu"
-          className={`grid size-11 place-items-center rounded-xl border transition ${
+          className={`grid size-10 place-items-center rounded-xl border transition sm:size-11 ${
             profileActive || profileOpen
               ? "border-[#FF5F25] text-[#FF5F25]"
               : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
