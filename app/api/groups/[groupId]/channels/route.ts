@@ -23,6 +23,20 @@ function redirectWithError(request: NextRequest, groupId: string, error: string)
   );
 }
 
+function redirectAfterChannelChange(
+  request: NextRequest,
+  groupId: string,
+  channelId: string,
+  returnTo: string,
+) {
+  const pathname =
+    returnTo === "settings"
+      ? `/dashboard/groups/${groupId}/settings?message=${encodeURIComponent("Channel created.")}`
+      : `/dashboard/groups/${groupId}/channels/${channelId}`;
+
+  return NextResponse.redirect(new URL(pathname, request.url), { status: 303 });
+}
+
 export async function POST(request: NextRequest, { params }: ChannelRouteProps) {
   const user = await getCurrentUser();
   const { groupId } = await params;
@@ -55,6 +69,7 @@ export async function POST(request: NextRequest, { params }: ChannelRouteProps) 
 
   const formData = await request.formData();
   const name = normalizeChannelName(String(formData.get("name") ?? ""));
+  const returnTo = String(formData.get("returnTo") ?? "");
   const type = String(formData.get("type") ?? "TEXT");
 
   if (!name) {
@@ -92,8 +107,5 @@ export async function POST(request: NextRequest, { params }: ChannelRouteProps) 
     },
   });
 
-  return NextResponse.redirect(
-    new URL(`/dashboard/groups/${groupId}/channels/${channel.id}`, request.url),
-    { status: 303 },
-  );
+  return redirectAfterChannelChange(request, groupId, channel.id, returnTo);
 }

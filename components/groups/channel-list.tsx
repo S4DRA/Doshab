@@ -7,6 +7,7 @@ type ChannelListProps = {
   canManageChannels?: boolean;
   channels: GroupChannel[];
   groupId: string;
+  returnToSettings?: boolean;
   selectedChannelId?: string;
 };
 
@@ -14,6 +15,7 @@ export function ChannelList({
   canManageChannels = false,
   channels,
   groupId,
+  returnToSettings = false,
   selectedChannelId,
 }: ChannelListProps) {
   const textChannels = channels.filter((channel) => channel.type === "TEXT");
@@ -27,6 +29,7 @@ export function ChannelList({
         groupId={groupId}
         label="Text channels"
         prefix="#"
+        returnToSettings={returnToSettings}
         selectedChannelId={selectedChannelId}
       />
       <ChannelSection
@@ -35,6 +38,7 @@ export function ChannelList({
         groupId={groupId}
         label="Voice rooms"
         prefix="Voice"
+        returnToSettings={returnToSettings}
         selectedChannelId={selectedChannelId}
       />
     </div>
@@ -48,12 +52,14 @@ function ChannelSection({
   canManageChannels,
   groupId,
   selectedChannelId,
+  returnToSettings,
 }: {
   label: string;
   prefix: string;
   channels: GroupChannel[];
   canManageChannels: boolean;
   groupId: string;
+  returnToSettings: boolean;
   selectedChannelId?: string;
 }) {
   return (
@@ -66,19 +72,19 @@ function ChannelSection({
           {channels.map((channel) => (
             <div
               className={cn(
-                "flex w-full items-center justify-between gap-3 rounded-xl border border-transparent px-3 py-2.5 text-left text-sm text-slate-300 transition hover:border-white/10 hover:bg-white/7 hover:text-white",
+                "flex w-full min-w-0 items-center justify-between gap-2 rounded-xl border border-transparent px-3 py-2.5 text-left text-sm text-slate-300 transition hover:border-white/10 hover:bg-white/7 hover:text-white",
                 selectedChannelId === channel.id && "border-[#FF5F25]/50 bg-[#FF5F25]/12 text-white",
               )}
               key={channel.id}
             >
               <Link
-                className="flex min-w-0 flex-1 items-center justify-between gap-3"
+                className="flex min-w-0 flex-1 items-center justify-between gap-2"
                 href={`/dashboard/groups/${groupId}/channels/${channel.id}`}
               >
                 <span className="truncate">
                   {prefix} {channel.name}
                 </span>
-                <span className="rounded-md bg-white/7 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
+                <span className="hidden rounded-md bg-white/7 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 min-[1400px]:inline-flex">
                   {channel.type}
                 </span>
               </Link>
@@ -87,9 +93,12 @@ function ChannelSection({
                   action={`/api/groups/${groupId}/channels/${channel.id}/delete`}
                   method="post"
                 >
+                  {returnToSettings ? (
+                    <input name="returnTo" type="hidden" value="settings" />
+                  ) : null}
                   <button
                     aria-label={`Delete ${channel.name}`}
-                    className="inline-flex h-7 items-center gap-1 rounded-md border border-white/20 px-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-200 transition hover:border-[#FF5F25] hover:bg-[#FF5F25] hover:text-black"
+                    className="inline-flex h-7 w-8 items-center justify-center gap-1 rounded-md border border-white/20 px-0 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-200 transition hover:border-[#FF5F25] hover:bg-[#FF5F25] hover:text-black min-[1400px]:w-auto min-[1400px]:px-2"
                     type="submit"
                   >
                     <svg
@@ -108,7 +117,7 @@ function ChannelSection({
                       <path d="M10 11v5" />
                       <path d="M14 11v5" />
                     </svg>
-                    Delete
+                    <span className="hidden min-[1400px]:inline">Delete</span>
                   </button>
                 </form>
               ) : null}

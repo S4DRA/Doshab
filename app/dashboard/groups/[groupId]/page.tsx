@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { InviteFriendForm } from "@/components/groups/invite-friend-form";
 import { getDashboardSession } from "@/lib/dashboard-data";
 import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
@@ -24,82 +26,51 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
   const { groupId } = await params;
   const pageParams = await searchParams;
 
-  const [selectedGroup, friendships] = await Promise.all([
-    prisma.group.findFirst({
-      where: {
-        id: groupId,
-        members: {
-          some: {
-            userId: session.userId,
-          },
+  const selectedGroup = await prisma.group.findFirst({
+    where: {
+      id: groupId,
+      members: {
+        some: {
+          userId: session.userId,
         },
       },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        channels: {
-          orderBy: {
-            createdAt: "asc",
-          },
-          select: {
-            id: true,
-            name: true,
-            type: true,
-          },
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      isDirectMessage: true,
+      channels: {
+        orderBy: {
+          createdAt: "asc",
         },
-        members: {
-          orderBy: {
-            createdAt: "asc",
-          },
-          select: {
-            id: true,
-            role: true,
-            createdAt: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
-                status: true,
-              },
+        select: {
+          id: true,
+          name: true,
+          type: true,
+        },
+      },
+      members: {
+        orderBy: {
+          createdAt: "asc",
+        },
+        select: {
+          id: true,
+          role: true,
+          createdAt: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              status: true,
             },
           },
         },
       },
-    }),
-    prisma.friendship.findMany({
-      where: {
-        OR: [{ userOneId: session.userId }, { userTwoId: session.userId }],
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-      select: {
-        userOneId: true,
-        userTwoId: true,
-        userOne: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-            status: true,
-          },
-        },
-        userTwo: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-            status: true,
-          },
-        },
-      },
-    }),
-  ]);
+    },
+  });
 
   const currentMember = selectedGroup?.members.find(
     (member) => member.user.id === session.userId,
@@ -109,20 +80,89 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
     redirect("/dashboard");
   }
 
-  const memberIds = new Set(selectedGroup.members.map((member) => member.user.id));
-  const inviteCandidates = friendships
-    .map((friendship) => friendFromPair(friendship, session.userId))
-    .filter((friend) => !memberIds.has(friend.id));
+  const canInvite =
+    !selectedGroup.isDirectMessage &&
+    (currentMember.role === "OWNER" || currentMember.role === "ADMIN");
+  const memberIds = selectedGroup.members.map((member) => member.user.id);
 
   return (
     <DashboardShell
       groups={[]}
+      invitePanel={
+        canInvite ? (
+          <Suspense fallback={<InvitePanelFallback />}>
+            <InviteCandidatesPanel
+              groupId={selectedGroup.id}
+              memberIds={memberIds}
+              userId={session.userId}
+            />
+          </Suspense>
+        ) : undefined
+      }
       selectedGroup={{
         ...selectedGroup,
         currentUserRole: currentMember.role,
-        inviteCandidates,
         notice: pageParams?.message,
       }}
     />
+  );
+}
+
+async function InviteCandidatesPanel({
+  groupId,
+  memberIds,
+  userId,
+}: {
+  groupId: string;
+  memberIds: string[];
+  userId: string;
+}) {
+  const friendships = await prisma.friendship.findMany({
+    where: {
+      OR: [{ userOneId: userId }, { userTwoId: userId }],
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      userOneId: true,
+      userTwoId: true,
+      userOne: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          status: true,
+        },
+      },
+      userTwo: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          status: true,
+        },
+      },
+    },
+  });
+
+  const groupMemberIds = new Set(memberIds);
+  const inviteCandidates = friendships
+    .map((friendship) => friendFromPair(friendship, userId))
+    .filter((friend) => !groupMemberIds.has(friend.id));
+
+  return <InviteFriendForm friends={inviteCandidates} groupId={groupId} />;
+}
+
+function InvitePanelFallback() {
+  return (
+    <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+        Invite
+      </p>
+      <div className="mt-4 h-11 rounded-md border border-white/10 bg-[#0b1020]" />
+    </section>
   );
 }

@@ -5,7 +5,7 @@ import { FriendSearchForm } from "@/components/friends/friend-search-form";
 import { FriendsList } from "@/components/friends/friends-list";
 import { GroupInvitesList } from "@/components/groups/group-invites-list";
 import { Alert } from "@/components/ui/alert";
-import { getCurrentUser } from "@/lib/auth";
+import { getDashboardSession } from "@/lib/dashboard-data";
 import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
 
@@ -18,9 +18,9 @@ type FriendsPageProps = {
 };
 
 export default async function FriendsPage({ searchParams }: FriendsPageProps) {
-  const user = await getCurrentUser();
+  const session = await getDashboardSession();
 
-  if (!user) {
+  if (!session) {
     redirect("/login");
   }
 
@@ -42,7 +42,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
         : null,
       prisma.friendRequest.findMany({
         where: {
-          receiverId: user.id,
+          receiverId: session.userId,
           status: "PENDING",
         },
         orderBy: {
@@ -65,7 +65,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       }),
       prisma.friendRequest.findMany({
         where: {
-          senderId: user.id,
+          senderId: session.userId,
           status: "PENDING",
         },
         orderBy: {
@@ -88,7 +88,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       }),
       prisma.friendship.findMany({
         where: {
-          OR: [{ userOneId: user.id }, { userTwoId: user.id }],
+          OR: [{ userOneId: session.userId }, { userTwoId: session.userId }],
         },
         orderBy: {
           createdAt: "asc",
@@ -118,7 +118,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       }),
       prisma.groupInvite.findMany({
         where: {
-          receiverId: user.id,
+          receiverId: session.userId,
           status: "PENDING",
         },
         orderBy: {
@@ -149,7 +149,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
     ]);
 
   const friends = friendships.map((friendship) =>
-    friendFromPair(friendship, user.id),
+    friendFromPair(friendship, session.userId),
   );
 
   return (
@@ -203,7 +203,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
         <FriendSearchForm
           message={!foundUser && params?.query ? "No matching user ready to add." : undefined}
           query={params?.query}
-          result={foundUser?.id === user.id ? null : foundUser}
+          result={foundUser?.id === session.userId ? null : foundUser}
         />
 
         <div className="grid gap-5 xl:grid-cols-2">

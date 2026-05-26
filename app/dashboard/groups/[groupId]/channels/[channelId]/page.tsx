@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { getDashboardSession } from "@/lib/dashboard-data";
+import {
+  getDashboardMessageThreads,
+  getDashboardSession,
+} from "@/lib/dashboard-data";
 import { prisma } from "@/lib/prisma";
 
 type ChannelPageProps = {
@@ -20,7 +23,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
 
   const { groupId, channelId } = await params;
 
-  const [membership, selectedChannel] = await Promise.all([
+  const [membership, messageThreads, selectedChannel] = await Promise.all([
     prisma.groupMember.findUnique({
       where: {
         groupId_userId: {
@@ -35,6 +38,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
             id: true,
             name: true,
             description: true,
+            isDirectMessage: true,
             channels: {
               orderBy: {
                 createdAt: "asc",
@@ -49,6 +53,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
         },
       },
     }),
+    getDashboardMessageThreads(session.userId),
     prisma.channel.findFirst({
       where: {
         id: channelId,
@@ -97,6 +102,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
   return (
     <DashboardShell
       groups={[]}
+      messageThreads={messageThreads}
       selectedChannel={channelWithChronologicalMessages}
       selectedGroup={{
         ...membership.group,

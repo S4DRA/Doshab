@@ -6,15 +6,15 @@ import { ChannelList } from "@/components/groups/channel-list";
 import { CreateChannelForm } from "@/components/groups/create-channel-form";
 import { CreateGroupForm } from "@/components/groups/create-group-form";
 import { GroupMembersList } from "@/components/groups/group-members-list";
-import { InviteFriendForm } from "@/components/groups/invite-friend-form";
 import { Alert } from "@/components/ui/alert";
+import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { LazyLiveKitVoiceRoom } from "@/components/voice/lazy-livekit-voice-room";
 import type {
   ChatMessage,
   DashboardGroup,
-  FriendPerson,
   GroupChannel,
   GroupMemberItem,
+  MessageThread,
 } from "@/types";
 
 type DashboardShellProps = {
@@ -22,14 +22,16 @@ type DashboardShellProps = {
   selectedGroup?: DashboardGroup & {
     channels: GroupChannel[];
     currentUserRole?: "OWNER" | "ADMIN" | "MEMBER";
-    inviteCandidates?: FriendPerson[];
     members?: GroupMemberItem[];
     notice?: string;
   };
   selectedChannel?: GroupChannel & {
     messages?: ChatMessage[];
   };
-  activeSection?: "dashboard" | "friends" | "channels";
+  activeSection?: "dashboard" | "friends" | "channels" | "messages";
+  groupSettingsPanel?: React.ReactNode;
+  invitePanel?: React.ReactNode;
+  messageThreads?: MessageThread[];
 };
 
 export function DashboardShell({
@@ -37,15 +39,24 @@ export function DashboardShell({
   selectedGroup,
   selectedChannel,
   activeSection = "dashboard",
+  groupSettingsPanel,
+  invitePanel,
+  messageThreads = [],
 }: DashboardShellProps) {
   const canCreateChannels =
-    selectedGroup?.currentUserRole === "OWNER" ||
-    selectedGroup?.currentUserRole === "ADMIN";
+    !selectedGroup?.isDirectMessage &&
+    (selectedGroup?.currentUserRole === "OWNER" ||
+      selectedGroup?.currentUserRole === "ADMIN");
 
   return (
-    <main className="flex h-[100dvh] min-h-0 w-full overflow-hidden bg-[#050705]/95 text-slate-100">
-      <aside className="hidden w-64 flex-col border-r border-black bg-[#0d0f0d] p-4 lg:flex">
-        {selectedGroup ? (
+    <main className="flex h-[100dvh] min-h-0 w-full max-w-full overflow-hidden bg-[#050705]/95 text-slate-100">
+      <aside className="dashboard-secondary-sidebar hidden w-[min(17rem,24vw)] shrink-0 flex-col border-r border-black bg-[#0d0f0d] p-3 min-[1180px]:flex min-[1400px]:w-64 min-[1400px]:p-4">
+        {activeSection === "messages" || selectedGroup?.isDirectMessage ? (
+          <MessageThreadSidebar
+            selectedGroupId={selectedGroup?.id}
+            threads={messageThreads}
+          />
+        ) : selectedGroup ? (
           <>
             <div className="rounded-2xl border border-white/10 bg-[#121512] p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
@@ -64,6 +75,14 @@ export function DashboardShell({
               groupId={selectedGroup.id}
               selectedChannelId={selectedChannel?.id}
             />
+            {!selectedGroup.isDirectMessage ? (
+              <Link
+                className="mt-1 rounded-xl border border-white/10 bg-[#181818] px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/70 hover:bg-[#242424] hover:text-white"
+                href={`/dashboard/groups/${selectedGroup.id}/settings`}
+              >
+                Group settings
+              </Link>
+            ) : null}
             {canCreateChannels ? (
               <div className="mt-auto rounded-2xl border border-white/10 bg-[#121512] p-4">
                 <CreateChannelForm groupId={selectedGroup.id} />
@@ -96,11 +115,11 @@ export function DashboardShell({
         )}
       </aside>
 
-      <section className="flex min-w-0 flex-1 flex-col">
+      <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <header className="flex min-h-12 items-center justify-between gap-3 border-b border-black bg-[#050505] px-3 py-1.5 sm:px-5">
           <div className="min-w-0">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#FF5F25]">
-              {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : "Dashboard"}
+              {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : activeSection === "messages" ? "Messages" : "Dashboard"}
             </p>
             <p className="truncate text-xs text-slate-400">
               {selectedChannel
@@ -108,10 +127,14 @@ export function DashboardShell({
                   ? "Text channel"
                   : "Voice channel"
                 : selectedGroup
-                  ? "Group"
+                  ? selectedGroup.isDirectMessage
+                    ? "Private message"
+                    : "Group"
                   : activeSection === "channels"
                     ? "Browse channels across your groups"
-                    : "Groups foundation"}
+                    : activeSection === "messages"
+                      ? "Private messages"
+                      : "Groups foundation"}
             </p>
           </div>
           <div className="h-1 w-1" />
@@ -120,11 +143,14 @@ export function DashboardShell({
         <MobileSpaceSwitcher
           activeSection={activeSection}
           groups={groups}
+          messageThreads={messageThreads}
           selectedChannelId={selectedChannel?.id}
           selectedGroup={selectedGroup}
         />
 
-        {selectedChannel ? (
+        {groupSettingsPanel ? (
+          groupSettingsPanel
+        ) : selectedChannel ? (
           <ChannelMain
             channel={selectedChannel}
             messages={selectedChannel.messages ?? []}
@@ -132,11 +158,17 @@ export function DashboardShell({
         ) : selectedGroup ? (
           <GroupMain
             canInvite={canCreateChannels}
-            canDeleteGroup={selectedGroup.currentUserRole === "OWNER"}
+            canDeleteGroup={
+              !selectedGroup.isDirectMessage &&
+              selectedGroup.currentUserRole === "OWNER"
+            }
             group={selectedGroup}
+            invitePanel={invitePanel}
           />
         ) : activeSection === "channels" ? (
           <ChannelsHome groups={groups} />
+        ) : activeSection === "messages" ? (
+          <MessagesHome threads={messageThreads} />
         ) : (
           <DashboardHome groups={groups} />
         )}
@@ -148,16 +180,20 @@ export function DashboardShell({
 function MobileSpaceSwitcher({
   activeSection,
   groups,
+  messageThreads,
   selectedChannelId,
   selectedGroup,
 }: {
-  activeSection: "dashboard" | "friends" | "channels";
+  activeSection: "dashboard" | "friends" | "channels" | "messages";
   groups: DashboardGroup[];
+  messageThreads: MessageThread[];
   selectedChannelId?: string;
   selectedGroup?: DashboardGroup & { channels: GroupChannel[] };
 }) {
+  const showingMessages = activeSection === "messages" || selectedGroup?.isDirectMessage;
+
   return (
-    <div className="border-b border-black bg-[#0d0f0d] px-2 py-2 sm:px-3 lg:hidden">
+    <div className="dashboard-mobile-switcher border-b border-black bg-[#0d0f0d] px-2 py-2 sm:px-3 min-[1180px]:hidden">
       <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <Link
           className={`inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-sm font-semibold ${
@@ -179,7 +215,31 @@ function MobileSpaceSwitcher({
         >
           Friends
         </Link>
-        {selectedGroup
+        <Link
+          className={`inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-sm font-semibold ${
+            showingMessages
+              ? "border-[#FF5F25] bg-[#FF5F25] text-black"
+              : "border-white/10 bg-[#050505] text-slate-200"
+          }`}
+          href="/dashboard/messages"
+        >
+          Messages
+        </Link>
+        {showingMessages
+          ? messageThreads.map((thread) => (
+              <Link
+                className={`inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-sm font-semibold ${
+                  selectedGroup?.id === thread.id
+                    ? "border-[#FF5F25] bg-[#FF5F25] text-black"
+                    : "border-white/10 bg-[#050505] text-slate-200"
+                }`}
+                href={`/dashboard/groups/${thread.id}/channels/${thread.channelId}`}
+                key={thread.id}
+              >
+                {thread.name}
+              </Link>
+            ))
+          : selectedGroup
           ? selectedGroup.channels.map((channel) => (
               <Link
                 className={`inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-sm font-semibold ${
@@ -203,6 +263,112 @@ function MobileSpaceSwitcher({
                 {group.name}
               </Link>
             ))}
+      </div>
+    </div>
+  );
+}
+
+function MessageThreadSidebar({
+  selectedGroupId,
+  threads,
+}: {
+  selectedGroupId?: string;
+  threads: MessageThread[];
+}) {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="rounded-2xl border border-white/10 bg-[#121512] p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+          Messages
+        </p>
+        <h1 className="mt-2 text-lg font-semibold text-white">Private chats</h1>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto py-3">
+        {threads.length ? (
+          <div className="space-y-1">
+            {threads.map((thread) => (
+              <Link
+                className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
+                  selectedGroupId === thread.id
+                    ? "border-[#FF5F25]/60 bg-[#FF5F25]/12"
+                    : "border-transparent hover:border-white/20 hover:bg-white/7"
+                }`}
+                href={`/dashboard/groups/${thread.id}/channels/${thread.channelId}`}
+                key={thread.id}
+              >
+                <AvatarInitials
+                  imageUrl={thread.friend?.image}
+                  value={thread.name}
+                />
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-white">
+                    {thread.name}
+                  </span>
+                  <span className="block truncate text-xs text-slate-400">
+                    Private message
+                  </span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.03] p-4">
+            <p className="text-sm font-semibold text-white">No private chats yet</p>
+            <p className="mt-2 text-xs leading-5 text-slate-400">
+              Use the plus button in the sidebar and choose a friend to start a PM.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MessagesHome({ threads }: { threads: MessageThread[] }) {
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
+      <div className="w-full space-y-4">
+        <section className="rounded-2xl border border-white/10 bg-[#050505] p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+            Private messages
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+            Choose a conversation
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+            Your private chats live in the sidebar. Open one to continue the conversation.
+          </p>
+        </section>
+
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {threads.length ? (
+            threads.map((thread) => (
+              <Link
+                className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#181818] p-4 transition hover:border-[#FF5F25]/70 hover:bg-[#242424]"
+                href={`/dashboard/groups/${thread.id}/channels/${thread.channelId}`}
+                key={thread.id}
+              >
+                <AvatarInitials
+                  imageUrl={thread.friend?.image}
+                  value={thread.name}
+                />
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-white">
+                    {thread.name}
+                  </span>
+                  <span className="block truncate text-xs text-slate-400">
+                    Open private chat
+                  </span>
+                </span>
+              </Link>
+            ))
+          ) : (
+            <div className="rounded-2xl border border-white/10 bg-[#181818] p-5 text-sm leading-6 text-slate-300">
+              No PMs yet. Click the plus button in the left sidebar and choose a friend.
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );
@@ -368,39 +534,43 @@ function GroupMain({
   group,
   canInvite,
   canDeleteGroup,
+  invitePanel,
 }: {
   group: DashboardGroup & {
-    inviteCandidates?: FriendPerson[];
     members?: GroupMemberItem[];
     notice?: string;
   };
   canInvite: boolean;
   canDeleteGroup: boolean;
+  invitePanel?: React.ReactNode;
 }) {
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
-      <div className="grid w-full gap-4">
+      <div className="grid w-full min-w-0 gap-4">
         {group.notice ? <Alert>{group.notice}</Alert> : null}
         <section className="rounded-2xl border border-white/10 bg-[#050505] p-5 shadow-[0_25px_80px_-50px_rgba(0,0,0,0.7)]">
-            <div className="grid gap-5 lg:grid-cols-[1fr_1.2fr] lg:items-center">
-            <div>
+            <div className="grid min-w-0 gap-5 min-[1180px]:grid-cols-[1fr_1.2fr] min-[1180px]:items-center">
+            <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
                 {group.name}
               </p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">
-                A calm place for your group.
+              <h2 className="mt-2 break-words text-xl font-semibold text-white sm:text-2xl">
+                {group.isDirectMessage
+                  ? "A private place to talk."
+                  : "A calm place for your group."}
               </h2>
-              <p className="mt-3 text-xs leading-5 text-slate-300">
-                Start by picking a channel or creating something new. This space is
-                made for focused conversation, private invites, and clear shared routines.
+              <p className="mt-3 break-words text-xs leading-5 text-slate-300">
+                {group.isDirectMessage
+                  ? "This conversation is only visible to the people in this private message."
+                  : "Start by picking a channel or creating something new. This space is made for focused conversation, private invites, and clear shared routines."}
               </p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-[#181818] p-4">
+            <div className="min-w-0 rounded-xl border border-white/10 bg-[#181818] p-4">
               <p className="text-sm text-slate-400">Members</p>
               <p className="mt-2 text-3xl font-semibold text-white">
                 {group.members?.length ?? 0}
               </p>
-              <p className="mt-3 text-sm text-slate-400">
+              <p className="mt-3 break-words text-sm text-slate-400">
                 Current group size. Keep the circle intentional and the experience smooth.
               </p>
             </div>
@@ -408,14 +578,14 @@ function GroupMain({
         </section>
 
         {canDeleteGroup ? (
-          <section className="rounded-2xl border border-[#FF5F25]/60 bg-[#050505] p-5">
+          <section className="min-w-0 rounded-2xl border border-[#FF5F25]/60 bg-[#050505] p-4 sm:p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
                   Danger zone
                 </p>
-                <h3 className="mt-2 text-xl font-semibold text-white">Delete this group</h3>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                <h3 className="mt-2 break-words text-xl font-semibold text-white">Delete this group</h3>
+                <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-slate-400">
                   This removes the group, its channels, messages, invites, and member list.
                 </p>
               </div>
@@ -431,14 +601,9 @@ function GroupMain({
           </section>
         ) : null}
 
-        <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid min-w-0 gap-5 min-[1180px]:grid-cols-[1.2fr_0.8fr]">
           <GroupMembersList members={group.members ?? []} />
-          {canInvite ? (
-            <InviteFriendForm
-              friends={group.inviteCandidates ?? []}
-              groupId={group.id}
-            />
-          ) : (
+          {canInvite ? invitePanel : (
             <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
                 Invites

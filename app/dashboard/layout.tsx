@@ -8,7 +8,7 @@ export default async function DashboardLayout({
   return (
     <>
       <DashboardSidebar />
-      <div className="pl-14 sm:pl-16">{children}</div>
+      <div className="min-w-0 overflow-hidden pl-14 sm:pl-16">{children}</div>
     </>
   );
 }

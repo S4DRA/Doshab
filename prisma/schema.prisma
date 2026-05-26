@@ -25,6 +25,8 @@ model User {
   receivedGroupInvites   GroupInvite[]   @relation("GroupInviteReceiver")
   sentGroupInvites       GroupInvite[]   @relation("GroupInviteInviter")
   messages               Message[]
+  notifications          Notification[]  @relation("NotificationRecipient")
+  sentNotifications      Notification[]  @relation("NotificationActor")
 
   @@index([status])
   @@map("users")
@@ -62,17 +64,20 @@ model Friendship {
 }
 
 model Group {
-  id          String        @id @default(cuid())
-  name        String
-  description String?
-  image       String?
-  ownerId     String
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  channels    Channel[]
-  invites     GroupInvite[]
-  members     GroupMember[]
-  owner       User          @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  id               String         @id @default(cuid())
+  name             String
+  description      String?
+  image            String?
+  ownerId          String
+  isDirectMessage  Boolean        @default(false) @map("is_direct_message")
+  directMessageKey String?        @unique @map("direct_message_key")
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  channels         Channel[]
+  invites          GroupInvite[]
+  members          GroupMember[]
+  notifications    Notification[]
+  owner            User           @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@index([ownerId])
   @@map("groups")
@@ -115,14 +120,15 @@ model GroupInvite {
 }
 
 model Channel {
-  id        String      @id @default(cuid())
-  groupId   String
-  name      String
-  type      ChannelType @default(TEXT)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  group     Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  messages  Message[]
+  id            String         @id @default(cuid())
+  groupId       String
+  name          String
+  type          ChannelType    @default(TEXT)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  group         Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  messages      Message[]
+  notifications Notification[]
 
   @@unique([groupId, name])
   @@index([groupId])
@@ -131,20 +137,48 @@ model Channel {
 }
 
 model Message {
-  id        String   @id @default(cuid())
-  channelId String
-  senderId  String
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  id            String         @id @default(cuid())
+  channelId     String
+  senderId      String
+  content       String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  channel       Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  sender        User           @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  notifications Notification[]
 
   @@index([channelId])
   @@index([channelId, createdAt])
   @@index([senderId])
   @@index([createdAt])
   @@map("messages")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  actorId   String
+  groupId   String
+  channelId String
+  messageId String
+  type      NotificationType @default(MESSAGE)
+  title     String
+  body      String
+  href      String
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  actor     User             @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  channel   Channel          @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  group     Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  message   Message          @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User             @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@index([actorId])
+  @@index([groupId])
+  @@index([channelId])
+  @@index([messageId])
+  @@map("notifications")
 }
 
 enum UserStatus {
@@ -175,4 +209,8 @@ enum GroupInviteStatus {
 enum ChannelType {
   TEXT
   VOICE
+}
+
+enum NotificationType {
+  MESSAGE
 }

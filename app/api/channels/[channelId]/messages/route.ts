@@ -38,23 +38,23 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
       id: true,
       groupId: true,
       type: true,
+      name: true,
       group: {
         select: {
+          id: true,
+          isDirectMessage: true,
+          name: true,
           members: {
-            where: {
-              userId: user.id,
-            },
             select: {
-              id: true,
+              userId: true,
             },
-            take: 1,
           },
         },
       },
     },
   });
 
-  if (!channel || !channel.group.members.length) {
+  if (!channel || !channel.group.members.some((member) => member.userId === user.id)) {
     return NextResponse.redirect(new URL("/dashboard", request.url), {
       status: 303,
     });
@@ -71,12 +71,48 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
     return redirectBack(request, channel.groupId, channel.id);
   }
 
-  await prisma.message.create({
-    data: {
-      channelId: channel.id,
-      senderId: user.id,
-      content,
-    },
+  await prisma.$transaction(async (tx) => {
+    const message = await tx.message.create({
+      data: {
+        channelId: channel.id,
+        senderId: user.id,
+        content,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const recipients = channel.group.members
+      .filter((member) => member.userId !== user.id)
+      .map((member) => member.userId);
+
+    if (!recipients.length) {
+      return;
+    }
+
+    const href = `/dashboard/groups/${channel.groupId}/channels/${channel.id}`;
+    const senderName = user.name || user.email;
+    const preview = content.length > 120 ? `${content.slice(0, 117)}...` : content;
+    const title = channel.group.isDirectMessage
+      ? senderName
+      : `${channel.group.name} / #${channel.name}`;
+    const body = channel.group.isDirectMessage
+      ? preview
+      : `${senderName}: ${preview}`;
+
+    await tx.notification.createMany({
+      data: recipients.map((recipientId) => ({
+        actorId: user.id,
+        body,
+        channelId: channel.id,
+        groupId: channel.groupId,
+        href,
+        messageId: message.id,
+        title,
+        userId: recipientId,
+      })),
+    });
   });
 
   return redirectBack(request, channel.groupId, channel.id);

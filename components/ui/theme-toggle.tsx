@@ -1,23 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type ThemeMode = "dark" | "light";
 
-function getInitialTheme(): ThemeMode {
-  if (typeof document === "undefined") {
-    return "dark";
-  }
-
-  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
-}
-
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
+  const [theme, setTheme] = useState<ThemeMode>("dark");
+  const loadedThemeRef = useRef(false);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem("doshab-theme", theme);
+    const frame = window.requestAnimationFrame(() => {
+      const storedTheme =
+        window.localStorage.getItem("doshab-theme") === "light" ? "light" : "dark";
+
+      setTheme(storedTheme);
+      loadedThemeRef.current = true;
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    if (loadedThemeRef.current) {
+      document.documentElement.dataset.theme = theme;
+      window.localStorage.setItem("doshab-theme", theme);
+    }
   }, [theme]);
 
   return (

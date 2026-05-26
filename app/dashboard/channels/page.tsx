@@ -13,6 +13,7 @@ export default async function ChannelsPage() {
 
   const groups = await prisma.group.findMany({
     where: {
+      isDirectMessage: false,
       members: {
         some: {
           userId: session.userId,
@@ -26,6 +27,7 @@ export default async function ChannelsPage() {
       id: true,
       name: true,
       description: true,
+      isDirectMessage: true,
       channels: {
         orderBy: {
           createdAt: "asc",

@@ -2,11 +2,18 @@ import { SubmitButton } from "@/components/ui/submit-button";
 
 type CreateChannelFormProps = {
   groupId: string;
+  returnToSettings?: boolean;
 };
 
-export function CreateChannelForm({ groupId }: CreateChannelFormProps) {
+export function CreateChannelForm({
+  groupId,
+  returnToSettings = false,
+}: CreateChannelFormProps) {
   return (
     <form action={`/api/groups/${groupId}/channels`} className="space-y-3" method="post">
+      {returnToSettings ? (
+        <input name="returnTo" type="hidden" value="settings" />
+      ) : null}
       <label className="block">
         <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
           Channel name

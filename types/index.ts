@@ -10,6 +10,8 @@ export type DashboardGroup = {
   id: string;
   name: string;
   description: string | null;
+  image?: string | null;
+  isDirectMessage?: boolean;
   channels?: GroupChannel[];
 };
 
@@ -64,4 +66,21 @@ export type GroupInviteItem = {
   createdAt: Date;
   group: DashboardGroup;
   inviter: FriendPerson;
+};
+
+export type MessageThread = {
+  id: string;
+  channelId: string;
+  name: string;
+  friend: FriendPerson | null;
+};
+
+export type DashboardNotification = {
+  id: string;
+  title: string;
+  body: string;
+  href: string;
+  readAt: Date | string | null;
+  createdAt: Date | string;
+  actor: FriendPerson;
 };

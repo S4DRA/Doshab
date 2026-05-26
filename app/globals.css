@@ -70,10 +70,20 @@ body {
     color 140ms ease;
 }
 
+body * {
+  min-width: 0;
+}
+
 html {
-  font-size: 15px;
+  font-size: 11px;
   overflow-x: hidden;
   scroll-behavior: smooth;
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: 13px;
+  }
 }
 
 html[data-theme="dark"] {
@@ -87,6 +97,18 @@ html[data-theme="light"] body {
 html[data-theme="light"] .brand-logo-image {
   filter: invert(1) contrast(1.35);
   mix-blend-mode: multiply;
+}
+
+@media (max-width: 1179px) {
+  .dashboard-secondary-sidebar {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1180px) {
+  .dashboard-mobile-switcher {
+    display: none !important;
+  }
 }
 
 * {
@@ -140,6 +162,139 @@ html[data-theme="light"] .brand-logo-image {
 .theme-toggle-option[data-active="true"] {
   background: var(--control);
   color: var(--control-text);
+}
+
+.doshab-loader {
+  width: min(90vw, 320px);
+}
+
+.doshab-loader-mark {
+  position: relative;
+  width: 112px;
+  height: 112px;
+}
+
+.doshab-loader-logo {
+  position: absolute;
+  inset: 18px;
+  opacity: 0.95;
+  animation: doshab-logo-breathe 1800ms ease-in-out infinite;
+}
+
+.doshab-grape-piece {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(255, 95, 37, 0.18);
+  transform: translate(var(--piece-x), var(--piece-y)) scale(0.65);
+  animation: doshab-grape-rebuild 1800ms cubic-bezier(0.7, 0, 0.2, 1) infinite;
+  animation-delay: var(--piece-delay);
+}
+
+.doshab-grape-piece:nth-of-type(2) {
+  --piece-x: -36px;
+  --piece-y: -28px;
+  --piece-away-x: -54px;
+  --piece-away-y: -48px;
+  --piece-delay: 0ms;
+}
+
+.doshab-grape-piece:nth-of-type(3) {
+  --piece-x: -18px;
+  --piece-y: -36px;
+  --piece-away-x: -22px;
+  --piece-away-y: -64px;
+  --piece-delay: 70ms;
+}
+
+.doshab-grape-piece:nth-of-type(4) {
+  --piece-x: 4px;
+  --piece-y: -28px;
+  --piece-away-x: 34px;
+  --piece-away-y: -52px;
+  --piece-delay: 140ms;
+}
+
+.doshab-grape-piece:nth-of-type(5) {
+  --piece-x: -28px;
+  --piece-y: -8px;
+  --piece-away-x: -62px;
+  --piece-away-y: -6px;
+  --piece-delay: 210ms;
+}
+
+.doshab-grape-piece:nth-of-type(6) {
+  --piece-x: -8px;
+  --piece-y: -10px;
+  --piece-away-x: 0px;
+  --piece-away-y: -2px;
+  --piece-delay: 280ms;
+}
+
+.doshab-grape-piece:nth-of-type(7) {
+  --piece-x: 14px;
+  --piece-y: -4px;
+  --piece-away-x: 58px;
+  --piece-away-y: -8px;
+  --piece-delay: 350ms;
+}
+
+.doshab-grape-piece:nth-of-type(8) {
+  --piece-x: -18px;
+  --piece-y: 16px;
+  --piece-away-x: -42px;
+  --piece-away-y: 48px;
+  --piece-delay: 420ms;
+}
+
+.doshab-grape-piece:nth-of-type(9) {
+  --piece-x: 6px;
+  --piece-y: 20px;
+  --piece-away-x: 40px;
+  --piece-away-y: 52px;
+  --piece-delay: 490ms;
+}
+
+@keyframes doshab-grape-rebuild {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translate(var(--piece-x), var(--piece-y)) scale(0.65);
+  }
+
+  38% {
+    opacity: 0.75;
+    transform: translate(var(--piece-away-x), var(--piece-away-y)) scale(0.48);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translate(var(--piece-x), var(--piece-y)) scale(0.72);
+  }
+}
+
+@keyframes doshab-logo-breathe {
+  0%,
+  100% {
+    opacity: 0.98;
+    transform: scale(1);
+  }
+
+  38% {
+    opacity: 0.38;
+    transform: scale(0.92);
+  }
+
+  70% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
 }
 
 html[data-theme] :is(input, textarea, select) {

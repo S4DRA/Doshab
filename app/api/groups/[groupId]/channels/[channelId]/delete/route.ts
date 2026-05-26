@@ -20,6 +20,20 @@ function redirectToGroup(request: NextRequest, groupId: string, message: string)
   );
 }
 
+function redirectAfterChannelDelete(
+  request: NextRequest,
+  groupId: string,
+  message: string,
+  returnTo: string,
+) {
+  const pathname =
+    returnTo === "settings"
+      ? `/dashboard/groups/${groupId}/settings?message=${encodeURIComponent(message)}`
+      : `/dashboard/groups/${groupId}?message=${encodeURIComponent(message)}`;
+
+  return NextResponse.redirect(new URL(pathname, request.url), { status: 303 });
+}
+
 export async function POST(
   request: NextRequest,
   { params }: DeleteChannelRouteProps,
@@ -30,6 +44,9 @@ export async function POST(
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
   }
+
+  const formData = await request.formData();
+  const returnTo = String(formData.get("returnTo") ?? "");
 
   const membership = await prisma.groupMember.findUnique({
     where: {
@@ -73,5 +90,5 @@ export async function POST(
     },
   });
 
-  return redirectToGroup(request, groupId, "Channel deleted.");
+  return redirectAfterChannelDelete(request, groupId, "Channel deleted.", returnTo);
 }
