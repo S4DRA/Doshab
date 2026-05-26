@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { MessageInput } from "@/components/chat/message-input";
-import { MessageList } from "@/components/chat/message-list";
+import { RealtimeMessagePanel } from "@/components/chat/realtime-message-panel";
 import { ChannelList } from "@/components/groups/channel-list";
 import { CreateChannelForm } from "@/components/groups/create-channel-form";
 import { CreateGroupForm } from "@/components/groups/create-group-form";
@@ -213,7 +213,11 @@ function ChannelMain({
           </p>
         </section>
         <div className="mt-6">
-          <MessageList messages={messages} />
+          <RealtimeMessagePanel
+            channelId={channel.id}
+            initialMessages={messages}
+            key={channel.id}
+          />
         </div>
       </div>
       <div className="border-t border-white/8 bg-[#0b1020] px-5 py-4">

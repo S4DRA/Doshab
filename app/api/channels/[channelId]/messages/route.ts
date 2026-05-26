@@ -81,3 +81,52 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
 
   return redirectBack(request, channel.groupId, channel.id);
 }
+
+export async function GET(request: NextRequest, { params }: MessagesRouteProps) {
+  const user = await getCurrentUser();
+  const { channelId } = await params;
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const messageId = request.nextUrl.searchParams.get("messageId");
+
+  if (!messageId) {
+    return NextResponse.json({ error: "Missing messageId" }, { status: 400 });
+  }
+
+  const message = await prisma.message.findFirst({
+    where: {
+      id: messageId,
+      channelId,
+      channel: {
+        type: "TEXT",
+        group: {
+          members: {
+            some: {
+              userId: user.id,
+            },
+          },
+        },
+      },
+    },
+    select: {
+      id: true,
+      content: true,
+      createdAt: true,
+      sender: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (!message) {
+    return NextResponse.json({ error: "Message not found" }, { status: 404 });
+  }
+
+  return NextResponse.json(message);
+}

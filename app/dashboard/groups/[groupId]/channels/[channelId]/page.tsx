@@ -20,7 +20,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
 
   const { groupId, channelId } = await params;
 
-  const [groups, selectedGroup, membership] = await Promise.all([
+  const [groups, selectedGroup, membership, selectedChannel] = await Promise.all([
     prisma.group.findMany({
       where: {
         members: {
@@ -59,22 +59,6 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
             id: true,
             name: true,
             type: true,
-            messages: {
-              orderBy: {
-                createdAt: "asc",
-              },
-              select: {
-                id: true,
-                content: true,
-                createdAt: true,
-                sender: {
-                  select: {
-                    name: true,
-                    email: true,
-                  },
-                },
-              },
-            },
           },
         },
       },
@@ -90,24 +74,60 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
         role: true,
       },
     }),
+    prisma.channel.findFirst({
+      where: {
+        id: channelId,
+        groupId,
+        group: {
+          members: {
+            some: {
+              userId: user.id,
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        messages: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 100,
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            sender: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    }),
   ]);
 
   if (!selectedGroup || !membership) {
     redirect("/dashboard");
   }
 
-  const selectedChannel = selectedGroup.channels.find(
-    (channel) => channel.id === channelId,
-  );
-
   if (!selectedChannel) {
     redirect(`/dashboard/groups/${groupId}`);
   }
 
+  const channelWithChronologicalMessages = {
+    ...selectedChannel,
+    messages: [...selectedChannel.messages].reverse(),
+  };
+
   return (
     <DashboardShell
       groups={groups}
-      selectedChannel={selectedChannel}
+      selectedChannel={channelWithChronologicalMessages}
       selectedGroup={{
         ...selectedGroup,
         currentUserRole: membership.role,

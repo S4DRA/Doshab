@@ -23,7 +23,7 @@ export type GroupRole = "OWNER" | "ADMIN" | "MEMBER";
 export type ChatMessage = {
   id: string;
   content: string;
-  createdAt: Date;
+  createdAt: Date | string;
   sender: {
     name: string;
     email: string;

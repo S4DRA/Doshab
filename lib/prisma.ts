@@ -8,8 +8,13 @@ const globalForPrisma = globalThis as unknown as {
 
 process.env.DATABASE_URL ??= process.env.DIRECT_URL;
 
+const connectionTimeoutMillis = Number(
+  process.env.DATABASE_CONNECTION_TIMEOUT_MS ?? 1000,
+);
+
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL ?? "",
+  connectionTimeoutMillis,
 });
 
 export const prisma =

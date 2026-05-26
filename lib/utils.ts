@@ -13,11 +13,11 @@ export function getInitials(value: string) {
   return initials || "?";
 }
 
-export function formatReadableTimestamp(value: Date) {
+export function formatReadableTimestamp(value: Date | string) {
   return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
-  }).format(value);
+  }).format(new Date(value));
 }
