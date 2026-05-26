@@ -10,6 +10,7 @@ export type DashboardGroup = {
   id: string;
   name: string;
   description: string | null;
+  channels?: GroupChannel[];
 };
 
 export type GroupChannel = {
