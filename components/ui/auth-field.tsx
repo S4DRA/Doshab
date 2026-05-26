@@ -17,10 +17,10 @@ export function AuthField({
 }: AuthFieldProps) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-slate-300">{label}</span>
+      <span className="text-sm font-semibold text-white">{label}</span>
       <input
         autoComplete={autoComplete}
-        className="mt-2 h-11 w-full rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+        className="mt-2 h-12 w-full rounded-xl border border-white/20 bg-black px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/25"
         minLength={minLength}
         name={name}
         required={required}

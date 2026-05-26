@@ -8,11 +8,11 @@ export function CreateGroupForm({ compact = false }: CreateGroupFormProps) {
   return (
     <form action="/api/groups" className="space-y-3" method="post">
       <label className="block">
-        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
           Group name
         </span>
         <input
-          className="mt-2 h-10 w-full rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+          className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#050505] px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
           maxLength={80}
           name="name"
           placeholder="Weekend crew"
@@ -22,11 +22,11 @@ export function CreateGroupForm({ compact = false }: CreateGroupFormProps) {
       </label>
       {!compact ? (
         <label className="block">
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
             Description
           </span>
           <textarea
-            className="mt-2 min-h-20 w-full resize-none rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+            className="mt-2 min-h-20 w-full resize-none rounded-xl border border-white/10 bg-[#050505] px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
             maxLength={180}
             name="description"
             placeholder="Optional"
@@ -34,7 +34,7 @@ export function CreateGroupForm({ compact = false }: CreateGroupFormProps) {
         </label>
       ) : null}
       <SubmitButton
-        className="h-10 w-full rounded-md bg-[#FF5F25] text-sm font-semibold text-white shadow-lg shadow-[#FF5F25]/30 transition hover:bg-[#FF5F25]/90"
+        className="h-11 w-full rounded-xl bg-[#FF5F25] text-sm font-bold text-black transition hover:bg-[#ff7847]"
         pendingText="Creating..."
       >
         Create group

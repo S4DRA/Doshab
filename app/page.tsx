@@ -22,54 +22,70 @@ const features = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#070a12] text-slate-100">
-      <div className="absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.24),transparent_62%)]" />
-      <section className="mx-auto grid w-full max-w-6xl gap-12 px-5 pb-16 pt-28 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:pb-24">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
-            Build calm spaces for friends
-          </p>
-          <h1 className="mt-5 max-w-3xl text-5xl font-bold leading-tight text-white sm:text-6xl">
-            Doshab brings private voice and chat communities together.
-          </h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-slate-300">
-            Doshab gives your group a clean, modern home base with polished profiles, secure spaces, and a fast path from setup to conversation.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href="/dashboard">Open dashboard</ButtonLink>
-            <ButtonLink href="/dashboard" variant="secondary">
-              Start a group
-            </ButtonLink>
+    <main className="min-h-screen overflow-hidden text-white">
+      <section className="mx-auto grid w-full max-w-[1200px] gap-6 px-5 pb-14 pt-10 sm:px-8 lg:grid-cols-[1fr_0.86fr] lg:items-stretch lg:pb-16">
+        <div className="flex min-h-[520px] flex-col justify-between rounded-[2rem] border border-white/15 bg-[#101010] p-6 sm:p-8 lg:p-9">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#FF5F25]">
+              Private voice and chat
+            </p>
+            <h1 className="mt-6 max-w-3xl text-5xl font-black leading-[0.95] tracking-tight text-white sm:text-6xl">
+              Calm communities, built in high contrast.
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+              Doshab gives friends and small groups a focused home for private channels, live rooms, profiles, and invites without visual noise.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <ButtonLink href="/dashboard">Open dashboard</ButtonLink>
+              <ButtonLink href="/register" variant="secondary">
+                Create account
+              </ButtonLink>
+            </div>
+          </div>
+
+          <div className="mt-10 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-black p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-[#FF5F25]">Rooms</p>
+              <p className="mt-3 text-2xl font-bold">Live</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-[#445242] p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-white/70">Groups</p>
+              <p className="mt-3 text-2xl font-bold">Private</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black p-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-[#FF5F25]">Profiles</p>
+              <p className="mt-3 text-2xl font-bold">Personal</p>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-[#0d1322] p-5 shadow-2xl shadow-black/40">
-          <div className="grid min-h-[360px] gap-4 rounded-3xl border border-white/8 bg-[#090d18] p-5 sm:grid-cols-[120px_1fr]">
-            <div className="rounded-3xl bg-[#445242] p-4 shadow-inner shadow-black/20">
+        <div className="grid gap-4 rounded-[2rem] border border-white/15 bg-[#445242] p-4 sm:p-5">
+          <div className="grid gap-4 rounded-[1.5rem] bg-black p-4 sm:grid-cols-[128px_1fr]">
+            <div className="grid place-items-center rounded-[1.25rem] border border-white/10 bg-[#050505] p-4">
               <Image
-                src="/doshab/Doshab_png.png"
+                src="/Doshab_png.png"
                 alt="Doshab brand mark"
-                width={88}
-                height={88}
-                className="rounded-3xl object-cover"
+                width={112}
+                height={112}
+                className="rounded-2xl object-cover"
               />
             </div>
             <div className="grid gap-4">
-              <div className="relative overflow-hidden rounded-3xl bg-white/5">
+              <div className="relative min-h-56 overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#050505]">
                 <Image
-                  src="/doshab/InShot_20260526_123122377.jpg"
+                  src="/InShot_20260526_123122377.jpg"
                   alt="Doshab inspiration"
                   width={640}
                   height={320}
                   className="h-full w-full object-cover"
                 />
-                <div className="absolute inset-x-0 bottom-0 rounded-b-3xl bg-black/40 p-4 text-sm text-white">
+                <div className="absolute inset-x-0 bottom-0 bg-black/70 p-4 text-sm font-semibold text-white">
                   A grounded space for every conversation.
                 </div>
               </div>
-              <div className="relative overflow-hidden rounded-3xl bg-white/5">
+              <div className="relative min-h-56 overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#050505]">
                 <Image
-                  src="/doshab/InShot_20260526_123220819.jpg"
+                  src="/InShot_20260526_123220819.jpg"
                   alt="Doshab atmosphere"
                   width={640}
                   height={320}
@@ -81,11 +97,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-6xl gap-4 px-5 pb-16 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
+      <section className="mx-auto grid w-full max-w-[1200px] gap-4 px-5 pb-14 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
         {features.map((feature) => (
           <article
             key={feature.title}
-            className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-sm shadow-black/10 transition hover:-translate-y-1 hover:border-[#FF5F25]/30"
+            className="rounded-[1.5rem] border border-white/15 bg-[#101010] p-6 transition hover:border-[#FF5F25]"
           >
             <h2 className="text-base font-semibold text-white">{feature.title}</h2>
             <p className="mt-3 text-sm leading-6 text-slate-400">

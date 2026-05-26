@@ -6,7 +6,6 @@ import { FriendSearchForm } from "@/components/friends/friend-search-form";
 import { FriendsList } from "@/components/friends/friends-list";
 import { GroupInvitesList } from "@/components/groups/group-invites-list";
 import { Alert } from "@/components/ui/alert";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getCurrentUser } from "@/lib/auth";
 import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
@@ -164,7 +163,6 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
           <h1 className="text-lg font-semibold text-white">People you know</h1>
         </div>
         <div className="flex items-center gap-3">
-          <ThemeToggle />
           <a
             className="h-9 rounded-md border border-white/10 bg-white/7 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/12"
             href="/dashboard/profile"
@@ -177,14 +175,6 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
           >
             Dashboard
           </a>
-          <form action="/api/auth/logout" method="post">
-            <button
-              className="h-9 rounded-md border border-white/10 bg-white/7 px-3 text-xs font-semibold text-slate-200 transition hover:bg-white/12"
-              type="submit"
-            >
-              Log out
-            </button>
-          </form>
         </div>
       </header>
 
@@ -203,7 +193,6 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               </p>
             </div>
             <div className="grid gap-2 sm:auto-cols-max sm:grid-flow-col">
-              <ThemeToggle />
               <Link
                 className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
                 href="/dashboard/profile"
@@ -216,14 +205,6 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               >
                 Dashboard
               </Link>
-              <form action="/api/auth/logout" method="post">
-                <button
-                  className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/7 px-4 text-sm font-semibold text-slate-200 transition hover:bg-white/12"
-                  type="submit"
-                >
-                  Log out
-                </button>
-              </form>
             </div>
           </div>
 

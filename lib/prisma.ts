@@ -13,10 +13,26 @@ const connectionTimeoutMillis = Number(
 );
 
 const rawDatabaseUrl = process.env.DATABASE_URL ?? "";
-const connectionString =
-  rawDatabaseUrl.startsWith("postgresql://") && !rawDatabaseUrl.includes("sslmode=")
-    ? `${rawDatabaseUrl}${rawDatabaseUrl.includes("?") ? "&" : "?"}sslmode=require`
-    : rawDatabaseUrl;
+
+function databaseUrlWithSslMode(databaseUrl: string) {
+  if (!databaseUrl.startsWith("postgresql://")) {
+    return databaseUrl;
+  }
+
+  try {
+    const url = new URL(databaseUrl);
+
+    if (!url.searchParams.has("sslmode")) {
+      url.searchParams.set("sslmode", "no-verify");
+    }
+
+    return url.toString();
+  } catch {
+    return databaseUrl;
+  }
+}
+
+const connectionString = databaseUrlWithSslMode(rawDatabaseUrl);
 
 const adapter = new PrismaPg({
   connectionString,

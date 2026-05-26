@@ -23,7 +23,7 @@ export function ThemeToggle() {
   return (
     <button
       aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-      className="theme-toggle inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 text-xs font-semibold transition hover:bg-white/15"
+      className="theme-toggle inline-flex h-8 items-center justify-center rounded-full border text-[11px] font-semibold transition"
       onClick={() => {
         setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
       }}

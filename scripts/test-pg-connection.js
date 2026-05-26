@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 require('dotenv').config();
 const { Client } = require('pg');
 
@@ -7,7 +8,16 @@ if (!connectionString) {
   process.exit(2);
 }
 
-const client = new Client({ connectionString });
+const url = new URL(connectionString);
+
+if (!url.searchParams.has('sslmode')) {
+  url.searchParams.set('sslmode', 'no-verify');
+}
+
+const client = new Client({
+  connectionString: url.toString(),
+  connectionTimeoutMillis: Number(process.env.DATABASE_CONNECTION_TIMEOUT_MS ?? 20000),
+});
 
 client
   .connect()

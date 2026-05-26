@@ -2,24 +2,44 @@
 
 import { useEffect, useState } from "react";
 
-export function ProfileSettingsPanel() {
-  const [settings, setSettings] = useState({
-    enableNotifications: false,
-    shareOnlineStatus: true,
-    autoTheme: "system",
-  });
-  const [saved, setSaved] = useState(false);
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
-  useEffect(() => {
-    const stored = typeof window !== "undefined" ? window.localStorage.getItem("doshabProfileSettings") : null;
-    if (stored) {
-      try {
-        setSettings(JSON.parse(stored));
-      } catch {
-        // ignore invalid storage value
-      }
-    }
-  }, []);
+type ProfileSettings = {
+  enableNotifications: boolean;
+  shareOnlineStatus: boolean;
+};
+
+const defaultSettings: ProfileSettings = {
+  enableNotifications: false,
+  shareOnlineStatus: true,
+};
+
+function getInitialSettings(): ProfileSettings {
+  if (typeof window === "undefined") {
+    return defaultSettings;
+  }
+
+  const stored = window.localStorage.getItem("doshabProfileSettings");
+
+  if (!stored) {
+    return defaultSettings;
+  }
+
+  try {
+    const parsedSettings = JSON.parse(stored) as Partial<ProfileSettings>;
+
+    return {
+      ...defaultSettings,
+      ...parsedSettings,
+    };
+  } catch {
+    return defaultSettings;
+  }
+}
+
+export function ProfileSettingsPanel() {
+  const [settings, setSettings] = useState(getInitialSettings);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -27,7 +47,10 @@ export function ProfileSettingsPanel() {
     }
   }, [settings]);
 
-  const updateSetting = (key: keyof typeof settings, value: boolean | string) => {
+  const updateSetting = <SettingKey extends keyof ProfileSettings>(
+    key: SettingKey,
+    value: ProfileSettings[SettingKey],
+  ) => {
     setSettings((current) => ({
       ...current,
       [key]: value,
@@ -77,18 +100,15 @@ export function ProfileSettingsPanel() {
           />
         </label>
 
-        <label className="rounded-lg border border-white/10 bg-[#0b1020] px-4 py-4">
-          <span className="block text-sm font-semibold text-white">Theme preference</span>
-            <select
-              className="mt-3 w-full rounded-md border border-white/10 bg-[#090d18] px-3 py-2 text-sm text-white outline-none transition focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
-            value={settings.autoTheme}
-            onChange={(event) => updateSetting("autoTheme", event.target.value)}
-          >
-            <option value="system">System default</option>
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-          </select>
-        </label>
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-white/10 bg-[#0b1020] px-4 py-4">
+          <span>
+            <span className="block text-sm font-semibold text-white">Theme</span>
+            <span className="block text-sm text-slate-400">
+              Switch between high-contrast dark and light mode.
+            </span>
+          </span>
+          <ThemeToggle />
+        </div>
 
         <div className="rounded-lg border border-white/10 bg-[#0b1020] p-4 text-sm text-slate-400">
           <p>
@@ -98,6 +118,15 @@ export function ProfileSettingsPanel() {
             <p className="mt-3 text-sm text-emerald-300">Settings saved.</p>
           ) : null}
         </div>
+
+        <form action="/api/auth/logout" method="post">
+          <button
+            className="h-11 w-full rounded-lg border border-white/10 bg-white px-4 text-sm font-bold text-black transition hover:bg-[#FF5F25]"
+            type="submit"
+          >
+            Log out
+          </button>
+        </form>
       </div>
     </section>
   );

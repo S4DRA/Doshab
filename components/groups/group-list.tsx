@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
+import { LogoMark } from "@/components/ui/logo-mark";
 import type { DashboardGroup } from "@/types";
 
 type GroupListProps = {
@@ -19,23 +20,37 @@ export function GroupList({
       <Link
         aria-label="Dashboard home"
         className={cn(
-          "mb-3 grid size-11 place-items-center rounded-md bg-[#445242] font-black text-white shadow-lg shadow-[#445242]/40",
-          !selectedGroupId && !friendsActive && "ring-2 ring-[#FF5F25]/70",
+          "relative mb-3 grid size-11 place-items-center transition",
+          !selectedGroupId && !friendsActive && "after:absolute after:inset-y-2 after:-left-2.5 after:w-0.5 after:rounded-full after:bg-[#FF5F25]",
         )}
         href="/dashboard"
       >
-        D
+        <LogoMark className="h-10 w-10" />
       </Link>
       <Link
         aria-label="Friends"
         className={cn(
-          "grid size-11 place-items-center rounded-md bg-white/7 text-xs font-bold text-slate-300 transition hover:bg-white/12 hover:text-white",
+          "grid size-11 place-items-center rounded-md bg-white/7 text-slate-300 transition hover:bg-white/12 hover:text-white",
           friendsActive && "bg-white/14 text-white ring-2 ring-[#FF5F25]/70",
         )}
         href="/dashboard/friends"
         title="Friends"
       >
-        Fr
+        <svg
+          aria-hidden="true"
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
       </Link>
       {groups.map((group) => (
         <Link

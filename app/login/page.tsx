@@ -39,7 +39,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           autoComplete="current-password"
         />
         <button
-          className="mt-2 h-11 w-full rounded-md bg-[#FF5F25] text-sm font-semibold text-white shadow-lg shadow-[#FF5F25]/40 transition hover:bg-[#FF5F25]/90"
+          className="mt-2 h-12 w-full rounded-xl bg-[#FF5F25] text-sm font-bold text-black transition hover:bg-[#ff7847]"
           type="submit"
         >
           Log in
