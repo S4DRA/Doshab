@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@livekit/components-styles";
 import "./globals.css";
-import { BottomNav } from "@/components/layout/bottom-nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,7 +44,6 @@ export default function RootLayout({
       <body className="min-h-full bg-background text-foreground">
         <div className="min-h-full">
           <main>{children}</main>
-          <BottomNav />
         </div>
       </body>
     </html>

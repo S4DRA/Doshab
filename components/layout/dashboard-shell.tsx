@@ -5,7 +5,6 @@ import { RealtimeMessagePanel } from "@/components/chat/realtime-message-panel";
 import { ChannelList } from "@/components/groups/channel-list";
 import { CreateChannelForm } from "@/components/groups/create-channel-form";
 import { CreateGroupForm } from "@/components/groups/create-group-form";
-import { GroupList } from "@/components/groups/group-list";
 import { GroupMembersList } from "@/components/groups/group-members-list";
 import { InviteFriendForm } from "@/components/groups/invite-friend-form";
 import { Alert } from "@/components/ui/alert";
@@ -53,15 +52,7 @@ export function DashboardShell({
 
   return (
     <main className="flex h-[100dvh] min-h-[520px] w-full overflow-hidden bg-[#050705]/95 text-slate-100">
-      <aside className="hidden w-16 shrink-0 flex-col items-center gap-3 border-r border-black bg-[#050505] p-2.5 pb-24 lg:flex">
-        <GroupList
-          friendsActive={activeSection === "friends"}
-          groups={groups}
-          selectedGroupId={selectedGroup?.id}
-        />
-      </aside>
-
-      <aside className="hidden w-64 flex-col border-r border-black bg-[#0d0f0d] p-4 pb-24 lg:flex">
+      <aside className="hidden w-64 flex-col border-r border-black bg-[#0d0f0d] p-4 lg:flex">
         {selectedGroup ? (
           <>
             <div className="rounded-2xl border border-white/10 bg-[#121512] p-4">
@@ -96,24 +87,10 @@ export function DashboardShell({
               <h1 className="mt-2 text-lg font-semibold text-white">Your spaces</h1>
             </div>
             <div className="flex-1 overflow-y-auto px-1 py-3">
-              <Link
-                className="mb-3 block rounded-xl border border-[#FF5F25]/60 bg-[#FF5F25] px-3 py-2.5 text-sm font-semibold text-black transition hover:bg-[#ff7847]"
-                href="/dashboard/friends"
-              >
-                Friends
-              </Link>
               {groups.length ? (
-                  <div className="space-y-2">
-                  {groups.map((group) => (
-                    <Link
-                      className="block rounded-xl border border-white/10 bg-[#050505] px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:border-[#FF5F25] hover:text-white"
-                      href={`/dashboard/groups/${group.id}`}
-                      key={group.id}
-                    >
-                      {group.name}
-                    </Link>
-                  ))}
-                </div>
+                <p className="text-xs leading-5 text-slate-300">
+                  Select a group from the sidebar or create a new private space.
+                </p>
               ) : (
                 <p className="text-xs leading-5 text-slate-300">
                   Create your first private space for voice, chat and collaboration.
@@ -252,7 +229,7 @@ function ChannelsHome({
   );
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-24">
+    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
       <div className="mx-auto w-full max-w-5xl space-y-4">
         <section className="rounded-2xl border border-white/10 bg-[#050505] p-5 shadow-[0_30px_80px_-50px_rgba(0,0,0,0.7)]">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
@@ -302,7 +279,7 @@ function ChannelMain({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-24">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
         <section className="rounded-xl border border-white/10 bg-[#050505] p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
             Text channel
@@ -320,7 +297,7 @@ function ChannelMain({
           />
         </div>
       </div>
-      <div className="border-t border-white/10 bg-[#050505] px-4 pb-24 pt-3">
+      <div className="border-t border-white/10 bg-[#050505] px-4 py-3">
         <MessageInput channelId={channel.id} channelName={channel.name} />
       </div>
     </div>
@@ -329,7 +306,7 @@ function ChannelMain({
 
 function DashboardHome({ groups }: { groups: DashboardGroup[] }) {
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-24 sm:px-5">
+    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
       <div className="w-full space-y-4">
         <section className="rounded-2xl border border-white/10 bg-[#050505] p-5 shadow-[0_30px_120px_-50px_rgba(0,0,0,0.75)]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -409,7 +386,7 @@ function GroupMain({
   canDeleteGroup: boolean;
 }) {
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-24">
+    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
       <div className="grid w-full gap-4">
         {group.notice ? <Alert>{group.notice}</Alert> : null}
         <section className="rounded-2xl border border-white/10 bg-[#050505] p-5 shadow-[0_25px_80px_-50px_rgba(0,0,0,0.7)]">

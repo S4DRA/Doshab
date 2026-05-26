@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { FriendRequestList } from "@/components/friends/friend-request-list";
@@ -162,20 +161,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
           </p>
           <h1 className="text-lg font-semibold text-white">People you know</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <a
-            className="h-9 rounded-md border border-white/10 bg-white/7 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/12"
-            href="/dashboard/profile"
-          >
-            Profile
-          </a>
-          <a
-            className="h-9 rounded-md border border-white/10 bg-white/7 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/12"
-            href="/dashboard"
-          >
-            Dashboard
-          </a>
-        </div>
+        <div aria-hidden="true" />
       </header>
 
       <div className="mx-auto grid w-full max-w-6xl gap-6 px-5 py-8">
@@ -191,20 +177,6 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               <p className="mt-2 text-sm leading-6 text-slate-400">
                 Search contacts, accept requests, and keep your community feeling calm and connected.
               </p>
-            </div>
-            <div className="grid gap-2 sm:auto-cols-max sm:grid-flow-col">
-              <Link
-                className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
-                href="/dashboard/profile"
-              >
-                Profile
-              </Link>
-              <Link
-                className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/7 px-4 text-sm font-semibold text-slate-200 transition hover:bg-white/12"
-                href="/dashboard"
-              >
-                Dashboard
-              </Link>
             </div>
           </div>
 
