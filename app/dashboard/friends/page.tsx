@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { FriendRequestList } from "@/components/friends/friend-request-list";
@@ -5,6 +6,7 @@ import { FriendSearchForm } from "@/components/friends/friend-search-form";
 import { FriendsList } from "@/components/friends/friends-list";
 import { GroupInvitesList } from "@/components/groups/group-invites-list";
 import { Alert } from "@/components/ui/alert";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getCurrentUser } from "@/lib/auth";
 import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
@@ -35,6 +37,8 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               id: true,
               name: true,
               email: true,
+              image: true,
+              status: true,
             },
           })
         : null,
@@ -55,6 +59,8 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               id: true,
               name: true,
               email: true,
+              image: true,
+              status: true,
             },
           },
         },
@@ -76,6 +82,8 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               id: true,
               name: true,
               email: true,
+              image: true,
+              status: true,
             },
           },
         },
@@ -95,6 +103,8 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               id: true,
               name: true,
               email: true,
+              image: true,
+              status: true,
             },
           },
           userTwo: {
@@ -102,6 +112,8 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               id: true,
               name: true,
               email: true,
+              image: true,
+              status: true,
             },
           },
         },
@@ -130,6 +142,8 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               id: true,
               name: true,
               email: true,
+              image: true,
+              status: true,
             },
           },
         },
@@ -144,12 +158,19 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
     <main className="min-h-screen bg-[#070a12] text-slate-100">
       <header className="flex min-h-16 items-center justify-between gap-4 border-b border-white/8 bg-[#0b1020]/95 px-5 py-3">
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-indigo-300">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#FF5F25]">
             Friends
           </p>
           <h1 className="text-lg font-semibold text-white">People you know</h1>
         </div>
         <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <a
+            className="h-9 rounded-md border border-white/10 bg-white/7 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/12"
+            href="/dashboard/profile"
+          >
+            Profile
+          </a>
           <a
             className="h-9 rounded-md border border-white/10 bg-white/7 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/12"
             href="/dashboard"
@@ -167,10 +188,64 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-5xl gap-5 px-5 py-6">
-        {params?.message ? (
-          <Alert>{params.message}</Alert>
-        ) : null}
+      <div className="mx-auto grid w-full max-w-6xl gap-6 px-5 py-8">
+        {params?.message ? <Alert>{params.message}</Alert> : null}
+
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-black/20">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+                Friends hub
+              </p>
+              <h1 className="mt-2 text-2xl font-semibold text-white">Stay close with your circle</h1>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Search contacts, accept requests, and keep your community feeling calm and connected.
+              </p>
+            </div>
+            <div className="grid gap-2 sm:auto-cols-max sm:grid-flow-col">
+              <ThemeToggle />
+              <Link
+                className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15"
+                href="/dashboard/profile"
+              >
+                Profile
+              </Link>
+              <Link
+                className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/7 px-4 text-sm font-semibold text-slate-200 transition hover:bg-white/12"
+                href="/dashboard"
+              >
+                Dashboard
+              </Link>
+              <form action="/api/auth/logout" method="post">
+                <button
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/7 px-4 text-sm font-semibold text-slate-200 transition hover:bg-white/12"
+                  type="submit"
+                >
+                  Log out
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-3xl bg-[#0b1220] p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Incoming</p>
+              <p className="mt-3 text-3xl font-bold text-white">{incomingRequests.length}</p>
+            </div>
+            <div className="rounded-3xl bg-[#0b1220] p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Outgoing</p>
+              <p className="mt-3 text-3xl font-bold text-white">{outgoingRequests.length}</p>
+            </div>
+            <div className="rounded-3xl bg-[#0b1220] p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Friends</p>
+              <p className="mt-3 text-3xl font-bold text-white">{friends.length}</p>
+            </div>
+            <div className="rounded-3xl bg-[#0b1220] p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Invites</p>
+              <p className="mt-3 text-3xl font-bold text-white">{groupInvites.length}</p>
+            </div>
+          </div>
+        </section>
 
         <FriendSearchForm
           message={!foundUser && params?.query ? "No matching user ready to add." : undefined}
@@ -178,7 +253,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
           result={foundUser?.id === user.id ? null : foundUser}
         />
 
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid gap-5 xl:grid-cols-2">
           <FriendRequestList
             emptyText="Incoming friend requests will appear here."
             kind="incoming"

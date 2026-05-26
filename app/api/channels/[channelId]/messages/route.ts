@@ -119,6 +119,8 @@ export async function GET(request: NextRequest, { params }: MessagesRouteProps) 
         select: {
           name: true,
           email: true,
+          image: true,
+          status: true,
         },
       },
     },

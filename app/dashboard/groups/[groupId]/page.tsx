@@ -78,6 +78,8 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
                 id: true,
                 name: true,
                 email: true,
+                image: true,
+                status: true,
               },
             },
           },
@@ -110,6 +112,8 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
             id: true,
             name: true,
             email: true,
+            image: true,
+            status: true,
           },
         },
         userTwo: {
@@ -117,6 +121,8 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
             id: true,
             name: true,
             email: true,
+            image: true,
+            status: true,
           },
         },
       },
@@ -141,7 +147,12 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
         inviteCandidates,
         notice: pageParams?.message,
       }}
-      user={{ name: user.name, email: user.email }}
+      user={{
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        status: user.status,
+      }}
     />
   );
 }

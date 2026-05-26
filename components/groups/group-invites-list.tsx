@@ -19,7 +19,10 @@ export function GroupInvitesList({ invites }: GroupInvitesListProps) {
               key={invite.id}
             >
               <div className="flex min-w-0 items-center gap-3">
-                <AvatarInitials value={invite.group.name} />
+                <AvatarInitials
+                  imageUrl={invite.inviter.image}
+                  value={invite.inviter.name || invite.inviter.email}
+                />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-white">
                     {invite.group.name}

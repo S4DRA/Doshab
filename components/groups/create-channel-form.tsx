@@ -12,7 +12,7 @@ export function CreateChannelForm({ groupId }: CreateChannelFormProps) {
           Channel name
         </span>
         <input
-          className="mt-2 h-10 w-full rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
+          className="mt-2 h-10 w-full rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
           maxLength={80}
           name="name"
           placeholder="planning"
@@ -25,7 +25,7 @@ export function CreateChannelForm({ groupId }: CreateChannelFormProps) {
           Type
         </span>
         <select
-          className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#12182a] px-3 text-sm text-white outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
+          className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#12182a] px-3 text-sm text-white outline-none transition focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
           name="type"
         >
           <option value="TEXT">Text</option>

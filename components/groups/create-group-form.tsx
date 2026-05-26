@@ -12,7 +12,7 @@ export function CreateGroupForm({ compact = false }: CreateGroupFormProps) {
           Group name
         </span>
         <input
-          className="mt-2 h-10 w-full rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
+          className="mt-2 h-10 w-full rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
           maxLength={80}
           name="name"
           placeholder="Weekend crew"
@@ -26,7 +26,7 @@ export function CreateGroupForm({ compact = false }: CreateGroupFormProps) {
             Description
           </span>
           <textarea
-            className="mt-2 min-h-20 w-full resize-none rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20"
+            className="mt-2 min-h-20 w-full resize-none rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
             maxLength={180}
             name="description"
             placeholder="Optional"
@@ -34,7 +34,7 @@ export function CreateGroupForm({ compact = false }: CreateGroupFormProps) {
         </label>
       ) : null}
       <SubmitButton
-        className="h-10 w-full rounded-md bg-indigo-500 text-sm font-semibold text-white shadow-lg shadow-indigo-950/30 transition hover:bg-indigo-400"
+        className="h-10 w-full rounded-md bg-[#FF5F25] text-sm font-semibold text-white shadow-lg shadow-[#FF5F25]/30 transition hover:bg-[#FF5F25]/90"
         pendingText="Creating..."
       >
         Create group

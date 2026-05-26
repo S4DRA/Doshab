@@ -20,6 +20,8 @@ export type GroupChannel = {
 
 export type GroupRole = "OWNER" | "ADMIN" | "MEMBER";
 
+export type UserStatus = "ONLINE" | "OFFLINE" | "IDLE" | "DO_NOT_DISTURB";
+
 export type ChatMessage = {
   id: string;
   content: string;
@@ -27,6 +29,8 @@ export type ChatMessage = {
   sender: {
     name: string;
     email: string;
+    image?: string | null;
+    status?: UserStatus;
   };
 };
 
@@ -34,6 +38,8 @@ export type FriendPerson = {
   id: string;
   name: string;
   email: string;
+  image?: string | null;
+  status?: UserStatus;
 };
 
 export type FriendRequestItem = {

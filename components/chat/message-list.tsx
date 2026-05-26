@@ -22,7 +22,10 @@ export function MessageList({ messages }: MessageListProps) {
     <div className="space-y-5">
       {messages.map((message) => (
         <article className="flex gap-3" key={message.id}>
-          <AvatarInitials value={message.sender.name || message.sender.email} />
+          <AvatarInitials
+            imageUrl={message.sender.image}
+            value={message.sender.name || message.sender.email}
+          />
           <div className="min-w-0">
             <div className="flex flex-wrap items-baseline gap-2">
               <p className="text-sm font-semibold text-white">

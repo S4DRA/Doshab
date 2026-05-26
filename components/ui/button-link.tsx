@@ -20,9 +20,9 @@ export function ButtonLink({
     <Link
       href={href}
       className={cn(
-        "inline-flex h-11 items-center justify-center rounded-md px-5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2 focus:ring-offset-[#070a12]",
+        "inline-flex h-11 items-center justify-center rounded-md px-5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#FF5F25] focus:ring-offset-2 focus:ring-offset-[#070a12]",
         variant === "primary" &&
-          "bg-indigo-500 text-white shadow-lg shadow-indigo-950/40 hover:bg-indigo-400",
+          "bg-[#FF5F25] text-white shadow-lg shadow-[#FF5F25]/40 hover:bg-[#FF5F25]/90",
         variant === "secondary" &&
           "border border-white/12 bg-white/7 text-slate-100 hover:bg-white/12",
         className,

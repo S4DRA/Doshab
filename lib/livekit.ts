@@ -23,7 +23,7 @@ export function getLiveKitConfig() {
 }
 
 export function createLiveKitRoomName(groupId: string, channelId: string) {
-  return `palaver-group-${groupId}-channel-${channelId}`;
+  return `doshab-group-${groupId}-channel-${channelId}`;
 }
 
 export async function createLiveKitToken({

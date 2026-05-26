@@ -9,7 +9,7 @@ type InviteFriendFormProps = {
 export function InviteFriendForm({ groupId, friends }: InviteFriendFormProps) {
   return (
     <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
         Invite
       </p>
       <h3 className="mt-1 text-lg font-semibold text-white">Invite a friend</h3>
@@ -24,7 +24,7 @@ export function InviteFriendForm({ groupId, friends }: InviteFriendFormProps) {
           method="post"
         >
           <select
-            className="h-11 rounded-md border border-white/10 bg-[#0b1020] px-3 text-sm text-slate-100 outline-none transition focus:border-indigo-300/60"
+            className="h-11 rounded-md border border-white/10 bg-[#0b1020] px-3 text-sm text-slate-100 outline-none transition focus:border-[#FF5F25]/60"
             name="receiverId"
             required
           >
@@ -35,7 +35,7 @@ export function InviteFriendForm({ groupId, friends }: InviteFriendFormProps) {
             ))}
           </select>
           <SubmitButton
-            className="h-11 bg-indigo-500 px-4 text-white hover:bg-indigo-400"
+            className="h-11 bg-[#FF5F25] px-4 text-white hover:bg-[#FF5F25]/90"
             pendingText="Inviting..."
           >
             Send invite

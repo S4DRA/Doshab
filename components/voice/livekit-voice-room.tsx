@@ -72,7 +72,7 @@ export function LiveKitVoiceRoom({ channelId, channelName }: LiveKitVoiceRoomPro
     return (
       <div className="grid min-h-0 flex-1 place-items-center px-5 py-8">
         <section className="w-full max-w-2xl rounded-lg border border-white/10 bg-white/[0.04] p-6 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
             Voice room
           </p>
           <h2 className="mt-3 text-2xl font-bold text-white">{channelName}</h2>
@@ -94,7 +94,7 @@ export function LiveKitVoiceRoom({ channelId, channelName }: LiveKitVoiceRoomPro
           ) : null}
 
           <button
-            className="mt-6 h-11 rounded-md bg-indigo-500 px-5 text-sm font-semibold text-white shadow-lg shadow-indigo-950/30 transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500"
+            className="mt-6 h-11 rounded-md bg-[#FF5F25] px-5 text-sm font-semibold text-white shadow-lg shadow-[#FF5F25]/30 transition hover:bg-[#FF5F25]/90 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500"
             disabled={isJoining}
             onClick={joinRoom}
             type="button"
@@ -130,7 +130,7 @@ export function LiveKitVoiceRoom({ channelId, channelName }: LiveKitVoiceRoomPro
       <RoomAudioRenderer />
       <div className="flex min-h-0 flex-1 flex-col px-5 py-6">
         <div className="mb-4 rounded-lg border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
             Connected
           </p>
           <h2 className="mt-2 text-xl font-bold text-white">{channelName}</h2>

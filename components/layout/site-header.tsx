@@ -1,21 +1,25 @@
-import Link from "next/link";
-
-import { ButtonLink } from "@/components/ui/button-link";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function SiteHeader() {
   return (
-    <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
-      <Link href="/" className="flex items-center gap-3" aria-label="Palaver home">
-        <span className="grid size-9 place-items-center rounded-md bg-indigo-500 text-sm font-black text-white">
-          P
-        </span>
-        <span className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-200">
-          Palaver
-        </span>
-      </Link>
-      <ButtonLink href="/dashboard" variant="secondary" className="hidden sm:inline-flex">
-        Open dashboard
-      </ButtonLink>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#050609]/95 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
+        <div className="flex items-center gap-3">
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[#445242] text-lg font-black text-white">
+            D
+          </div>
+          <div className="leading-tight">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#FF5F25]">
+              Doshab
+            </p>
+            <p className="text-[11px] uppercase tracking-[0.3em] text-slate-400">
+              Calm communities
+            </p>
+          </div>
+        </div>
+
+        <ThemeToggle />
+      </div>
     </header>
   );
 }

@@ -4,7 +4,7 @@ import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export default async function DashboardPage() {
+export default async function ChannelsPage() {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -26,12 +26,23 @@ export default async function DashboardPage() {
       id: true,
       name: true,
       description: true,
+      channels: {
+        orderBy: {
+          createdAt: "asc",
+        },
+        select: {
+          id: true,
+          name: true,
+          type: true,
+        },
+      },
     },
   });
 
   return (
     <DashboardShell
       groups={groups}
+      activeSection="channels"
       user={{
         name: user.name,
         email: user.email,

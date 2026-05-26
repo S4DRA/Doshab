@@ -103,6 +103,8 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
               select: {
                 name: true,
                 email: true,
+                image: true,
+                status: true,
               },
             },
           },
@@ -132,7 +134,12 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
         ...selectedGroup,
         currentUserRole: membership.role,
       }}
-      user={{ name: user.name, email: user.email }}
+      user={{
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        status: user.status,
+      }}
     />
   );
 }

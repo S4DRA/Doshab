@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-export const sessionCookieName = "palaver_session";
+export const sessionCookieName = "doshab_session";
 
 const sessionDurationMs = 1000 * 60 * 60 * 24 * 7;
 

@@ -19,18 +19,18 @@ export function GroupList({
       <Link
         aria-label="Dashboard home"
         className={cn(
-          "mb-3 grid size-11 place-items-center rounded-md bg-indigo-500 font-black text-white shadow-lg shadow-indigo-950/40",
-          !selectedGroupId && !friendsActive && "ring-2 ring-indigo-200/70",
+          "mb-3 grid size-11 place-items-center rounded-md bg-[#445242] font-black text-white shadow-lg shadow-[#445242]/40",
+          !selectedGroupId && !friendsActive && "ring-2 ring-[#FF5F25]/70",
         )}
         href="/dashboard"
       >
-        P
+        D
       </Link>
       <Link
         aria-label="Friends"
         className={cn(
           "grid size-11 place-items-center rounded-md bg-white/7 text-xs font-bold text-slate-300 transition hover:bg-white/12 hover:text-white",
-          friendsActive && "bg-white/14 text-white ring-2 ring-indigo-300/70",
+          friendsActive && "bg-white/14 text-white ring-2 ring-[#FF5F25]/70",
         )}
         href="/dashboard/friends"
         title="Friends"
@@ -42,7 +42,7 @@ export function GroupList({
           aria-label={`${group.name} group`}
           className={cn(
             "grid size-11 place-items-center rounded-md bg-white/7 text-sm font-bold text-slate-300 transition hover:bg-white/12 hover:text-white",
-            selectedGroupId === group.id && "bg-white/14 text-white ring-2 ring-indigo-300/70",
+            selectedGroupId === group.id && "bg-white/14 text-white ring-2 ring-[#FF5F25]/70",
           )}
           href={`/dashboard/groups/${group.id}`}
           key={group.id}

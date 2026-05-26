@@ -21,3 +21,15 @@ export function formatReadableTimestamp(value: Date | string) {
     minute: "2-digit",
   }).format(new Date(value));
 }
+
+export function formatUserStatus(status?: string) {
+  if (!status) {
+    return "offline";
+  }
+
+  if (status === "DO_NOT_DISTURB") {
+    return "do not disturb";
+  }
+
+  return status.toLowerCase();
+}

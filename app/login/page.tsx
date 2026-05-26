@@ -23,7 +23,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AuthCard
       title="Welcome back"
-      subtitle="Log in to return to your private Palaver workspace."
+      subtitle="Log in to return to your private Doshab workspace."
       footerText="No account yet?"
       footerHref="/register"
       footerLinkText="Create one"
@@ -39,7 +39,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           autoComplete="current-password"
         />
         <button
-          className="mt-2 h-11 w-full rounded-md bg-indigo-500 text-sm font-semibold text-white shadow-lg shadow-indigo-950/40 transition hover:bg-indigo-400"
+          className="mt-2 h-11 w-full rounded-md bg-[#FF5F25] text-sm font-semibold text-white shadow-lg shadow-[#FF5F25]/40 transition hover:bg-[#FF5F25]/90"
           type="submit"
         >
           Log in

@@ -1,22 +1,22 @@
-import { SiteHeader } from "@/components/layout/site-header";
+import Image from "next/image";
 import { ButtonLink } from "@/components/ui/button-link";
 
 const features = [
   {
-    title: "Groups",
-    description: "Private spaces for friends, teams, and small communities.",
+    title: "Custom profiles",
+    description: "Upload your avatar, set your status, and personalize your presence.",
   },
   {
-    title: "Chat",
-    description: "A calm message timeline ready for realtime delivery later.",
+    title: "Live rooms",
+    description: "Create instant voice and video spaces for friends, teams, or events.",
   },
   {
-    title: "Voice",
-    description: "Persistent rooms for quick drop-in conversations.",
+    title: "Private groups",
+    description: "Keep conversations secure with invite-only communities.",
   },
   {
-    title: "Video",
-    description: "A future-ready place for face-to-face sessions.",
+    title: "Fast setup",
+    description: "Launch a new space and invite members in just a few clicks.",
   },
 ];
 
@@ -24,69 +24,76 @@ export default function Home() {
   return (
     <main className="min-h-screen overflow-hidden bg-[#070a12] text-slate-100">
       <div className="absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.24),transparent_62%)]" />
-      <div className="relative">
-        <SiteHeader />
-
-        <section className="mx-auto grid w-full max-w-6xl gap-12 px-5 pb-16 pt-16 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:pb-24 lg:pt-20">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-indigo-300">
-              Private meeting spaces
-            </p>
-            <h1 className="mt-5 max-w-3xl text-5xl font-bold leading-tight text-white sm:text-6xl">
-              Palaver
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-300">
-              A simple Discord-style home base for groups, channels, chat, and
-              always-available voice or video rooms.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="/dashboard">Open dashboard</ButtonLink>
-              <ButtonLink href="/dashboard" variant="secondary">
-                View foundation
-              </ButtonLink>
-            </div>
+      <section className="mx-auto grid w-full max-w-6xl gap-12 px-5 pb-16 pt-28 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:pb-24">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+            Build calm spaces for friends
+          </p>
+          <h1 className="mt-5 max-w-3xl text-5xl font-bold leading-tight text-white sm:text-6xl">
+            Doshab brings private voice and chat communities together.
+          </h1>
+          <p className="mt-6 max-w-xl text-lg leading-8 text-slate-300">
+            Doshab gives your group a clean, modern home base with polished profiles, secure spaces, and a fast path from setup to conversation.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <ButtonLink href="/dashboard">Open dashboard</ButtonLink>
+            <ButtonLink href="/dashboard" variant="secondary">
+              Start a group
+            </ButtonLink>
           </div>
+        </div>
 
-          <div className="rounded-lg border border-white/10 bg-[#0d1322] p-4 shadow-2xl shadow-black/40">
-            <div className="grid min-h-[360px] grid-cols-[64px_1fr] overflow-hidden rounded-md border border-white/8 bg-[#090d18]">
-              <div className="flex flex-col items-center gap-3 border-r border-white/8 bg-[#0b1020] p-3">
-                <span className="grid size-10 place-items-center rounded-md bg-indigo-500 text-sm font-black">
-                  P
-                </span>
-                <span className="size-10 rounded-md bg-white/8" />
-                <span className="size-10 rounded-md bg-white/8" />
-              </div>
-              <div className="grid grid-rows-[56px_1fr_72px]">
-                <div className="border-b border-white/8 px-4 py-4">
-                  <div className="h-3 w-32 rounded bg-white/20" />
-                </div>
-                <div className="space-y-4 p-4">
-                  <div className="h-16 rounded-md bg-white/7" />
-                  <div className="h-16 rounded-md bg-white/7" />
-                  <div className="h-20 rounded-md border border-dashed border-white/12 bg-white/[0.03]" />
-                </div>
-                <div className="border-t border-white/8 p-4">
-                  <div className="h-10 rounded-md bg-indigo-500/20" />
+        <div className="rounded-3xl border border-white/10 bg-[#0d1322] p-5 shadow-2xl shadow-black/40">
+          <div className="grid min-h-[360px] gap-4 rounded-3xl border border-white/8 bg-[#090d18] p-5 sm:grid-cols-[120px_1fr]">
+            <div className="rounded-3xl bg-[#445242] p-4 shadow-inner shadow-black/20">
+              <Image
+                src="/doshab/Doshab_png.png"
+                alt="Doshab brand mark"
+                width={88}
+                height={88}
+                className="rounded-3xl object-cover"
+              />
+            </div>
+            <div className="grid gap-4">
+              <div className="relative overflow-hidden rounded-3xl bg-white/5">
+                <Image
+                  src="/doshab/InShot_20260526_123122377.jpg"
+                  alt="Doshab inspiration"
+                  width={640}
+                  height={320}
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-x-0 bottom-0 rounded-b-3xl bg-black/40 p-4 text-sm text-white">
+                  A grounded space for every conversation.
                 </div>
               </div>
+              <div className="relative overflow-hidden rounded-3xl bg-white/5">
+                <Image
+                  src="/doshab/InShot_20260526_123220819.jpg"
+                  alt="Doshab atmosphere"
+                  width={640}
+                  height={320}
+                  className="h-full w-full object-cover"
+                />
+              </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="mx-auto grid w-full max-w-6xl gap-4 px-5 pb-16 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
-          {features.map((feature) => (
-            <article
-              key={feature.title}
-              className="rounded-lg border border-white/10 bg-white/[0.04] p-5"
-            >
-              <h2 className="text-base font-semibold text-white">{feature.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-400">
-                {feature.description}
-              </p>
-            </article>
-          ))}
-        </section>
-      </div>
+      <section className="mx-auto grid w-full max-w-6xl gap-4 px-5 pb-16 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
+        {features.map((feature) => (
+          <article
+            key={feature.title}
+            className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-sm shadow-black/10 transition hover:-translate-y-1 hover:border-[#FF5F25]/30"
+          >
+            <h2 className="text-base font-semibold text-white">{feature.title}</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-400">
+              {feature.description}
+            </p>
+          </article>
+        ))}
+      </section>
     </main>
   );
 }

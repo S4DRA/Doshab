@@ -1,0 +1,40 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+type ThemeMode = "dark" | "light";
+
+function getInitialTheme(): ThemeMode {
+  if (typeof document === "undefined") {
+    return "dark";
+  }
+
+  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
+}
+
+export function ThemeToggle() {
+  const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem("doshab-theme", theme);
+  }, [theme]);
+
+  return (
+    <button
+      aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+      className="theme-toggle inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 text-xs font-semibold transition hover:bg-white/15"
+      onClick={() => {
+        setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
+      }}
+      type="button"
+    >
+      <span className="theme-toggle-option" data-active={theme === "dark"}>
+        Dark
+      </span>
+      <span className="theme-toggle-option" data-active={theme === "light"}>
+        Light
+      </span>
+    </button>
+  );
+}
