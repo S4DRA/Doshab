@@ -23,68 +23,72 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
 
   const { groupId, channelId } = await params;
 
-  const [membership, messageThreads, selectedChannel] = await Promise.all([
-    prisma.groupMember.findUnique({
-      where: {
-        groupId_userId: {
-          groupId,
-          userId: session.userId,
-        },
-      },
-      select: {
-        role: true,
-        group: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            isDirectMessage: true,
-            channels: {
-              orderBy: {
-                createdAt: "asc",
-              },
-              select: {
-                id: true,
-                name: true,
-                type: true,
-              },
-            },
-          },
-        },
-      },
-    }),
-    getDashboardMessageThreads(session.userId),
-    prisma.channel.findFirst({
-      where: {
-        id: channelId,
+  const membership = await prisma.groupMember.findUnique({
+    where: {
+      groupId_userId: {
         groupId,
+        userId: session.userId,
       },
-      select: {
-        id: true,
-        name: true,
-        type: true,
-        messages: {
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 50,
-          select: {
-            id: true,
-            content: true,
-            createdAt: true,
-            sender: {
-              select: {
-                name: true,
-                email: true,
-                image: true,
-                status: true,
-              },
+    },
+    select: {
+      role: true,
+      group: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          isDirectMessage: true,
+          channels: {
+            orderBy: {
+              createdAt: "asc",
+            },
+            select: {
+              id: true,
+              name: true,
+              type: true,
             },
           },
         },
       },
-    }),
-  ]);
+    },
+  });
+
+  if (!membership) {
+    redirect("/dashboard");
+  }
+
+  const messageThreads = await getDashboardMessageThreads(session.userId);
+
+  const selectedChannel = await prisma.channel.findFirst({
+    where: {
+      id: channelId,
+      groupId,
+    },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      messages: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 50,
+        select: {
+          id: true,
+          content: true,
+          createdAt: true,
+          sender: {
+            select: {
+              name: true,
+              email: true,
+              image: true,
+              status: true,
+            },
+          },
+        },
+      },
+    },
+  });
 
   if (!membership) {
     redirect("/dashboard");

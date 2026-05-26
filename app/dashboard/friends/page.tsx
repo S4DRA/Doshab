@@ -26,127 +26,128 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
 
   const params = await searchParams;
 
-  const [foundUser, incomingRequests, outgoingRequests, friendships, groupInvites] =
-    await Promise.all([
-      params?.found
-        ? prisma.user.findUnique({
-            where: { id: params.found },
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-              status: true,
-            },
-          })
-        : null,
-      prisma.friendRequest.findMany({
-        where: {
-          receiverId: session.userId,
-          status: "PENDING",
-        },
-        orderBy: {
-          createdAt: "asc",
-        },
+  const foundUser = params?.found
+    ? await prisma.user.findUnique({
+        where: { id: params.found },
         select: {
           id: true,
+          name: true,
+          email: true,
+          image: true,
           status: true,
-          createdAt: true,
-          sender: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-              status: true,
-            },
-          },
         },
-      }),
-      prisma.friendRequest.findMany({
-        where: {
-          senderId: session.userId,
-          status: "PENDING",
-        },
-        orderBy: {
-          createdAt: "asc",
-        },
+      })
+    : null;
+
+  const incomingRequests = await prisma.friendRequest.findMany({
+    where: {
+      receiverId: session.userId,
+      status: "PENDING",
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      sender: {
         select: {
           id: true,
+          name: true,
+          email: true,
+          image: true,
           status: true,
-          createdAt: true,
-          receiver: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-              status: true,
-            },
-          },
         },
-      }),
-      prisma.friendship.findMany({
-        where: {
-          OR: [{ userOneId: session.userId }, { userTwoId: session.userId }],
-        },
-        orderBy: {
-          createdAt: "asc",
-        },
-        select: {
-          userOneId: true,
-          userTwoId: true,
-          userOne: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-              status: true,
-            },
-          },
-          userTwo: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-              status: true,
-            },
-          },
-        },
-      }),
-      prisma.groupInvite.findMany({
-        where: {
-          receiverId: session.userId,
-          status: "PENDING",
-        },
-        orderBy: {
-          createdAt: "asc",
-        },
+      },
+    },
+  });
+
+  const outgoingRequests = await prisma.friendRequest.findMany({
+    where: {
+      senderId: session.userId,
+      status: "PENDING",
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      receiver: {
         select: {
           id: true,
+          name: true,
+          email: true,
+          image: true,
           status: true,
-          createdAt: true,
-          group: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-            },
-          },
-          inviter: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-              status: true,
-            },
-          },
         },
-      }),
-    ]);
+      },
+    },
+  });
+
+  const friendships = await prisma.friendship.findMany({
+    where: {
+      OR: [{ userOneId: session.userId }, { userTwoId: session.userId }],
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      userOneId: true,
+      userTwoId: true,
+      userOne: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          status: true,
+        },
+      },
+      userTwo: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          status: true,
+        },
+      },
+    },
+  });
+
+  const groupInvites = await prisma.groupInvite.findMany({
+    where: {
+      receiverId: session.userId,
+      status: "PENDING",
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      group: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+        },
+      },
+      inviter: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          status: true,
+        },
+      },
+    },
+  });
 
   const friends = friendships.map((friendship) =>
     friendFromPair(friendship, session.userId),
