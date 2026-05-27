@@ -9,7 +9,7 @@ type MessageListProps = {
 export function MessageList({ messages }: MessageListProps) {
   if (!messages.length) {
     return (
-      <div className="rounded-lg border border-dashed border-white/12 bg-white/[0.03] p-6 text-center">
+      <div className="app-card border-dashed p-6 text-center">
         <p className="text-sm font-semibold text-white">No messages yet</p>
         <p className="mt-2 text-sm leading-6 text-slate-400">
           Start the conversation with the first message.
@@ -19,9 +19,9 @@ export function MessageList({ messages }: MessageListProps) {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="message-feed space-y-1">
       {messages.map((message) => (
-        <article className="flex gap-3" key={message.id}>
+        <article className="flex gap-3 border border-transparent px-2 py-2.5" key={message.id}>
           <AvatarInitials
             imageUrl={message.sender.image}
             value={message.sender.name || message.sender.email}

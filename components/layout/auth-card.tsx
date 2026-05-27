@@ -23,21 +23,21 @@ export function AuthCard({
   notice,
 }: AuthCardProps) {
   return (
-    <main className="grid min-h-[calc(100vh-6rem)] place-items-center bg-[#050505] px-5 py-10 text-white">
-      <section className="grid w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/15 bg-[#101010] shadow-[0_30px_120px_rgba(0,0,0,0.5)] lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="hidden min-h-[560px] flex-col justify-between bg-[#445242] p-8 text-white lg:flex">
+    <main className="grid min-h-[calc(100vh-6rem)] place-items-center px-5 py-10 text-white">
+      <section className="app-surface grid w-full max-w-5xl overflow-hidden rounded-xl lg:grid-cols-[0.92fr_1.08fr]">
+        <div className="hidden min-h-[560px] flex-col justify-between border-r border-white/10 bg-[#263324] p-8 text-white lg:flex">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/70">
               Doshab
             </p>
-            <h2 className="mt-4 max-w-sm text-4xl font-bold leading-tight">
-              A private space that stays calm, clear, and yours.
+            <h2 className="mt-4 max-w-sm text-4xl font-semibold leading-tight">
+              Private rooms with the pace of a real app.
             </h2>
           </div>
-          <div className="rounded-[1.5rem] border border-white/20 bg-black/25 p-5">
-            <p className="text-sm font-semibold text-white">High contrast by design</p>
+          <div className="rounded-lg border border-white/15 bg-black/20 p-5">
+            <p className="text-sm font-semibold text-white">Secure by default</p>
             <p className="mt-2 text-sm leading-6 text-white/75">
-              Black surfaces, white text, grounded olive, and sharp orange actions keep the workspace readable.
+              Encrypted messages, private groups, and fast navigation keep the workspace focused.
             </p>
           </div>
         </div>
@@ -47,7 +47,7 @@ export function AuthCard({
             <Link href="/" className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
               Doshab
             </Link>
-            <h1 className="mt-5 text-3xl font-bold text-white">{title}</h1>
+            <h1 className="mt-5 text-3xl font-semibold tracking-tight text-white">{title}</h1>
             <p className="mt-2 text-sm leading-6 text-slate-300">{subtitle}</p>
           </div>
 

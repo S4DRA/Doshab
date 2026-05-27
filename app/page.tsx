@@ -1,39 +1,43 @@
 import Image from "next/image";
+
 import { ButtonLink } from "@/components/ui/button-link";
+
+const stats = [
+  ["Encrypted", "messages"],
+  ["Realtime", "rooms"],
+  ["Private", "groups"],
+];
 
 const features = [
   {
-    title: "Custom profiles",
-    description: "Upload your avatar, set your status, and personalize your presence.",
+    title: "Private by default",
+    description: "Invite-only groups, encrypted text channels, and focused permissions.",
   },
   {
-    title: "Live rooms",
-    description: "Create instant voice and video spaces for friends, teams, or events.",
+    title: "Built for momentum",
+    description: "Fast routing, optimistic chat, realtime updates, and low-friction rooms.",
   },
   {
-    title: "Private groups",
-    description: "Keep conversations secure with invite-only communities.",
-  },
-  {
-    title: "Fast setup",
-    description: "Launch a new space and invite members in just a few clicks.",
+    title: "People-first presence",
+    description: "Profiles, status, voice rooms, and messages that feel alive without clutter.",
   },
 ];
 
 export default function Home() {
   return (
     <main className="min-h-screen overflow-hidden text-white">
-      <section className="mx-auto grid w-full max-w-[1200px] gap-6 px-5 pb-14 pt-10 sm:px-8 lg:grid-cols-[1fr_0.86fr] lg:items-stretch lg:pb-16">
-        <div className="flex min-h-[520px] flex-col justify-between rounded-[2rem] border border-white/15 bg-[#101010] p-6 sm:p-8 lg:p-9">
+      <section className="mx-auto grid min-h-[calc(100vh-2rem)] w-full max-w-[1240px] gap-5 px-5 py-5 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-stretch">
+        <div className="app-surface flex min-h-[560px] flex-col justify-between rounded-xl p-6 sm:p-8 lg:p-10">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#FF5F25]">
+            <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#FF8A5F]">
+              <span className="size-2 rounded-full bg-[#9CCF9A]" />
               Private voice and chat
-            </p>
-            <h1 className="mt-6 max-w-3xl text-5xl font-black leading-[0.95] tracking-tight text-white sm:text-6xl">
-              Calm communities, built in high contrast.
+            </div>
+            <h1 className="mt-8 max-w-4xl text-5xl font-semibold leading-[0.98] tracking-tight text-white sm:text-6xl lg:text-7xl">
+              A calm command center for your closest circles.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-              Doshab gives friends and small groups a focused home for private channels, live rooms, profiles, and invites without visual noise.
+              Doshab brings encrypted chat, live rooms, private groups, and presence into one crisp workspace that feels fast the moment it opens.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href="/dashboard">Open dashboard</ButtonLink>
@@ -43,72 +47,58 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-10 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-black p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-[#FF5F25]">Rooms</p>
-              <p className="mt-3 text-2xl font-bold">Live</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-[#445242] p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-white/70">Groups</p>
-              <p className="mt-3 text-2xl font-bold">Private</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-black p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-[#FF5F25]">Profiles</p>
-              <p className="mt-3 text-2xl font-bold">Personal</p>
-            </div>
+          <div className="mt-12 grid gap-3 sm:grid-cols-3">
+            {stats.map(([value, label]) => (
+              <div className="app-card p-4" key={value}>
+                <p className="text-2xl font-semibold text-white">{value}</p>
+                <p className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-500">
+                  {label}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="grid gap-4 rounded-[2rem] border border-white/15 bg-[#445242] p-4 sm:p-5">
-          <div className="grid gap-4 rounded-[1.5rem] bg-black p-4 sm:grid-cols-[128px_1fr]">
-            <div className="grid place-items-center rounded-[1.25rem] border border-white/10 bg-[#050505] p-4">
+        <div className="grid min-h-[560px] gap-5">
+          <div className="app-surface grid overflow-hidden rounded-xl p-3">
+            <div className="relative min-h-[340px] overflow-hidden rounded-lg border border-white/10">
               <Image
-                src="/Doshab_png.png"
-                alt="Doshab brand mark"
-                width={112}
-                height={112}
-                className="rounded-2xl object-cover"
+                alt="Doshab private workspace"
+                className="h-full w-full object-cover"
+                height={720}
+                priority
+                src="/InShot_20260526_123122377.jpg"
+                width={900}
               />
-            </div>
-            <div className="grid gap-4">
-              <div className="relative min-h-56 overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#050505]">
-                <Image
-                  src="/InShot_20260526_123122377.jpg"
-                  alt="Doshab inspiration"
-                  width={640}
-                  height={320}
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-black/70 p-4 text-sm font-semibold text-white">
-                  A grounded space for every conversation.
+              <div className="absolute inset-x-0 bottom-0 border-t border-white/10 bg-black/70 p-4 backdrop-blur">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-[#FF8A5F]">
+                      Live room
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-white">
+                      Evening sync
+                    </p>
+                  </div>
+                  <div className="rounded-full bg-[#FF5F25] px-3 py-1.5 text-xs font-bold text-black">
+                    Active now
+                  </div>
                 </div>
               </div>
-              <div className="relative min-h-56 overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#050505]">
-                <Image
-                  src="/InShot_20260526_123220819.jpg"
-                  alt="Doshab atmosphere"
-                  width={640}
-                  height={320}
-                  className="h-full w-full object-cover"
-                />
-              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section className="mx-auto grid w-full max-w-[1200px] gap-4 px-5 pb-14 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
-        {features.map((feature) => (
-          <article
-            key={feature.title}
-            className="rounded-[1.5rem] border border-white/15 bg-[#101010] p-6 transition hover:border-[#FF5F25]"
-          >
-            <h2 className="text-base font-semibold text-white">{feature.title}</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-400">
-              {feature.description}
-            </p>
-          </article>
-        ))}
+          <section className="grid gap-3 sm:grid-cols-3">
+            {features.map((feature) => (
+              <article className="app-card p-4" key={feature.title}>
+                <h2 className="text-sm font-semibold text-white">{feature.title}</h2>
+                <p className="mt-3 text-xs leading-5 text-slate-400">
+                  {feature.description}
+                </p>
+              </article>
+            ))}
+          </section>
+        </div>
       </section>
     </main>
   );

@@ -39,7 +39,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
           minLength={8}
         />
         <button
-          className="mt-2 h-12 w-full rounded-xl bg-[#FF5F25] text-sm font-bold text-black transition hover:bg-[#ff7847]"
+          className="app-button-primary mt-2 h-12 w-full rounded-lg text-sm font-bold transition"
           type="submit"
         >
           Create account

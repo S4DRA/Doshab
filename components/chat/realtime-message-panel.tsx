@@ -167,7 +167,7 @@ export function RealtimeMessagePanel({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <form
-        className="rounded-xl border border-white/10 bg-[#0d0f0d] p-3"
+        className="app-card p-3"
         onSubmit={saveChatKey}
       >
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -179,7 +179,7 @@ export function RealtimeMessagePanel({
             value={draftKey}
           />
           <button
-            className="h-10 rounded-lg bg-white px-4 text-sm font-bold text-black transition hover:bg-[#FF5F25]"
+            className="app-button-secondary h-10 rounded-lg px-4 text-sm font-bold transition"
             type="submit"
           >
             {chatKey ? "Update key" : "Unlock chat"}
@@ -207,9 +207,9 @@ export function RealtimeMessagePanel({
         </div>
       )}
 
-      <form className="flex gap-3" onSubmit={sendMessage}>
+      <form className="sticky bottom-0 flex gap-3 border-t border-white/10 bg-[#070907]/95 pt-3 backdrop-blur" onSubmit={sendMessage}>
         <textarea
-          className="min-h-11 flex-1 resize-none rounded-xl border border-white/10 bg-[#050505] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60"
+          className="min-h-11 flex-1 resize-none rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60"
           disabled={!chatKey || !currentUser}
           maxLength={2000}
           onChange={(event) => setDraft(event.target.value)}
@@ -223,7 +223,7 @@ export function RealtimeMessagePanel({
           value={draft}
         />
         <button
-          className="h-11 rounded-xl bg-[#FF5F25] px-4 text-sm font-bold text-black transition hover:bg-[#ff7847] disabled:cursor-not-allowed disabled:opacity-60"
+          className="app-button-primary h-11 rounded-lg px-4 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60"
           disabled={!chatKey || !draft.trim() || !currentUser}
           type="submit"
         >

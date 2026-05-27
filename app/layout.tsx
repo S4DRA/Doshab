@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@livekit/components-styles";
 import "./globals.css";
@@ -16,10 +16,21 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Doshab",
   description: "A private meeting app foundation for groups, chat, voice, and video.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Doshab",
+  },
+  applicationName: "Doshab",
   icons: {
     icon: "/Doshab_png.png",
     apple: "/Doshab_png.png",
   },
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#060807",
 };
 
 export default function RootLayout({

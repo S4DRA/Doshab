@@ -50,8 +50,8 @@ export function DashboardShell({
       selectedGroup?.currentUserRole === "ADMIN");
 
   return (
-    <main className="flex h-[100dvh] min-h-0 w-full max-w-full overflow-hidden bg-[#050705]/95 text-slate-100">
-      <aside className="dashboard-secondary-sidebar hidden w-[min(17rem,24vw)] shrink-0 flex-col border-r border-black bg-[#0d0f0d] p-3 min-[1180px]:flex min-[1400px]:w-64 min-[1400px]:p-4">
+    <main className="flex h-[100dvh] min-h-0 w-full max-w-full overflow-hidden bg-[#070907]/95 text-slate-100">
+      <aside className="dashboard-secondary-sidebar hidden w-[min(17rem,24vw)] shrink-0 flex-col border-r border-white/10 bg-[#0d100e] p-3 min-[1180px]:flex min-[1400px]:w-64 min-[1400px]:p-4">
         {activeSection === "messages" || selectedGroup?.isDirectMessage ? (
           <MessageThreadSidebar
             selectedGroupId={selectedGroup?.id}
@@ -59,7 +59,7 @@ export function DashboardShell({
           />
         ) : selectedGroup ? (
           <>
-            <div className="rounded-2xl border border-white/10 bg-[#121512] p-4">
+            <div className="app-card p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
                 Group
               </p>
@@ -78,21 +78,21 @@ export function DashboardShell({
             />
             {!selectedGroup.isDirectMessage ? (
               <Link
-                className="mt-1 rounded-xl border border-white/10 bg-[#181818] px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/70 hover:bg-[#242424] hover:text-white"
+                className="mt-1 rounded-lg border border-white/10 bg-[#181818] px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/70 hover:bg-[#242424] hover:text-white"
                 href={`/dashboard/groups/${selectedGroup.id}/settings`}
               >
                 Group settings
               </Link>
             ) : null}
             {canCreateChannels ? (
-              <div className="mt-auto rounded-2xl border border-white/10 bg-[#121512] p-4">
+              <div className="app-card mt-auto p-4">
                 <CreateChannelForm groupId={selectedGroup.id} />
               </div>
             ) : null}
           </>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="rounded-2xl border border-white/10 bg-[#121512] p-4">
+            <div className="app-card p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
                 Groups
               </p>
@@ -109,7 +109,7 @@ export function DashboardShell({
                 </p>
               )}
             </div>
-            <div className="rounded-2xl border border-white/10 bg-[#121512] p-4">
+            <div className="app-card p-4">
               <CreateGroupForm compact />
             </div>
           </div>
@@ -117,7 +117,7 @@ export function DashboardShell({
       </aside>
 
       <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex min-h-12 items-center justify-between gap-3 border-b border-black bg-[#050505] px-3 py-1.5 sm:px-5">
+        <header className="flex min-h-12 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 px-3 py-1.5 backdrop-blur sm:px-5">
           <div className="min-w-0">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#FF5F25]">
               {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : activeSection === "messages" ? "Messages" : "Dashboard"}
@@ -195,10 +195,10 @@ function MobileSpaceSwitcher({
   const showingMessages = activeSection === "messages" || selectedGroup?.isDirectMessage;
 
   return (
-    <div className="dashboard-mobile-switcher border-b border-black bg-[#0d0f0d] px-2 py-2 sm:px-3 min-[1180px]:hidden">
+    <div className="dashboard-mobile-switcher border-b border-white/10 bg-[#0d100e] px-2 py-2 sm:px-3 min-[1180px]:hidden">
       <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <Link
-          className={`inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-sm font-semibold ${
+              className={`inline-flex h-10 shrink-0 items-center rounded-lg border px-4 text-sm font-semibold ${
             activeSection === "dashboard" && !selectedGroup
               ? "border-[#FF5F25] bg-[#FF5F25] text-black"
               : "border-white/10 bg-[#050505] text-slate-200"
@@ -331,7 +331,7 @@ function MessagesHome({ threads }: { threads: MessageThread[] }) {
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
       <div className="w-full space-y-4">
-        <section className="rounded-2xl border border-white/10 bg-[#050505] p-5">
+        <section className="app-surface rounded-xl p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
             Private messages
           </p>
@@ -347,7 +347,7 @@ function MessagesHome({ threads }: { threads: MessageThread[] }) {
           {threads.length ? (
             threads.map((thread) => (
               <Link
-                className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#181818] p-4 transition hover:border-[#FF5F25]/70 hover:bg-[#242424]"
+                className="app-card flex items-center gap-3 p-4 transition hover:border-[#FF5F25]/70"
                 href={`/dashboard/groups/${thread.id}/channels/${thread.channelId}`}
                 key={thread.id}
               >
@@ -366,7 +366,7 @@ function MessagesHome({ threads }: { threads: MessageThread[] }) {
               </Link>
             ))
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-[#181818] p-5 text-sm leading-6 text-slate-300">
+            <div className="app-card p-5 text-sm leading-6 text-slate-300">
               No PMs yet. Click the plus button in the left sidebar and choose a friend.
             </div>
           )}
@@ -391,7 +391,7 @@ function ChannelsHome({
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
       <div className="mx-auto w-full max-w-5xl space-y-4">
-        <section className="rounded-2xl border border-white/10 bg-[#050505] p-5 shadow-[0_30px_80px_-50px_rgba(0,0,0,0.7)]">
+        <section className="app-surface rounded-xl p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
             Channels
           </p>
@@ -406,7 +406,7 @@ function ChannelsHome({
             channelCards.map((channel) => (
               <div
                 key={channel.id}
-                className="rounded-xl border border-white/10 bg-[#050505] p-4"
+                className="app-card p-4"
               >
                 <p className="text-sm text-slate-400">{channel.groupName}</p>
                 <h3 className="mt-3 text-xl font-semibold text-white">{channel.name}</h3>
@@ -416,7 +416,7 @@ function ChannelsHome({
               </div>
             ))
           ) : (
-            <div className="rounded-3xl border border-white/10 bg-[#0c1422]/95 p-6 text-center text-slate-400">
+            <div className="app-card p-6 text-center text-slate-400">
               No channels found yet. Create a group to add your first channels.
             </div>
           )}
@@ -442,8 +442,8 @@ function ChannelMain({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
-        <section className="rounded-xl border border-white/10 bg-[#050505] p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+        <section className="app-surface rounded-xl p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
             Text channel
           </p>
           <h2 className="mt-3 text-2xl font-bold text-white"># {channel.name}</h2>
@@ -469,7 +469,7 @@ function DashboardHome({ groups }: { groups: DashboardGroup[] }) {
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
       <div className="w-full space-y-4">
-        <section className="rounded-2xl border border-white/10 bg-[#050505] p-5 shadow-[0_30px_120px_-50px_rgba(0,0,0,0.75)]">
+        <section className="app-surface rounded-xl p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
@@ -494,22 +494,22 @@ function DashboardHome({ groups }: { groups: DashboardGroup[] }) {
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border border-white/10 bg-[#181818] p-4">
+            <div className="app-card p-4">
               <p className="text-sm text-slate-400">Active spaces</p>
               <p className="mt-2 text-3xl font-semibold text-white">{groups.length}</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-[#181818] p-4">
+            <div className="app-card p-4">
               <p className="text-sm text-slate-400">Voice rooms</p>
               <p className="mt-2 text-2xl font-semibold text-white sm:text-3xl">Always ready</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-[#181818] p-4">
+            <div className="app-card p-4">
               <p className="text-sm text-slate-400">Invites</p>
               <p className="mt-2 text-2xl font-semibold text-white sm:text-3xl">Private</p>
             </div>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-[#050505] p-5 shadow-[0_30px_80px_-45px_rgba(0,0,0,0.65)]">
+        <section className="app-surface rounded-xl p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
@@ -551,8 +551,8 @@ function GroupMain({
     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
       <div className="grid w-full min-w-0 gap-4">
         {group.notice ? <Alert>{group.notice}</Alert> : null}
-        <section className="rounded-2xl border border-white/10 bg-[#050505] p-5 shadow-[0_25px_80px_-50px_rgba(0,0,0,0.7)]">
-            <div className="grid min-w-0 gap-5 min-[1180px]:grid-cols-[1fr_1.2fr] min-[1180px]:items-center">
+        <section className="app-surface rounded-xl p-5">
+          <div className="grid min-w-0 gap-5 min-[1180px]:grid-cols-[1fr_1.2fr] min-[1180px]:items-center">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
                 {group.name}
@@ -568,7 +568,7 @@ function GroupMain({
                   : "Start by picking a channel or creating something new. This space is made for focused conversation, private invites, and clear shared routines."}
               </p>
             </div>
-            <div className="min-w-0 rounded-xl border border-white/10 bg-[#181818] p-4">
+            <div className="app-card min-w-0 p-4">
               <p className="text-sm text-slate-400">Members</p>
               <p className="mt-2 text-3xl font-semibold text-white">
                 {group.members?.length ?? 0}

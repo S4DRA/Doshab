@@ -20,11 +20,11 @@ export function ButtonLink({
     <Link
       href={href}
       className={cn(
-        "inline-flex h-11 items-center justify-center rounded-md px-5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#FF5F25] focus:ring-offset-2 focus:ring-offset-[#070a12]",
+        "inline-flex h-11 items-center justify-center rounded-lg px-5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#FF5F25] focus:ring-offset-2 focus:ring-offset-[#070a12]",
         variant === "primary" &&
-          "bg-[#FF5F25] text-black hover:bg-[#ff7847]",
+          "app-button-primary shadow-[0_12px_28px_-18px_rgba(255,95,37,0.9)]",
         variant === "secondary" &&
-          "border border-white/20 bg-black text-white hover:border-[#FF5F25]",
+          "app-button-secondary",
         className,
       )}
     >

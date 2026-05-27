@@ -17,7 +17,7 @@ export function AvatarInitials({
   size = "md",
   value,
 }: AvatarInitialsProps) {
-  const className = `${sizeClasses[size]} grid shrink-0 place-items-center overflow-hidden rounded-md bg-[#445242]/20 font-bold text-[#FF5F25]`;
+  const className = `${sizeClasses[size]} grid shrink-0 place-items-center overflow-hidden rounded-lg border border-white/10 bg-[#223022] font-bold text-[#FF8A5F] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]`;
 
   if (imageUrl) {
     return (

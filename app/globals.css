@@ -1,52 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050705;
+  --background: #060807;
   --foreground: #ffffff;
-  --surface-canvas: #080a08;
-  --surface-sidebar: #0a0a0a;
-  --surface-panel: #111111;
-  --surface-raised: #181818;
-  --surface-hover: #242424;
-  --border-strong: #ffffff;
-  --border-soft: rgba(255, 255, 255, 0.72);
+  --surface-canvas: #090c0a;
+  --surface-sidebar: #0d100e;
+  --surface-panel: #121612;
+  --surface-raised: #191e19;
+  --surface-hover: #222a23;
+  --border-strong: #f5f1e8;
+  --border-soft: rgba(245, 241, 232, 0.14);
   --text-high: #ffffff;
-  --text-body: #e7e7e7;
-  --text-muted: #b8b8b8;
-  --text-faint: #858585;
+  --text-body: #d9dfd6;
+  --text-muted: #a0aa9d;
+  --text-faint: #697267;
   --accent: #FF5F25;
   --accent-hover: #ff7847;
-  --accent-muted: #445242;
+  --accent-muted: #3d4b3b;
+  --success: #9ccf9a;
+  --warning: #f1b36d;
   --control: var(--accent);
   --control-hover: var(--accent-hover);
   --control-text: #050505;
-  --control-subtle: #111519;
-  --control-subtle-hover: #1f2937;
+  --control-subtle: #151b16;
+  --control-subtle-hover: #222a23;
   --control-subtle-text: #f8fafc;
-  --shadow: none;
+  --shadow: 0 24px 80px -48px rgba(0, 0, 0, 0.92);
 }
 
 html[data-theme="light"] {
-  --background: #ffffff;
+  --background: #f8f7f2;
   --foreground: #000000;
-  --surface-canvas: #ffffff;
-  --surface-sidebar: #fafafa;
-  --surface-panel: #f3f3f3;
+  --surface-canvas: #f8f7f2;
+  --surface-sidebar: #edeee7;
+  --surface-panel: #ffffff;
   --surface-raised: #ffffff;
-  --surface-hover: #e8e8e8;
-  --border-strong: #000000;
-  --border-soft: rgba(0, 0, 0, 0.36);
-  --text-high: #000000;
-  --text-body: #141414;
-  --text-muted: #4f4f4f;
-  --text-faint: #737373;
+  --surface-hover: #eceee8;
+  --border-strong: #151812;
+  --border-soft: rgba(21, 24, 18, 0.14);
+  --text-high: #151812;
+  --text-body: #31372f;
+  --text-muted: #65705f;
+  --text-faint: #8d9588;
   --control: #FF5F25;
   --control-hover: #d94e1d;
   --control-text: #000000;
   --control-subtle: #ffffff;
   --control-subtle-hover: #efefef;
   --control-subtle-text: #000000;
-  --shadow: none;
+  --shadow: 0 20px 60px -44px rgba(21, 24, 18, 0.38);
 }
 
 @theme inline {
@@ -58,7 +60,9 @@ html[data-theme="light"] {
 
 body {
   min-height: 100vh;
-  background: var(--background);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 95, 37, 0.09), transparent 28rem),
+    linear-gradient(180deg, var(--surface-canvas), var(--background));
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   color-scheme: dark;
@@ -75,7 +79,7 @@ body * {
 }
 
 html {
-  font-size: 11px;
+  font-size: 12px;
   overflow-x: hidden;
   scroll-behavior: smooth;
 }
@@ -84,6 +88,38 @@ html {
   html {
     font-size: 13px;
   }
+}
+
+.app-surface {
+  border: 1px solid var(--border-soft);
+  background: color-mix(in srgb, var(--surface-panel) 88%, transparent);
+  box-shadow: var(--shadow);
+}
+
+.app-card {
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--surface-raised);
+}
+
+.app-button-primary {
+  background: var(--control);
+  color: var(--control-text);
+}
+
+.app-button-primary:hover {
+  background: var(--control-hover);
+}
+
+.app-button-secondary {
+  border: 1px solid var(--border-soft);
+  background: var(--control-subtle);
+  color: var(--control-subtle-text);
+}
+
+.app-button-secondary:hover {
+  border-color: color-mix(in srgb, var(--accent) 72%, var(--border-soft));
+  background: var(--control-subtle-hover);
 }
 
 html[data-theme="dark"] {
@@ -148,6 +184,21 @@ html[data-theme="light"] .brand-logo-image {
   background: var(--control-subtle);
   color: var(--control-subtle-text);
   padding: 3px;
+}
+
+.message-feed {
+  scrollbar-gutter: stable;
+}
+
+.message-feed article {
+  border-radius: 8px;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.message-feed article:hover {
+  background: color-mix(in srgb, var(--surface-hover) 42%, transparent);
 }
 
 .theme-toggle-option {

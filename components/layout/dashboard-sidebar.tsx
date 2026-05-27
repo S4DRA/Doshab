@@ -197,10 +197,10 @@ export function DashboardSidebar({
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 flex w-14 flex-col items-center border-r border-white/70 bg-[#050505] px-1.5 py-2 text-white sm:w-16 sm:px-2 sm:py-3">
+    <aside className="fixed inset-y-0 left-0 z-50 flex w-14 flex-col items-center border-r border-white/10 bg-[#090c0a]/95 px-1.5 py-2 text-white shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] backdrop-blur sm:w-16 sm:px-2 sm:py-3">
       <Link
         aria-label="Dashboard"
-        className="grid size-10 place-items-center rounded-xl transition hover:bg-white/10 sm:size-11"
+        className="grid size-10 place-items-center rounded-lg transition hover:bg-white/10 sm:size-11"
         href="/dashboard"
         onMouseEnter={() => router.prefetch("/dashboard")}
       >
@@ -209,7 +209,7 @@ export function DashboardSidebar({
 
       <div className="relative mt-3">
         {createOpen ? (
-          <div className="absolute left-12 top-0 w-[calc(100vw-4.25rem)] max-w-72 rounded-2xl border border-white/30 bg-[#111111] p-3 shadow-2xl shadow-black/50 sm:left-14">
+          <div className="app-surface absolute left-12 top-0 w-[calc(100vw-4.25rem)] max-w-72 rounded-lg p-3 sm:left-14">
             <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
               Create
             </p>
@@ -222,7 +222,7 @@ export function DashboardSidebar({
               }}
             >
               <input
-                className="h-10 w-full rounded-xl border border-white/20 bg-[#050505] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-[#FF5F25]"
+                className="h-10 w-full rounded-lg border border-white/20 bg-[#050505] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-[#FF5F25]"
                 maxLength={80}
                 name="name"
                 placeholder="Create a group"
@@ -230,7 +230,7 @@ export function DashboardSidebar({
                 type="text"
               />
               <button
-                className="h-10 w-full rounded-xl bg-[#FF5F25] text-sm font-bold text-black transition hover:bg-[#ff7847]"
+                className="app-button-primary h-10 w-full rounded-lg text-sm font-bold transition"
                 type="submit"
               >
                 Create group
@@ -255,7 +255,7 @@ export function DashboardSidebar({
                   >
                     <input name="friendId" type="hidden" value={friend.id} />
                     <button
-                      className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left transition hover:bg-white/10"
+                      className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left transition hover:bg-white/10"
                       type="submit"
                     >
                       <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/20 bg-[#050505] text-xs font-black text-white">
@@ -287,7 +287,7 @@ export function DashboardSidebar({
         <button
           aria-expanded={createOpen}
           aria-label="Create menu"
-          className={`grid size-10 place-items-center rounded-xl border transition sm:size-11 ${
+          className={`grid size-10 place-items-center rounded-lg border transition sm:size-11 ${
             createOpen
               ? "border-[#FF5F25] text-[#FF5F25]"
               : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
@@ -308,7 +308,7 @@ export function DashboardSidebar({
 
       <div className="relative mt-1.5 sm:mt-2">
         {notificationsOpen ? (
-          <div className="absolute left-12 top-0 w-[calc(100vw-4.25rem)] max-w-80 rounded-2xl border border-white/30 bg-[#111111] p-3 shadow-2xl shadow-black/50 sm:left-14">
+          <div className="app-surface absolute left-12 top-0 w-[calc(100vw-4.25rem)] max-w-80 rounded-lg p-3 sm:left-14">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
@@ -320,7 +320,7 @@ export function DashboardSidebar({
               </div>
               {unreadCount ? (
                 <button
-                  className="rounded-full border border-white/20 px-2 py-1 text-xs font-semibold text-white transition hover:border-[#FF5F25] hover:text-[#FF5F25]"
+                  className="rounded-lg border border-white/20 px-2 py-1 text-xs font-semibold text-white transition hover:border-[#FF5F25] hover:text-[#FF5F25]"
                   onClick={markNotificationsRead}
                   type="button"
                 >
@@ -333,7 +333,7 @@ export function DashboardSidebar({
               {notifications.length ? (
                 notifications.map((notification) => (
                   <Link
-                    className={`block rounded-xl border px-3 py-2.5 transition hover:border-[#FF5F25]/70 hover:bg-white/10 ${
+                    className={`block rounded-lg border px-3 py-2.5 transition hover:border-[#FF5F25]/70 hover:bg-white/10 ${
                       notification.readAt
                         ? "border-transparent"
                         : "border-[#FF5F25]/50 bg-[#FF5F25]/10"
@@ -357,7 +357,7 @@ export function DashboardSidebar({
                   </Link>
                 ))
               ) : (
-                <p className="rounded-xl border border-dashed border-white/20 px-3 py-4 text-sm leading-6 text-slate-400">
+                <p className="rounded-lg border border-dashed border-white/20 px-3 py-4 text-sm leading-6 text-slate-400">
                   No notifications yet. New PMs and group messages will appear here.
                 </p>
               )}
@@ -368,7 +368,7 @@ export function DashboardSidebar({
         <button
           aria-expanded={notificationsOpen}
           aria-label="Notifications"
-          className={`relative grid size-10 place-items-center rounded-xl border transition sm:size-11 ${
+          className={`relative grid size-10 place-items-center rounded-lg border transition sm:size-11 ${
             notificationsOpen
               ? "border-[#FF5F25] text-[#FF5F25]"
               : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
@@ -404,7 +404,7 @@ export function DashboardSidebar({
           return (
             <Link
               aria-label={item.label}
-              className={`grid size-10 shrink-0 place-items-center rounded-xl border transition sm:size-11 ${
+              className={`grid size-10 shrink-0 place-items-center rounded-lg border transition sm:size-11 ${
                 active
                   ? "border-[#FF5F25] text-[#FF5F25]"
                   : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
@@ -429,7 +429,7 @@ export function DashboardSidebar({
           return (
             <Link
               aria-label={`${group.name} group`}
-              className={`grid size-10 shrink-0 place-items-center rounded-xl border text-sm font-black transition sm:size-11 ${
+              className={`grid size-10 shrink-0 place-items-center rounded-lg border text-sm font-black transition sm:size-11 ${
                 active
                   ? "border-[#FF5F25] text-[#FF5F25]"
                   : "border-transparent bg-white/7 text-slate-200 hover:border-white/40 hover:bg-white/10 hover:text-white"
@@ -448,9 +448,9 @@ export function DashboardSidebar({
 
       <div className="relative">
         {profileOpen ? (
-          <div className="absolute bottom-0 left-12 w-[calc(100vw-4.25rem)] max-w-44 rounded-2xl border border-white/30 bg-[#111111] p-2 shadow-2xl shadow-black/50 sm:left-14">
+          <div className="app-surface absolute bottom-0 left-12 w-[calc(100vw-4.25rem)] max-w-44 rounded-lg p-2 sm:left-14">
             <Link
-              className="block rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="block rounded-lg px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
               href="/dashboard/profile"
               onClick={() => setProfileOpen(false)}
               onMouseEnter={() => router.prefetch("/dashboard/profile")}
@@ -460,7 +460,7 @@ export function DashboardSidebar({
             </Link>
             <form action="/api/auth/logout" method="post">
               <button
-                className="mt-1 w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-[#FF5F25] transition hover:bg-[#FF5F25] hover:text-black"
+                className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-[#FF5F25] transition hover:bg-[#FF5F25] hover:text-black"
                 type="submit"
               >
                 Log out
@@ -471,7 +471,7 @@ export function DashboardSidebar({
         <button
           aria-expanded={profileOpen}
           aria-label="Profile menu"
-          className={`grid size-10 place-items-center rounded-xl border transition sm:size-11 ${
+          className={`grid size-10 place-items-center rounded-lg border transition sm:size-11 ${
             profileActive || profileOpen
               ? "border-[#FF5F25] text-[#FF5F25]"
               : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
