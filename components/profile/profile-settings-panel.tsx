@@ -117,79 +117,94 @@ export function ProfileSettingsPanel() {
   };
 
   return (
-    <section className="rounded-lg border border-white/10 bg-white/[0.04] p-6">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <section className="app-panel p-4 sm:p-6">
+      <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
             Preferences
           </p>
           <h2 className="mt-2 text-2xl font-bold text-white">Settings panel</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+            Control your local experience, alerts, and account access.
+          </p>
         </div>
-        <p className="text-sm text-slate-500">Saved locally for a faster experience.</p>
+        <span className="app-badge w-fit px-3 py-1 text-xs font-semibold">
+          Local preferences
+        </span>
       </div>
 
-      <div className="grid gap-4">
-        <label className="flex items-center justify-between rounded-lg border border-white/10 bg-[#0b1020] px-4 py-4">
-          <span>
-            <span className="block text-sm font-semibold text-white">Enable notifications</span>
-            <span className="block text-sm text-slate-400">Hear alerts for new messages and invites.</span>
+      <div className="grid gap-3">
+        <label className="app-row flex items-center justify-between gap-4 px-4 py-4">
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold text-white">Phone alerts</span>
+            <span className="block text-sm leading-5 text-slate-400">
+              Receive message and call notifications outside the app.
+            </span>
           </span>
           <input
-            aria-label="Enable notifications"
+            aria-label="Enable phone alerts"
             checked={settings.enableNotifications}
-            className="h-5 w-5 rounded border border-white/10 bg-[#0d1322] text-[#FF5F25]"
+            className="app-switch"
             onChange={(event) => void updateNotifications(event.target.checked)}
             type="checkbox"
           />
         </label>
         {notificationStatus === "saving" ? (
-          <p className="-mt-2 px-4 text-xs text-slate-400">Enabling phone alerts...</p>
+          <p className="-mt-1 px-4 text-xs text-slate-400">Enabling phone alerts...</p>
         ) : null}
         {notificationStatus === "enabled" ? (
-          <p className="-mt-2 px-4 text-xs text-emerald-300">{notificationMessage}</p>
+          <p className="-mt-1 px-4 text-xs text-emerald-300">{notificationMessage}</p>
         ) : null}
         {notificationStatus === "error" ? (
-          <p className="-mt-2 px-4 text-xs text-amber-300">{notificationMessage}</p>
+          <p className="-mt-1 rounded-lg border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-xs leading-5 text-amber-300">
+            {notificationMessage}
+          </p>
         ) : null}
 
-        <label className="flex items-center justify-between rounded-lg border border-white/10 bg-[#0b1020] px-4 py-4">
-          <span>
+        <label className="app-row flex items-center justify-between gap-4 px-4 py-4">
+          <span className="min-w-0">
             <span className="block text-sm font-semibold text-white">Share online status</span>
-            <span className="block text-sm text-slate-400">Allow friends to see when you are active.</span>
+            <span className="block text-sm leading-5 text-slate-400">
+              Allow friends to see when you are active.
+            </span>
           </span>
           <input
             aria-label="Share online status"
             checked={settings.shareOnlineStatus}
-            className="h-5 w-5 rounded border border-white/10 bg-[#0d1322] text-[#FF5F25]"
+            className="app-switch"
             onChange={(event) => updateSetting("shareOnlineStatus", event.target.checked)}
             type="checkbox"
           />
         </label>
 
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-white/10 bg-[#0b1020] px-4 py-4">
-          <span>
+        <div className="app-row flex items-center justify-between gap-4 px-4 py-4">
+          <span className="min-w-0">
             <span className="block text-sm font-semibold text-white">Theme</span>
-            <span className="block text-sm text-slate-400">
+            <span className="block text-sm leading-5 text-slate-400">
               Switch between high-contrast dark and light mode.
             </span>
           </span>
           <ThemeToggle />
         </div>
 
-          <div className="rounded-lg border border-white/10 bg-[#0b1020] p-4 text-sm text-slate-400">
-          <p>
-            These controls are designed to make your workspace feel more personal. The theme preference and notification choices are stored locally for faster access.
-          </p>
-         
-        <form action="/api/auth/logout" method="post">
-          <button
-            className="h-11 w-full rounded-lg border border-white/10 bg-white px-4 text-sm font-bold text-black transition hover:bg-[#FF5F25]"
-            type="submit"
-          >
-            Log out
-          </button>
-        </form>
- {saved ? (
+        <div className="app-row p-4 text-sm text-slate-400">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-white">Account</p>
+              <p className="mt-1 text-sm leading-5 text-slate-400">
+                End this session on the current device.
+              </p>
+            </div>
+            <form action="/api/auth/logout" method="post">
+              <button
+                className="app-button-secondary h-11 w-full rounded-lg px-4 text-sm font-bold transition sm:w-auto"
+                type="submit"
+              >
+                Log out
+              </button>
+            </form>
+          </div>
+          {saved ? (
             <p className="mt-3 text-sm text-emerald-300">Settings saved.</p>
           ) : null}
         </div>

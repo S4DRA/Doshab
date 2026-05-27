@@ -1,11 +1,15 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { ChannelList } from "@/components/groups/channel-list";
 import { CreateChannelForm } from "@/components/groups/create-channel-form";
+import { InviteFriendForm } from "@/components/groups/invite-friend-form";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { Alert } from "@/components/ui/alert";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { getDashboardSession } from "@/lib/dashboard-data";
+import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
 
 type GroupSettingsPageProps = {
@@ -58,6 +62,11 @@ export default async function GroupSettingsPage({
               type: true,
             },
           },
+          members: {
+            select: {
+              userId: true,
+            },
+          },
         },
       },
     },
@@ -74,6 +83,15 @@ export default async function GroupSettingsPage({
   const canManage =
     membership.role === "OWNER" || membership.role === "ADMIN";
   const isOwner = membership.group.ownerId === session.userId;
+  const selectedGroupForShell = {
+    channels: membership.group.channels,
+    description: membership.group.description,
+    id: membership.group.id,
+    image: membership.group.image,
+    isDirectMessage: membership.group.isDirectMessage,
+    name: membership.group.name,
+    ownerId: membership.group.ownerId,
+  };
 
   return (
     <DashboardShell
@@ -84,11 +102,12 @@ export default async function GroupSettingsPage({
           group={membership.group}
           isOwner={isOwner}
           message={pageParams?.message}
+          userId={session.userId}
         />
       }
       groups={[]}
       selectedGroup={{
-        ...membership.group,
+        ...selectedGroupForShell,
         currentUserRole: membership.role,
       }}
     />
@@ -101,6 +120,7 @@ function GroupSettingsPanel({
   group,
   isOwner,
   message,
+  userId,
 }: {
   canManage: boolean;
   error?: string;
@@ -109,6 +129,9 @@ function GroupSettingsPanel({
     name: string;
     description: string | null;
     image: string | null;
+    members: Array<{
+      userId: string;
+    }>;
     channels: Array<{
       id: string;
       name: string;
@@ -117,7 +140,10 @@ function GroupSettingsPanel({
   };
   isOwner: boolean;
   message?: string;
+  userId: string;
 }) {
+  const memberIds = group.members.map((member) => member.userId);
+
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
       <div className="grid min-w-0 gap-4 min-[1180px]:grid-cols-[1.1fr_0.9fr]">
@@ -201,10 +227,20 @@ function GroupSettingsPanel({
 
         <div className="grid gap-4">
           <section className="rounded-2xl border border-white/10 bg-[#050505] p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
               Channels
             </p>
             <h2 className="mt-2 text-xl font-semibold text-white">Add a channel</h2>
+              </div>
+              <Link
+                className="app-button-secondary hidden h-10 items-center rounded-lg px-3 text-xs font-semibold transition sm:inline-flex"
+                href={`/dashboard/groups/${group.id}`}
+              >
+                View space
+              </Link>
+            </div>
             {canManage ? (
               <div className="mt-4">
                 <CreateChannelForm groupId={group.id} returnToSettings />
@@ -227,6 +263,26 @@ function GroupSettingsPanel({
               returnToSettings
             />
           </section>
+
+          {canManage ? (
+            <Suspense fallback={<InviteSettingsFallback />}>
+              <InviteSettingsPanel
+                groupId={group.id}
+                memberIds={memberIds}
+                userId={userId}
+              />
+            </Suspense>
+          ) : (
+            <section className="app-panel p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+                Invite
+              </p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Invite friends</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Only owners and admins can invite friends into this space.
+              </p>
+            </section>
+          )}
 
           <section className="rounded-2xl border border-[#FF5F25]/60 bg-[#050505] p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
@@ -263,5 +319,64 @@ function GroupSettingsPanel({
         </div>
       </div>
     </div>
+  );
+}
+
+async function InviteSettingsPanel({
+  groupId,
+  memberIds,
+  userId,
+}: {
+  groupId: string;
+  memberIds: string[];
+  userId: string;
+}) {
+  const friendships = await prisma.friendship.findMany({
+    where: {
+      OR: [{ userOneId: userId }, { userTwoId: userId }],
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      userOneId: true,
+      userTwoId: true,
+      userOne: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          status: true,
+        },
+      },
+      userTwo: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          status: true,
+        },
+      },
+    },
+  });
+
+  const groupMemberIds = new Set(memberIds);
+  const inviteCandidates = friendships
+    .map((friendship) => friendFromPair(friendship, userId))
+    .filter((friend) => !groupMemberIds.has(friend.id));
+
+  return <InviteFriendForm friends={inviteCandidates} groupId={groupId} />;
+}
+
+function InviteSettingsFallback() {
+  return (
+    <section className="app-panel p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+        Invite
+      </p>
+      <div className="app-skeleton mt-4 h-11 rounded-lg" />
+    </section>
   );
 }

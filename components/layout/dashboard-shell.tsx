@@ -67,6 +67,9 @@ export function DashboardShell({
     !selectedGroup?.isDirectMessage &&
     (selectedGroup?.currentUserRole === "OWNER" ||
       selectedGroup?.currentUserRole === "ADMIN");
+  const selectedMessageThread = selectedGroup?.isDirectMessage
+    ? messageThreads.find((thread) => thread.id === selectedGroup.id)
+    : null;
 
   return (
     <main className="flex h-[100dvh] min-h-0 w-full max-w-full overflow-hidden bg-[#070907]/95 text-slate-100">
@@ -157,7 +160,20 @@ export function DashboardShell({
                       : "Spaces foundation"}
             </p>
           </div>
-          <div className="h-1 w-1" />
+          {selectedMessageThread?.friend ? (
+            <form action="/api/friend-calls/start" method="post">
+              <input name="friendId" type="hidden" value={selectedMessageThread.friend.id} />
+              <button
+                aria-label={`Call ${selectedMessageThread.name}`}
+                className="app-icon-button app-icon-button-primary h-9 w-9"
+                type="submit"
+              >
+                <PhoneIcon className="h-4 w-4" />
+              </button>
+            </form>
+          ) : (
+            <div className="h-1 w-1" />
+          )}
         </header>
 
         {groupSettingsPanel ? (
@@ -212,15 +228,18 @@ function MessageThreadSidebar({
         {threads.length ? (
           <div className="space-y-1">
             {threads.map((thread) => (
-              <Link
-                className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 transition ${
+              <div
+                className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition ${
                   selectedGroupId === thread.id
                     ? "border-[#FF5F25]/60 bg-[#FF5F25]/12"
                     : "border-transparent hover:border-white/20 hover:bg-white/7"
                 }`}
-                href={`/dashboard/groups/${thread.id}/channels/${thread.channelId}`}
                 key={thread.id}
               >
+                <Link
+                  className="flex min-w-0 flex-1 items-center gap-3"
+                  href={`/dashboard/groups/${thread.id}/channels/${thread.channelId}`}
+                >
                 <AvatarInitials
                   imageUrl={thread.friend?.image}
                   value={thread.name}
@@ -233,7 +252,20 @@ function MessageThreadSidebar({
                     Private message
                   </span>
                 </span>
-              </Link>
+                </Link>
+                {thread.friend ? (
+                  <form action="/api/friend-calls/start" method="post">
+                    <input name="friendId" type="hidden" value={thread.friend.id} />
+                    <button
+                      aria-label={`Call ${thread.name}`}
+                      className="app-icon-button app-icon-button-primary h-8 w-8"
+                      type="submit"
+                    >
+                      <PhoneIcon className="h-3.5 w-3.5" />
+                    </button>
+                  </form>
+                ) : null}
+              </div>
             ))}
           </div>
         ) : (
@@ -268,11 +300,14 @@ function MessagesHome({ threads }: { threads: MessageThread[] }) {
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {threads.length ? (
             threads.map((thread) => (
-              <Link
+              <div
                 className="app-card flex items-center gap-3 p-4 transition hover:border-[#FF5F25]/70"
-                href={`/dashboard/groups/${thread.id}/channels/${thread.channelId}`}
                 key={thread.id}
               >
+                <Link
+                  className="flex min-w-0 flex-1 items-center gap-3"
+                  href={`/dashboard/groups/${thread.id}/channels/${thread.channelId}`}
+                >
                 <AvatarInitials
                   imageUrl={thread.friend?.image}
                   value={thread.name}
@@ -285,7 +320,20 @@ function MessagesHome({ threads }: { threads: MessageThread[] }) {
                     Open private chat
                   </span>
                 </span>
-              </Link>
+                </Link>
+                {thread.friend ? (
+                  <form action="/api/friend-calls/start" method="post">
+                    <input name="friendId" type="hidden" value={thread.friend.id} />
+                    <button
+                      aria-label={`Call ${thread.name}`}
+                      className="app-icon-button app-icon-button-primary h-10 w-10"
+                      type="submit"
+                    >
+                      <PhoneIcon className="h-4 w-4" />
+                    </button>
+                  </form>
+                ) : null}
+              </div>
             ))
           ) : (
             <div className="app-card p-5 text-sm leading-6 text-slate-300">
@@ -295,6 +343,21 @@ function MessagesHome({ threads }: { threads: MessageThread[] }) {
         </section>
       </div>
     </div>
+  );
+}
+
+function PhoneIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.89.66 2.78a2 2 0 0 1-.45 2.11L8.05 9.88a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45c.89.31 1.82.53 2.78.66A2 2 0 0 1 22 16.92Z" />
+    </svg>
   );
 }
 
@@ -494,7 +557,7 @@ function FriendStatusPanel({
         <div className="mt-5 max-h-80 space-y-2 overflow-y-auto pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {friends.map((friend) => (
             <div
-              className="flex w-full min-w-0 items-center gap-2 rounded-2xl border border-white/10 bg-[#0c1421] p-3 transition hover:border-[#FF5F25]/70 hover:bg-white/10"
+              className="app-row flex w-full min-w-0 items-center gap-3 p-3 transition"
               key={friend.id}
             >
               <AvatarInitials
@@ -513,17 +576,7 @@ function FriendStatusPanel({
                 </button>
               </form>
               <span className="flex shrink-0 items-center gap-2 text-xs text-slate-400">
-                <span
-                  className={`size-2 rounded-full ${
-                    friend.status === "ONLINE"
-                      ? "bg-emerald-400"
-                      : friend.status === "IDLE"
-                        ? "bg-amber-400"
-                        : friend.status === "DO_NOT_DISTURB"
-                          ? "bg-rose-400"
-                          : "bg-slate-600"
-                  }`}
-                />
+                <span className="app-status-dot" data-status={friend.status ?? "OFFLINE"} />
                 <span className="hidden sm:inline">
                   {formatUserStatus(friend.status)}
                 </span>
@@ -531,10 +584,13 @@ function FriendStatusPanel({
               <form action="/api/friend-calls/start" method="post">
                 <input name="friendId" type="hidden" value={friend.id} />
                 <button
-                  className="h-9 rounded-lg border border-white/15 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25] hover:text-white"
+                  aria-label={`Call ${friend.name || friend.email}`}
+                  className="app-icon-button app-icon-button-primary h-9 w-9"
                   type="submit"
                 >
-                  Call
+                  <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.89.66 2.78a2 2 0 0 1-.45 2.11L8.05 9.88a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45c.89.31 1.82.53 2.78.66A2 2 0 0 1 22 16.92Z" />
+                  </svg>
                 </button>
               </form>
             </div>

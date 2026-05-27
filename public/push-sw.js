@@ -1,7 +1,10 @@
 self.addEventListener("push", (event) => {
   let data = {
+    actions: [],
     body: "You have a new message.",
+    data: {},
     href: "/dashboard",
+    requireInteraction: false,
     tag: "doshab-message",
     title: "Doshab",
   };
@@ -20,12 +23,16 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
+      actions: Array.isArray(data.actions) ? data.actions : [],
       data: {
         href: data.href,
+        ...(data.data || {}),
       },
       icon: "/Doshab_png.png",
       badge: "/Doshab_png.png",
+      requireInteraction: Boolean(data.requireInteraction),
       tag: data.tag,
+      vibrate: data.data?.type === "call" ? [200, 90, 200, 90, 200] : undefined,
     }),
   );
 });
@@ -34,6 +41,17 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const href = event.notification.data?.href || "/dashboard";
+  const callId = event.notification.data?.callId;
+
+  if (event.action === "decline-call" && callId) {
+    event.waitUntil(
+      fetch(`/api/friend-calls/${callId}/decline`, {
+        credentials: "same-origin",
+        method: "POST",
+      }).catch(() => null),
+    );
+    return;
+  }
 
   event.waitUntil(
     self.clients

@@ -3,6 +3,11 @@ import { loadEnvConfig } from "@next/env";
 
 import { prisma } from "@/lib/prisma";
 
+type PushNotificationAction = {
+  action: string;
+  title: string;
+};
+
 let configured = false;
 let envLoaded = false;
 
@@ -56,14 +61,22 @@ function configureWebPush() {
 }
 
 export async function sendPushNotifications({
+  actions,
   body,
+  data,
   href,
   recipientIds,
+  requireInteraction = false,
+  tag,
   title,
 }: {
+  actions?: PushNotificationAction[];
   body: string;
+  data?: Record<string, string>;
   href: string;
   recipientIds: string[];
+  requireInteraction?: boolean;
+  tag?: string;
   title: string;
 }) {
   if (!recipientIds.length || !configureWebPush()) {
@@ -98,9 +111,12 @@ export async function sendPushNotifications({
         await webpush.sendNotification(
           pushSubscription,
           JSON.stringify({
+            actions,
             body,
+            data,
             href,
-            tag: href,
+            requireInteraction,
+            tag: tag ?? href,
             title,
           }),
         );

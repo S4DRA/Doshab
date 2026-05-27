@@ -13,7 +13,7 @@ export function FriendsList({ friends }: FriendsListProps) {
         <>
           {friends.map((friend) => (
             <div
-              className="flex min-h-16 w-full min-w-0 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3 transition hover:border-[#FF5F25]/70 hover:bg-white/10"
+              className="app-row flex min-h-16 w-full min-w-0 items-center gap-3 px-3 py-3 transition"
               key={friend.id}
             >
               <AvatarInitials
@@ -31,16 +31,20 @@ export function FriendsList({ friends }: FriendsListProps) {
                   </span>
                 </button>
               </form>
-              <span className="hidden shrink-0 text-xs text-slate-500 sm:block">
+              <span className="hidden shrink-0 items-center gap-2 text-xs text-slate-500 sm:flex">
+                <span className="app-status-dot" data-status={friend.status ?? "OFFLINE"} />
                 {formatUserStatus(friend.status)}
               </span>
               <form action="/api/friend-calls/start" method="post">
                 <input name="friendId" type="hidden" value={friend.id} />
                 <button
-                  className="h-9 rounded-lg border border-white/15 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25] hover:text-white"
+                  aria-label={`Call ${friend.name || friend.email}`}
+                  className="app-icon-button app-icon-button-primary h-9 w-9"
                   type="submit"
                 >
-                  Call
+                  <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.89.66 2.78a2 2 0 0 1-.45 2.11L8.05 9.88a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45c.89.31 1.82.53 2.78.66A2 2 0 0 1 22 16.92Z" />
+                  </svg>
                 </button>
               </form>
             </div>

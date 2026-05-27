@@ -81,6 +81,20 @@ function messageSelect() {
   } as const;
 }
 
+function createNotificationPreview(content: string, encrypted: boolean) {
+  if (encrypted) {
+    return "New encrypted message";
+  }
+
+  const preview = content.replace(/\s+/g, " ").trim();
+
+  if (!preview) {
+    return "New message";
+  }
+
+  return preview.length > 120 ? `${preview.slice(0, 117)}...` : preview;
+}
+
 export async function POST(request: NextRequest, { params }: MessagesRouteProps) {
   const user = await getCurrentUser();
   const { channelId } = await params;
@@ -162,12 +176,13 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
 
     const href = `/dashboard/groups/${channel.groupId}/channels/${channel.id}`;
     const senderName = user.name || user.email;
+    const preview = createNotificationPreview(content, Boolean(isJsonRequest));
     const title = channel.group.isDirectMessage
       ? senderName
-      : `${channel.group.name} / #${channel.name}`;
+      : `${senderName} in ${channel.group.name}`;
     const body = channel.group.isDirectMessage
-      ? "New encrypted message"
-      : `${senderName}: New encrypted message`;
+      ? preview
+      : `#${channel.name}: ${preview}`;
 
     await tx.notification.createMany({
       data: recipients.map((recipientId) => ({

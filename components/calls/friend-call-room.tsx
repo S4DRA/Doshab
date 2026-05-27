@@ -105,7 +105,7 @@ export function FriendCallRoom({ callId }: FriendCallRoomProps) {
   if (error || ended || !roomInfo) {
     return (
       <div className="grid min-h-0 flex-1 place-items-center px-4 py-8">
-        <section className="w-full max-w-md rounded-xl border border-white/10 bg-white/[0.04] p-6 text-center">
+        <section className="app-panel w-full max-w-md p-6 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
             Friend call
           </p>
@@ -113,8 +113,15 @@ export function FriendCallRoom({ callId }: FriendCallRoomProps) {
             {error || ended ? "Call unavailable" : "Joining call..."}
           </h1>
           {error ? <p className="mt-3 text-sm leading-6 text-slate-300">{error}</p> : null}
+          {!error && !ended ? (
+            <div className="mt-6 grid gap-3">
+              <div className="app-skeleton mx-auto h-14 w-14 rounded-lg" />
+              <div className="app-skeleton mx-auto h-3 w-40 rounded-full" />
+              <div className="app-skeleton mx-auto h-3 w-28 rounded-full" />
+            </div>
+          ) : null}
           <Link
-            className="mt-6 inline-flex h-10 items-center rounded-lg border border-white/15 px-4 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25] hover:text-white"
+            className="app-button-secondary mt-6 inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
             href="/dashboard/messages"
           >
             Back to messages
@@ -145,7 +152,8 @@ export function FriendCallRoom({ callId }: FriendCallRoomProps) {
     >
       <RoomAudioRenderer />
       <div className="flex min-h-0 flex-1 flex-col px-4 py-4 sm:px-6">
-        <section className="mb-4 flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
+        <section className="app-panel mb-4 flex items-center justify-between gap-3 p-4">
+          <div className="flex min-w-0 items-center gap-3">
           <AvatarInitials
             imageUrl={roomInfo.call.friend.image}
             value={roomInfo.call.friend.name || roomInfo.call.friend.email}
@@ -158,6 +166,10 @@ export function FriendCallRoom({ callId }: FriendCallRoomProps) {
               {roomInfo.call.friend.name || roomInfo.call.friend.email}
             </h1>
           </div>
+          </div>
+          <span className="app-badge shrink-0 px-3 py-1 text-xs font-semibold">
+            Connected
+          </span>
         </section>
         <CallParticipants />
       </div>
@@ -190,13 +202,19 @@ function CallParticipants() {
 
   return (
     <div className="grid min-h-0 flex-1 gap-3 sm:grid-cols-2">
-      {tracks.map((trackReference) => (
-        <ParticipantTile
-          className="min-h-56 rounded-xl border border-white/10 bg-[#0b1020]"
-          key={trackReference.participant.identity}
-          trackRef={trackReference}
-        />
-      ))}
+      {tracks.length ? (
+        tracks.map((trackReference) => (
+          <ParticipantTile
+            className="app-panel min-h-56 overflow-hidden"
+            key={trackReference.participant.identity}
+            trackRef={trackReference}
+          />
+        ))
+      ) : (
+        <div className="app-panel grid min-h-56 place-items-center p-6 text-center text-sm text-slate-400 sm:col-span-2">
+          Waiting for audio to connect.
+        </div>
+      )}
     </div>
   );
 }

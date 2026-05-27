@@ -97,9 +97,25 @@ export async function POST(request: NextRequest) {
   });
 
   await sendPushNotifications({
+    actions: [
+      {
+        action: "answer-call",
+        title: "Answer",
+      },
+      {
+        action: "decline-call",
+        title: "Decline",
+      },
+    ],
     body: "Tap to answer.",
+    data: {
+      callId: call.id,
+      type: "call",
+    },
     href,
     recipientIds: [friend.id],
+    requireInteraction: true,
+    tag: `friend-call-${call.id}`,
     title: `${user.name || user.email} is calling`,
   }).catch((error: unknown) => {
     console.error("Failed to send call push notification", error);

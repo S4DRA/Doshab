@@ -259,27 +259,28 @@ export function DashboardSidebar({
       <div className="my-3 h-px bg-white/20" />
 
       <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
-        Send PM
+        Friends
       </p>
       <div className="mt-2 max-h-56 space-y-1 overflow-y-auto pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {friends.length ? (
           friends.map((friend) => (
-            <form
-              action="/api/private-messages"
+            <div
+              className="flex items-center gap-2 rounded-lg px-2 py-2 transition hover:bg-white/10"
               key={friend.id}
-              method="post"
-              onSubmit={() => {
-                window.sessionStorage.removeItem(sidebarCacheKey);
-              }}
             >
-              <input name="friendId" type="hidden" value={friend.id} />
-              <button
-                className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left transition hover:bg-white/10"
-                type="submit"
+              <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/20 bg-[#050505] text-xs font-black text-white">
+                {getInitials(friend.name || friend.email)}
+              </span>
+              <form
+                action="/api/private-messages"
+                className="min-w-0 flex-1"
+                method="post"
+                onSubmit={() => {
+                  window.sessionStorage.removeItem(sidebarCacheKey);
+                }}
               >
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/20 bg-[#050505] text-xs font-black text-white">
-                  {getInitials(friend.name || friend.email)}
-                </span>
+                <input name="friendId" type="hidden" value={friend.id} />
+                <button className="w-full min-w-0 text-left" type="submit">
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-semibold text-white">
                     {friend.name || friend.email}
@@ -288,8 +289,21 @@ export function DashboardSidebar({
                     Private message
                   </span>
                 </span>
-              </button>
-            </form>
+                </button>
+              </form>
+              <form action="/api/friend-calls/start" method="post">
+                <input name="friendId" type="hidden" value={friend.id} />
+                <button
+                  aria-label={`Call ${friend.name || friend.email}`}
+                  className="app-icon-button h-8 w-8"
+                  type="submit"
+                >
+                  <svg aria-hidden="true" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.89.66 2.78a2 2 0 0 1-.45 2.11L8.05 9.88a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45c.89.31 1.82.53 2.78.66A2 2 0 0 1 22 16.92Z" />
+                  </svg>
+                </button>
+              </form>
+            </div>
           ))
         ) : (
           <Link
@@ -379,7 +393,7 @@ export function DashboardSidebar({
       {createMenu}
       <Link
         aria-label="Dashboard"
-        className="grid size-10 place-items-center rounded-lg transition hover:bg-white/10 sm:size-11"
+        className="grid size-10 place-items-center transition sm:size-11"
         href="/dashboard"
         onMouseEnter={() => router.prefetch("/dashboard")}
       >

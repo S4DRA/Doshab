@@ -102,6 +102,59 @@ html {
   background: var(--surface-raised);
 }
 
+.app-panel {
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-raised) 92%, transparent);
+  box-shadow: var(--shadow);
+}
+
+.app-row {
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--surface-sidebar);
+}
+
+.app-row:hover {
+  background: var(--surface-hover);
+}
+
+.app-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--control-subtle);
+  color: var(--control-subtle-text);
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.app-icon-button:hover {
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border-soft));
+  background: var(--surface-hover);
+  color: var(--text-high);
+}
+
+.app-icon-button:active {
+  transform: translateY(1px);
+}
+
+.app-icon-button-primary {
+  border-color: color-mix(in srgb, var(--accent) 72%, transparent);
+  background: var(--control);
+  color: var(--control-text);
+}
+
+.app-icon-button-primary:hover {
+  background: var(--control-hover);
+  color: var(--control-text);
+}
+
 .app-button-primary {
   background: var(--control);
   color: var(--control-text);
@@ -120,6 +173,106 @@ html {
 .app-button-secondary:hover {
   border-color: color-mix(in srgb, var(--accent) 72%, var(--border-soft));
   background: var(--control-subtle-hover);
+}
+
+.app-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: var(--control-subtle);
+  color: var(--text-body);
+}
+
+.app-status-dot {
+  display: inline-block;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 999px;
+  background: var(--text-faint);
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.app-status-dot[data-status="ONLINE"] {
+  background: #68d391;
+  color: #68d391;
+}
+
+.app-status-dot[data-status="IDLE"] {
+  background: #f6c177;
+  color: #f6c177;
+}
+
+.app-status-dot[data-status="DO_NOT_DISTURB"] {
+  background: #fb7185;
+  color: #fb7185;
+}
+
+.app-switch {
+  position: relative;
+  display: inline-flex;
+  width: 2.75rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  appearance: none;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: var(--control-subtle);
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.app-switch::after {
+  content: "";
+  position: absolute;
+  left: 0.2rem;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: var(--text-muted);
+  transform: translateY(-50%);
+  transition:
+    background-color 140ms ease,
+    transform 140ms ease;
+}
+
+.app-switch:checked {
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  background: color-mix(in srgb, var(--accent) 32%, var(--control-subtle));
+}
+
+.app-switch:checked::after {
+  background: var(--accent);
+  transform: translate(1.18rem, -50%);
+}
+
+.app-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-raised);
+}
+
+.app-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--text-high) 9%, transparent),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: app-shimmer 1500ms ease-in-out infinite;
+}
+
+@keyframes app-shimmer {
+  to {
+    transform: translateX(100%);
+  }
 }
 
 html[data-theme="dark"] {
