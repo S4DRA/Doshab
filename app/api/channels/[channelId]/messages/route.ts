@@ -192,11 +192,13 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
   });
 
   if (result.recipients.length) {
-    void sendPushNotifications({
+    await sendPushNotifications({
       body: result.notificationBody,
       href: result.href,
       recipientIds: result.recipients,
       title: result.notificationTitle,
+    }).catch((error: unknown) => {
+      console.error("Failed to send push notifications", error);
     });
   }
 

@@ -2,20 +2,7 @@
 
 import { useState } from "react";
 
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = `${base64String}${padding}`
-    .replace(/-/g, "+")
-    .replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let index = 0; index < rawData.length; index += 1) {
-    outputArray[index] = rawData.charCodeAt(index);
-  }
-
-  return outputArray;
-}
+import { registerPushNotifications } from "@/lib/browser-push";
 
 export function PushNotificationToggle() {
   const [status, setStatus] = useState<
@@ -23,53 +10,11 @@ export function PushNotificationToggle() {
   >("idle");
 
   async function enablePush() {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      setStatus("error");
-      return;
-    }
-
     setStatus("saving");
 
     try {
-      const permission = await Notification.requestPermission();
-
-      if (permission !== "granted") {
-        setStatus("error");
-        return;
-      }
-
-      const publicKeyResponse = await fetch("/api/push/public-key", {
-        headers: {
-          accept: "application/json",
-        },
-      });
-      const { publicKey } = (await publicKeyResponse.json()) as {
-        publicKey?: string;
-      };
-
-      if (!publicKey) {
-        setStatus("error");
-        return;
-      }
-
-      const registration = await navigator.serviceWorker.register("/push-sw.js");
-      const existingSubscription = await registration.pushManager.getSubscription();
-      const subscription =
-        existingSubscription ??
-        (await registration.pushManager.subscribe({
-          applicationServerKey: urlBase64ToUint8Array(publicKey),
-          userVisibleOnly: true,
-        }));
-
-      const response = await fetch("/api/push/subscribe", {
-        body: JSON.stringify(subscription.toJSON()),
-        headers: {
-          "content-type": "application/json",
-        },
-        method: "POST",
-      });
-
-      setStatus(response.ok ? "done" : "error");
+      const result = await registerPushNotifications();
+      setStatus(result.ok ? "done" : "error");
     } catch {
       setStatus("error");
     }

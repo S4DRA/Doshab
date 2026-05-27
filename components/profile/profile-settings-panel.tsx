@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { registerPushNotifications } from "@/lib/browser-push";
 
 type ProfileSettings = {
   enableNotifications: boolean;
@@ -16,6 +17,9 @@ const defaultSettings: ProfileSettings = {
 export function ProfileSettingsPanel() {
   const [settings, setSettings] = useState(defaultSettings);
   const [saved, setSaved] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState<
+    "idle" | "saving" | "enabled" | "error"
+  >("idle");
   const loadedSettingsRef = useRef(false);
 
   useEffect(() => {
@@ -50,6 +54,11 @@ export function ProfileSettingsPanel() {
   }, [settings]);
   
 
+  const flashSaved = () => {
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 1200);
+  };
+
   const updateSetting = <SettingKey extends keyof ProfileSettings>(
     key: SettingKey,
     value: ProfileSettings[SettingKey],
@@ -58,8 +67,31 @@ export function ProfileSettingsPanel() {
       ...current,
       [key]: value,
     }));
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 1200);
+    flashSaved();
+  };
+
+  const updateNotifications = async (enabled: boolean) => {
+    updateSetting("enableNotifications", enabled);
+
+    if (!enabled) {
+      setNotificationStatus("idle");
+      return;
+    }
+
+    setNotificationStatus("saving");
+
+    try {
+      const result = await registerPushNotifications();
+
+      if (result.ok) {
+        setNotificationStatus("enabled");
+        return;
+      }
+    } catch {
+      // Keep the UI response below consistent for permission and registration failures.
+    }
+
+    setNotificationStatus("error");
   };
 
   return (
@@ -84,10 +116,21 @@ export function ProfileSettingsPanel() {
             aria-label="Enable notifications"
             checked={settings.enableNotifications}
             className="h-5 w-5 rounded border border-white/10 bg-[#0d1322] text-[#FF5F25]"
-            onChange={(event) => updateSetting("enableNotifications", event.target.checked)}
+            onChange={(event) => void updateNotifications(event.target.checked)}
             type="checkbox"
           />
         </label>
+        {notificationStatus === "saving" ? (
+          <p className="-mt-2 px-4 text-xs text-slate-400">Enabling phone alerts...</p>
+        ) : null}
+        {notificationStatus === "enabled" ? (
+          <p className="-mt-2 px-4 text-xs text-emerald-300">Phone alerts enabled.</p>
+        ) : null}
+        {notificationStatus === "error" ? (
+          <p className="-mt-2 px-4 text-xs text-amber-300">
+            Phone alerts could not be enabled on this device.
+          </p>
+        ) : null}
 
         <label className="flex items-center justify-between rounded-lg border border-white/10 bg-[#0b1020] px-4 py-4">
           <span>
