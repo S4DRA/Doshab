@@ -36,7 +36,7 @@ export async function POST(request: NextRequest, context: RejectInviteContext) {
   });
 
   if (!invite) {
-    return redirectWithMessage(request, "That group invite is no longer available.");
+    return redirectWithMessage(request, "That space invite is no longer available.");
   }
 
   await prisma.groupInvite.update({
@@ -48,5 +48,5 @@ export async function POST(request: NextRequest, context: RejectInviteContext) {
     },
   });
 
-  return redirectWithMessage(request, "Group invite rejected.");
+  return redirectWithMessage(request, "Space invite rejected.");
 }

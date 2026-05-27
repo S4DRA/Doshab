@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   const description = String(formData.get("description") ?? "").trim();
 
   if (!name) {
-    return redirectWithError(request, "Group name is required.");
+    return redirectWithError(request, "Space name is required.");
   }
 
   const group = await prisma.$transaction(async (tx) => {

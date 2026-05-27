@@ -5,13 +5,13 @@ import { ButtonLink } from "@/components/ui/button-link";
 const stats = [
   ["Encrypted", "messages"],
   ["Realtime", "rooms"],
-  ["Private", "groups"],
+  ["Private", "spaces"],
 ];
 
 const features = [
   {
     title: "Private by default",
-    description: "Invite-only groups, encrypted text channels, and focused permissions.",
+    description: "Invite-only spaces, encrypted text channels, and focused permissions.",
   },
   {
     title: "Built for momentum",
@@ -37,7 +37,7 @@ export default function Home() {
               A calm command center for your closest circles.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-              Doshab brings encrypted chat, live rooms, private groups, and presence into one crisp workspace that feels fast the moment it opens.
+              Doshab brings encrypted chat, live rooms, private spaces, and presence into one crisp workspace that feels fast the moment it opens.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href="/dashboard">Open dashboard</ButtonLink>

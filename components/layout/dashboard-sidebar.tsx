@@ -228,7 +228,7 @@ export function DashboardSidebar({
   }
 
   const createMenu = createOpen ? (
-    <div className="app-surface absolute left-12 top-0 w-[calc(100vw-4.25rem)] max-w-72 rounded-lg p-3 sm:left-14">
+    <div className="app-surface absolute left-12 top-28 z-50 w-[calc(100vw-4.25rem)] max-w-72 rounded-lg p-3 sm:left-14 sm:top-32">
       <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
         Create
       </p>
@@ -244,7 +244,7 @@ export function DashboardSidebar({
           className="h-10 w-full rounded-lg border border-white/20 bg-[#050505] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-[#FF5F25]"
           maxLength={80}
           name="name"
-          placeholder="Create a group"
+          placeholder="Create a space"
           required
           type="text"
         />
@@ -252,7 +252,7 @@ export function DashboardSidebar({
           className="app-button-primary h-10 w-full rounded-lg text-sm font-bold transition"
           type="submit"
         >
-          Create group
+          Create space
         </button>
       </form>
 
@@ -312,7 +312,7 @@ export function DashboardSidebar({
             Notifications
           </p>
           <p className="mt-1 text-xs text-slate-400">
-            PMs and group messages
+            PMs and space messages
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -366,7 +366,7 @@ export function DashboardSidebar({
           ))
         ) : (
           <p className="rounded-lg border border-dashed border-white/20 px-3 py-4 text-sm leading-6 text-slate-400">
-            No notifications yet. New PMs and group messages will appear here.
+            No notifications yet. New PMs and space messages will appear here.
           </p>
         )}
       </div>
@@ -376,6 +376,7 @@ export function DashboardSidebar({
 
   return (
     <aside className="fixed inset-y-0 left-0 z-50 flex w-14 flex-col items-center border-r border-white/10 bg-[#090c0a]/95 px-1.5 py-2 text-white shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] backdrop-blur sm:w-16 sm:px-2 sm:py-3">
+      {createMenu}
       <Link
         aria-label="Dashboard"
         className="grid size-10 place-items-center rounded-lg transition hover:bg-white/10 sm:size-11"
@@ -413,7 +414,6 @@ export function DashboardSidebar({
           );
         })}
         <div className="relative">
-          {createMenu}
           <button
             aria-expanded={createOpen}
             aria-label="Create menu"
@@ -444,7 +444,7 @@ export function DashboardSidebar({
 
           return (
             <Link
-              aria-label={`${group.name} group`}
+              aria-label={`${group.name} space`}
               className={`grid size-10 shrink-0 place-items-center rounded-lg border text-sm font-black transition sm:size-11 ${
                 active
                   ? "border-[#FF5F25] text-[#FF5F25]"

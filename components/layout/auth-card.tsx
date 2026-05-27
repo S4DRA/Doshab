@@ -37,7 +37,7 @@ export function AuthCard({
           <div className="rounded-lg border border-white/15 bg-black/20 p-5">
             <p className="text-sm font-semibold text-white">Secure by default</p>
             <p className="mt-2 text-sm leading-6 text-white/75">
-              Encrypted messages, private groups, and fast navigation keep the workspace focused.
+              Encrypted messages, private spaces, and fast navigation keep the workspace focused.
             </p>
           </div>
         </div>

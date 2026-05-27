@@ -38,7 +38,7 @@ export async function POST(request: NextRequest, context: AcceptInviteContext) {
   });
 
   if (!invite) {
-    return redirectWithMessage(request, "That group invite is no longer available.");
+    return redirectWithMessage(request, "That space invite is no longer available.");
   }
 
   const existingMembership = await prisma.groupMember.findUnique({
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest, context: AcceptInviteContext) {
       },
     });
 
-    return redirectWithMessage(request, "You are already a member of that group.");
+    return redirectWithMessage(request, "You are already a member of that space.");
   }
 
   await prisma.$transaction([

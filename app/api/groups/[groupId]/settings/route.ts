@@ -79,11 +79,11 @@ export async function POST(
   }
 
   if (membership.group.isDirectMessage) {
-    return redirectToSettings(request, groupId, "error", "Private messages do not have group settings.");
+    return redirectToSettings(request, groupId, "error", "Private messages do not have space settings.");
   }
 
   if (membership.role !== "OWNER" && membership.role !== "ADMIN") {
-    return redirectToSettings(request, groupId, "error", "Only owners and admins can edit group settings.");
+    return redirectToSettings(request, groupId, "error", "Only owners and admins can edit space settings.");
   }
 
   const formData = await request.formData();
@@ -92,7 +92,7 @@ export async function POST(
   const image = normalizeImageUrl(String(formData.get("image") ?? ""));
 
   if (name.length < 2 || name.length > 80) {
-    return redirectToSettings(request, groupId, "error", "Group name must be 2 to 80 characters.");
+    return redirectToSettings(request, groupId, "error", "Space name must be 2 to 80 characters.");
   }
 
   if (description.length > 180) {
@@ -114,5 +114,5 @@ export async function POST(
     },
   });
 
-  return redirectToSettings(request, groupId, "message", "Group settings updated.");
+  return redirectToSettings(request, groupId, "message", "Space settings updated.");
 }

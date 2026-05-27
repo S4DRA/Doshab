@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Doshab",
-  description: "A private meeting app foundation for groups, chat, voice, and video.",
+  description: "A private meeting app foundation for spaces, chat, voice, and video.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

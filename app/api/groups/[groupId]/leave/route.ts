@@ -60,7 +60,7 @@ export async function POST(
   }
 
   if (membership.group.ownerId === user.id || membership.role === "OWNER") {
-    return redirectToSettings(request, groupId, "Owners must delete the group instead of leaving it.");
+    return redirectToSettings(request, groupId, "Owners must delete the space instead of leaving it.");
   }
 
   await prisma.groupMember.delete({
@@ -70,7 +70,7 @@ export async function POST(
   });
 
   return NextResponse.redirect(
-    new URL("/dashboard?message=You%20left%20the%20group.", request.url),
+    new URL("/dashboard?message=You%20left%20the%20space.", request.url),
     { status: 303 },
   );
 }

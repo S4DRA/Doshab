@@ -10,7 +10,7 @@ type GroupInvitesListProps = {
 export function GroupInvitesList({ invites }: GroupInvitesListProps) {
   return (
     <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
-      <h2 className="text-base font-semibold text-white">Group invites</h2>
+      <h2 className="text-base font-semibold text-white">Space invites</h2>
       {invites.length ? (
         <div className="mt-4 space-y-3">
           {invites.map((invite) => (
@@ -58,7 +58,7 @@ export function GroupInvitesList({ invites }: GroupInvitesListProps) {
         </div>
       ) : (
         <p className="mt-3 text-sm leading-6 text-slate-500">
-          Group invites from friends will appear here.
+          Space invites from friends will appear here.
         </p>
       )}
     </section>

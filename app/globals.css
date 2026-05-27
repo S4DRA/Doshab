@@ -221,105 +221,336 @@ html[data-theme="light"] .brand-logo-image {
 
 .doshab-loader-mark {
   position: relative;
-  width: 112px;
-  height: 112px;
+  width: 190px;
+  height: 190px;
+  filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.18));
+  isolation: isolate;
 }
 
-.doshab-grape-piece {
+.doshab-loader-vector {
+  width: 210px;
+  height: 210px;
+  color: rgba(255, 255, 255, 0.92);
+  filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.18));
+}
+
+.doshab-vector-rays {
+  opacity: 0.45;
+  stroke-width: 1.4;
+  transform-origin: 110px 110px;
+  animation: doshab-vector-spin 3200ms linear infinite;
+}
+
+.doshab-vector-vine,
+.doshab-vector-curl,
+.doshab-vector-stem {
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  animation: doshab-vector-draw 2200ms cubic-bezier(0.72, 0, 0.24, 1) infinite;
+}
+
+.doshab-vector-curl {
+  animation-delay: 120ms;
+}
+
+.doshab-vector-stem {
+  animation-delay: 180ms;
+}
+
+.doshab-vector-leaves path,
+.doshab-vector-grapes path,
+.doshab-vector-shards path {
+  fill: currentColor;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.doshab-vector-leaves path {
+  opacity: 0;
+  animation: doshab-vector-pop 2200ms cubic-bezier(0.72, 0, 0.24, 1) infinite;
+}
+
+.doshab-vector-leaves path:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.doshab-vector-leaves path:nth-child(3) {
+  animation-delay: 180ms;
+}
+
+.doshab-vector-grapes path {
+  opacity: 0;
+  animation: doshab-vector-pop 2200ms cubic-bezier(0.72, 0, 0.24, 1) infinite;
+}
+
+.doshab-vector-shards path {
+  opacity: 0.68;
+  animation: doshab-vector-float 2200ms ease-in-out infinite;
+}
+
+.doshab-vector-shards path:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.doshab-vector-shards path:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+.doshab-vector-shards path:nth-child(4) {
+  animation-delay: 450ms;
+}
+
+@keyframes doshab-vector-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes doshab-vector-draw {
+  0%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 220;
+  }
+
+  38%,
+  76% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes doshab-vector-pop {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.2) rotate(12deg);
+  }
+
+  38%,
+  76% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes doshab-vector-float {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.72) rotate(-18deg);
+  }
+
+  48% {
+    opacity: 0.72;
+    transform: translateY(-8px) scale(1) rotate(18deg);
+  }
+}
+
+.doshab-loader-burst {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 12px;
-  height: 12px;
-  margin: -6px 0 0 -6px;
-  border: 1px solid rgba(255, 255, 255, 0.95);
+  width: 150px;
+  height: 150px;
   border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 0 0 2px rgba(255, 95, 37, 0.18);
-  transform: translate(var(--piece-x), var(--piece-y)) scale(0.65);
-  animation: doshab-grape-rebuild 1800ms cubic-bezier(0.7, 0, 0.2, 1) infinite;
-  animation-delay: var(--piece-delay);
+  background:
+    repeating-conic-gradient(
+      from 4deg,
+      rgba(255, 255, 255, 0.92) 0deg 1.4deg,
+      transparent 1.4deg 13deg
+    );
+  mask-image: radial-gradient(circle, transparent 0 16px, #000 17px 56px, transparent 57px);
+  opacity: 0.52;
+  transform: translate(-50%, -50%) scale(0.72) rotate(0deg);
+  animation: doshab-crystal-burst 2600ms cubic-bezier(0.72, 0, 0.24, 1) infinite;
+  z-index: 0;
 }
 
-.doshab-grape-piece:nth-of-type(2) {
-  --piece-x: -36px;
-  --piece-y: -28px;
-  --piece-away-x: -54px;
-  --piece-away-y: -48px;
-  --piece-delay: 0ms;
+.doshab-vine-arc {
+  position: absolute;
+  left: 65px;
+  top: 16px;
+  width: 98px;
+  height: 138px;
+  border: 8px solid rgba(255, 255, 255, 0.86);
+  border-left-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 999px;
+  transform: rotate(12deg);
+  animation: doshab-crystal-sway 2600ms ease-in-out infinite;
+  z-index: 1;
 }
 
-.doshab-grape-piece:nth-of-type(3) {
-  --piece-x: -18px;
-  --piece-y: -36px;
-  --piece-away-x: -22px;
-  --piece-away-y: -64px;
-  --piece-delay: 70ms;
+.doshab-vine-arc::before,
+.doshab-vine-arc::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 26px;
+  background: linear-gradient(135deg, #fff 0 48%, #9da3a6 49% 100%);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 
-.doshab-grape-piece:nth-of-type(4) {
-  --piece-x: 4px;
-  --piece-y: -28px;
-  --piece-away-x: 34px;
-  --piece-away-y: -52px;
-  --piece-delay: 140ms;
+.doshab-vine-arc::before {
+  right: -8px;
+  top: 36px;
+  transform: rotate(18deg);
 }
 
-.doshab-grape-piece:nth-of-type(5) {
-  --piece-x: -28px;
-  --piece-y: -8px;
-  --piece-away-x: -62px;
-  --piece-away-y: -6px;
-  --piece-delay: 210ms;
+.doshab-vine-arc::after {
+  right: 8px;
+  top: 84px;
+  transform: rotate(-16deg);
 }
 
-.doshab-grape-piece:nth-of-type(6) {
-  --piece-x: -8px;
-  --piece-y: -10px;
-  --piece-away-x: 0px;
-  --piece-away-y: -2px;
-  --piece-delay: 280ms;
+.doshab-vine-stem {
+  position: absolute;
+  left: 91px;
+  top: 58px;
+  width: 8px;
+  height: 52px;
+  background: linear-gradient(90deg, #9ca1a4, #fff 54%, #7b8082);
+  clip-path: polygon(42% 0, 100% 14%, 58% 100%, 0 84%);
+  transform-origin: 50% 100%;
+  animation: doshab-crystal-sway 2600ms ease-in-out infinite reverse;
+  z-index: 3;
 }
 
-.doshab-grape-piece:nth-of-type(7) {
-  --piece-x: 14px;
-  --piece-y: -4px;
-  --piece-away-x: 58px;
-  --piece-away-y: -8px;
-  --piece-delay: 350ms;
+.doshab-loader-leaf {
+  --leaf-rotation: 0deg;
+  position: absolute;
+  top: 50px;
+  width: 58px;
+  height: 42px;
+  background: conic-gradient(from 140deg, #aeb3b6, #fff, #ccd0d2, #7d8386, #fff);
+  clip-path: polygon(50% 0, 66% 31%, 100% 38%, 72% 57%, 82% 100%, 50% 70%, 18% 100%, 28% 57%, 0 38%, 34% 31%);
+  transform: rotate(var(--leaf-rotation)) scale(0.9);
+  transform-origin: 50% 80%;
+  animation: doshab-leaf-open 2600ms cubic-bezier(0.72, 0, 0.24, 1) infinite;
+  z-index: 4;
 }
 
-.doshab-grape-piece:nth-of-type(8) {
-  --piece-x: -18px;
-  --piece-y: 16px;
-  --piece-away-x: -42px;
-  --piece-away-y: 48px;
-  --piece-delay: 420ms;
+.doshab-loader-leaf-left {
+  --leaf-rotation: -20deg;
+  left: 41px;
 }
 
-.doshab-grape-piece:nth-of-type(9) {
-  --piece-x: 6px;
-  --piece-y: 20px;
-  --piece-away-x: 40px;
-  --piece-away-y: 52px;
-  --piece-delay: 490ms;
+.doshab-loader-leaf-right {
+  --leaf-rotation: 20deg;
+  right: 41px;
 }
 
-@keyframes doshab-grape-rebuild {
+.doshab-loader-grape {
+  --grape-delay: 0ms;
+  position: absolute;
+  left: var(--grape-x);
+  top: var(--grape-y);
+  width: var(--grape-size);
+  height: var(--grape-size);
+  background:
+    linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, 0.2) 51%),
+    conic-gradient(from 45deg, #ffffff, #b9bec1, #eef0f1, #6f7578, #ffffff);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  transform: translate(-50%, -50%) scale(0.75);
+  animation: doshab-grape-crystallize 2600ms cubic-bezier(0.72, 0, 0.24, 1) infinite;
+  animation-delay: var(--grape-delay);
+  z-index: 5;
+}
+
+.doshab-loader-grape-1 { --grape-x: 95px; --grape-y: 95px; --grape-size: 35px; --grape-delay: 0ms; }
+.doshab-loader-grape-2 { --grape-x: 72px; --grape-y: 113px; --grape-size: 31px; --grape-delay: 70ms; }
+.doshab-loader-grape-3 { --grape-x: 118px; --grape-y: 113px; --grape-size: 31px; --grape-delay: 140ms; }
+.doshab-loader-grape-4 { --grape-x: 84px; --grape-y: 137px; --grape-size: 29px; --grape-delay: 210ms; }
+.doshab-loader-grape-5 { --grape-x: 107px; --grape-y: 137px; --grape-size: 29px; --grape-delay: 280ms; }
+.doshab-loader-grape-6 { --grape-x: 95px; --grape-y: 158px; --grape-size: 27px; --grape-delay: 350ms; }
+.doshab-loader-grape-7 { --grape-x: 79px; --grape-y: 159px; --grape-size: 22px; --grape-delay: 420ms; }
+.doshab-loader-grape-8 { --grape-x: 112px; --grape-y: 159px; --grape-size: 22px; --grape-delay: 490ms; }
+
+.doshab-loader-shard {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 22px;
+  background: linear-gradient(135deg, #fff, #8f9699);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  opacity: 0.78;
+  animation: doshab-shard-float 2600ms ease-in-out infinite;
+  z-index: 2;
+}
+
+.doshab-loader-shard-1 { --shard-x: -78px; --shard-y: -26px; --shard-r: 24deg; animation-delay: 0ms; }
+.doshab-loader-shard-2 { --shard-x: 76px; --shard-y: -44px; --shard-r: -18deg; animation-delay: 180ms; }
+.doshab-loader-shard-3 { --shard-x: -56px; --shard-y: 42px; --shard-r: -40deg; animation-delay: 360ms; }
+.doshab-loader-shard-4 { --shard-x: 68px; --shard-y: 48px; --shard-r: 34deg; animation-delay: 540ms; }
+
+@keyframes doshab-crystal-burst {
   0%,
   100% {
-    opacity: 1;
-    transform: translate(var(--piece-x), var(--piece-y)) scale(0.65);
+    opacity: 0.15;
+    transform: translate(-50%, -50%) scale(0.25) rotate(0deg);
   }
 
-  38% {
-    opacity: 0.75;
-    transform: translate(var(--piece-away-x), var(--piece-away-y)) scale(0.48);
+  42%,
+  72% {
+    opacity: 0.62;
+    transform: translate(-50%, -50%) scale(0.96) rotate(32deg);
+  }
+}
+
+@keyframes doshab-grape-crystallize {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-22px) scale(0.28) rotate(28deg);
   }
 
-  70% {
+  38%,
+  76% {
     opacity: 1;
-    transform: translate(var(--piece-x), var(--piece-y)) scale(0.72);
+    transform: translate(-50%, -50%) translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes doshab-leaf-open {
+  0%,
+  100% {
+    opacity: 0;
+    transform: rotate(var(--leaf-rotation)) scale(0.2);
+  }
+
+  38%,
+  76% {
+    opacity: 1;
+    transform: rotate(var(--leaf-rotation)) scale(0.9);
+  }
+}
+
+@keyframes doshab-crystal-sway {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: rotate(3deg) scale(0.94);
+  }
+
+  45%,
+  76% {
+    opacity: 1;
+    transform: rotate(12deg) scale(1);
+  }
+}
+
+@keyframes doshab-shard-float {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(calc(var(--shard-x) * 0.35), calc(var(--shard-y) * 0.35)) rotate(var(--shard-r)) scale(0.5);
+  }
+
+  48% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) translate(var(--shard-x), var(--shard-y)) rotate(calc(var(--shard-r) + 60deg)) scale(1);
   }
 }
 

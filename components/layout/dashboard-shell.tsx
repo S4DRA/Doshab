@@ -80,7 +80,7 @@ export function DashboardShell({
           <>
             <div className="app-card p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
-                Group
+                Space
               </p>
               <h1 className="mt-2 text-lg font-semibold text-white">{selectedGroup.name}</h1>
               {selectedGroup.description ? (
@@ -100,7 +100,7 @@ export function DashboardShell({
                 className="mt-1 rounded-lg border border-white/10 bg-[#181818] px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/70 hover:bg-[#242424] hover:text-white"
                 href={`/dashboard/groups/${selectedGroup.id}/settings`}
               >
-                Group settings
+                Space settings
               </Link>
             ) : null}
             {canCreateChannels ? (
@@ -113,18 +113,18 @@ export function DashboardShell({
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="app-card p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
-                Groups
+                Spaces
               </p>
               <h1 className="mt-2 text-lg font-semibold text-white">Your spaces</h1>
             </div>
             <div className="flex-1 overflow-y-auto px-1 py-3">
               {groups.length ? (
                 <p className="text-xs leading-5 text-slate-300">
-                  Select a group from the sidebar or create a new private space.
+                  Select a space from the sidebar or create a new private space.
                 </p>
               ) : (
                 <p className="text-xs leading-5 text-slate-300">
-                  Create your first private space for voice, chat and collaboration.
+                  Create your first private space for voice, chat, and collaboration.
                 </p>
               )}
             </div>
@@ -149,12 +149,12 @@ export function DashboardShell({
                 : selectedGroup
                   ? selectedGroup.isDirectMessage
                     ? "Private message"
-                    : "Group"
+                    : "Space"
                   : activeSection === "channels"
-                    ? "Browse channels across your groups"
+                    ? "Browse channels across your spaces"
                     : activeSection === "messages"
                       ? "Private messages"
-                      : "Groups foundation"}
+                      : "Spaces foundation"}
             </p>
           </div>
           <div className="h-1 w-1" />
@@ -319,7 +319,7 @@ function ChannelsHome({
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">All channels in one place</h2>
           <p className="mt-3 max-w-2xl text-xs leading-5 text-slate-300">
-            View every text and voice channel across your private groups, then jump into the space you need.
+            View every text and voice channel across your private spaces, then jump into the space you need.
           </p>
         </section>
 
@@ -339,7 +339,7 @@ function ChannelsHome({
             ))
           ) : (
             <div className="app-card p-6 text-center text-slate-400">
-              No channels found yet. Create a group to add your first channels.
+              No channels found yet. Create a space to add your first channels.
             </div>
           )}
         </section>
@@ -606,7 +606,7 @@ function GroupMain({
             className="mt-1 inline-flex h-11 items-center justify-center rounded-lg border border-white/10 bg-[#181818] px-4 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/70 hover:text-white"
             href={`/dashboard/groups/${group.id}/settings`}
           >
-            Group settings
+            Space settings
           </Link>
         ) : null}
       </div>
@@ -622,7 +622,7 @@ function GroupMain({
               <h2 className="mt-2 break-words text-xl font-semibold text-white sm:text-2xl">
                 {group.isDirectMessage
                   ? "A private place to talk."
-                  : "A calm place for your group."}
+                  : "A calm place for your space."}
               </h2>
               <p className="mt-3 break-words text-xs leading-5 text-slate-300">
                 {group.isDirectMessage
@@ -636,7 +636,7 @@ function GroupMain({
                 {group.members?.length ?? 0}
               </p>
               <p className="mt-3 break-words text-sm text-slate-400">
-                Current group size. Keep the circle intentional and the experience smooth.
+                Current space size. Keep the circle intentional and the experience smooth.
               </p>
             </div>
           </div>
@@ -649,9 +649,9 @@ function GroupMain({
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
                   Danger zone
                 </p>
-                <h3 className="mt-2 break-words text-xl font-semibold text-white">Delete this group</h3>
+                <h3 className="mt-2 break-words text-xl font-semibold text-white">Delete this space</h3>
                 <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-slate-400">
-                  This removes the group, its channels, messages, invites, and member list.
+                  This removes the space, its channels, messages, invites, and member list.
                 </p>
               </div>
               <form action={`/api/groups/${group.id}/delete`} method="post">
@@ -659,7 +659,7 @@ function GroupMain({
                   className="h-11 rounded-xl border border-[#FF5F25] bg-[#FF5F25] px-5 text-sm font-bold text-black transition hover:bg-[#ff7847]"
                   type="submit"
                 >
-                  Delete group
+                  Delete space
                 </button>
               </form>
             </div>
@@ -675,7 +675,7 @@ function GroupMain({
               </p>
               <h3 className="mt-3 text-xl font-semibold text-white">Owner access only</h3>
               <p className="mt-3 text-sm leading-6 text-slate-400">
-                Group invites are reserved for owners and admins. Reach out to an
+                Space invites are reserved for owners and admins. Reach out to an
                 administrator when you want to expand the circle.
               </p>
             </section>

@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!channel.group.members.length) {
-    return jsonError("You are not a member of this group.", 403);
+    return jsonError("You are not a member of this space.", 403);
   }
 
   const roomName = createLiveKitRoomName(channel.groupId, channel.id);

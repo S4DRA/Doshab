@@ -107,7 +107,7 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
   }
 
   if (existingMembership) {
-    return redirectToGroup(request, groupId, "That friend is already in this group.");
+    return redirectToGroup(request, groupId, "That friend is already in this space.");
   }
 
   if (existingInvite?.status === "PENDING") {
@@ -139,5 +139,5 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
     });
   }
 
-  return redirectToGroup(request, groupId, "Group invite sent.");
+  return redirectToGroup(request, groupId, "Space invite sent.");
 }

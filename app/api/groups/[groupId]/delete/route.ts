@@ -46,7 +46,7 @@ export async function POST(
   }
 
   if (group.ownerId !== user.id) {
-    return redirectToGroup(request, groupId, "Only the group owner can delete this group.");
+    return redirectToGroup(request, groupId, "Only the space owner can delete this space.");
   }
 
   await prisma.group.delete({
@@ -56,7 +56,7 @@ export async function POST(
   });
 
   return NextResponse.redirect(
-    new URL("/dashboard?message=Group%20deleted.", request.url),
+    new URL("/dashboard?message=Space%20deleted.", request.url),
     { status: 303 },
   );
 }

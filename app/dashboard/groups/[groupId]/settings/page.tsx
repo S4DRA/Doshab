@@ -123,14 +123,14 @@ function GroupSettingsPanel({
       <div className="grid min-w-0 gap-4 min-[1180px]:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-2xl border border-white/10 bg-[#050505] p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
-            Group settings
+            Space settings
           </p>
           <div className="mt-4 flex items-center gap-4">
             <AvatarInitials imageUrl={group.image} size="lg" value={group.name} />
             <div className="min-w-0">
               <h1 className="truncate text-2xl font-bold text-white">{group.name}</h1>
               <p className="mt-2 text-sm leading-6 text-slate-400">
-                Manage the group identity, channels, and membership.
+                Manage the space identity, channels, and membership.
               </p>
             </div>
           </div>
@@ -147,7 +147,7 @@ function GroupSettingsPanel({
           >
             <label className="block">
               <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
-                Group name
+                Space name
               </span>
               <input
                 className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#050505] px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
@@ -194,7 +194,7 @@ function GroupSettingsPanel({
               disabled={!canManage}
               type="submit"
             >
-              Save group
+              Save space
             </button>
           </form>
         </section>
@@ -233,12 +233,12 @@ function GroupSettingsPanel({
               Membership
             </p>
             <h2 className="mt-2 text-xl font-semibold text-white">
-              {isOwner ? "Delete this group" : "Leave this group"}
+              {isOwner ? "Delete this space" : "Leave this space"}
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-400">
               {isOwner
-                ? "Deleting removes the group, channels, messages, invites, and members."
-                : "Leaving removes you from this group. You will need a new invite to rejoin."}
+                ? "Deleting removes the space, channels, messages, invites, and members."
+                : "Leaving removes you from this space. You will need a new invite to rejoin."}
             </p>
             {isOwner ? (
               <form action={`/api/groups/${group.id}/delete`} className="mt-4" method="post">
@@ -246,7 +246,7 @@ function GroupSettingsPanel({
                   className="h-11 rounded-xl border border-[#FF5F25] bg-[#FF5F25] px-5 text-sm font-bold text-black transition hover:bg-[#ff7847]"
                   type="submit"
                 >
-                  Delete group
+                  Delete space
                 </button>
               </form>
             ) : (
@@ -255,7 +255,7 @@ function GroupSettingsPanel({
                   className="h-11 rounded-xl border border-white/20 bg-[#181818] px-5 text-sm font-bold text-white transition hover:border-[#FF5F25] hover:bg-[#242424]"
                   type="submit"
                 >
-                  Leave group
+                  Leave space
                 </button>
               </form>
             )}

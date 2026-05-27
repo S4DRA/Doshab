@@ -52,7 +52,7 @@ export function GroupMembersList({ members }: GroupMembersListProps) {
         </div>
       ) : (
         <p className="mt-3 text-sm leading-6 text-slate-500">
-          Members will appear here as people join this group.
+          Members will appear here as people join this space.
         </p>
       )}
     </section>

@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     background_color: "#060807",
-    description: "Private encrypted chat, groups, and live rooms.",
+    description: "Private encrypted chat, spaces, and live rooms.",
     display: "standalone",
     icons: [
       {
