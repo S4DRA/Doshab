@@ -51,7 +51,7 @@ export function DashboardLoadingShell() {
         <div className="mt-auto app-skeleton h-10 w-10 rounded-lg" />
       </aside>
 
-      <aside className="dashboard-secondary-sidebar hidden w-[min(17rem,24vw)] shrink-0 flex-col border-r border-white/10 bg-[#0d100e] p-3 min-[1180px]:flex min-[1400px]:w-64 min-[1400px]:p-4">
+      <aside className="dashboard-secondary-sidebar hidden w-[260px] shrink-0 flex-col border-r border-white/10 bg-[#0d100e] p-4 min-[1180px]:flex min-[1500px]:w-[280px]">
         <div className="app-card p-4">
           <div className="app-skeleton h-3 w-16 rounded-full" />
           <div className="app-skeleton mt-3 h-5 w-36 rounded-full" />
@@ -74,8 +74,8 @@ export function DashboardLoadingShell() {
           <div className="app-skeleton h-9 w-9 rounded-lg" />
         </header>
 
-        <div className="grid min-h-0 flex-1 place-items-center px-4 py-6">
-          <div className="grid w-full max-w-5xl gap-5">
+        <div className="app-page-scroll grid place-items-center">
+          <div className="app-page-container grid gap-5">
             <BrandLoader label="Preparing dashboard" size="sm" />
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (

@@ -9,13 +9,14 @@ type GroupInvitesListProps = {
 
 export function GroupInvitesList({ invites }: GroupInvitesListProps) {
   return (
-    <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
-      <h2 className="text-base font-semibold text-white">Space invites</h2>
+    <section className="app-panel p-5">
+      <p className="app-section-title">Invites</p>
+      <h2 className="mt-2 text-base font-semibold text-white">Space invites</h2>
       {invites.length ? (
         <div className="mt-4 space-y-3">
           {invites.map((invite) => (
             <div
-              className="flex flex-col gap-3 rounded-md border border-white/10 bg-[#0b1020] p-3 sm:flex-row sm:items-center sm:justify-between"
+                className="app-row flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between"
               key={invite.id}
             >
               <div className="flex min-w-0 items-center gap-3">
@@ -38,7 +39,7 @@ export function GroupInvitesList({ invites }: GroupInvitesListProps) {
               <div className="flex gap-2">
                 <form action={`/api/groups/invites/${invite.id}/accept`} method="post">
                   <SubmitButton
-                    className="h-9 bg-emerald-500/20 px-3 text-xs text-emerald-100 hover:bg-emerald-500/30"
+                    className="h-9 rounded-lg bg-emerald-500/20 px-3 text-xs text-emerald-100 hover:bg-emerald-500/30"
                     pendingText="Accepting..."
                   >
                     Accept
@@ -46,7 +47,7 @@ export function GroupInvitesList({ invites }: GroupInvitesListProps) {
                 </form>
                 <form action={`/api/groups/invites/${invite.id}/reject`} method="post">
                   <SubmitButton
-                    className="h-9 bg-white/8 px-3 text-xs text-slate-200 hover:bg-white/12"
+                    className="app-button-secondary h-9 rounded-lg px-3 text-xs transition"
                     pendingText="Rejecting..."
                   >
                     Reject

@@ -92,31 +92,71 @@ html {
 
 .app-surface {
   border: 1px solid var(--border-soft);
-  background: color-mix(in srgb, var(--surface-panel) 88%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 94%, transparent);
   box-shadow: var(--shadow);
 }
 
 .app-card {
   border: 1px solid var(--border-soft);
   border-radius: 8px;
-  background: var(--surface-raised);
+  background: color-mix(in srgb, var(--surface-raised) 94%, var(--surface-panel) 6%);
 }
 
 .app-panel {
   border: 1px solid var(--border-soft);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--surface-raised) 92%, transparent);
+  background: color-mix(in srgb, var(--surface-raised) 96%, transparent);
   box-shadow: var(--shadow);
 }
 
 .app-row {
   border: 1px solid var(--border-soft);
   border-radius: 8px;
-  background: var(--surface-sidebar);
+  background: color-mix(in srgb, var(--surface-sidebar) 84%, var(--surface-raised) 16%);
 }
 
 .app-row:hover {
   background: var(--surface-hover);
+}
+
+.app-page-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+main.app-page-scroll {
+  min-height: 100dvh;
+}
+
+.app-page-container {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+}
+
+.app-page-header {
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-panel) 92%, transparent);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.app-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+@media (min-width: 640px) {
+  .app-page-scroll {
+    padding: 1.5rem;
+  }
 }
 
 .app-icon-button {

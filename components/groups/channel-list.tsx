@@ -24,7 +24,7 @@ export function ChannelList({
   const voiceChannels = channels.filter((channel) => channel.type === "VOICE");
 
   return (
-    <div className="space-y-5 px-1 py-4">
+    <div className="space-y-5 px-0 py-4">
       <ChannelSection
         channels={textChannels}
         canManageChannels={canManageChannels}
@@ -70,7 +70,7 @@ function ChannelSection({
 }) {
   return (
     <section>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+      <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
         {label}
       </p>
       {channels.length ? (
@@ -78,8 +78,8 @@ function ChannelSection({
           {channels.map((channel) => (
             <div
               className={cn(
-                "app-row flex w-full min-w-0 items-center justify-between gap-2 px-3 py-2.5 text-left text-sm text-slate-300 transition",
-                selectedChannelId === channel.id && "border-[#FF5F25]/50 bg-[#FF5F25]/12 text-white",
+                "app-row flex w-full min-w-0 items-center justify-between gap-2 px-3 py-3 text-left text-sm font-medium text-slate-300 transition hover:border-white/20",
+                selectedChannelId === channel.id && "border-[#FF5F25]/60 bg-[#FF5F25]/12 text-white shadow-[inset_3px_0_0_#FF5F25]",
               )}
               key={channel.id}
             >
@@ -88,10 +88,10 @@ function ChannelSection({
                 href={`/dashboard/groups/${groupId}/channels/${channel.id}`}
               >
                 <span className="flex min-w-0 items-center gap-2">
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/7 text-xs font-bold text-slate-200">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/7 text-xs font-bold text-slate-200">
                     {channel.type === "TEXT" ? "#" : "V"}
                   </span>
-                  <span className="truncate">
+                  <span className="truncate text-[13px]">
                     {prefix} {channel.name}
                   </span>
                 </span>

@@ -72,7 +72,7 @@ export function DashboardShell({
 
   return (
     <main className="flex h-[100dvh] min-h-0 w-full max-w-full overflow-hidden bg-[#070907]/95 text-slate-100">
-      <aside className="dashboard-secondary-sidebar hidden w-[min(17rem,24vw)] shrink-0 flex-col border-r border-white/10 bg-[#0d100e] p-3 min-[1180px]:flex min-[1400px]:w-64 min-[1400px]:p-4">
+      <aside className="dashboard-secondary-sidebar hidden w-[260px] shrink-0 flex-col border-r border-white/10 bg-[#0d100e] p-4 min-[1180px]:flex min-[1500px]:w-[280px]">
         {activeSection === "messages" || selectedGroup?.isDirectMessage ? (
           <MessageThreadSidebar
             selectedGroupId={selectedGroup?.id}
@@ -81,12 +81,12 @@ export function DashboardShell({
         ) : selectedGroup ? (
           <>
             <div className="app-card p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+              <p className="app-section-title">
                 Space
               </p>
-              <h1 className="mt-2 text-lg font-semibold text-white">{selectedGroup.name}</h1>
+              <h1 className="mt-2 break-words text-lg font-semibold text-white">{selectedGroup.name}</h1>
               {selectedGroup.description ? (
-                <p className="mt-2 text-xs leading-5 text-slate-400">
+                <p className="mt-2 break-words text-sm leading-6 text-slate-400">
                   {selectedGroup.description}
                 </p>
               ) : null}
@@ -109,18 +109,18 @@ export function DashboardShell({
         ) : (
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="app-card p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+              <p className="app-section-title">
                 Spaces
               </p>
               <h1 className="mt-2 text-lg font-semibold text-white">Your spaces</h1>
             </div>
             <div className="flex-1 overflow-y-auto px-1 py-3">
               {groups.length ? (
-                <p className="text-xs leading-5 text-slate-300">
+                <p className="text-sm leading-6 text-slate-300">
                   Select a space from the sidebar or create a new private space.
                 </p>
               ) : (
-                <p className="text-xs leading-5 text-slate-300">
+                <p className="text-sm leading-6 text-slate-300">
                   Create your first private space for voice, chat, and collaboration.
                 </p>
               )}
@@ -133,12 +133,12 @@ export function DashboardShell({
       </aside>
 
       <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex min-h-12 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 py-1.5 pl-3 pr-24 backdrop-blur sm:px-5">
+        <header className="flex min-h-14 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 py-2 pl-3 pr-24 backdrop-blur sm:px-6">
           <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#FF5F25]">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
               {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : activeSection === "messages" ? "Messages" : "Dashboard"}
             </p>
-            <p className="truncate text-xs text-slate-400">
+            <p className="mt-0.5 truncate text-sm text-slate-400">
               {selectedChannel
                 ? selectedChannel.type === "TEXT"
                   ? "Text channel"
@@ -278,10 +278,10 @@ function MessageThreadSidebar({
 
 function MessagesHome({ threads }: { threads: MessageThread[] }) {
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
-      <div className="w-full space-y-4">
-        <section className="app-surface rounded-xl p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+    <div className="app-page-scroll">
+      <div className="app-page-container space-y-4">
+        <section className="app-page-header">
+          <p className="app-section-title">
             Private messages
           </p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
@@ -369,10 +369,10 @@ function ChannelsHome({
   );
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
-      <div className="mx-auto w-full max-w-5xl space-y-4">
-        <section className="app-surface rounded-xl p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+    <div className="app-page-scroll">
+      <div className="app-page-container space-y-4">
+        <section className="app-page-header">
+          <p className="app-section-title">
             Channels
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">All channels in one place</h2>
@@ -493,9 +493,27 @@ function DashboardHome({ data }: { data?: DashboardHomeData }) {
   const onlineCount = friends.filter((friend) => friend.status === "ONLINE").length;
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
-      <div className="mx-auto grid w-full max-w-6xl gap-4">
-        <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+    <div className="app-page-scroll">
+      <div className="app-page-container grid gap-5">
+        <section className="app-page-header">
+          <div className="flex flex-col gap-4 min-[760px]:flex-row min-[760px]:items-end min-[760px]:justify-between">
+            <div className="min-w-0">
+              <p className="app-section-title">Dashboard</p>
+              <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
+                Your private workspace
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+                Start from friends, pending requests, and invites. Spaces and messages stay one click away in the sidebars.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-right min-[760px]:min-w-52">
+              <MetricCard label="Friends" value={friends.length} />
+              <MetricCard label="Online" value={onlineCount} />
+            </div>
+          </div>
+        </section>
+
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)]">
           <FriendSearchForm
             message={data?.addFriendMessage}
             query={data?.addFriendQuery}
@@ -508,7 +526,7 @@ function DashboardHome({ data }: { data?: DashboardHomeData }) {
           />
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid gap-5 xl:grid-cols-2">
           <FriendRequestList
             emptyText="No incoming requests."
             kind="incoming"
@@ -537,10 +555,10 @@ function FriendStatusPanel({
   onlineCount: number;
 }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm shadow-black/10">
+    <section className="app-panel p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+          <p className="app-section-title">
             Friends status
           </p>
           <h2 className="mt-2 text-base font-semibold text-white">
@@ -639,7 +657,7 @@ function GroupMain({
   ).length;
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
+    <div className="app-page-scroll">
       <div className="grid w-full min-w-0 gap-3 min-[1180px]:hidden">
         {group.notice ? <Alert>{group.notice}</Alert> : null}
         <section className="app-surface rounded-xl p-4">
@@ -692,12 +710,12 @@ function GroupMain({
         ) : null}
       </div>
 
-      <div className="hidden w-full min-w-0 gap-4 min-[1180px]:grid">
+      <div className="app-page-container hidden min-w-0 gap-5 min-[1180px]:grid">
         {group.notice ? <Alert>{group.notice}</Alert> : null}
-        <section className="app-surface rounded-xl p-5">
+        <section className="app-page-header">
           <div className="grid min-w-0 gap-5 min-[1180px]:grid-cols-[1fr_1.2fr] min-[1180px]:items-center">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+              <p className="app-section-title">
                 {group.name}
               </p>
               <h2 className="mt-2 break-words text-xl font-semibold text-white sm:text-2xl">
@@ -705,7 +723,7 @@ function GroupMain({
                   ? "A private place to talk."
                   : "A calm place for your space."}
               </h2>
-              <p className="mt-3 break-words text-xs leading-5 text-slate-300">
+              <p className="mt-3 break-words text-sm leading-6 text-slate-300">
                 {group.isDirectMessage
                   ? "This conversation is only visible to the people in this private message."
                   : "Start by picking a channel or creating something new. This space is made for focused conversation, private invites, and clear shared routines."}
@@ -738,35 +756,11 @@ function GroupMain({
           </div>
         </section>
 
-        {canDeleteGroup ? (
-          <section className="min-w-0 rounded-2xl border border-[#FF5F25]/60 bg-[#050505] p-4 sm:p-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
-                  Danger zone
-                </p>
-                <h3 className="mt-2 break-words text-xl font-semibold text-white">Delete this space</h3>
-                <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-slate-400">
-                  This removes the space, its channels, messages, invites, and member list.
-                </p>
-              </div>
-              <form action={`/api/groups/${group.id}/delete`} method="post">
-                <button
-                  className="h-11 rounded-xl border border-[#FF5F25] bg-[#FF5F25] px-5 text-sm font-bold text-black transition hover:bg-[#ff7847]"
-                  type="submit"
-                >
-                  Delete space
-                </button>
-              </form>
-            </div>
-          </section>
-        ) : null}
-
         <div className="grid min-w-0 gap-5 min-[1180px]:grid-cols-[1.2fr_0.8fr]">
           <GroupMembersList currentUserId={currentUserId} members={group.members ?? []} />
           {canInvite ? invitePanel : (
-            <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+            <section className="app-panel p-5">
+              <p className="app-section-title">
                 Invites
               </p>
               <h3 className="mt-3 text-xl font-semibold text-white">Owner access only</h3>
@@ -777,6 +771,30 @@ function GroupMain({
             </section>
           )}
         </div>
+
+        {canDeleteGroup ? (
+          <section className="app-card min-w-0 p-4 sm:p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Danger zone
+                </p>
+                <h3 className="mt-2 break-words text-base font-semibold text-white">Delete this space</h3>
+                <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-slate-400">
+                  Permanent actions live at the bottom so daily space work stays focused.
+                </p>
+              </div>
+              <form action={`/api/groups/${group.id}/delete`} method="post">
+                <button
+                  className="app-button-secondary h-10 rounded-lg px-4 text-sm font-semibold transition"
+                  type="submit"
+                >
+                  Delete space
+                </button>
+              </form>
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
   );

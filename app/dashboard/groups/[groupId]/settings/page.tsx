@@ -145,10 +145,10 @@ function GroupSettingsPanel({
   const memberIds = group.members.map((member) => member.userId);
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
-      <div className="grid min-w-0 gap-4 min-[1180px]:grid-cols-[1.1fr_0.9fr]">
-        <section className="rounded-2xl border border-white/10 bg-[#050505] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+    <div className="app-page-scroll">
+      <div className="app-page-container grid min-w-0 gap-5">
+        <section className="app-page-header">
+          <p className="app-section-title">
             Space settings
           </p>
           <div className="mt-4 flex items-center gap-4">
@@ -225,11 +225,11 @@ function GroupSettingsPanel({
           </form>
         </section>
 
-        <div className="grid gap-4">
-          <section className="rounded-2xl border border-white/10 bg-[#050505] p-5">
+        <div className="grid gap-5 min-[1180px]:grid-cols-[minmax(0,1.1fr)_minmax(22rem,0.9fr)]">
+          <section className="app-panel p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+            <p className="app-section-title">
               Channels
             </p>
             <h2 className="mt-2 text-xl font-semibold text-white">Add a channel</h2>
@@ -252,8 +252,8 @@ function GroupSettingsPanel({
             )}
           </section>
 
-          <section className="rounded-2xl border border-white/10 bg-[#050505] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+          <section className="app-panel p-5">
+            <p className="app-section-title">
               Existing channels
             </p>
             <ChannelList
@@ -275,7 +275,7 @@ function GroupSettingsPanel({
             </Suspense>
           ) : (
             <section className="app-panel p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+              <p className="app-section-title">
                 Invite
               </p>
               <h2 className="mt-2 text-xl font-semibold text-white">Invite friends</h2>
@@ -285,11 +285,11 @@ function GroupSettingsPanel({
             </section>
           )}
 
-          <section className="rounded-2xl border border-[#FF5F25]/60 bg-[#050505] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+          <section className="app-card p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
               Membership
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-white">
+            <h2 className="mt-2 text-base font-semibold text-white">
               {isOwner ? "Delete this space" : "Leave this space"}
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-400">
@@ -300,7 +300,7 @@ function GroupSettingsPanel({
             {isOwner ? (
               <form action={`/api/groups/${group.id}/delete`} className="mt-4" method="post">
                 <button
-                  className="h-11 rounded-xl border border-[#FF5F25] bg-[#FF5F25] px-5 text-sm font-bold text-black transition hover:bg-[#ff7847]"
+                  className="app-button-secondary h-10 rounded-lg px-4 text-sm font-semibold transition"
                   type="submit"
                 >
                   Delete space
@@ -309,7 +309,7 @@ function GroupSettingsPanel({
             ) : (
               <form action={`/api/groups/${group.id}/leave`} className="mt-4" method="post">
                 <button
-                  className="h-11 rounded-xl border border-white/20 bg-[#181818] px-5 text-sm font-bold text-white transition hover:border-[#FF5F25] hover:bg-[#242424]"
+                  className="app-button-secondary h-10 rounded-lg px-4 text-sm font-semibold transition"
                   type="submit"
                 >
                   Leave space

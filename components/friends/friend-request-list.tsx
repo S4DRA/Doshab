@@ -17,7 +17,7 @@ export function FriendRequestList({
   kind,
 }: FriendRequestListProps) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm shadow-black/10">
+    <section className="app-panel p-5">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-base font-semibold text-white">{title}</h2>
         <span className="rounded-full bg-[#FF5F25]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#FF5F25]">
@@ -31,7 +31,7 @@ export function FriendRequestList({
 
             return (
               <div
-                className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-[#0c1421] p-4 shadow-inner shadow-black/10 sm:flex-row sm:items-center sm:justify-between"
+                className="app-row flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"
                 key={request.id}
               >
                 <PersonSummary
@@ -44,7 +44,7 @@ export function FriendRequestList({
                   <div className="flex flex-wrap gap-2">
                     <form action={`/api/friends/requests/${request.id}/accept`} method="post">
                       <SubmitButton
-                        className="h-10 rounded-full bg-emerald-500 px-4 text-xs font-semibold text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-400"
+                        className="h-10 rounded-lg bg-emerald-500 px-4 text-xs font-semibold text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-400"
                         pendingText="Accepting..."
                       >
                         Accept
@@ -52,7 +52,7 @@ export function FriendRequestList({
                     </form>
                     <form action={`/api/friends/requests/${request.id}/reject`} method="post">
                       <SubmitButton
-                        className="h-10 rounded-full bg-white/10 px-4 text-xs font-semibold text-slate-200 shadow-sm shadow-black/20 transition hover:bg-white/15"
+                        className="app-button-secondary h-10 rounded-lg px-4 text-xs font-semibold transition"
                         pendingText="Rejecting..."
                       >
                         Reject
