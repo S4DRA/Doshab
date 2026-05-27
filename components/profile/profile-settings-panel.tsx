@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -49,6 +48,7 @@ export function ProfileSettingsPanel() {
       );
     }
   }, [settings]);
+  
 
   const updateSetting = <SettingKey extends keyof ProfileSettings>(
     key: SettingKey,
@@ -113,15 +113,11 @@ export function ProfileSettingsPanel() {
           <ThemeToggle />
         </div>
 
-        <div className="rounded-lg border border-white/10 bg-[#0b1020] p-4 text-sm text-slate-400">
+          <div className="rounded-lg border border-white/10 bg-[#0b1020] p-4 text-sm text-slate-400">
           <p>
             These controls are designed to make your workspace feel more personal. The theme preference and notification choices are stored locally for faster access.
           </p>
-          {saved ? (
-            <p className="mt-3 text-sm text-emerald-300">Settings saved.</p>
-          ) : null}
-        </div>
-
+         
         <form action="/api/auth/logout" method="post">
           <button
             className="h-11 w-full rounded-lg border border-white/10 bg-white px-4 text-sm font-bold text-black transition hover:bg-[#FF5F25]"
@@ -130,6 +126,10 @@ export function ProfileSettingsPanel() {
             Log out
           </button>
         </form>
+ {saved ? (
+            <p className="mt-3 text-sm text-emerald-300">Settings saved.</p>
+          ) : null}
+        </div>
       </div>
     </section>
   );

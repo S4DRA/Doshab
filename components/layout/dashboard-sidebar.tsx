@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { PushNotificationToggle } from "@/components/notifications/push-notification-toggle";
 import { LogoMark } from "@/components/ui/logo-mark";
 import type { DashboardNotification } from "@/types";
 
@@ -54,15 +55,29 @@ type SidebarFriend = {
   name: string;
 };
 
-const sidebarCacheKey = "doshab-sidebar-v3";
+const sidebarCacheKey = "doshab-sidebar-v4";
 
-export function DashboardSidebar() {
+type DashboardSidebarProps = {
+  initialFriends?: SidebarFriend[];
+  initialGroups?: SidebarGroup[];
+  initialNotifications?: DashboardNotification[];
+  initialUnreadCount?: number;
+};
+
+export function DashboardSidebar({
+  initialFriends = [],
+  initialGroups = [],
+  initialNotifications = [],
+  initialUnreadCount = 0,
+}: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [friends, setFriends] = useState<SidebarFriend[]>([]);
-  const [groups, setGroups] = useState<SidebarGroup[]>([]);
-  const [notifications, setNotifications] = useState<DashboardNotification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [friends, setFriends] = useState<SidebarFriend[]>(initialFriends);
+  const [groups, setGroups] = useState<SidebarGroup[]>(initialGroups);
+  const [notifications, setNotifications] = useState<DashboardNotification[]>(
+    initialNotifications,
+  );
+  const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
   const [createOpen, setCreateOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -96,7 +111,7 @@ export function DashboardSidebar() {
 
           if (isMounted) {
             setFriends(parsedSidebar.friends ?? []);
-            setGroups(parsedSidebar.groups ?? []);
+            setGroups(parsedSidebar.groups?.length ? parsedSidebar.groups : initialGroups);
             setNotifications(parsedSidebar.notifications ?? []);
             setUnreadCount(parsedSidebar.unreadCount ?? 0);
           }
@@ -154,7 +169,7 @@ export function DashboardSidebar() {
       isMounted = false;
       window.clearInterval(refreshTimer);
     };
-  }, []);
+  }, [initialGroups]);
 
   if (!pathname.startsWith("/dashboard")) {
     return null;
@@ -347,6 +362,7 @@ export function DashboardSidebar() {
                 </p>
               )}
             </div>
+            <PushNotificationToggle />
           </div>
         ) : null}
         <button

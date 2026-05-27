@@ -58,6 +58,18 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
   }
 
   const messageThreads = await getDashboardMessageThreads(session.userId);
+  const currentUser = await prisma.user.findUnique({
+    where: {
+      id: session.userId,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      status: true,
+    },
+  });
 
   const selectedChannel = await prisma.channel.findFirst({
     where: {
@@ -79,6 +91,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
           createdAt: true,
           sender: {
             select: {
+              id: true,
               name: true,
               email: true,
               image: true,
@@ -105,6 +118,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
 
   return (
     <DashboardShell
+      currentUser={currentUser ?? undefined}
       groups={[]}
       messageThreads={messageThreads}
       selectedChannel={channelWithChronologicalMessages}

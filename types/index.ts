@@ -30,6 +30,7 @@ export type ChatMessage = {
   content: string;
   createdAt: Date | string;
   sender: {
+    id?: string;
     name: string;
     email: string;
     image?: string | null;

@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { MessageInput } from "@/components/chat/message-input";
 import { RealtimeMessagePanel } from "@/components/chat/realtime-message-panel";
 import { ChannelList } from "@/components/groups/channel-list";
 import { CreateChannelForm } from "@/components/groups/create-channel-form";
@@ -18,6 +17,7 @@ import type {
 } from "@/types";
 
 type DashboardShellProps = {
+  currentUser?: ChatMessage["sender"];
   groups: DashboardGroup[];
   selectedGroup?: DashboardGroup & {
     channels: GroupChannel[];
@@ -35,6 +35,7 @@ type DashboardShellProps = {
 };
 
 export function DashboardShell({
+  currentUser,
   groups,
   selectedGroup,
   selectedChannel,
@@ -153,6 +154,7 @@ export function DashboardShell({
         ) : selectedChannel ? (
           <ChannelMain
             channel={selectedChannel}
+            currentUser={currentUser}
             messages={selectedChannel.messages ?? []}
           />
         ) : selectedGroup ? (
@@ -426,9 +428,11 @@ function ChannelsHome({
 
 function ChannelMain({
   channel,
+  currentUser,
   messages,
 }: {
   channel: GroupChannel;
+  currentUser?: ChatMessage["sender"];
   messages: ChatMessage[];
 }) {
   if (channel.type === "VOICE") {
@@ -444,19 +448,18 @@ function ChannelMain({
           </p>
           <h2 className="mt-3 text-2xl font-bold text-white"># {channel.name}</h2>
           <p className="mt-3 text-sm leading-6 text-slate-400">
-            Chat messages and realtime delivery will be added in Step 7.
+            End-to-end encrypted messages stream in realtime from this app.
           </p>
         </section>
         <div className="mt-6">
           <RealtimeMessagePanel
             channelId={channel.id}
+            channelName={channel.name}
+            currentUser={currentUser}
             initialMessages={messages}
             key={channel.id}
           />
         </div>
-      </div>
-      <div className="border-t border-white/10 bg-[#050505] px-3 py-2.5 sm:px-4 sm:py-3">
-        <MessageInput channelId={channel.id} channelName={channel.name} />
       </div>
     </div>
   );

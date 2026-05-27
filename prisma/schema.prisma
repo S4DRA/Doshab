@@ -26,6 +26,7 @@ model User {
   sentGroupInvites       GroupInvite[]   @relation("GroupInviteInviter")
   messages               Message[]
   notifications          Notification[]  @relation("NotificationRecipient")
+  pushSubscriptions      PushSubscription[]
   sentNotifications      Notification[]  @relation("NotificationActor")
 
   @@index([status])
@@ -179,6 +180,21 @@ model Notification {
   @@index([channelId])
   @@index([messageId])
   @@map("notifications")
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }
 
 enum UserStatus {
