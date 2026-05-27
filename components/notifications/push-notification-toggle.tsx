@@ -2,20 +2,39 @@
 
 import { useState } from "react";
 
-import { registerPushNotifications } from "@/lib/browser-push";
+import {
+  getPushRegistrationMessage,
+  registerPushNotifications,
+  type PushRegistrationResult,
+} from "@/lib/browser-push";
 
 export function PushNotificationToggle() {
   const [status, setStatus] = useState<
     "idle" | "saving" | "done" | "testing" | "tested" | "error"
   >("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   async function enablePush() {
     setStatus("saving");
 
     try {
       const result = await registerPushNotifications();
-      setStatus(result.ok ? "done" : "error");
+
+      if (result.ok) {
+        setErrorMessage("");
+        setStatus("done");
+        return;
+      }
+
+      setErrorMessage(getPushRegistrationMessage(result));
+      setStatus("error");
     } catch {
+      setErrorMessage(
+        getPushRegistrationMessage({
+          ok: false,
+          reason: "subscription-failed",
+        } satisfies PushRegistrationResult),
+      );
       setStatus("error");
     }
   }
@@ -49,6 +68,9 @@ export function PushNotificationToggle() {
               ? "Phone alerts unavailable"
               : "Enable phone alerts"}
       </button>
+      {status === "error" && errorMessage ? (
+        <p className="px-1 text-xs leading-5 text-amber-300">{errorMessage}</p>
+      ) : null}
       {status === "done" || status === "testing" || status === "tested" ? (
         <button
           className="w-full rounded-lg border border-white/10 px-3 py-2 text-left text-xs font-semibold text-slate-300 transition hover:border-[#FF5F25] hover:text-white"

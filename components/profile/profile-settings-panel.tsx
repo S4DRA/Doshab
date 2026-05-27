@@ -2,7 +2,11 @@
 import { useEffect, useRef, useState } from "react";
 
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { registerPushNotifications } from "@/lib/browser-push";
+import {
+  getPushRegistrationMessage,
+  registerPushNotifications,
+  type PushRegistrationResult,
+} from "@/lib/browser-push";
 
 type ProfileSettings = {
   enableNotifications: boolean;
@@ -20,6 +24,7 @@ export function ProfileSettingsPanel() {
   const [notificationStatus, setNotificationStatus] = useState<
     "idle" | "saving" | "enabled" | "error"
   >("idle");
+  const [notificationMessage, setNotificationMessage] = useState("");
   const loadedSettingsRef = useRef(false);
 
   useEffect(() => {
@@ -71,9 +76,9 @@ export function ProfileSettingsPanel() {
   };
 
   const updateNotifications = async (enabled: boolean) => {
-    updateSetting("enableNotifications", enabled);
-
     if (!enabled) {
+      updateSetting("enableNotifications", false);
+      setNotificationMessage("");
       setNotificationStatus("idle");
       return;
     }
@@ -84,11 +89,28 @@ export function ProfileSettingsPanel() {
       const result = await registerPushNotifications();
 
       if (result.ok) {
+        updateSetting("enableNotifications", true);
+        setNotificationMessage(getPushRegistrationMessage(result));
         setNotificationStatus("enabled");
         return;
       }
+
+      setSettings((current) => ({
+        ...current,
+        enableNotifications: false,
+      }));
+      setNotificationMessage(getPushRegistrationMessage(result));
     } catch {
-      // Keep the UI response below consistent for permission and registration failures.
+      setSettings((current) => ({
+        ...current,
+        enableNotifications: false,
+      }));
+      setNotificationMessage(
+        getPushRegistrationMessage({
+          ok: false,
+          reason: "subscription-failed",
+        } satisfies PushRegistrationResult),
+      );
     }
 
     setNotificationStatus("error");
@@ -124,12 +146,10 @@ export function ProfileSettingsPanel() {
           <p className="-mt-2 px-4 text-xs text-slate-400">Enabling phone alerts...</p>
         ) : null}
         {notificationStatus === "enabled" ? (
-          <p className="-mt-2 px-4 text-xs text-emerald-300">Phone alerts enabled.</p>
+          <p className="-mt-2 px-4 text-xs text-emerald-300">{notificationMessage}</p>
         ) : null}
         {notificationStatus === "error" ? (
-          <p className="-mt-2 px-4 text-xs text-amber-300">
-            Phone alerts could not be enabled on this device.
-          </p>
+          <p className="-mt-2 px-4 text-xs text-amber-300">{notificationMessage}</p>
         ) : null}
 
         <label className="flex items-center justify-between rounded-lg border border-white/10 bg-[#0b1020] px-4 py-4">
