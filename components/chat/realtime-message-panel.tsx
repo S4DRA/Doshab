@@ -139,7 +139,10 @@ export function RealtimeMessagePanel({
       const { devices } = await fetchChannelDeviceKeys(channelId);
       const encryptedContent = await encryptMessageContent(content, devices);
       const response = await fetch(`/api/channels/${channelId}/messages`, {
-        body: JSON.stringify({ encryptedContent }),
+        body: JSON.stringify({
+          encryptedContent,
+          notificationPreview: content,
+        }),
         headers: {
           "content-type": "application/json",
         },

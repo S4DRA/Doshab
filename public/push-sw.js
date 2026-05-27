@@ -31,7 +31,9 @@ self.addEventListener("push", (event) => {
       icon: "/Doshab_png.png",
       badge: "/Doshab_png.png",
       requireInteraction: Boolean(data.requireInteraction),
+      renotify: data.data?.type === "call",
       tag: data.tag,
+      timestamp: Date.now(),
       vibrate: data.data?.type === "call" ? [200, 90, 200, 90, 200] : undefined,
     }),
   );
@@ -53,8 +55,16 @@ self.addEventListener("notificationclick", (event) => {
     return;
   }
 
-  event.waitUntil(
-    self.clients
+  if (event.action === "answer-call" && callId) {
+    event.waitUntil(openOrFocusWindow(`/dashboard/calls/${callId}`));
+    return;
+  }
+
+  event.waitUntil(openOrFocusWindow(href));
+});
+
+function openOrFocusWindow(href) {
+  return self.clients
       .matchAll({
         includeUncontrolled: true,
         type: "window",
@@ -69,6 +79,5 @@ self.addEventListener("notificationclick", (event) => {
         }
 
         return self.clients.openWindow(href);
-      }),
-  );
-});
+      });
+}

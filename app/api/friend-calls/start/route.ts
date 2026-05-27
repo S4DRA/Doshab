@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
         title: "Decline",
       },
     ],
-    body: "Tap to answer.",
+    body: `${user.name || user.email} is calling you.`,
     data: {
       callId: call.id,
       type: "call",
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     recipientIds: [friend.id],
     requireInteraction: true,
     tag: `friend-call-${call.id}`,
-    title: `${user.name || user.email} is calling`,
+    title: "Incoming call",
   }).catch((error: unknown) => {
     console.error("Failed to send call push notification", error);
   });

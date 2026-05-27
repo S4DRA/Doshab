@@ -82,17 +82,21 @@ function messageSelect() {
 }
 
 function createNotificationPreview(content: string, encrypted: boolean) {
-  if (encrypted) {
-    return "New encrypted message";
-  }
-
   const preview = content.replace(/\s+/g, " ").trim();
 
   if (!preview) {
-    return "New message";
+    return encrypted ? "New encrypted message" : "New message";
   }
 
   return preview.length > 120 ? `${preview.slice(0, 117)}...` : preview;
+}
+
+function sanitizeNotificationPreview(value: unknown) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.replace(/\s+/g, " ").trim().slice(0, 120);
 }
 
 export async function POST(request: NextRequest, { params }: MessagesRouteProps) {
@@ -130,13 +134,20 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
   const isJsonRequest = request.headers
     .get("content-type")
     ?.includes("application/json");
+  const jsonBody = isJsonRequest
+    ? ((await request.json().catch(() => null)) as {
+        encryptedContent?: unknown;
+        notificationPreview?: unknown;
+      } | null)
+    : null;
   const content = isJsonRequest
     ? String(
-        ((await request.json().catch(() => null)) as {
-          encryptedContent?: unknown;
-        } | null)?.encryptedContent ?? "",
+        jsonBody?.encryptedContent ?? "",
       ).trim()
     : String((await request.formData()).get("content") ?? "").trim();
+  const notificationPreview = sanitizeNotificationPreview(
+    jsonBody?.notificationPreview,
+  );
 
   if (
     !content ||
@@ -176,7 +187,10 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
 
     const href = `/dashboard/groups/${channel.groupId}/channels/${channel.id}`;
     const senderName = user.name || user.email;
-    const preview = createNotificationPreview(content, Boolean(isJsonRequest));
+    const preview = createNotificationPreview(
+      notificationPreview || content,
+      Boolean(isJsonRequest) && !notificationPreview,
+    );
     const title = channel.group.isDirectMessage
       ? senderName
       : `${senderName} in ${channel.group.name}`;
