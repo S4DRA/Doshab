@@ -9,6 +9,7 @@ type ChannelListProps = {
   groupId: string;
   returnToSettings?: boolean;
   selectedChannelId?: string;
+  showManagementActions?: boolean;
 };
 
 export function ChannelList({
@@ -17,6 +18,7 @@ export function ChannelList({
   groupId,
   returnToSettings = false,
   selectedChannelId,
+  showManagementActions = false,
 }: ChannelListProps) {
   const textChannels = channels.filter((channel) => channel.type === "TEXT");
   const voiceChannels = channels.filter((channel) => channel.type === "VOICE");
@@ -31,6 +33,7 @@ export function ChannelList({
         prefix="#"
         returnToSettings={returnToSettings}
         selectedChannelId={selectedChannelId}
+        showManagementActions={showManagementActions}
       />
       <ChannelSection
         channels={voiceChannels}
@@ -40,6 +43,7 @@ export function ChannelList({
         prefix="Voice"
         returnToSettings={returnToSettings}
         selectedChannelId={selectedChannelId}
+        showManagementActions={showManagementActions}
       />
     </div>
   );
@@ -53,6 +57,7 @@ function ChannelSection({
   groupId,
   selectedChannelId,
   returnToSettings,
+  showManagementActions,
 }: {
   label: string;
   prefix: string;
@@ -61,6 +66,7 @@ function ChannelSection({
   groupId: string;
   returnToSettings: boolean;
   selectedChannelId?: string;
+  showManagementActions: boolean;
 }) {
   return (
     <section>
@@ -72,7 +78,7 @@ function ChannelSection({
           {channels.map((channel) => (
             <div
               className={cn(
-                "flex w-full min-w-0 items-center justify-between gap-2 rounded-xl border border-transparent px-3 py-2.5 text-left text-sm text-slate-300 transition hover:border-white/10 hover:bg-white/7 hover:text-white",
+                "app-row flex w-full min-w-0 items-center justify-between gap-2 px-3 py-2.5 text-left text-sm text-slate-300 transition",
                 selectedChannelId === channel.id && "border-[#FF5F25]/50 bg-[#FF5F25]/12 text-white",
               )}
               key={channel.id}
@@ -81,14 +87,19 @@ function ChannelSection({
                 className="flex min-w-0 flex-1 items-center justify-between gap-2"
                 href={`/dashboard/groups/${groupId}/channels/${channel.id}`}
               >
-                <span className="truncate">
-                  {prefix} {channel.name}
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/7 text-xs font-bold text-slate-200">
+                    {channel.type === "TEXT" ? "#" : "V"}
+                  </span>
+                  <span className="truncate">
+                    {prefix} {channel.name}
+                  </span>
                 </span>
                 <span className="hidden rounded-md bg-white/7 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 min-[1400px]:inline-flex">
                   {channel.type}
                 </span>
               </Link>
-              {canManageChannels ? (
+              {canManageChannels && showManagementActions ? (
                 <form
                   action={`/api/groups/${groupId}/channels/${channel.id}/delete`}
                   method="post"

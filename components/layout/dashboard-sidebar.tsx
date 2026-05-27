@@ -36,6 +36,7 @@ const navItems = [
 
 type SidebarGroup = {
   id: string;
+  image?: string | null;
   isDirectMessage?: boolean;
   name: string;
 };
@@ -54,7 +55,7 @@ type SidebarUser = {
   name: string;
 };
 
-const sidebarCacheKey = "doshab-sidebar-v5";
+const sidebarCacheKey = "doshab-sidebar-v6";
 
 type DashboardSidebarProps = {
   initialCurrentUser?: SidebarUser | null;
@@ -228,7 +229,7 @@ export function DashboardSidebar({
   }
 
   const createMenu = createOpen ? (
-    <div className="app-surface absolute left-12 top-28 z-50 w-[calc(100vw-4.25rem)] max-w-72 rounded-lg p-3 sm:left-14 sm:top-32">
+    <div className="app-surface fixed bottom-20 left-3 right-3 z-50 max-h-[70vh] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-auto sm:left-14 sm:right-auto sm:top-32 sm:w-[calc(100vw-4.25rem)] sm:max-w-72">
       <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
         Create
       </p>
@@ -319,7 +320,7 @@ export function DashboardSidebar({
   ) : null;
 
   const notificationMenu = notificationsOpen ? (
-    <div className="app-surface absolute bottom-0 left-12 w-[calc(100vw-4.25rem)] max-w-80 rounded-lg p-3 sm:left-14">
+    <div className="app-surface fixed left-3 right-3 top-14 z-50 max-w-sm rounded-lg p-3 sm:absolute sm:bottom-0 sm:left-14 sm:right-auto sm:top-auto sm:w-[calc(100vw-4.25rem)] sm:max-w-80">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
@@ -388,12 +389,93 @@ export function DashboardSidebar({
     </div>
   ) : null;
 
+  const profileMenu = profileOpen ? (
+    <div className="app-surface fixed right-3 top-14 z-50 w-[calc(100vw-1.5rem)] max-w-44 rounded-lg p-2 sm:absolute sm:bottom-0 sm:left-14 sm:right-auto sm:top-auto sm:w-[calc(100vw-4.25rem)]">
+      <Link
+        className="block rounded-lg px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+        href="/dashboard/profile"
+        onClick={() => setProfileOpen(false)}
+        onMouseEnter={() => router.prefetch("/dashboard/profile")}
+        onPointerDown={() => router.prefetch("/dashboard/profile")}
+      >
+        Settings
+      </Link>
+      <form action="/api/auth/logout" method="post">
+        <button
+          className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-[#FF5F25] transition hover:bg-[#FF5F25] hover:text-black"
+          type="submit"
+        >
+          Log out
+        </button>
+      </form>
+    </div>
+  ) : null;
+
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 flex w-14 flex-col items-center border-r border-white/10 bg-[#090c0a]/95 px-1.5 py-2 text-white shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] backdrop-blur sm:w-16 sm:px-2 sm:py-3">
+    <>
+    <div className="fixed right-3 top-2 z-50 flex items-center gap-2 sm:hidden">
+      <button
+        aria-expanded={notificationsOpen}
+        aria-label="Notifications"
+        className={`relative grid size-10 place-items-center rounded-lg border bg-[#090c0a]/95 text-white shadow-[0_12px_36px_-24px_rgba(0,0,0,0.9)] backdrop-blur transition ${
+          notificationsOpen
+            ? "border-[#FF5F25] text-[#FF5F25]"
+            : "border-white/10 text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
+        }`}
+        onClick={() => {
+          setNotificationsOpen((open) => !open);
+          setCreateOpen(false);
+          setProfileOpen(false);
+        }}
+        type="button"
+      >
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
+        {unreadCount ? (
+          <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-[#FF5F25] px-1 text-[10px] font-black leading-5 text-black">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        ) : null}
+      </button>
+
+      <button
+        aria-expanded={profileOpen}
+        aria-label="Profile menu"
+        className={`grid size-10 place-items-center rounded-lg border bg-[#090c0a]/95 text-white shadow-[0_12px_36px_-24px_rgba(0,0,0,0.9)] backdrop-blur transition ${
+          profileActive || profileOpen
+            ? "border-[#FF5F25] text-[#FF5F25]"
+            : "border-white/10 text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
+        }`}
+        onClick={() => {
+          setProfileOpen((open) => !open);
+          setCreateOpen(false);
+          setNotificationsOpen(false);
+        }}
+        type="button"
+      >
+        {currentUser ? (
+          <AvatarInitials
+            imageUrl={currentUser.image}
+            value={currentUser.name || currentUser.email}
+          />
+        ) : (
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 21a8 8 0 0 1 16 0" />
+          </svg>
+        )}
+      </button>
+    </div>
+
+    <aside className="fixed inset-x-0 bottom-0 z-50 flex h-16 items-center border-t border-white/10 bg-[#090c0a]/95 px-2 text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] backdrop-blur sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-16 sm:flex-col sm:border-r sm:border-t-0 sm:px-2 sm:py-3 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)]">
       {createMenu}
+      {notificationMenu}
+      {profileMenu}
       <Link
         aria-label="Dashboard"
-        className="grid size-10 place-items-center transition sm:size-11"
+        className="hidden size-10 place-items-center transition sm:grid sm:size-11"
         href="/dashboard"
         onMouseEnter={() => router.prefetch("/dashboard")}
       >
@@ -401,7 +483,7 @@ export function DashboardSidebar({
       </Link>
 
       <nav
-        className="mt-3 flex min-h-0 flex-1 flex-col items-center gap-1.5 overflow-y-auto overscroll-contain pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:mt-4 sm:gap-2 [&::-webkit-scrollbar]:hidden"
+        className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overscroll-contain px-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mt-4 sm:min-h-0 sm:flex-col sm:items-center sm:gap-2 sm:overflow-x-hidden sm:overflow-y-auto sm:px-0 sm:pb-2 [&::-webkit-scrollbar]:hidden"
         aria-label="Dashboard"
       >
         {navItems.map((item) => {
@@ -450,7 +532,7 @@ export function DashboardSidebar({
           </button>
         </div>
         {groups.length ? (
-          <div className="my-1.5 h-px w-8 shrink-0 bg-white/50 sm:my-2" />
+          <div className="mx-1 h-8 w-px shrink-0 bg-white/50 sm:mx-0 sm:my-2 sm:h-px sm:w-8" />
         ) : null}
         {groups.map((group) => {
           const href = `/dashboard/groups/${group.id}`;
@@ -470,15 +552,14 @@ export function DashboardSidebar({
               onPointerDown={() => router.prefetch(href)}
               title={group.name}
             >
-              {getInitials(group.name)}
+              <AvatarInitials imageUrl={group.image} value={group.name} />
             </Link>
           );
         })}
       </nav>
 
-      <div className="flex flex-col items-center gap-1.5 sm:gap-2">
+      <div className="hidden shrink-0 items-center gap-1.5 sm:flex sm:flex-col sm:gap-2">
         <div className="relative">
-          {notificationMenu}
           <button
             aria-expanded={notificationsOpen}
             aria-label="Notifications"
@@ -507,27 +588,6 @@ export function DashboardSidebar({
         </div>
 
         <div className="relative">
-          {profileOpen ? (
-            <div className="app-surface absolute bottom-0 left-12 w-[calc(100vw-4.25rem)] max-w-44 rounded-lg p-2 sm:left-14">
-              <Link
-                className="block rounded-lg px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-                href="/dashboard/profile"
-                onClick={() => setProfileOpen(false)}
-                onMouseEnter={() => router.prefetch("/dashboard/profile")}
-                onPointerDown={() => router.prefetch("/dashboard/profile")}
-              >
-                Settings
-              </Link>
-              <form action="/api/auth/logout" method="post">
-              <button
-                className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-[#FF5F25] transition hover:bg-[#FF5F25] hover:text-black"
-                type="submit"
-              >
-                Log out
-              </button>
-              </form>
-            </div>
-          ) : null}
           <button
             aria-expanded={profileOpen}
             aria-label="Profile menu"
@@ -558,6 +618,7 @@ export function DashboardSidebar({
         </div>
       </div>
     </aside>
+    </>
   );
 }
 

@@ -19,7 +19,7 @@ export function MessageList({ messages }: MessageListProps) {
   }
 
   return (
-    <div className="message-feed space-y-1">
+    <div className="space-y-1">
       {messages.map((message) => (
         <article className="flex gap-3 border border-transparent px-2 py-2.5" key={message.id}>
           <AvatarInitials

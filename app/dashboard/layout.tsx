@@ -1,5 +1,6 @@
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { IncomingCallWatcher } from "@/components/calls/incoming-call-watcher";
+import { PersistentCallProvider } from "@/components/calls/persistent-call-provider";
 import {
   getDashboardSidebarGroups,
   getDashboardSession,
@@ -24,8 +25,10 @@ export default async function DashboardLayout({
         initialNotifications={sidebarData?.notifications}
         initialUnreadCount={sidebarData?.unreadCount}
       />
-      <div className="min-w-0 overflow-hidden pl-14 sm:pl-16">{children}</div>
-      {session ? <IncomingCallWatcher /> : null}
+      <PersistentCallProvider>
+        <div className="min-w-0 overflow-hidden pb-16 sm:pb-0 sm:pl-16">{children}</div>
+        {session ? <IncomingCallWatcher /> : null}
+      </PersistentCallProvider>
     </>
   );
 }

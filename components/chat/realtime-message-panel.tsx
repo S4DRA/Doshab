@@ -1,6 +1,13 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FormEvent,
+  KeyboardEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { MessageList } from "@/components/chat/message-list";
 import {
@@ -35,11 +42,16 @@ export function RealtimeMessagePanel({
   const [encryptionReady, setEncryptionReady] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const streamCursorRef = useRef(newestCreatedAt(initialMessages));
   const displayedMessages = useMemo(
     () => mergeMessages(decryptedMessages, pendingMessages),
     [decryptedMessages, pendingMessages],
   );
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ block: "end" });
+  }, [displayedMessages.length]);
 
   useEffect(() => {
     let cancelled = false;
@@ -167,46 +179,71 @@ export function RealtimeMessagePanel({
     }
   }
 
+  function submitOnEnter(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
+  }
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
-      {!encryptionReady ? (
-        <p className="app-card p-3 text-xs leading-5 text-slate-400">
-          Preparing encrypted chat for this device...
-        </p>
-      ) : null}
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="shrink-0 space-y-2">
+        {!encryptionReady ? (
+          <p className="app-card p-3 text-xs leading-5 text-slate-400">
+            Preparing encrypted chat for this device...
+          </p>
+        ) : null}
 
-      {streamError ? (
-        <p className="rounded-md border border-amber-300/20 bg-amber-400/10 px-3 py-2 text-xs font-medium text-amber-100">
-          {streamError}
-        </p>
-      ) : null}
+        {streamError ? (
+          <p className="rounded-md border border-amber-300/20 bg-amber-400/10 px-3 py-2 text-xs font-medium text-amber-100">
+            {streamError}
+          </p>
+        ) : null}
+      </div>
 
-      <MessageList messages={displayedMessages} />
+      <div className="message-feed min-h-0 flex-1 overflow-y-auto overscroll-contain py-3 pr-1">
+        <MessageList messages={displayedMessages} />
+        <div ref={messagesEndRef} />
+      </div>
 
-      <form className="sticky bottom-0 flex gap-3 border-t border-white/10 bg-[#070907]/95 pt-3 backdrop-blur" onSubmit={sendMessage}>
-        <textarea
-          className="min-h-11 flex-1 resize-none rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60"
-          disabled={!encryptionReady || !currentUser}
-          maxLength={2000}
-          onChange={(event) => setDraft(event.target.value)}
-          placeholder={
-            encryptionReady
-              ? `Encrypted message #${channelName}`
-              : "Preparing encrypted chat..."
-          }
-          required
-          rows={1}
-          value={draft}
-        />
-        <button
-          className="app-button-primary h-11 rounded-lg px-4 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60"
-          disabled={!encryptionReady || !draft.trim() || !currentUser}
-          type="submit"
-        >
-          Send
-        </button>
-      </form>
-      {sendError ? <p className="text-xs text-amber-200">{sendError}</p> : null}
+      <div className="shrink-0 border-t border-white/10 bg-[#070907]/95 pt-3 backdrop-blur">
+        <form className="flex items-end gap-2 sm:gap-3" onSubmit={sendMessage}>
+          <textarea
+            className="max-h-36 min-h-11 flex-1 resize-none rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={!encryptionReady || !currentUser}
+            maxLength={2000}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={submitOnEnter}
+            placeholder={
+              encryptionReady
+                ? `Encrypted message #${channelName}`
+                : "Preparing encrypted chat..."
+            }
+            required
+            rows={Math.min(5, Math.max(1, draft.split("\n").length))}
+            value={draft}
+          />
+          <button
+            aria-label="Send message"
+            className="app-icon-button app-icon-button-primary h-11 w-11 shrink-0 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={!encryptionReady || !draft.trim() || !currentUser}
+            type="submit"
+          >
+            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="m22 2-7 20-4-9-9-4Z" />
+              <path d="M22 2 11 13" />
+            </svg>
+          </button>
+        </form>
+        <div className="mt-2 flex items-center justify-between gap-3 text-[11px] text-slate-500">
+          <span>Enter to send. Shift+Enter for a new line.</span>
+          <span>{draft.length}/2000</span>
+        </div>
+        {sendError ? <p className="mt-2 text-xs text-amber-200">{sendError}</p> : null}
+      </div>
     </div>
   );
 }

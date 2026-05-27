@@ -4,7 +4,6 @@ import { RealtimeMessagePanel } from "@/components/chat/realtime-message-panel";
 import { FriendRequestList } from "@/components/friends/friend-request-list";
 import { FriendSearchForm } from "@/components/friends/friend-search-form";
 import { ChannelList } from "@/components/groups/channel-list";
-import { CreateChannelForm } from "@/components/groups/create-channel-form";
 import { CreateGroupForm } from "@/components/groups/create-group-form";
 import { GroupInvitesList } from "@/components/groups/group-invites-list";
 import { GroupMembersList } from "@/components/groups/group-members-list";
@@ -106,11 +105,6 @@ export function DashboardShell({
                 Space settings
               </Link>
             ) : null}
-            {canCreateChannels ? (
-              <div className="app-card mt-auto p-4">
-                <CreateChannelForm groupId={selectedGroup.id} />
-              </div>
-            ) : null}
           </>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col">
@@ -139,7 +133,7 @@ export function DashboardShell({
       </aside>
 
       <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex min-h-12 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 px-3 py-1.5 backdrop-blur sm:px-5">
+        <header className="flex min-h-12 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 py-1.5 pl-3 pr-24 backdrop-blur sm:px-5">
           <div className="min-w-0">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#FF5F25]">
               {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : activeSection === "messages" ? "Messages" : "Dashboard"}
@@ -193,6 +187,7 @@ export function DashboardShell({
               !selectedGroup.isDirectMessage &&
               selectedGroup.currentUserRole === "OWNER"
             }
+            currentUserId={currentUser?.id}
             group={selectedGroup}
             invitePanel={invitePanel}
           />
@@ -447,7 +442,11 @@ function ChannelMain({
             ) : null}
           </div>
         </div>
-        <LazyLiveKitVoiceRoom channelId={channel.id} channelName={channel.name} />
+        <LazyLiveKitVoiceRoom
+          channelId={channel.id}
+          channelName={channel.name}
+          groupId={groupId}
+        />
       </div>
     );
   }
@@ -475,7 +474,7 @@ function ChannelMain({
             ) : null}
           </div>
         </section>
-        <div className="mt-6">
+        <div className="mt-4 min-h-0 flex-1">
           <RealtimeMessagePanel
             channelId={channel.id}
             channelName={channel.name}
@@ -605,9 +604,21 @@ function FriendStatusPanel({
   );
 }
 
+function MetricCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="app-card min-w-0 p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+        {label}
+      </p>
+      <p className="mt-2 text-3xl font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
 function GroupMain({
   group,
   canInvite,
+  currentUserId,
   canDeleteGroup,
   invitePanel,
 }: {
@@ -617,9 +628,16 @@ function GroupMain({
     notice?: string;
   };
   canInvite: boolean;
+  currentUserId?: string;
   canDeleteGroup: boolean;
   invitePanel?: React.ReactNode;
 }) {
+  const textChannelCount = group.channels.filter((channel) => channel.type === "TEXT").length;
+  const voiceChannelCount = group.channels.filter((channel) => channel.type === "VOICE").length;
+  const onlineMemberCount = (group.members ?? []).filter(
+    (member) => member.user.status === "ONLINE",
+  ).length;
+
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
       <div className="grid w-full min-w-0 gap-3 min-[1180px]:hidden">
@@ -662,6 +680,8 @@ function GroupMain({
           )}
         </section>
 
+        {canInvite ? invitePanel : null}
+
         {!group.isDirectMessage ? (
           <Link
             className="mt-1 inline-flex h-11 items-center justify-center rounded-lg border border-white/10 bg-[#181818] px-4 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/70 hover:text-white"
@@ -690,15 +710,30 @@ function GroupMain({
                   ? "This conversation is only visible to the people in this private message."
                   : "Start by picking a channel or creating something new. This space is made for focused conversation, private invites, and clear shared routines."}
               </p>
+              {!group.isDirectMessage ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link
+                    className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
+                    href={`/dashboard/groups/${group.id}/settings`}
+                  >
+                    Space settings
+                  </Link>
+                  {group.channels[0] ? (
+                    <Link
+                      className="app-button-primary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
+                      href={`/dashboard/groups/${group.id}/channels/${group.channels[0].id}`}
+                    >
+                      Open first channel
+                    </Link>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
-            <div className="app-card min-w-0 p-4">
-              <p className="text-sm text-slate-400">Members</p>
-              <p className="mt-2 text-3xl font-semibold text-white">
-                {group.members?.length ?? 0}
-              </p>
-              <p className="mt-3 break-words text-sm text-slate-400">
-                Current space size. Keep the circle intentional and the experience smooth.
-              </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <MetricCard label="Members" value={group.members?.length ?? 0} />
+              <MetricCard label="Online" value={onlineMemberCount} />
+              <MetricCard label="Text channels" value={textChannelCount} />
+              <MetricCard label="Voice rooms" value={voiceChannelCount} />
             </div>
           </div>
         </section>
@@ -728,7 +763,7 @@ function GroupMain({
         ) : null}
 
         <div className="grid min-w-0 gap-5 min-[1180px]:grid-cols-[1.2fr_0.8fr]">
-          <GroupMembersList members={group.members ?? []} />
+          <GroupMembersList currentUserId={currentUserId} members={group.members ?? []} />
           {canInvite ? invitePanel : (
             <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">

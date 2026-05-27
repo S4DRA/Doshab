@@ -19,7 +19,7 @@ export function CreateChannelForm({
           Channel name
         </span>
         <input
-          className="mt-2 h-10 w-full rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+          className="mt-2 h-10 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
           maxLength={80}
           name="name"
           placeholder="planning"
@@ -32,7 +32,7 @@ export function CreateChannelForm({
           Type
         </span>
         <select
-          className="mt-2 h-10 w-full rounded-md border border-white/10 bg-[#12182a] px-3 text-sm text-white outline-none transition focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+          className="mt-2 h-10 w-full rounded-lg border border-white/10 bg-[#12182a] px-3 text-sm text-white outline-none transition focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
           name="type"
         >
           <option value="TEXT">Text</option>
@@ -40,7 +40,7 @@ export function CreateChannelForm({
         </select>
       </label>
       <SubmitButton
-        className="h-10 w-full rounded-md bg-white/8 text-sm font-semibold text-slate-100 transition hover:bg-white/12"
+        className="app-button-secondary h-10 w-full rounded-lg text-sm font-semibold transition"
         pendingText="Creating..."
       >
         Create channel

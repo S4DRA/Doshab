@@ -261,6 +261,7 @@ function GroupSettingsPanel({
               channels={group.channels}
               groupId={group.id}
               returnToSettings
+              showManagementActions
             />
           </section>
 

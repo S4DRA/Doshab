@@ -22,6 +22,7 @@ export const getDashboardGroups = cache(async (userId: string) =>
       id: true,
       name: true,
       description: true,
+      image: true,
       isDirectMessage: true,
     },
   }),
@@ -43,6 +44,7 @@ export const getDashboardSidebarGroups = cache(async (userId: string) =>
     select: {
       id: true,
       name: true,
+      image: true,
       isDirectMessage: true,
     },
   }),

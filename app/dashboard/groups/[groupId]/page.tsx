@@ -26,51 +26,65 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
   const { groupId } = await params;
   const pageParams = await searchParams;
 
-  const selectedGroup = await prisma.group.findFirst({
-    where: {
-      id: groupId,
-      members: {
-        some: {
-          userId: session.userId,
+  const [selectedGroup, currentUser] = await Promise.all([
+    prisma.group.findFirst({
+      where: {
+        id: groupId,
+        members: {
+          some: {
+            userId: session.userId,
+          },
         },
       },
-    },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      isDirectMessage: true,
-      channels: {
-        orderBy: {
-          createdAt: "asc",
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        isDirectMessage: true,
+        channels: {
+          orderBy: {
+            createdAt: "asc",
+          },
+          select: {
+            id: true,
+            name: true,
+            type: true,
+          },
         },
-        select: {
-          id: true,
-          name: true,
-          type: true,
-        },
-      },
-      members: {
-        orderBy: {
-          createdAt: "asc",
-        },
-        select: {
-          id: true,
-          role: true,
-          createdAt: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-              status: true,
+        members: {
+          orderBy: {
+            createdAt: "asc",
+          },
+          select: {
+            id: true,
+            role: true,
+            createdAt: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                status: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    }),
+    prisma.user.findUnique({
+      where: {
+        id: session.userId,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        status: true,
+      },
+    }),
+  ]);
 
   const currentMember = selectedGroup?.members.find(
     (member) => member.user.id === session.userId,
@@ -87,6 +101,7 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
 
   return (
     <DashboardShell
+      currentUser={currentUser ?? undefined}
       groups={[]}
       invitePanel={
         canInvite ? (

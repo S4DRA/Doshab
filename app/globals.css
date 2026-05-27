@@ -252,7 +252,9 @@ html {
 .app-skeleton {
   position: relative;
   overflow: hidden;
-  background: var(--surface-raised);
+  border: 1px solid color-mix(in srgb, var(--border-soft) 72%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-raised) 96%, white 4%), var(--surface-raised));
 }
 
 .app-skeleton::after {
@@ -262,11 +264,11 @@ html {
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in srgb, var(--text-high) 9%, transparent),
+    color-mix(in srgb, var(--text-high) 12%, transparent),
     transparent
   );
   transform: translateX(-100%);
-  animation: app-shimmer 1500ms ease-in-out infinite;
+  animation: app-shimmer 1450ms cubic-bezier(0.45, 0, 0.2, 1) infinite;
 }
 
 @keyframes app-shimmer {
@@ -368,8 +370,149 @@ html[data-theme="light"] .brand-logo-image {
   color: var(--control-text);
 }
 
+.loading-canvas {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 95, 37, 0.16), transparent 17rem),
+    radial-gradient(circle at 50% 58%, rgba(255, 255, 255, 0.08), transparent 20rem),
+    linear-gradient(180deg, var(--surface-canvas), var(--background));
+}
+
+.loading-canvas::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at center, #000 0 32rem, transparent 44rem);
+  opacity: 0.55;
+}
+
 .doshab-loader {
   width: min(90vw, 320px);
+  position: relative;
+  z-index: 1;
+}
+
+.doshab-loader-orbit {
+  position: relative;
+  display: grid;
+  width: 9.5rem;
+  height: 9.5rem;
+  place-items: center;
+  isolation: isolate;
+}
+
+.doshab-loader-orbit-sm {
+  width: 6.5rem;
+  height: 6.5rem;
+}
+
+.doshab-loader-logo {
+  width: 4.75rem;
+  height: 4.75rem;
+  filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.16));
+  animation: doshab-loader-breathe 1600ms ease-in-out infinite;
+  z-index: 2;
+}
+
+.doshab-loader-orbit-sm .doshab-loader-logo {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.doshab-loader-ring,
+.doshab-loader-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+}
+
+.doshab-loader-ring {
+  border: 1px solid color-mix(in srgb, var(--accent) 52%, transparent);
+  border-top-color: color-mix(in srgb, var(--text-high) 86%, transparent);
+  border-right-color: transparent;
+  animation: doshab-loader-spin 1400ms linear infinite;
+}
+
+.doshab-loader-ring-delay {
+  inset: 0.8rem;
+  border-color: color-mix(in srgb, var(--text-high) 24%, transparent);
+  border-bottom-color: var(--accent);
+  border-left-color: transparent;
+  animation-duration: 2100ms;
+  animation-direction: reverse;
+}
+
+.doshab-loader-pulse {
+  inset: 1.4rem;
+  background: radial-gradient(circle, rgba(255, 95, 37, 0.2), transparent 68%);
+  animation: doshab-loader-pulse 1600ms ease-in-out infinite;
+  z-index: 0;
+}
+
+.doshab-loader-dot {
+  width: 0.36rem;
+  height: 0.36rem;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: doshab-loader-dot 1100ms ease-in-out infinite;
+}
+
+.doshab-loader-dot:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.doshab-loader-dot:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+@keyframes doshab-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes doshab-loader-breathe {
+  0%,
+  100% {
+    transform: scale(0.95);
+    opacity: 0.76;
+  }
+
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes doshab-loader-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes doshab-loader-dot {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-0.28rem);
+  }
 }
 
 .doshab-loader-mark {
