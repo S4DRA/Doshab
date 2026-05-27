@@ -5,7 +5,11 @@ import { prisma } from "@/lib/prisma";
 let configured = false;
 
 export function getVapidPublicKey() {
-  return process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
+  return (
+    process.env.VAPID_PUBLIC_KEY ??
+    process.env["NEXT_PUBLIC_VAPID_PUBLIC_KEY"] ??
+    ""
+  ).trim();
 }
 
 function configureWebPush() {
