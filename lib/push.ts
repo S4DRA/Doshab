@@ -1,10 +1,21 @@
 import webpush, { type PushSubscription } from "web-push";
+import { loadEnvConfig } from "@next/env";
 
 import { prisma } from "@/lib/prisma";
 
 let configured = false;
+let envLoaded = false;
+
+function ensureEnvLoaded() {
+  if (!envLoaded) {
+    loadEnvConfig(process.cwd());
+    envLoaded = true;
+  }
+}
 
 export function getVapidPublicKey() {
+  ensureEnvLoaded();
+
   return (
     process.env.VAPID_PUBLIC_KEY ??
     process.env["NEXT_PUBLIC_VAPID_PUBLIC_KEY"] ??
@@ -12,7 +23,19 @@ export function getVapidPublicKey() {
   ).trim();
 }
 
+export function getPushConfigStatus() {
+  ensureEnvLoaded();
+
+  return {
+    hasPrivateKey: Boolean(process.env.VAPID_PRIVATE_KEY?.trim()),
+    hasPublicKey: Boolean(getVapidPublicKey()),
+    hasSubject: Boolean(process.env.VAPID_SUBJECT?.trim()),
+  };
+}
+
 function configureWebPush() {
+  ensureEnvLoaded();
+
   const publicKey = getVapidPublicKey();
   const privateKey = process.env.VAPID_PRIVATE_KEY;
 

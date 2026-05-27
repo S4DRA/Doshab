@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { sendPushNotifications } from "@/lib/push";
+import { getPushConfigStatus, sendPushNotifications } from "@/lib/push";
+import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 
 export async function POST() {
@@ -10,6 +11,37 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const [config, subscriptions] = await Promise.all([
+    Promise.resolve(getPushConfigStatus()),
+    prisma.pushSubscription.count({
+      where: {
+        userId: session.userId,
+      },
+    }),
+  ]);
+
+  if (!config.hasPublicKey || !config.hasPrivateKey) {
+    return NextResponse.json(
+      {
+        config,
+        error: "Push is not configured on this server.",
+        subscriptions,
+      },
+      { status: 500 },
+    );
+  }
+
+  if (!subscriptions) {
+    return NextResponse.json(
+      {
+        config,
+        error: "This account has no saved push subscription.",
+        subscriptions,
+      },
+      { status: 409 },
+    );
+  }
+
   await sendPushNotifications({
     body: "Phone alerts are working.",
     href: "/dashboard",
@@ -17,5 +49,5 @@ export async function POST() {
     title: "Doshab test notification",
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ config, ok: true, subscriptions });
 }

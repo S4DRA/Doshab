@@ -1,4 +1,5 @@
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
+import { IncomingCallWatcher } from "@/components/calls/incoming-call-watcher";
 import {
   getDashboardSidebarGroups,
   getDashboardSession,
@@ -24,6 +25,7 @@ export default async function DashboardLayout({
         initialUnreadCount={sidebarData?.unreadCount}
       />
       <div className="min-w-0 overflow-hidden pl-14 sm:pl-16">{children}</div>
+      {session ? <IncomingCallWatcher /> : null}
     </>
   );
 }

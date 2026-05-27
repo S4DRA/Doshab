@@ -29,6 +29,8 @@ model User {
   pushSubscriptions      PushSubscription[]
   sentNotifications      Notification[]  @relation("NotificationActor")
   deviceKeys             UserDeviceKey[]
+  startedCalls           FriendCall[]     @relation("FriendCallCaller")
+  receivedCalls          FriendCall[]     @relation("FriendCallReceiver")
 
   @@index([status])
   @@map("users")
@@ -212,6 +214,24 @@ model UserDeviceKey {
   @@map("user_device_keys")
 }
 
+model FriendCall {
+  id         String           @id @default(cuid())
+  callerId   String
+  receiverId String
+  roomName   String           @unique
+  status     FriendCallStatus @default(RINGING)
+  expiresAt  DateTime
+  endedAt    DateTime?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  caller     User             @relation("FriendCallCaller", fields: [callerId], references: [id], onDelete: Cascade)
+  receiver   User             @relation("FriendCallReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([callerId, createdAt])
+  @@index([receiverId, status, expiresAt])
+  @@map("friend_calls")
+}
+
 enum UserStatus {
   ONLINE
   OFFLINE
@@ -244,4 +264,12 @@ enum ChannelType {
 
 enum NotificationType {
   MESSAGE
+}
+
+enum FriendCallStatus {
+  RINGING
+  ACCEPTED
+  DECLINED
+  MISSED
+  ENDED
 }

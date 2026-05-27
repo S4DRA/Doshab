@@ -493,46 +493,51 @@ function FriendStatusPanel({
       {friends.length ? (
         <div className="mt-5 max-h-80 space-y-2 overflow-y-auto pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {friends.map((friend) => (
-            <form
-              action="/api/private-messages"
+            <div
+              className="flex w-full min-w-0 items-center gap-2 rounded-2xl border border-white/10 bg-[#0c1421] p-3 transition hover:border-[#FF5F25]/70 hover:bg-white/10"
               key={friend.id}
-              method="post"
             >
-              <input name="friendId" type="hidden" value={friend.id} />
-              <button
-                className="flex w-full min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-[#0c1421] p-3 text-left transition hover:border-[#FF5F25]/70 hover:bg-white/10"
-                type="submit"
-              >
-                <AvatarInitials
-                  imageUrl={friend.image}
-                  value={friend.name || friend.email}
-                />
-                <span className="min-w-0 flex-1">
+              <AvatarInitials
+                imageUrl={friend.image}
+                value={friend.name || friend.email}
+              />
+              <form action="/api/private-messages" className="min-w-0 flex-1" method="post">
+                <input name="friendId" type="hidden" value={friend.id} />
+                <button className="w-full min-w-0 text-left" type="submit">
                   <span className="block truncate text-sm font-semibold text-white">
                     {friend.name || friend.email}
                   </span>
                   <span className="block truncate text-xs text-slate-500">
                     {friend.email}
                   </span>
+                </button>
+              </form>
+              <span className="flex shrink-0 items-center gap-2 text-xs text-slate-400">
+                <span
+                  className={`size-2 rounded-full ${
+                    friend.status === "ONLINE"
+                      ? "bg-emerald-400"
+                      : friend.status === "IDLE"
+                        ? "bg-amber-400"
+                        : friend.status === "DO_NOT_DISTURB"
+                          ? "bg-rose-400"
+                          : "bg-slate-600"
+                  }`}
+                />
+                <span className="hidden sm:inline">
+                  {formatUserStatus(friend.status)}
                 </span>
-                <span className="flex shrink-0 items-center gap-2 text-xs text-slate-400">
-                  <span
-                    className={`size-2 rounded-full ${
-                      friend.status === "ONLINE"
-                        ? "bg-emerald-400"
-                        : friend.status === "IDLE"
-                          ? "bg-amber-400"
-                          : friend.status === "DO_NOT_DISTURB"
-                            ? "bg-rose-400"
-                            : "bg-slate-600"
-                    }`}
-                  />
-                  <span className="hidden sm:inline">
-                    {formatUserStatus(friend.status)}
-                  </span>
-                </span>
-              </button>
-            </form>
+              </span>
+              <form action="/api/friend-calls/start" method="post">
+                <input name="friendId" type="hidden" value={friend.id} />
+                <button
+                  className="h-9 rounded-lg border border-white/15 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25] hover:text-white"
+                  type="submit"
+                >
+                  Call
+                </button>
+              </form>
+            </div>
           ))}
         </div>
       ) : (

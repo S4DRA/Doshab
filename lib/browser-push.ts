@@ -46,7 +46,7 @@ export function getPushRegistrationMessage(result: PushRegistrationResult) {
     case "insecure-context":
       return "Phone alerts need HTTPS, or localhost on the same device.";
     case "missing-key":
-      return "Phone alerts are missing the server push key.";
+      return "Phone alerts are missing the deployment push key. Add VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY to the published app.";
     case "subscription-failed":
       return "Phone alerts could not be saved. Please sign in and try again.";
     case "unsupported":
@@ -75,10 +75,17 @@ export async function registerPushNotifications(): Promise<PushRegistrationResul
     headers: {
       accept: "application/json",
     },
-  });
-  const { publicKey } = (await publicKeyResponse.json()) as {
-    publicKey?: string;
-  };
+  }).catch(() => null);
+  const publicKeyResponseBody =
+    publicKeyResponse?.ok
+      ? ((await publicKeyResponse.json().catch(() => null)) as {
+          publicKey?: string;
+        } | null)
+      : null;
+  const publicKey =
+    publicKeyResponseBody?.publicKey ??
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ??
+    "";
 
   if (!publicKey) {
     return { ok: false, reason: "missing-key" };
