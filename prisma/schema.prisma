@@ -28,6 +28,7 @@ model User {
   notifications          Notification[]  @relation("NotificationRecipient")
   pushSubscriptions      PushSubscription[]
   sentNotifications      Notification[]  @relation("NotificationActor")
+  deviceKeys             UserDeviceKey[]
 
   @@index([status])
   @@map("users")
@@ -195,6 +196,20 @@ model PushSubscription {
 
   @@index([userId])
   @@map("push_subscriptions")
+}
+
+model UserDeviceKey {
+  id        String   @id
+  userId    String
+  publicKey String
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastSeen  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_device_keys")
 }
 
 enum UserStatus {

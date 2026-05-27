@@ -4,9 +4,18 @@ import { getCurrentUser } from "@/lib/auth";
 import { orderedFriendshipPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
 
-function redirectWithMessage(request: NextRequest, message: string) {
+function getRedirectPath(formData: FormData) {
+  const redirectTo = String(formData.get("redirectTo") ?? "");
+
+  return redirectTo.startsWith("/dashboard") ? redirectTo : "/dashboard/friends";
+}
+
+function redirectWithMessage(request: NextRequest, path: string, message: string) {
+  const url = new URL(path, request.url);
+  url.searchParams.set("message", message);
+
   return NextResponse.redirect(
-    new URL(`/dashboard/friends?message=${encodeURIComponent(message)}`, request.url),
+    url,
     { status: 303 },
   );
 }
@@ -20,9 +29,10 @@ export async function POST(request: NextRequest) {
 
   const formData = await request.formData();
   const receiverId = String(formData.get("receiverId") ?? "");
+  const redirectPath = getRedirectPath(formData);
 
   if (!receiverId || receiverId === user.id) {
-    return redirectWithMessage(request, "You cannot send that friend request.");
+    return redirectWithMessage(request, redirectPath, "You cannot send that friend request.");
   }
 
   const receiver = await prisma.user.findUnique({
@@ -31,7 +41,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (!receiver) {
-    return redirectWithMessage(request, "User not found.");
+    return redirectWithMessage(request, redirectPath, "User not found.");
   }
 
   const [userOneId, userTwoId] = orderedFriendshipPair(user.id, receiverId);
@@ -46,7 +56,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (existingFriendship) {
-    return redirectWithMessage(request, "You are already friends.");
+    return redirectWithMessage(request, redirectPath, "You are already friends.");
   }
 
   const existingPendingRequest = await prisma.friendRequest.findFirst({
@@ -61,7 +71,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (existingPendingRequest) {
-    return redirectWithMessage(request, "A pending request already exists.");
+    return redirectWithMessage(request, redirectPath, "A pending request already exists.");
   }
 
   await prisma.friendRequest.create({
@@ -72,5 +82,5 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  return redirectWithMessage(request, "Friend request sent.");
+  return redirectWithMessage(request, redirectPath, "Friend request sent.");
 }

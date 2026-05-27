@@ -17,6 +17,7 @@ export default async function DashboardLayout({
   return (
     <>
       <DashboardSidebar
+        initialCurrentUser={sidebarData?.currentUser}
         initialFriends={sidebarData?.friends}
         initialGroups={sidebarData?.groups}
         initialNotifications={sidebarData?.notifications}
@@ -28,7 +29,16 @@ export default async function DashboardLayout({
 }
 
 async function getInitialSidebarData(userId: string) {
-  const [groups, friendships, notifications, unreadCount] = await Promise.all([
+  const [currentUser, groups, friendships, notifications, unreadCount] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+      },
+    }),
     getDashboardSidebarGroups(userId),
     prisma.friendship.findMany({
       where: {
@@ -95,6 +105,7 @@ async function getInitialSidebarData(userId: string) {
   ]);
 
   return {
+    currentUser,
     friends: friendships.map((friendship) => friendFromPair(friendship, userId)),
     groups,
     notifications,

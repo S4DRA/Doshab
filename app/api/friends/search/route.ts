@@ -4,6 +4,27 @@ import { isValidEmail, normalizeEmail, getCurrentUser } from "@/lib/auth";
 import { areAlreadyFriends } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
 
+function getRedirectPath(request: NextRequest) {
+  const redirectTo = request.nextUrl.searchParams.get("redirectTo");
+
+  return redirectTo?.startsWith("/dashboard") ? redirectTo : "/dashboard/friends";
+}
+
+function redirectWithParams(
+  request: NextRequest,
+  params: Record<string, string | undefined>,
+) {
+  const url = new URL(getRedirectPath(request), request.url);
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) {
+      url.searchParams.set(key, value);
+    }
+  });
+
+  return NextResponse.redirect(url, { status: 303 });
+}
+
 export async function GET(request: NextRequest) {
   const user = await getCurrentUser();
 
@@ -14,17 +35,11 @@ export async function GET(request: NextRequest) {
   const email = normalizeEmail(request.nextUrl.searchParams.get("email") ?? "");
 
   if (!isValidEmail(email)) {
-    return NextResponse.redirect(
-      new URL("/dashboard/friends?message=Enter%20a%20valid%20email.", request.url),
-      { status: 303 },
-    );
+    return redirectWithParams(request, { message: "Enter a valid email." });
   }
 
   if (email === user.email) {
-    return NextResponse.redirect(
-      new URL("/dashboard/friends?message=You%20cannot%20add%20yourself.", request.url),
-      { status: 303 },
-    );
+    return redirectWithParams(request, { message: "You cannot add yourself." });
   }
 
   const target = await prisma.user.findUnique({
@@ -37,13 +52,10 @@ export async function GET(request: NextRequest) {
   });
 
   if (!target) {
-    return NextResponse.redirect(
-      new URL(
-        `/dashboard/friends?query=${encodeURIComponent(email)}&message=No%20user%20found.`,
-        request.url,
-      ),
-      { status: 303 },
-    );
+    return redirectWithParams(request, {
+      message: "No user found.",
+      query: email,
+    });
   }
 
   const friendships = await prisma.friendship.findMany({
@@ -60,20 +72,14 @@ export async function GET(request: NextRequest) {
   });
 
   if (areAlreadyFriends(friendships, user.id, target.id)) {
-    return NextResponse.redirect(
-      new URL(
-        `/dashboard/friends?query=${encodeURIComponent(email)}&message=You%20are%20already%20friends.`,
-        request.url,
-      ),
-      { status: 303 },
-    );
+    return redirectWithParams(request, {
+      message: "You are already friends.",
+      query: email,
+    });
   }
 
-  return NextResponse.redirect(
-    new URL(
-      `/dashboard/friends?query=${encodeURIComponent(email)}&found=${encodeURIComponent(target.id)}`,
-      request.url,
-    ),
-    { status: 303 },
-  );
+  return redirectWithParams(request, {
+    found: target.id,
+    query: email,
+  });
 }

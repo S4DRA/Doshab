@@ -1,5 +1,3 @@
-import { LogoMark } from "@/components/ui/logo-mark";
-
 export default function DashboardLoading() {
   return (
     <main className="flex h-[100dvh] w-full overflow-hidden bg-[#050705] text-white">
@@ -11,7 +9,6 @@ export default function DashboardLoading() {
             className="doshab-loader rounded-3xl border border-white/30 bg-[#050505] px-8 py-7 text-center"
           >
             <div className="doshab-loader-mark mx-auto">
-              <LogoMark className="doshab-loader-logo" />
               <span className="doshab-grape-piece" />
               <span className="doshab-grape-piece" />
               <span className="doshab-grape-piece" />

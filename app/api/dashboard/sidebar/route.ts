@@ -15,7 +15,16 @@ export async function GET() {
     return NextResponse.json({ groups: [] }, { status: 401 });
   }
 
-  const [groups, messageThreads, friendships] = await Promise.all([
+  const [currentUser, groups, messageThreads, friendships] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+      },
+    }),
     getDashboardSidebarGroups(session.userId),
     getDashboardMessageThreads(session.userId),
     prisma.friendship.findMany({
@@ -91,6 +100,7 @@ export async function GET() {
   );
 
   return NextResponse.json({
+    currentUser,
     friends,
     groups,
     messageThreads,

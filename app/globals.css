@@ -225,13 +225,6 @@ html[data-theme="light"] .brand-logo-image {
   height: 112px;
 }
 
-.doshab-loader-logo {
-  position: absolute;
-  inset: 18px;
-  opacity: 0.95;
-  animation: doshab-logo-breathe 1800ms ease-in-out infinite;
-}
-
 .doshab-grape-piece {
   position: absolute;
   left: 50%;
@@ -327,24 +320,6 @@ html[data-theme="light"] .brand-logo-image {
   70% {
     opacity: 1;
     transform: translate(var(--piece-x), var(--piece-y)) scale(0.72);
-  }
-}
-
-@keyframes doshab-logo-breathe {
-  0%,
-  100% {
-    opacity: 0.98;
-    transform: scale(1);
-  }
-
-  38% {
-    opacity: 0.38;
-    transform: scale(0.92);
-  }
-
-  70% {
-    opacity: 1;
-    transform: scale(1.03);
   }
 }
 

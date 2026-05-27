@@ -1,24 +1,42 @@
 import Link from "next/link";
 
 import { RealtimeMessagePanel } from "@/components/chat/realtime-message-panel";
+import { FriendRequestList } from "@/components/friends/friend-request-list";
+import { FriendSearchForm } from "@/components/friends/friend-search-form";
 import { ChannelList } from "@/components/groups/channel-list";
 import { CreateChannelForm } from "@/components/groups/create-channel-form";
 import { CreateGroupForm } from "@/components/groups/create-group-form";
+import { GroupInvitesList } from "@/components/groups/group-invites-list";
 import { GroupMembersList } from "@/components/groups/group-members-list";
 import { Alert } from "@/components/ui/alert";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { LazyLiveKitVoiceRoom } from "@/components/voice/lazy-livekit-voice-room";
+import { formatUserStatus } from "@/lib/utils";
 import type {
   ChatMessage,
   DashboardGroup,
+  FriendPerson,
+  FriendRequestItem,
   GroupChannel,
+  GroupInviteItem,
   GroupMemberItem,
   MessageThread,
 } from "@/types";
 
+type DashboardHomeData = {
+  addFriendMessage?: string;
+  addFriendQuery?: string;
+  addFriendResult?: FriendPerson | null;
+  friends: FriendPerson[];
+  groupInvites: GroupInviteItem[];
+  incomingRequests: FriendRequestItem[];
+  outgoingRequests: FriendRequestItem[];
+};
+
 type DashboardShellProps = {
   currentUser?: ChatMessage["sender"];
   groups: DashboardGroup[];
+  homeData?: DashboardHomeData;
   selectedGroup?: DashboardGroup & {
     channels: GroupChannel[];
     currentUserRole?: "OWNER" | "ADMIN" | "MEMBER";
@@ -37,6 +55,7 @@ type DashboardShellProps = {
 export function DashboardShell({
   currentUser,
   groups,
+  homeData,
   selectedGroup,
   selectedChannel,
   activeSection = "dashboard",
@@ -141,20 +160,14 @@ export function DashboardShell({
           <div className="h-1 w-1" />
         </header>
 
-        <MobileSpaceSwitcher
-          activeSection={activeSection}
-          groups={groups}
-          messageThreads={messageThreads}
-          selectedChannelId={selectedChannel?.id}
-          selectedGroup={selectedGroup}
-        />
-
         {groupSettingsPanel ? (
           groupSettingsPanel
         ) : selectedChannel ? (
           <ChannelMain
             channel={selectedChannel}
             currentUser={currentUser}
+            groupId={selectedGroup?.id}
+            groupName={selectedGroup?.name}
             messages={selectedChannel.messages ?? []}
           />
         ) : selectedGroup ? (
@@ -172,101 +185,10 @@ export function DashboardShell({
         ) : activeSection === "messages" ? (
           <MessagesHome threads={messageThreads} />
         ) : (
-          <DashboardHome groups={groups} />
+          <DashboardHome data={homeData} />
         )}
       </section>
     </main>
-  );
-}
-
-function MobileSpaceSwitcher({
-  activeSection,
-  groups,
-  messageThreads,
-  selectedChannelId,
-  selectedGroup,
-}: {
-  activeSection: "dashboard" | "friends" | "channels" | "messages";
-  groups: DashboardGroup[];
-  messageThreads: MessageThread[];
-  selectedChannelId?: string;
-  selectedGroup?: DashboardGroup & { channels: GroupChannel[] };
-}) {
-  const showingMessages = activeSection === "messages" || selectedGroup?.isDirectMessage;
-
-  return (
-    <div className="dashboard-mobile-switcher border-b border-white/10 bg-[#0d100e] px-2 py-2 sm:px-3 min-[1180px]:hidden">
-      <div className="flex gap-2 overflow-x-auto overscroll-x-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <Link
-              className={`inline-flex h-10 shrink-0 items-center rounded-lg border px-4 text-sm font-semibold ${
-            activeSection === "dashboard" && !selectedGroup
-              ? "border-[#FF5F25] bg-[#FF5F25] text-black"
-              : "border-white/10 bg-[#050505] text-slate-200"
-          }`}
-          href="/dashboard"
-        >
-          Spaces
-        </Link>
-        <Link
-          className={`inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-sm font-semibold ${
-            activeSection === "friends"
-              ? "border-[#FF5F25] bg-[#FF5F25] text-black"
-              : "border-white/10 bg-[#050505] text-slate-200"
-          }`}
-          href="/dashboard/friends"
-        >
-          Friends
-        </Link>
-        <Link
-          className={`inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-sm font-semibold ${
-            showingMessages
-              ? "border-[#FF5F25] bg-[#FF5F25] text-black"
-              : "border-white/10 bg-[#050505] text-slate-200"
-          }`}
-          href="/dashboard/messages"
-        >
-          Messages
-        </Link>
-        {showingMessages
-          ? messageThreads.map((thread) => (
-              <Link
-                className={`inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-sm font-semibold ${
-                  selectedGroup?.id === thread.id
-                    ? "border-[#FF5F25] bg-[#FF5F25] text-black"
-                    : "border-white/10 bg-[#050505] text-slate-200"
-                }`}
-                href={`/dashboard/groups/${thread.id}/channels/${thread.channelId}`}
-                key={thread.id}
-              >
-                {thread.name}
-              </Link>
-            ))
-          : selectedGroup
-          ? selectedGroup.channels.map((channel) => (
-              <Link
-                className={`inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-sm font-semibold ${
-                  selectedChannelId === channel.id
-                    ? "border-[#FF5F25] bg-[#FF5F25] text-black"
-                    : "border-white/10 bg-[#050505] text-slate-200"
-                }`}
-                href={`/dashboard/groups/${selectedGroup.id}/channels/${channel.id}`}
-                key={channel.id}
-              >
-                {channel.type === "TEXT" ? "# " : ""}
-                {channel.name}
-              </Link>
-            ))
-          : groups.map((group) => (
-              <Link
-                className="inline-flex h-10 shrink-0 items-center rounded-full border border-white/10 bg-[#050505] px-4 text-sm font-semibold text-slate-200"
-                href={`/dashboard/groups/${group.id}`}
-                key={group.id}
-              >
-                {group.name}
-              </Link>
-            ))}
-      </div>
-    </div>
   );
 }
 
@@ -429,27 +351,66 @@ function ChannelsHome({
 function ChannelMain({
   channel,
   currentUser,
+  groupId,
+  groupName,
   messages,
 }: {
   channel: GroupChannel;
   currentUser?: ChatMessage["sender"];
+  groupId?: string;
+  groupName?: string;
   messages: ChatMessage[];
 }) {
   if (channel.type === "VOICE") {
-    return <LazyLiveKitVoiceRoom channelId={channel.id} channelName={channel.name} />;
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 backdrop-blur min-[1180px]:hidden">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
+                {groupName ?? "Voice"}
+              </p>
+              <h2 className="truncate text-lg font-semibold text-white">
+                {channel.name}
+              </h2>
+            </div>
+            {groupId ? (
+              <Link
+                className="inline-flex h-9 shrink-0 items-center rounded-lg border border-white/15 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25] hover:text-white"
+                href={`/dashboard/groups/${groupId}`}
+              >
+                Channels
+              </Link>
+            ) : null}
+          </div>
+        </div>
+        <LazyLiveKitVoiceRoom channelId={channel.id} channelName={channel.name} />
+      </div>
+    );
   }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
-        <section className="app-surface rounded-xl p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
-            Text channel
-          </p>
-          <h2 className="mt-3 text-2xl font-bold text-white"># {channel.name}</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-400">
-            End-to-end encrypted messages stream in realtime from this app.
-          </p>
+        <section className="app-surface rounded-xl p-3 sm:p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
+                {groupName ?? "Channel"}
+              </p>
+              <h2 className="mt-1 truncate text-xl font-semibold text-white sm:text-2xl">
+                # {channel.name}
+              </h2>
+            </div>
+            {groupId ? (
+              <Link
+                className="inline-flex h-9 shrink-0 items-center rounded-lg border border-white/15 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25] hover:text-white min-[1180px]:hidden"
+                href={`/dashboard/groups/${groupId}`}
+              >
+                Channels
+              </Link>
+            ) : null}
+          </div>
         </section>
         <div className="mt-6">
           <RealtimeMessagePanel
@@ -465,71 +426,121 @@ function ChannelMain({
   );
 }
 
-function DashboardHome({ groups }: { groups: DashboardGroup[] }) {
+function DashboardHome({ data }: { data?: DashboardHomeData }) {
+  const friends = data?.friends ?? [];
+  const onlineCount = friends.filter((friend) => friend.status === "ONLINE").length;
+
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
-      <div className="w-full space-y-4">
-        <section className="app-surface rounded-xl p-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
-                Welcome back
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-                Create spaces
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-                Build private groups that feel easy to join and simple to manage. Start with friends,
-                invite people you trust, and keep the experience light and intentional.
-              </p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-1 lg:auto-cols-max lg:grid-flow-col">
-              <Link
-                className="rounded-full border border-white/10 bg-[#181818] px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25] hover:bg-[#242424]"
-                href="/dashboard/friends"
-              >
-                Explore friends
-              </Link>
-            </div>
-          </div>
+      <div className="mx-auto grid w-full max-w-6xl gap-4">
+        <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+          <FriendSearchForm
+            message={data?.addFriendMessage}
+            query={data?.addFriendQuery}
+            redirectTo="/dashboard"
+            result={data?.addFriendResult}
+          />
+          <FriendStatusPanel
+            friends={friends}
+            onlineCount={onlineCount}
+          />
+        </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            <div className="app-card p-4">
-              <p className="text-sm text-slate-400">Active spaces</p>
-              <p className="mt-2 text-3xl font-semibold text-white">{groups.length}</p>
-            </div>
-            <div className="app-card p-4">
-              <p className="text-sm text-slate-400">Voice rooms</p>
-              <p className="mt-2 text-2xl font-semibold text-white sm:text-3xl">Always ready</p>
-            </div>
-            <div className="app-card p-4">
-              <p className="text-sm text-slate-400">Invites</p>
-              <p className="mt-2 text-2xl font-semibold text-white sm:text-3xl">Private</p>
-            </div>
-          </div>
-        </section>
+        <div className="grid gap-4 xl:grid-cols-2">
+          <FriendRequestList
+            emptyText="No incoming requests."
+            kind="incoming"
+            requests={data?.incomingRequests ?? []}
+            title="Incoming requests"
+          />
+          <FriendRequestList
+            emptyText="No outgoing requests."
+            kind="outgoing"
+            requests={data?.outgoingRequests ?? []}
+            title="Outgoing requests"
+          />
+        </div>
 
-        <section className="app-surface rounded-xl p-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
-                Quick start
-              </p>
-              <h3 className="mt-1.5 text-2xl font-semibold text-white">Create a private group</h3>
-            </div>
-            <span className="inline-flex rounded-full bg-[#FF5F25]/10 px-3 py-1 text-sm text-[#FF5F25]">
-              Comfortable setup
-            </span>
-          </div>
-          <p className="mt-2 max-w-2xl text-xs leading-5 text-slate-400">
-            Use groups to organize friends, voice rooms, and shared channels with privacy and ease.
-          </p>
-          <div className="mt-4">
-            <CreateGroupForm />
-          </div>
-        </section>
+        <GroupInvitesList invites={data?.groupInvites ?? []} />
       </div>
     </div>
+  );
+}
+
+function FriendStatusPanel({
+  friends,
+  onlineCount,
+}: {
+  friends: FriendPerson[];
+  onlineCount: number;
+}) {
+  return (
+    <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-sm shadow-black/10">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+            Friends status
+          </p>
+          <h2 className="mt-2 text-base font-semibold text-white">
+            {onlineCount} online
+          </h2>
+        </div>
+        <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
+          {friends.length} total
+        </span>
+      </div>
+
+      {friends.length ? (
+        <div className="mt-5 max-h-80 space-y-2 overflow-y-auto pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {friends.map((friend) => (
+            <form
+              action="/api/private-messages"
+              key={friend.id}
+              method="post"
+            >
+              <input name="friendId" type="hidden" value={friend.id} />
+              <button
+                className="flex w-full min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-[#0c1421] p-3 text-left transition hover:border-[#FF5F25]/70 hover:bg-white/10"
+                type="submit"
+              >
+                <AvatarInitials
+                  imageUrl={friend.image}
+                  value={friend.name || friend.email}
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold text-white">
+                    {friend.name || friend.email}
+                  </span>
+                  <span className="block truncate text-xs text-slate-500">
+                    {friend.email}
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-2 text-xs text-slate-400">
+                  <span
+                    className={`size-2 rounded-full ${
+                      friend.status === "ONLINE"
+                        ? "bg-emerald-400"
+                        : friend.status === "IDLE"
+                          ? "bg-amber-400"
+                          : friend.status === "DO_NOT_DISTURB"
+                            ? "bg-rose-400"
+                            : "bg-slate-600"
+                    }`}
+                  />
+                  <span className="hidden sm:inline">
+                    {formatUserStatus(friend.status)}
+                  </span>
+                </span>
+              </button>
+            </form>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-5 text-sm leading-6 text-slate-400">
+          Friends will appear here after requests are accepted.
+        </p>
+      )}
+    </section>
   );
 }
 
@@ -540,6 +551,7 @@ function GroupMain({
   invitePanel,
 }: {
   group: DashboardGroup & {
+    channels: GroupChannel[];
     members?: GroupMemberItem[];
     notice?: string;
   };
@@ -549,7 +561,57 @@ function GroupMain({
 }) {
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
-      <div className="grid w-full min-w-0 gap-4">
+      <div className="grid w-full min-w-0 gap-3 min-[1180px]:hidden">
+        {group.notice ? <Alert>{group.notice}</Alert> : null}
+        <section className="app-surface rounded-xl p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
+            {group.isDirectMessage ? "Private message" : "Channels"}
+          </p>
+          <h2 className="mt-1 truncate text-2xl font-semibold text-white">
+            {group.name}
+          </h2>
+        </section>
+
+        <section className="grid gap-2">
+          {group.channels.length ? (
+            group.channels.map((channel) => (
+              <Link
+                className="app-card flex min-h-14 items-center justify-between gap-3 p-3 transition hover:border-[#FF5F25]/70"
+                href={`/dashboard/groups/${group.id}/channels/${channel.id}`}
+                key={channel.id}
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-base font-semibold text-white">
+                    {channel.type === "TEXT" ? "# " : ""}
+                    {channel.name}
+                  </span>
+                  <span className="mt-0.5 block text-xs text-slate-500">
+                    {channel.type === "TEXT" ? "Text" : "Voice"}
+                  </span>
+                </span>
+                <span className="rounded-lg border border-white/10 px-2 py-1 text-xs font-semibold text-slate-300">
+                  Open
+                </span>
+              </Link>
+            ))
+          ) : (
+            <div className="app-card p-5 text-sm text-slate-300">
+              No channels yet.
+            </div>
+          )}
+        </section>
+
+        {!group.isDirectMessage ? (
+          <Link
+            className="mt-1 inline-flex h-11 items-center justify-center rounded-lg border border-white/10 bg-[#181818] px-4 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/70 hover:text-white"
+            href={`/dashboard/groups/${group.id}/settings`}
+          >
+            Group settings
+          </Link>
+        ) : null}
+      </div>
+
+      <div className="hidden w-full min-w-0 gap-4 min-[1180px]:grid">
         {group.notice ? <Alert>{group.notice}</Alert> : null}
         <section className="app-surface rounded-xl p-5">
           <div className="grid min-w-0 gap-5 min-[1180px]:grid-cols-[1fr_1.2fr] min-[1180px]:items-center">

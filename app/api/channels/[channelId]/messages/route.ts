@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth";
 import { isValidEncryptedMessageContent } from "@/lib/e2ee-message";
+import {
+  publishChannelMessage,
+  subscribeToChannelMessages,
+} from "@/lib/message-bus";
 import { prisma } from "@/lib/prisma";
 import { sendPushNotifications } from "@/lib/push";
 
@@ -122,7 +126,7 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
 
   if (
     !content ||
-    content.length > 12000 ||
+    content.length > 200000 ||
     (isJsonRequest && !isValidEncryptedMessageContent(content))
   ) {
     if (isJsonRequest) {
@@ -195,6 +199,8 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
       title: result.notificationTitle,
     });
   }
+
+  publishChannelMessage(channel.id, result.message);
 
   if (isJsonRequest) {
     return NextResponse.json(result.message, { status: 201 });
@@ -346,18 +352,31 @@ async function streamMessages(
         );
       };
 
+      const unsubscribe = subscribeToChannelMessages(channelId, (message) => {
+        if (new Date(message.createdAt).getTime() <= cursor.getTime()) {
+          return;
+        }
+
+        cursor = new Date(message.createdAt);
+        controller.enqueue(
+          encoder.encode(`event: messages\ndata: ${JSON.stringify([message])}\n\n`),
+        );
+      });
+
       const timer = setInterval(() => {
         if (request.signal.aborted) {
           clearInterval(timer);
+          unsubscribe();
           controller.close();
           return;
         }
 
         void sendMessages().catch(() => {
           clearInterval(timer);
+          unsubscribe();
           controller.error(new Error("Message stream failed."));
         });
-      }, 1000);
+      }, 10000);
 
       void sendMessages().catch(() => {
         clearInterval(timer);
@@ -366,6 +385,7 @@ async function streamMessages(
 
       request.signal.addEventListener("abort", () => {
         clearInterval(timer);
+        unsubscribe();
         controller.close();
       });
     },
