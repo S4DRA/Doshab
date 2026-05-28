@@ -24,7 +24,7 @@ export function ChannelList({
   const voiceChannels = channels.filter((channel) => channel.type === "VOICE");
 
   return (
-    <div className="space-y-5 px-0 py-4">
+    <div className="min-h-0 space-y-5 overflow-y-auto px-0 py-2 pr-1 min-[1180px]:space-y-4">
       <ChannelSection
         channels={textChannels}
         canManageChannels={canManageChannels}
@@ -70,7 +70,7 @@ function ChannelSection({
 }) {
   return (
     <section>
-      <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+      <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 min-[1180px]:text-[10px] min-[1180px]:tracking-[0.18em]">
         {label}
       </p>
       {channels.length ? (
@@ -78,7 +78,7 @@ function ChannelSection({
           {channels.map((channel) => (
             <div
               className={cn(
-                "app-row flex w-full min-w-0 items-center justify-between gap-2 px-3 py-3 text-left text-sm font-medium text-slate-300 transition hover:border-white/20",
+                "app-row flex w-full min-w-0 items-center justify-between gap-2 px-3 py-3 text-left text-sm font-medium text-slate-300 transition hover:border-white/20 min-[1180px]:px-2.5 min-[1180px]:py-2.5",
                 selectedChannelId === channel.id && "border-[#FF5F25]/60 bg-[#FF5F25]/12 text-white shadow-[inset_3px_0_0_#FF5F25]",
               )}
               key={channel.id}
@@ -88,14 +88,14 @@ function ChannelSection({
                 href={`/dashboard/groups/${groupId}/channels/${channel.id}`}
               >
                 <span className="flex min-w-0 items-center gap-2">
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/7 text-xs font-bold text-slate-200">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/7 text-xs font-bold text-slate-200 min-[1180px]:h-7 min-[1180px]:w-7 min-[1180px]:rounded-md min-[1180px]:text-[11px]">
                     {channel.type === "TEXT" ? "#" : "V"}
                   </span>
-                  <span className="truncate text-[13px]">
+                  <span className="truncate text-[13px] min-[1180px]:text-xs">
                     {prefix} {channel.name}
                   </span>
                 </span>
-                <span className="hidden rounded-md bg-white/7 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 min-[1400px]:inline-flex">
+                <span className="hidden rounded-md bg-white/7 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 min-[1180px]:inline-flex">
                   {channel.type}
                 </span>
               </Link>

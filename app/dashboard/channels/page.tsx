@@ -27,6 +27,7 @@ export default async function ChannelsPage() {
       id: true,
       name: true,
       description: true,
+      image: true,
       isDirectMessage: true,
       channels: {
         orderBy: {
@@ -36,6 +37,25 @@ export default async function ChannelsPage() {
           id: true,
           name: true,
           type: true,
+        },
+      },
+      members: {
+        orderBy: {
+          createdAt: "asc",
+        },
+        select: {
+          id: true,
+          role: true,
+          createdAt: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              status: true,
+            },
+          },
         },
       },
     },

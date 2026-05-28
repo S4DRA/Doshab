@@ -171,7 +171,7 @@ function ActiveCallDock({
   session: PersistentCallSession;
 }) {
   return (
-    <section className="fixed bottom-20 right-3 z-[60] w-[calc(100vw-1.5rem)] max-w-md overflow-hidden rounded-xl border border-[#FF5F25]/40 bg-[#070a12] shadow-2xl shadow-black/50 sm:bottom-4 sm:right-4">
+    <section className="fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] right-3 z-[60] w-[calc(100vw-1.5rem)] max-w-md overflow-hidden rounded-xl border border-[#FF5F25]/40 bg-[#070a12] shadow-2xl shadow-black/50 sm:bottom-4 sm:right-4">
       <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
@@ -224,7 +224,7 @@ function ActiveCallDock({
               controls={{
                 microphone: true,
                 camera: session.kind === "group",
-                screenShare: false,
+                screenShare: true,
                 chat: false,
                 settings: false,
                 leave: true,
@@ -303,14 +303,14 @@ export function PersistentCallSurface({
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-white/10 bg-black">
-        <PersistentCallParticipants />
+        <PersistentCallParticipants showScreenShareFocus />
       </div>
       <div className="mt-3 shrink-0 rounded-xl border border-white/10 bg-[#0b0f0b] px-3 py-3">
         <ControlBar
           controls={{
             microphone: true,
             camera: activeCall.kind === "group",
-            screenShare: false,
+            screenShare: true,
             chat: false,
             settings: false,
             leave: true,
@@ -323,13 +323,24 @@ export function PersistentCallSurface({
   );
 }
 
-function PersistentCallParticipants() {
+function PersistentCallParticipants({
+  showScreenShareFocus = false,
+}: {
+  showScreenShareFocus?: boolean;
+}) {
   const tracks = useTracks(
     [
+      { source: Track.Source.ScreenShare, withPlaceholder: false },
       { source: Track.Source.Camera, withPlaceholder: true },
       { source: Track.Source.Microphone, withPlaceholder: true },
     ],
     { onlySubscribed: false },
+  );
+  const screenShareTracks = tracks.filter(
+    (track) => getTrackSource(track) === Track.Source.ScreenShare,
+  );
+  const participantTracks = tracks.filter(
+    (track) => getTrackSource(track) !== Track.Source.ScreenShare,
   );
 
   if (!tracks.length) {
@@ -340,11 +351,52 @@ function PersistentCallParticipants() {
     );
   }
 
+  if (showScreenShareFocus && screenShareTracks.length) {
+    const [focusedShare, ...otherShares] = screenShareTracks;
+    const secondaryTracks = [...otherShares, ...participantTracks];
+
+    return (
+      <div className="flex h-full min-h-0 flex-col gap-2 bg-[#050705] p-2">
+        <div className="flex min-h-0 flex-[3] flex-col overflow-hidden rounded-lg border border-[#FF5F25]/30 bg-[#070a12]">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
+            <p className="truncate text-xs font-semibold text-white">
+              {getParticipantLabel(focusedShare)} is sharing
+            </p>
+            <span className="rounded-full border border-[#FF5F25]/40 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FFB199]">
+              Live screen
+            </span>
+          </div>
+          <div className="min-h-0 flex-1">
+            <ParticipantTile className="h-full rounded-none" trackRef={focusedShare} />
+          </div>
+        </div>
+        {secondaryTracks.length ? (
+          <GridLayout
+            className="min-h-28 flex-[1] rounded-lg bg-[#0b1020] p-2"
+            tracks={secondaryTracks}
+          >
+            <ParticipantTile />
+          </GridLayout>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <GridLayout className="h-full min-h-40 rounded-lg bg-[#0b1020] p-2" tracks={tracks}>
       <ParticipantTile />
     </GridLayout>
   );
+}
+
+type PersistentTrack = ReturnType<typeof useTracks>[number];
+
+function getTrackSource(track: PersistentTrack) {
+  return track.publication?.source ?? track.source;
+}
+
+function getParticipantLabel(track: PersistentTrack) {
+  return track.participant.name || track.participant.identity || "Someone";
 }
 
 function isActiveCallPage(session: PersistentCallSession, pathname: string) {

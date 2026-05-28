@@ -189,7 +189,7 @@ export function RealtimeMessagePanel({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden sm:min-h-[28rem]">
       <div className="shrink-0 space-y-2">
         {!encryptionReady ? (
           <p className="app-card p-3 text-xs leading-5 text-slate-400">
@@ -204,7 +204,7 @@ export function RealtimeMessagePanel({
         ) : null}
       </div>
 
-      <div className="message-feed min-h-0 flex-1 overflow-y-auto overscroll-contain py-3 pr-1">
+      <div className="message-feed min-h-0 flex-1 overflow-y-auto overscroll-contain py-3 pr-1 sm:max-h-none">
         <MessageList messages={displayedMessages} />
         <div ref={messagesEndRef} />
       </div>
@@ -212,7 +212,7 @@ export function RealtimeMessagePanel({
       <div className="shrink-0 border-t border-white/10 bg-[#070907]/95 pt-3 backdrop-blur">
         <form className="flex items-end gap-2 sm:gap-3" onSubmit={sendMessage}>
           <textarea
-            className="max-h-36 min-h-11 flex-1 resize-none rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60"
+            className="h-11 max-h-11 min-h-11 flex-1 resize-none overflow-y-auto rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60 sm:h-auto sm:max-h-36"
             disabled={!encryptionReady || !currentUser}
             maxLength={2000}
             onChange={(event) => setDraft(event.target.value)}

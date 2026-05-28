@@ -26,7 +26,7 @@ export default async function DashboardLayout({
         initialUnreadCount={sidebarData?.unreadCount}
       />
       <PersistentCallProvider>
-        <div className="min-w-0 overflow-hidden pb-16 sm:pb-0 sm:pl-16">{children}</div>
+        <div className="dashboard-content-frame min-w-0 overflow-hidden sm:pl-16">{children}</div>
         {session ? <IncomingCallWatcher /> : null}
       </PersistentCallProvider>
     </>

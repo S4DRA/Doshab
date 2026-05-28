@@ -71,8 +71,8 @@ export function DashboardShell({
     : null;
 
   return (
-    <main className="flex h-[100dvh] min-h-0 w-full max-w-full overflow-hidden bg-[#070907]/95 text-slate-100">
-      <aside className="dashboard-secondary-sidebar hidden w-[260px] shrink-0 flex-col border-r border-white/10 bg-[#0d100e] p-4 min-[1180px]:flex min-[1500px]:w-[280px]">
+    <main className="flex h-full min-h-0 w-full max-w-full overflow-hidden bg-[#070907]/95 text-slate-100 sm:h-auto sm:min-h-[100dvh] sm:overflow-visible min-[1180px]:h-[100dvh] min-[1180px]:min-h-0 min-[1180px]:overflow-hidden">
+      <aside className="dashboard-secondary-sidebar hidden w-[292px] shrink-0 flex-col gap-3 border-r border-white/10 bg-[#0d100e] p-3 min-[1180px]:flex min-[1500px]:w-[312px]">
         {activeSection === "messages" || selectedGroup?.isDirectMessage ? (
           <MessageThreadSidebar
             selectedGroupId={selectedGroup?.id}
@@ -80,13 +80,13 @@ export function DashboardShell({
           />
         ) : selectedGroup ? (
           <>
-            <div className="app-card p-4">
+            <div className="app-card p-4 min-[1180px]:p-3.5">
               <p className="app-section-title">
                 Space
               </p>
-              <h1 className="mt-2 break-words text-lg font-semibold text-white">{selectedGroup.name}</h1>
+              <h1 className="mt-2 break-words text-lg font-semibold text-white min-[1180px]:text-base">{selectedGroup.name}</h1>
               {selectedGroup.description ? (
-                <p className="mt-2 break-words text-sm leading-6 text-slate-400">
+                <p className="mt-2 break-words text-sm leading-6 text-slate-400 min-[1180px]:text-xs min-[1180px]:leading-5">
                   {selectedGroup.description}
                 </p>
               ) : null}
@@ -99,7 +99,7 @@ export function DashboardShell({
             />
             {!selectedGroup.isDirectMessage ? (
               <Link
-                className="mt-1 rounded-lg border border-white/10 bg-[#181818] px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/70 hover:bg-[#242424] hover:text-white"
+                className="mt-auto rounded-lg border border-white/10 bg-[#181818] px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/70 hover:bg-[#242424] hover:text-white min-[1180px]:text-xs"
                 href={`/dashboard/groups/${selectedGroup.id}/settings`}
               >
                 Space settings
@@ -132,13 +132,13 @@ export function DashboardShell({
         )}
       </aside>
 
-      <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex min-h-14 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 py-2 pl-3 pr-24 backdrop-blur sm:px-6">
+      <section className="flex min-w-0 flex-1 flex-col overflow-hidden sm:overflow-visible min-[1180px]:overflow-hidden">
+        <header className="flex min-h-14 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 py-2 pl-3 pr-24 backdrop-blur sm:px-6 min-[1180px]:min-h-16 min-[1180px]:px-7">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#FF5F25] min-[1180px]:text-[11px]">
               {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : activeSection === "messages" ? "Messages" : "Dashboard"}
             </p>
-            <p className="mt-0.5 truncate text-sm text-slate-400">
+            <p className="mt-0.5 truncate text-sm text-slate-400 min-[1180px]:text-xs">
               {selectedChannel
                 ? selectedChannel.type === "TEXT"
                   ? "Text channel"
@@ -159,7 +159,7 @@ export function DashboardShell({
               <input name="friendId" type="hidden" value={selectedMessageThread.friend.id} />
               <button
                 aria-label={`Call ${selectedMessageThread.name}`}
-                className="app-icon-button app-icon-button-primary h-9 w-9"
+                className="app-icon-button app-icon-button-primary h-9 w-9 min-[1180px]:h-8 min-[1180px]:w-8"
                 type="submit"
               >
                 <PhoneIcon className="h-4 w-4" />
@@ -212,19 +212,19 @@ function MessageThreadSidebar({
 }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="rounded-2xl border border-white/10 bg-[#121512] p-4">
+      <div className="app-card p-4 min-[1180px]:p-3.5">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
           Messages
         </p>
         <h1 className="mt-2 text-lg font-semibold text-white">Private chats</h1>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto py-3">
+      <div className="min-h-0 flex-1 overflow-y-auto py-1">
         {threads.length ? (
           <div className="space-y-1">
             {threads.map((thread) => (
               <div
-                className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition ${
+                className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 transition ${
                   selectedGroupId === thread.id
                     ? "border-[#FF5F25]/60 bg-[#FF5F25]/12"
                     : "border-transparent hover:border-white/20 hover:bg-white/7"
@@ -253,7 +253,7 @@ function MessageThreadSidebar({
                     <input name="friendId" type="hidden" value={thread.friend.id} />
                     <button
                       aria-label={`Call ${thread.name}`}
-                      className="app-icon-button app-icon-button-primary h-8 w-8"
+                    className="app-icon-button app-icon-button-primary h-7 w-7"
                       type="submit"
                     >
                       <PhoneIcon className="h-3.5 w-3.5" />
@@ -359,15 +359,11 @@ function PhoneIcon({ className }: { className?: string }) {
 function ChannelsHome({
   groups,
 }: {
-  groups: Array<DashboardGroup & { channels?: GroupChannel[] }>;
+  groups: Array<DashboardGroup & {
+    channels?: GroupChannel[];
+    members?: GroupMemberItem[];
+  }>;
 }) {
-  const channelCards = groups.flatMap((group) =>
-    (group.channels ?? []).map((channel) => ({
-      ...channel,
-      groupName: group.name,
-    })),
-  );
-
   return (
     <div className="app-page-scroll">
       <div className="app-page-container space-y-4">
@@ -381,22 +377,101 @@ function ChannelsHome({
           </p>
         </section>
 
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {channelCards.length ? (
-            channelCards.map((channel) => (
-              <div
-                key={channel.id}
-                className="app-card p-4"
-              >
-                <p className="text-sm text-slate-400">{channel.groupName}</p>
-                <h3 className="mt-3 text-xl font-semibold text-white">{channel.name}</h3>
-                <p className="mt-2 text-sm text-slate-400">
-                  {channel.type === "TEXT" ? "Text channel" : "Voice channel"}
-                </p>
-              </div>
-            ))
+        <section className="grid gap-4 xl:grid-cols-2">
+          {groups.length ? (
+            groups.map((group) => {
+              const members = group.members ?? [];
+              const channels = group.channels ?? [];
+              const onlineCount = members.filter(
+                (member) => member.user.status === "ONLINE",
+              ).length;
+
+              return (
+                <article className="app-card overflow-hidden" key={group.id}>
+                  <div className="flex items-start gap-3 border-b border-white/10 p-4">
+                    <AvatarInitials imageUrl={group.image} size="lg" value={group.name} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="truncate text-lg font-semibold text-white">
+                          {group.name}
+                        </h3>
+                        <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                          {channels.length} channels
+                        </span>
+                      </div>
+                      {group.description ? (
+                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-400">
+                          {group.description}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="border-b border-white/10 px-4 py-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
+                          Who is in it
+                        </p>
+                        <p className="mt-1 text-xs text-slate-400">
+                          {members.length} members, {onlineCount} online
+                        </p>
+                      </div>
+                      <div className="flex -space-x-2">
+                        {members.slice(0, 5).map((member) => (
+                          <AvatarInitials
+                            imageUrl={member.user.image}
+                            key={member.id}
+                            size="sm"
+                            value={member.user.name || member.user.email}
+                          />
+                        ))}
+                        {members.length > 5 ? (
+                          <span className="grid size-9 place-items-center rounded-lg border border-white/10 bg-[#181818] text-xs font-bold text-slate-300">
+                            +{members.length - 5}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2 p-4">
+                    {channels.length ? (
+                      channels.map((channel) => (
+                        <Link
+                          className="app-row flex min-h-12 items-center justify-between gap-3 px-3 py-2.5 transition hover:border-[#FF5F25]/70"
+                          href={`/dashboard/groups/${group.id}/channels/${channel.id}`}
+                          key={channel.id}
+                        >
+                          <span className="flex min-w-0 items-center gap-3">
+                            <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/7 text-xs font-bold text-slate-200">
+                              {channel.type === "TEXT" ? "#" : "V"}
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm font-semibold text-white">
+                                {channel.name}
+                              </span>
+                              <span className="block text-xs text-slate-500">
+                                {channel.type === "TEXT" ? "Text channel" : "Voice room"}
+                              </span>
+                            </span>
+                          </span>
+                          <span className="rounded-lg border border-white/10 px-2 py-1 text-xs font-semibold text-slate-300">
+                            Open
+                          </span>
+                        </Link>
+                      ))
+                    ) : (
+                      <p className="rounded-lg border border-dashed border-white/10 px-3 py-4 text-sm text-slate-400">
+                        No channels in this space yet.
+                      </p>
+                    )}
+                  </div>
+                </article>
+              );
+            })
           ) : (
-            <div className="app-card p-6 text-center text-slate-400">
+            <div className="app-card p-6 text-center text-slate-400 xl:col-span-2">
               No channels found yet. Create a space to add your first channels.
             </div>
           )}
@@ -421,7 +496,7 @@ function ChannelMain({
 }) {
   if (channel.type === "VOICE") {
     return (
-      <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col min-[1180px]:h-full">
         <div className="border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 backdrop-blur min-[1180px]:hidden">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
@@ -452,37 +527,35 @@ function ChannelMain({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
-        <section className="app-surface rounded-xl p-3 sm:p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
-                {groupName ?? "Channel"}
-              </p>
-              <h2 className="mt-1 truncate text-xl font-semibold text-white sm:text-2xl">
-                # {channel.name}
-              </h2>
-            </div>
-            {groupId ? (
-              <Link
-                className="inline-flex h-9 shrink-0 items-center rounded-lg border border-white/15 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25] hover:text-white min-[1180px]:hidden"
-                href={`/dashboard/groups/${groupId}`}
-              >
-                Channels
-              </Link>
-            ) : null}
+    <div className="flex min-h-0 flex-1 flex-col px-3 py-3 sm:px-4 sm:py-4 min-[1180px]:h-full min-[1180px]:px-7 min-[1180px]:py-5">
+      <section className="app-surface shrink-0 rounded-xl p-3 sm:p-4 min-[1180px]:rounded-lg min-[1180px]:p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
+              {groupName ?? "Channel"}
+            </p>
+            <h2 className="mt-1 truncate text-xl font-semibold text-white sm:text-2xl min-[1180px]:text-xl">
+              # {channel.name}
+            </h2>
           </div>
-        </section>
-        <div className="mt-4 min-h-0 flex-1">
-          <RealtimeMessagePanel
-            channelId={channel.id}
-            channelName={channel.name}
-            currentUser={currentUser}
-            initialMessages={messages}
-            key={channel.id}
-          />
+          {groupId ? (
+            <Link
+              className="inline-flex h-9 shrink-0 items-center rounded-lg border border-white/15 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25] hover:text-white min-[1180px]:hidden"
+              href={`/dashboard/groups/${groupId}`}
+            >
+              Channels
+            </Link>
+          ) : null}
         </div>
+      </section>
+      <div className="mt-4 min-h-0 flex-1 sm:min-h-[28rem] min-[1180px]:min-h-0">
+        <RealtimeMessagePanel
+          channelId={channel.id}
+          channelName={channel.name}
+          currentUser={currentUser}
+          initialMessages={messages}
+          key={channel.id}
+        />
       </div>
     </div>
   );
