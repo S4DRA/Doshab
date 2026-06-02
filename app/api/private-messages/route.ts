@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { getAuthState } from "@/lib/auth";
 import { orderedFriendshipPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
 
 function redirectWithError(request: NextRequest, error: string) {
   return NextResponse.redirect(
@@ -13,20 +13,25 @@ function redirectWithError(request: NextRequest, error: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
+    const auth = await getAuthState();
 
-    if (!session) {
+    if (auth.status === "unverified") {
+      return NextResponse.redirect(new URL("/verify-email", request.url), { status: 303 });
+    }
+
+    if (auth.status !== "authenticated") {
       return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
     }
 
+    const userId = auth.user.id;
     const formData = await request.formData();
     const friendId = String(formData.get("friendId") ?? "");
 
-    if (!friendId || friendId === session.userId) {
+    if (!friendId || friendId === userId) {
       return redirectWithError(request, "Choose a valid friend.");
     }
 
-    const [userOneId, userTwoId] = orderedFriendshipPair(session.userId, friendId);
+    const [userOneId, userTwoId] = orderedFriendshipPair(userId, friendId);
     const directMessageKey = `${userOneId}:${userTwoId}`;
 
     const friendship = await prisma.friendship.findUnique({
@@ -88,11 +93,11 @@ export async function POST(request: NextRequest) {
       }
 
       const friend =
-        friendship.userOne.id === session.userId
+        friendship.userOne.id === userId
           ? friendship.userTwo
           : friendship.userOne;
       const currentUser =
-        friendship.userOne.id === session.userId
+        friendship.userOne.id === userId
           ? friendship.userOne
           : friendship.userTwo;
 
@@ -102,7 +107,7 @@ export async function POST(request: NextRequest) {
           directMessageKey,
           isDirectMessage: true,
           name: `${currentUser.name} / ${friend.name}`,
-          ownerId: session.userId,
+          ownerId: userId,
         },
         select: {
           id: true,
@@ -114,7 +119,7 @@ export async function POST(request: NextRequest) {
           {
             groupId: createdGroup.id,
             role: "OWNER",
-            userId: session.userId,
+            userId,
           },
           {
             groupId: createdGroup.id,

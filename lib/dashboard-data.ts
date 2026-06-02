@@ -1,9 +1,6 @@
 import { cache } from "react";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
-
-export const getDashboardSession = cache(getSession);
 
 export const getDashboardGroups = cache(async (userId: string) =>
   prisma.group.findMany({
@@ -93,7 +90,6 @@ export const getDashboardMessageThreads = cache(async (userId: string) => {
               id: true,
               name: true,
               email: true,
-              image: true,
               status: true,
             },
           },

@@ -1,23 +1,33 @@
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { IncomingCallWatcher } from "@/components/calls/incoming-call-watcher";
 import { PersistentCallProvider } from "@/components/calls/persistent-call-provider";
-import {
-  getDashboardSidebarGroups,
-  getDashboardSession,
-} from "@/lib/dashboard-data";
+import { getDashboardSidebarGroups } from "@/lib/dashboard-data";
 import { friendFromPair } from "@/lib/friends";
+import { getAuthState } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import { AgentAmirTheme } from "@/components/theme/presets/agent-amir/agent-amir-theme";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getDashboardSession();
-  const sidebarData = session ? await getInitialSidebarData(session.userId) : null;
+  const auth = await getAuthState();
+
+  if (auth.status === "unverified") {
+    redirect("/verify-email");
+  }
+
+  if (auth.status !== "authenticated") {
+    redirect("/login");
+  }
+
+  const sidebarData = await getInitialSidebarData(auth.user.id);
+  const isAmirPreset = sidebarData.currentUser?.name?.trim().toLowerCase() === "amir";
 
   return (
-    <>
+    <AgentAmirThemeWrapper enabled={isAmirPreset}>
       <DashboardSidebar
         initialCurrentUser={sidebarData?.currentUser}
         initialFriends={sidebarData?.friends}
@@ -27,10 +37,24 @@ export default async function DashboardLayout({
       />
       <PersistentCallProvider>
         <div className="dashboard-content-frame min-w-0 overflow-hidden sm:pl-16">{children}</div>
-        {session ? <IncomingCallWatcher /> : null}
+        <IncomingCallWatcher />
       </PersistentCallProvider>
-    </>
+    </AgentAmirThemeWrapper>
   );
+}
+
+function AgentAmirThemeWrapper({
+  children,
+  enabled,
+}: {
+  children: React.ReactNode;
+  enabled: boolean;
+}) {
+  if (!enabled) {
+    return children;
+  }
+
+  return <AgentAmirTheme>{children}</AgentAmirTheme>;
 }
 
 async function getInitialSidebarData(userId: string) {
@@ -41,7 +65,6 @@ async function getInitialSidebarData(userId: string) {
         id: true,
         name: true,
         email: true,
-        image: true,
       },
     }),
     getDashboardSidebarGroups(userId),
@@ -60,7 +83,6 @@ async function getInitialSidebarData(userId: string) {
             id: true,
             name: true,
             email: true,
-            image: true,
             status: true,
           },
         },
@@ -69,7 +91,6 @@ async function getInitialSidebarData(userId: string) {
             id: true,
             name: true,
             email: true,
-            image: true,
             status: true,
           },
         },
@@ -95,7 +116,6 @@ async function getInitialSidebarData(userId: string) {
             id: true,
             name: true,
             email: true,
-            image: true,
             status: true,
           },
         },

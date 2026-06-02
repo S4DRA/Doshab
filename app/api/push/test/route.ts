@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 
+import { getAuthState } from "@/lib/auth";
 import { getPushConfigStatus, sendPushNotifications } from "@/lib/push";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
 
 export async function POST() {
-  const session = await getSession();
+  const auth = await getAuthState();
 
-  if (!session) {
+  if (auth.status === "unverified") {
+    return NextResponse.json({ error: "Email not verified" }, { status: 403 });
+  }
+
+  if (auth.status !== "authenticated") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -15,7 +19,7 @@ export async function POST() {
     Promise.resolve(getPushConfigStatus()),
     prisma.pushSubscription.count({
       where: {
-        userId: session.userId,
+        userId: auth.user.id,
       },
     }),
   ]);
@@ -45,7 +49,7 @@ export async function POST() {
   await sendPushNotifications({
     body: "Phone alerts are working.",
     href: "/dashboard",
-    recipientIds: [session.userId],
+    recipientIds: [auth.user.id],
     title: "Doshab test notification",
   });
 

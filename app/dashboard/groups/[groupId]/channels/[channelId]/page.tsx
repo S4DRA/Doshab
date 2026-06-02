@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { getAuthState } from "@/lib/auth";
 import {
   getDashboardMessageThreads,
-  getDashboardSession,
 } from "@/lib/dashboard-data";
 import { prisma } from "@/lib/prisma";
 
@@ -15,11 +15,17 @@ type ChannelPageProps = {
 };
 
 export default async function ChannelPage({ params }: ChannelPageProps) {
-  const session = await getDashboardSession();
+  const auth = await getAuthState();
 
-  if (!session) {
+  if (auth.status === "unverified") {
+    redirect("/verify-email");
+  }
+
+  if (auth.status !== "authenticated") {
     redirect("/login");
   }
+
+  const userId = auth.user.id;
 
   const { groupId, channelId } = await params;
 
@@ -27,7 +33,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
     where: {
       groupId_userId: {
         groupId,
-        userId: session.userId,
+        userId,
       },
     },
     select: {
@@ -57,16 +63,15 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
     redirect("/dashboard");
   }
 
-  const messageThreads = await getDashboardMessageThreads(session.userId);
+  const messageThreads = await getDashboardMessageThreads(userId);
   const currentUser = await prisma.user.findUnique({
     where: {
-      id: session.userId,
+      id: userId,
     },
     select: {
       id: true,
       name: true,
       email: true,
-      image: true,
       status: true,
     },
   });
@@ -94,7 +99,6 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
               id: true,
               name: true,
               email: true,
-              image: true,
               status: true,
             },
           },

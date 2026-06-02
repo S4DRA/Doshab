@@ -188,13 +188,48 @@ export function ProfileSettingsPanel() {
         </div>
 
         <div className="app-row p-4 text-sm text-slate-400">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="grid gap-5">
             <div>
               <p className="text-sm font-semibold text-white">Account</p>
               <p className="mt-1 text-sm leading-5 text-slate-400">
-                End this session on the current device.
+                Change your password or end this session on the current device.
               </p>
             </div>
+            <form action="/api/auth/update-password" className="grid gap-3" method="post">
+              <input name="returnTo" type="hidden" value="profile" />
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  New password
+                </span>
+                <input
+                  autoComplete="new-password"
+                  className="mt-2 h-11 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+                  minLength={8}
+                  name="password"
+                  required
+                  type="password"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  Confirm password
+                </span>
+                <input
+                  autoComplete="new-password"
+                  className="mt-2 h-11 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+                  minLength={8}
+                  name="confirmPassword"
+                  required
+                  type="password"
+                />
+              </label>
+              <button
+                className="app-button-primary h-11 w-full rounded-lg px-4 text-sm font-bold transition sm:w-auto"
+                type="submit"
+              >
+                Change password
+              </button>
+            </form>
             <form action="/api/auth/logout" method="post">
               <button
                 className="app-button-secondary h-11 w-full rounded-lg px-4 text-sm font-bold transition sm:w-auto"

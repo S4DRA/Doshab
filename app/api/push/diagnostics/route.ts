@@ -1,15 +1,19 @@
 import { connection, NextResponse } from "next/server";
 
+import { getAuthState } from "@/lib/auth";
 import { getPushConfigStatus } from "@/lib/push";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
 
 export async function GET() {
   await connection();
 
-  const session = await getSession();
+  const auth = await getAuthState();
 
-  if (!session) {
+  if (auth.status === "unverified") {
+    return NextResponse.json({ error: "Email not verified" }, { status: 403 });
+  }
+
+  if (auth.status !== "authenticated") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -17,7 +21,7 @@ export async function GET() {
     Promise.resolve(getPushConfigStatus()),
     prisma.pushSubscription.count({
       where: {
-        userId: session.userId,
+        userId: auth.user.id,
       },
     }),
   ]);

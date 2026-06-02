@@ -4,34 +4,36 @@ import {
   getDashboardMessageThreads,
   getDashboardSidebarGroups,
 } from "@/lib/dashboard-data";
+import { getAuthState } from "@/lib/auth";
 import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
 
 export async function GET() {
-  const session = await getSession();
+  const auth = await getAuthState();
 
-  if (!session) {
+  if (auth.status === "unverified") {
+    return NextResponse.json({ groups: [] }, { status: 403 });
+  }
+
+  if (auth.status !== "authenticated") {
     return NextResponse.json({ groups: [] }, { status: 401 });
   }
 
+  const userId = auth.user.id;
+
   const [currentUser, groups, messageThreads, friendships] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: session.userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-      },
+    Promise.resolve({
+      id: auth.user.id,
+      name: auth.user.name,
+      email: auth.user.email,
     }),
-    getDashboardSidebarGroups(session.userId),
-    getDashboardMessageThreads(session.userId),
+    getDashboardSidebarGroups(userId),
+    getDashboardMessageThreads(userId),
     prisma.friendship.findMany({
       where: {
         OR: [
-          { userOneId: session.userId },
-          { userTwoId: session.userId },
+          { userOneId: userId },
+          { userTwoId: userId },
         ],
       },
       orderBy: {
@@ -45,7 +47,6 @@ export async function GET() {
             id: true,
             name: true,
             email: true,
-            image: true,
             status: true,
           },
         },
@@ -54,7 +55,6 @@ export async function GET() {
             id: true,
             name: true,
             email: true,
-            image: true,
             status: true,
           },
         },
@@ -64,7 +64,7 @@ export async function GET() {
   const [notifications, unreadCount] = await Promise.all([
     prisma.notification.findMany({
       where: {
-        userId: session.userId,
+        userId,
       },
       orderBy: {
         createdAt: "desc",
@@ -82,7 +82,6 @@ export async function GET() {
             id: true,
             name: true,
             email: true,
-            image: true,
             status: true,
           },
         },
@@ -91,12 +90,12 @@ export async function GET() {
     prisma.notification.count({
       where: {
         readAt: null,
-        userId: session.userId,
+        userId,
       },
     }),
   ]);
   const friends = friendships.map((friendship) =>
-    friendFromPair(friendship, session.userId),
+    friendFromPair(friendship, userId),
   );
 
   return NextResponse.json({

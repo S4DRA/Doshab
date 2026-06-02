@@ -5,7 +5,7 @@ import { FriendSearchForm } from "@/components/friends/friend-search-form";
 import { FriendsList } from "@/components/friends/friends-list";
 import { GroupInvitesList } from "@/components/groups/group-invites-list";
 import { Alert } from "@/components/ui/alert";
-import { getDashboardSession } from "@/lib/dashboard-data";
+import { getAuthState } from "@/lib/auth";
 import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
 
@@ -18,11 +18,17 @@ type FriendsPageProps = {
 };
 
 export default async function FriendsPage({ searchParams }: FriendsPageProps) {
-  const session = await getDashboardSession();
+  const auth = await getAuthState();
 
-  if (!session) {
+  if (auth.status === "unverified") {
+    redirect("/verify-email");
+  }
+
+  if (auth.status !== "authenticated") {
     redirect("/login");
   }
+
+  const userId = auth.user.id;
 
   const params = await searchParams;
 
@@ -30,7 +36,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
     await Promise.all([
       prisma.friendship.findMany({
         where: {
-          OR: [{ userOneId: session.userId }, { userTwoId: session.userId }],
+          OR: [{ userOneId: userId }, { userTwoId: userId }],
         },
         orderBy: {
           createdAt: "asc",
@@ -43,7 +49,6 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               id: true,
               name: true,
               email: true,
-              image: true,
               status: true,
             },
           },
@@ -52,7 +57,6 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               id: true,
               name: true,
               email: true,
-              image: true,
               status: true,
             },
           },
@@ -65,14 +69,13 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               id: true,
               name: true,
               email: true,
-              image: true,
               status: true,
             },
           })
         : null,
       prisma.friendRequest.findMany({
         where: {
-          receiverId: session.userId,
+          receiverId: userId,
           status: "PENDING",
         },
         orderBy: {
@@ -87,7 +90,6 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               id: true,
               name: true,
               email: true,
-              image: true,
               status: true,
             },
           },
@@ -95,7 +97,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       }),
       prisma.friendRequest.findMany({
         where: {
-          senderId: session.userId,
+          senderId: userId,
           status: "PENDING",
         },
         orderBy: {
@@ -110,7 +112,6 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               id: true,
               name: true,
               email: true,
-              image: true,
               status: true,
             },
           },
@@ -118,7 +119,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
       }),
       prisma.groupInvite.findMany({
         where: {
-          receiverId: session.userId,
+          receiverId: userId,
           status: "PENDING",
         },
         orderBy: {
@@ -141,7 +142,6 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               id: true,
               name: true,
               email: true,
-              image: true,
               status: true,
             },
           },
@@ -150,7 +150,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
     ]);
 
   const friends = friendships.map((friendship) =>
-    friendFromPair(friendship, session.userId),
+    friendFromPair(friendship, userId),
   );
 
   return (
@@ -189,7 +189,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               }
               query={params?.query}
               redirectTo="/dashboard/friends"
-              result={foundUser?.id === session.userId ? null : foundUser}
+              result={foundUser?.id === userId ? null : foundUser}
             />
             <FriendRequestList
               emptyText="No incoming friend requests."

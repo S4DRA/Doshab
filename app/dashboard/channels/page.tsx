@@ -1,22 +1,28 @@
 import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { getDashboardSession } from "@/lib/dashboard-data";
+import { getAuthState } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export default async function ChannelsPage() {
-  const session = await getDashboardSession();
+  const auth = await getAuthState();
 
-  if (!session) {
+  if (auth.status === "unverified") {
+    redirect("/verify-email");
+  }
+
+  if (auth.status !== "authenticated") {
     redirect("/login");
   }
+
+  const userId = auth.user.id;
 
   const groups = await prisma.group.findMany({
     where: {
       isDirectMessage: false,
       members: {
         some: {
-          userId: session.userId,
+          userId,
         },
       },
     },
@@ -52,7 +58,6 @@ export default async function ChannelsPage() {
               id: true,
               name: true,
               email: true,
-              image: true,
               status: true,
             },
           },

@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { getDashboardGroups, getDashboardSession } from "@/lib/dashboard-data";
+import { getAuthState } from "@/lib/auth";
+import { getDashboardGroups } from "@/lib/dashboard-data";
 import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
 
@@ -14,11 +15,17 @@ type DashboardPageProps = {
 };
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
-  const session = await getDashboardSession();
+  const auth = await getAuthState();
 
-  if (!session) {
+  if (auth.status === "unverified") {
+    redirect("/verify-email");
+  }
+
+  if (auth.status !== "authenticated") {
     redirect("/login");
   }
+
+  const userId = auth.user.id;
 
   const params = await searchParams;
   const [
@@ -29,7 +36,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     friendships,
     groupInvites,
   ] = await Promise.all([
-    getDashboardGroups(session.userId),
+    getDashboardGroups(userId),
     params?.found
       ? prisma.user.findUnique({
           where: { id: params.found },
@@ -37,14 +44,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             id: true,
             name: true,
             email: true,
-            image: true,
             status: true,
           },
         })
       : null,
     prisma.friendRequest.findMany({
       where: {
-        receiverId: session.userId,
+        receiverId: userId,
         status: "PENDING",
       },
       orderBy: {
@@ -59,7 +65,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             id: true,
             name: true,
             email: true,
-            image: true,
             status: true,
           },
         },
@@ -67,7 +72,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     }),
     prisma.friendRequest.findMany({
       where: {
-        senderId: session.userId,
+        senderId: userId,
         status: "PENDING",
       },
       orderBy: {
@@ -82,7 +87,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             id: true,
             name: true,
             email: true,
-            image: true,
             status: true,
           },
         },
@@ -90,7 +94,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     }),
     prisma.friendship.findMany({
       where: {
-        OR: [{ userOneId: session.userId }, { userTwoId: session.userId }],
+        OR: [{ userOneId: userId }, { userTwoId: userId }],
       },
       orderBy: {
         createdAt: "asc",
@@ -103,7 +107,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             id: true,
             name: true,
             email: true,
-            image: true,
             status: true,
           },
         },
@@ -112,7 +115,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             id: true,
             name: true,
             email: true,
-            image: true,
             status: true,
           },
         },
@@ -120,7 +122,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     }),
     prisma.groupInvite.findMany({
       where: {
-        receiverId: session.userId,
+        receiverId: userId,
         status: "PENDING",
       },
       orderBy: {
@@ -143,7 +145,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             id: true,
             name: true,
             email: true,
-            image: true,
             status: true,
           },
         },
@@ -152,7 +153,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   ]);
 
   const friends = friendships.map((friendship) =>
-    friendFromPair(friendship, session.userId),
+    friendFromPair(friendship, userId),
   );
 
   return (
@@ -162,7 +163,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         addFriendMessage:
           !foundUser && params?.query ? (params.message ?? "No matching user ready to add.") : params?.message,
         addFriendQuery: params?.query,
-        addFriendResult: foundUser?.id === session.userId ? null : foundUser,
+        addFriendResult: foundUser?.id === userId ? null : foundUser,
         friends,
         groupInvites,
         incomingRequests,

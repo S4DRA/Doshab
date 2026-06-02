@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { ProfileForm } from "@/components/profile/profile-form";
 import { ProfileSettingsPanel } from "@/components/profile/profile-settings-panel";
+import { AgentAmirIdBadge } from "@/components/theme/presets/agent-amir/agent-amir-id-badge";
 import { Alert } from "@/components/ui/alert";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -13,13 +14,14 @@ type ProfilePageProps = {
 };
 
 export default async function ProfilePage({ searchParams }: ProfilePageProps) {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser({ includeImage: true });
 
   if (!user) {
     redirect("/login");
   }
 
   const params = await searchParams;
+  const isAmir = user.name.trim().toLowerCase() === "amir";
 
   return (
     <main className="app-page-scroll bg-[#050705] text-slate-100">
@@ -38,10 +40,18 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         <div className="space-y-5">
           {params?.error ? <Alert tone="error">{params.error}</Alert> : null}
           {params?.message ? <Alert tone="success">{params.message}</Alert> : null}
+          {isAmir ? (
+            <AgentAmirIdBadge
+              email={user.email}
+              image={user.image ?? null}
+              name={user.name}
+              status={user.status}
+            />
+          ) : null}
           <ProfileForm
             user={{
               email: user.email,
-              image: user.image,
+              image: user.image ?? null,
               name: user.name,
               status: user.status,
             }}

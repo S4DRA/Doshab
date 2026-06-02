@@ -8,7 +8,7 @@ import { InviteFriendForm } from "@/components/groups/invite-friend-form";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { Alert } from "@/components/ui/alert";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
-import { getDashboardSession } from "@/lib/dashboard-data";
+import { getAuthState } from "@/lib/auth";
 import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
 
@@ -26,11 +26,17 @@ export default async function GroupSettingsPage({
   params,
   searchParams,
 }: GroupSettingsPageProps) {
-  const session = await getDashboardSession();
+  const auth = await getAuthState();
 
-  if (!session) {
+  if (auth.status === "unverified") {
+    redirect("/verify-email");
+  }
+
+  if (auth.status !== "authenticated") {
     redirect("/login");
   }
+
+  const userId = auth.user.id;
 
   const { groupId } = await params;
   const pageParams = await searchParams;
@@ -39,7 +45,7 @@ export default async function GroupSettingsPage({
     where: {
       groupId_userId: {
         groupId,
-        userId: session.userId,
+        userId,
       },
     },
     select: {
@@ -82,7 +88,7 @@ export default async function GroupSettingsPage({
 
   const canManage =
     membership.role === "OWNER" || membership.role === "ADMIN";
-  const isOwner = membership.group.ownerId === session.userId;
+  const isOwner = membership.group.ownerId === userId;
   const selectedGroupForShell = {
     channels: membership.group.channels,
     description: membership.group.description,
@@ -102,7 +108,7 @@ export default async function GroupSettingsPage({
           group={membership.group}
           isOwner={isOwner}
           message={pageParams?.message}
-          userId={session.userId}
+          userId={userId}
         />
       }
       groups={[]}
@@ -347,7 +353,6 @@ async function InviteSettingsPanel({
           id: true,
           name: true,
           email: true,
-          image: true,
           status: true,
         },
       },
@@ -356,7 +361,6 @@ async function InviteSettingsPanel({
           id: true,
           name: true,
           email: true,
-          image: true,
           status: true,
         },
       },

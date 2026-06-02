@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { getAuthState } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
 
 type PushSubscriptionBody = {
   endpoint?: unknown;
@@ -12,11 +12,17 @@ type PushSubscriptionBody = {
 };
 
 export async function POST(request: NextRequest) {
-  const session = await getSession();
+  const authState = await getAuthState();
 
-  if (!session) {
+  if (authState.status === "unverified") {
+    return NextResponse.json({ error: "Email not verified" }, { status: 403 });
+  }
+
+  if (authState.status !== "authenticated") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const userId = authState.user.id;
 
   const body = (await request.json().catch(() => null)) as PushSubscriptionBody | null;
   const endpoint = typeof body?.endpoint === "string" ? body.endpoint : "";
@@ -36,13 +42,13 @@ export async function POST(request: NextRequest) {
       endpoint,
       p256dh,
       userAgent: request.headers.get("user-agent"),
-      userId: session.userId,
+      userId,
     },
     update: {
       auth,
       p256dh,
       userAgent: request.headers.get("user-agent"),
-      userId: session.userId,
+      userId,
     },
   });
 

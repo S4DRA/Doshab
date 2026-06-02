@@ -23,7 +23,7 @@ function redirectWithMessage(
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser({ includeImage: true });
 
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     return redirectWithMessage(request, "error", "Choose a valid status.");
   }
 
-  let image: string | null = user.image;
+  let image: string | null = user.image ?? null;
 
   if (imageFile instanceof File && imageFile.size > 0) {
     if (!imageFile.type.startsWith("image/")) {

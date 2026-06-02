@@ -1,19 +1,21 @@
 import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import {
-  getDashboardMessageThreads,
-  getDashboardSession,
-} from "@/lib/dashboard-data";
+import { getAuthState } from "@/lib/auth";
+import { getDashboardMessageThreads } from "@/lib/dashboard-data";
 
 export default async function MessagesPage() {
-  const session = await getDashboardSession();
+  const auth = await getAuthState();
 
-  if (!session) {
+  if (auth.status === "unverified") {
+    redirect("/verify-email");
+  }
+
+  if (auth.status !== "authenticated") {
     redirect("/login");
   }
 
-  const messageThreads = await getDashboardMessageThreads(session.userId);
+  const messageThreads = await getDashboardMessageThreads(auth.user.id);
 
   return (
     <DashboardShell

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { InviteFriendForm } from "@/components/groups/invite-friend-form";
-import { getDashboardSession } from "@/lib/dashboard-data";
+import { getAuthState } from "@/lib/auth";
 import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
 
@@ -17,11 +17,17 @@ type GroupPageProps = {
 };
 
 export default async function GroupPage({ params, searchParams }: GroupPageProps) {
-  const session = await getDashboardSession();
+  const auth = await getAuthState();
 
-  if (!session) {
+  if (auth.status === "unverified") {
+    redirect("/verify-email");
+  }
+
+  if (auth.status !== "authenticated") {
     redirect("/login");
   }
+
+  const userId = auth.user.id;
 
   const { groupId } = await params;
   const pageParams = await searchParams;
@@ -32,7 +38,7 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
         id: groupId,
         members: {
           some: {
-            userId: session.userId,
+            userId,
           },
         },
       },
@@ -64,7 +70,6 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
                 id: true,
                 name: true,
                 email: true,
-                image: true,
                 status: true,
               },
             },
@@ -74,20 +79,19 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
     }),
     prisma.user.findUnique({
       where: {
-        id: session.userId,
+        id: userId,
       },
       select: {
         id: true,
         name: true,
         email: true,
-        image: true,
         status: true,
       },
     }),
   ]);
 
   const currentMember = selectedGroup?.members.find(
-    (member) => member.user.id === session.userId,
+    (member) => member.user.id === userId,
   );
 
   if (!selectedGroup || !currentMember) {
@@ -109,7 +113,7 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
             <InviteCandidatesPanel
               groupId={selectedGroup.id}
               memberIds={memberIds}
-              userId={session.userId}
+              userId={userId}
             />
           </Suspense>
         ) : undefined
@@ -147,7 +151,6 @@ async function InviteCandidatesPanel({
           id: true,
           name: true,
           email: true,
-          image: true,
           status: true,
         },
       },
@@ -156,7 +159,6 @@ async function InviteCandidatesPanel({
           id: true,
           name: true,
           email: true,
-          image: true,
           status: true,
         },
       },

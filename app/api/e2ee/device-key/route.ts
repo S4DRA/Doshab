@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { getAuthState } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
 
 type DeviceKeyBody = {
   deviceId?: unknown;
@@ -9,11 +9,17 @@ type DeviceKeyBody = {
 };
 
 export async function POST(request: NextRequest) {
-  const session = await getSession();
+  const auth = await getAuthState();
 
-  if (!session) {
+  if (auth.status === "unverified") {
+    return NextResponse.json({ error: "Email not verified" }, { status: 403 });
+  }
+
+  if (auth.status !== "authenticated") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const userId = auth.user.id;
 
   const body = (await request.json().catch(() => null)) as DeviceKeyBody | null;
   const deviceId = typeof body?.deviceId === "string" ? body.deviceId : "";
@@ -31,13 +37,13 @@ export async function POST(request: NextRequest) {
       id: deviceId,
       publicKey,
       userAgent: request.headers.get("user-agent"),
-      userId: session.userId,
+      userId,
     },
     update: {
       lastSeen: new Date(),
       publicKey,
       userAgent: request.headers.get("user-agent"),
-      userId: session.userId,
+      userId,
     },
   });
 

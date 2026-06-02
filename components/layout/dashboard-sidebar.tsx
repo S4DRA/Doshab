@@ -181,7 +181,14 @@ export function DashboardSidebar({
     }
 
     void loadGroups();
-    const refreshTimer = window.setInterval(loadGroups, 15000);
+    const refreshIntervalMs = 120000;
+    const refreshTimer = window.setInterval(() => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      void loadGroups();
+    }, refreshIntervalMs);
 
     return () => {
       isMounted = false;

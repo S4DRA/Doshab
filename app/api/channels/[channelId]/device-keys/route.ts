@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { getAuthState } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
 
 type DeviceKeysRouteProps = {
   params: Promise<{
@@ -10,12 +10,18 @@ type DeviceKeysRouteProps = {
 };
 
 export async function GET(_: Request, { params }: DeviceKeysRouteProps) {
-  const session = await getSession();
-  const { channelId } = await params;
+  const auth = await getAuthState();
 
-  if (!session) {
+  if (auth.status === "unverified") {
+    return NextResponse.json({ error: "Email not verified" }, { status: 403 });
+  }
+
+  if (auth.status !== "authenticated") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { channelId } = await params;
+
+  const userId = auth.user.id;
 
   const channel = await prisma.channel.findFirst({
     where: {
@@ -24,7 +30,7 @@ export async function GET(_: Request, { params }: DeviceKeysRouteProps) {
       group: {
         members: {
           some: {
-            userId: session.userId,
+            userId,
           },
         },
       },
