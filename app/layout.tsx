@@ -2,6 +2,11 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@livekit/components-styles";
 import "./globals.css";
+import {
+  DEFAULT_DOSHAB_THEME_ID,
+  DOSHAB_THEMES,
+  DOSHAB_THEME_STORAGE_KEY,
+} from "@/lib/themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,9 +18,32 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const metadataBase = new URL(
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000",
+);
+
 export const metadata: Metadata = {
+  metadataBase,
   title: "Doshab",
   description: "A private meeting app foundation for spaces, chat, voice, and video.",
+  openGraph: {
+    title: "Doshab",
+    description: "A private meeting app foundation for spaces, chat, voice, and video.",
+    images: [
+      {
+        url: "/doshab-logo-social.png",
+        width: 1254,
+        height: 1254,
+        alt: "Doshab logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "Doshab",
+    description: "A private meeting app foundation for spaces, chat, voice, and video.",
+    images: ["/doshab-logo-social.png"],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -23,8 +51,8 @@ export const metadata: Metadata = {
   },
   applicationName: "Doshab",
   icons: {
-    icon: "/Doshab_png.png",
-    apple: "/Doshab_png.png",
+    icon: "/doshab-icon-512.png",
+    apple: "/doshab-apple-icon.png",
   },
   manifest: "/manifest.webmanifest",
 };
@@ -32,6 +60,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#060807",
 };
+
+const themeBootScript = `try{var theme=localStorage.getItem("${DOSHAB_THEME_STORAGE_KEY}");document.documentElement.dataset.theme=${JSON.stringify(
+  DOSHAB_THEMES.map((theme) => theme.id),
+)}.includes(theme)?theme:"${DEFAULT_DOSHAB_THEME_ID}"}catch{document.documentElement.dataset.theme="${DEFAULT_DOSHAB_THEME_ID}"}`;
 
 export default function RootLayout({
   children,
@@ -49,7 +81,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var theme=localStorage.getItem("doshab-theme");document.documentElement.dataset.theme=theme==="light"?"light":"dark"}catch{document.documentElement.dataset.theme="dark"}`,
+            __html: themeBootScript,
           }}
         />
       </head>

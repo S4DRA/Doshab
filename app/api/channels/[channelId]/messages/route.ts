@@ -9,6 +9,9 @@ import {
 import { prisma } from "@/lib/prisma";
 import { sendPushNotifications } from "@/lib/push";
 
+const messageBatchSize = 50;
+const messagePollIntervalMs = 30_000;
+
 type MessagesRouteProps = {
   params: Promise<{
     channelId: string;
@@ -285,7 +288,7 @@ export async function GET(request: NextRequest, { params }: MessagesRouteProps) 
       orderBy: {
         createdAt: "asc",
       },
-      take: 100,
+      take: messageBatchSize,
       select: messageSelect(),
     });
 
@@ -367,7 +370,7 @@ async function streamMessages(
           orderBy: {
             createdAt: "asc",
           },
-          take: 100,
+          take: messageBatchSize,
           select: messageSelect(),
         });
 
@@ -406,7 +409,7 @@ async function streamMessages(
           unsubscribe();
           controller.error(new Error("Message stream failed."));
         });
-      }, 10000);
+      }, messagePollIntervalMs);
 
       void sendMessages().catch(() => {
         clearInterval(timer);

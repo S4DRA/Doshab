@@ -20,12 +20,12 @@ export function GroupList({
       <Link
         aria-label="Dashboard home"
         className={cn(
-          "relative mb-3 grid size-11 place-items-center transition",
+          "relative mb-3 grid size-14 place-items-center transition",
           !selectedGroupId && !friendsActive && "after:absolute after:inset-y-2 after:-left-2.5 after:w-0.5 after:rounded-full after:bg-[#FF5F25]",
         )}
         href="/dashboard"
       >
-        <LogoMark className="h-10 w-10" />
+        <LogoMark className="h-14 w-14" />
       </Link>
       <Link
         aria-label="Friends"

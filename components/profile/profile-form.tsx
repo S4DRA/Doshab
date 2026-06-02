@@ -24,6 +24,8 @@ const statuses: Array<{
   { label: "Offline", value: "OFFLINE" },
 ];
 
+const maxProfileImageBytes = 262_144;
+
 export function ProfileForm({ user }: ProfileFormProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(user.image);
   const [removeImage, setRemoveImage] = useState(false);
@@ -44,8 +46,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
       return;
     }
 
-    if (file.size > 3_145_728) {
-      setUploadError("Image must be under 3 MB.");
+    if (file.size > maxProfileImageBytes) {
+      setUploadError("Image must be under 256 KB.");
       event.target.value = "";
       return;
     }
@@ -158,7 +160,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   <p className="text-sm text-red-300">{uploadError}</p>
                 ) : (
                   <p className="text-sm leading-6 text-slate-500">
-                    Keep images under 3 MB for the best experience.
+                    Keep images under 256 KB to protect monthly database egress.
                   </p>
                 )}
               </div>

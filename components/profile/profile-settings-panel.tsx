@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   getPushRegistrationMessage,
   registerPushNotifications,
@@ -179,12 +179,17 @@ export function ProfileSettingsPanel() {
 
         <div className="app-row flex items-center justify-between gap-4 px-4 py-4">
           <span className="min-w-0">
-            <span className="block text-sm font-semibold text-white">Theme</span>
+            <span className="block text-sm font-semibold text-white">Themes</span>
             <span className="block text-sm leading-5 text-slate-400">
-              Switch between high-contrast dark and light mode.
+              Open the full theme gallery and choose a global Doshab style.
             </span>
           </span>
-          <ThemeToggle />
+          <Link
+            className="app-button-primary inline-flex h-10 shrink-0 items-center rounded-lg px-4 text-sm font-bold transition"
+            href="/dashboard/profile/themes"
+          >
+            Theme settings
+          </Link>
         </div>
 
         <div className="app-row p-4 text-sm text-slate-400">

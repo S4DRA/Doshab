@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { PushNotificationToggle } from "@/components/notifications/push-notification-toggle";
@@ -74,7 +74,6 @@ export function DashboardSidebar({
   initialUnreadCount = 0,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const [currentUser, setCurrentUser] = useState<SidebarUser | null>(initialCurrentUser);
   const [friends, setFriends] = useState<SidebarFriend[]>(initialFriends);
   const [groups, setGroups] = useState<SidebarGroup[]>(initialGroups);
@@ -93,18 +92,6 @@ export function DashboardSidebar({
 
     return window.localStorage.getItem(mobileChannelPinCacheKey);
   });
-
-  useEffect(() => {
-    [...navItems, { href: "/dashboard/profile" }].forEach((item) => {
-      router.prefetch(item.href);
-    });
-  }, [router]);
-
-  useEffect(() => {
-    groups.slice(0, 12).forEach((group) => {
-      router.prefetch(`/dashboard/groups/${group.id}`);
-    });
-  }, [groups, router]);
 
   useEffect(() => {
     let isMounted = true;
@@ -329,6 +316,7 @@ export function DashboardSidebar({
             className="block rounded-xl px-2 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
             href="/dashboard/friends"
             onClick={() => setCreateOpen(false)}
+            prefetch={false}
           >
             Add friends first
           </Link>
@@ -352,6 +340,7 @@ export function DashboardSidebar({
           className="rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-slate-200"
           href="/dashboard/channels"
           onClick={() => setChannelsOpen(false)}
+          prefetch={false}
         >
           All
         </Link>
@@ -371,6 +360,7 @@ export function DashboardSidebar({
                 window.localStorage.setItem(mobileChannelPinCacheKey, group.id);
                 setChannelsOpen(false);
               }}
+              prefetch={false}
             >
               <AvatarInitials imageUrl={group.image} value={group.name} />
               <span className="min-w-0">
@@ -440,6 +430,7 @@ export function DashboardSidebar({
                 setNotificationsOpen(false);
                 void markNotificationsRead();
               }}
+              prefetch={false}
             >
               <span className="block truncate text-sm font-semibold text-white">
                 {notification.title}
@@ -468,8 +459,7 @@ export function DashboardSidebar({
         className="block rounded-lg px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
         href="/dashboard/profile"
         onClick={() => setProfileOpen(false)}
-        onMouseEnter={() => router.prefetch("/dashboard/profile")}
-        onPointerDown={() => router.prefetch("/dashboard/profile")}
+        prefetch={false}
       >
         Settings
       </Link>
@@ -500,6 +490,7 @@ export function DashboardSidebar({
                 : "border-transparent text-slate-300"
             }`}
             href="/dashboard/friends"
+            prefetch={false}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -536,6 +527,7 @@ export function DashboardSidebar({
                   : "text-slate-300"
               }`}
               href={pinnedGroupHref}
+              prefetch={false}
             >
               {pinnedGroup ? (
                 <AvatarInitials imageUrl={pinnedGroup.image} size="sm" value={pinnedGroup.name} />
@@ -576,6 +568,7 @@ export function DashboardSidebar({
               : "border-transparent text-slate-300"
           }`}
           href="/dashboard"
+          prefetch={false}
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path d="M3 12 12 3l9 9" />
@@ -638,11 +631,11 @@ export function DashboardSidebar({
       </nav>
       <Link
         aria-label="Dashboard"
-        className="hidden size-10 place-items-center transition sm:grid sm:size-11 min-[1180px]:size-12"
+        className="hidden size-12 place-items-center transition sm:grid sm:size-14 min-[1180px]:size-16"
         href="/dashboard"
-        onMouseEnter={() => router.prefetch("/dashboard")}
+        prefetch={false}
       >
-        <LogoMark className="h-9 w-9 sm:h-10 sm:w-10 min-[1180px]:h-11 min-[1180px]:w-11" />
+        <LogoMark className="h-12 w-12 sm:h-14 sm:w-14 min-[1180px]:h-16 min-[1180px]:w-16" />
       </Link>
 
       <nav
@@ -664,8 +657,7 @@ export function DashboardSidebar({
               }`}
               href={item.href}
               key={item.href}
-              onMouseEnter={() => router.prefetch(item.href)}
-              onPointerDown={() => router.prefetch(item.href)}
+              prefetch={false}
               title={item.label}
             >
               {item.icon}
@@ -711,8 +703,7 @@ export function DashboardSidebar({
               }`}
               href={href}
               key={group.id}
-              onMouseEnter={() => router.prefetch(href)}
-              onPointerDown={() => router.prefetch(href)}
+              prefetch={false}
               title={group.name}
             >
               <AvatarInitials imageUrl={group.image} value={group.name} />

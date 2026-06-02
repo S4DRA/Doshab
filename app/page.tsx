@@ -1,6 +1,5 @@
-import Image from "next/image";
-
 import { ButtonLink } from "@/components/ui/button-link";
+import { LogoMark } from "@/components/ui/logo-mark";
 
 const stats = [
   ["Encrypted", "messages"],
@@ -29,9 +28,12 @@ export default function Home() {
       <section className="mx-auto grid min-h-[calc(100vh-2rem)] w-full max-w-[1240px] gap-5 px-5 py-5 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-stretch">
         <div className="app-surface flex min-h-[560px] flex-col justify-between rounded-xl p-6 sm:p-8 lg:p-10">
           <div>
-            <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#FF8A5F]">
-              <span className="size-2 rounded-full bg-[#9CCF9A]" />
-              Private voice and chat
+            <div className="flex flex-wrap items-center gap-4">
+              <LogoMark className="h-20 w-20" />
+              <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#FF8A5F]">
+                <span className="size-2 rounded-full bg-[#9CCF9A]" />
+                Private voice and chat
+              </div>
             </div>
             <h1 className="mt-8 max-w-4xl text-5xl font-semibold leading-[0.98] tracking-tight text-white sm:text-6xl lg:text-7xl">
               A calm command center for your closest circles.
@@ -61,27 +63,26 @@ export default function Home() {
 
         <div className="grid min-h-[560px] gap-5">
           <div className="app-surface grid overflow-hidden rounded-xl p-3">
-            <div className="relative min-h-[340px] overflow-hidden rounded-lg border border-white/10">
-              <Image
-                alt="Doshab private workspace"
-                className="h-full w-full object-cover"
-                height={720}
-                priority
-                src="/InShot_20260526_123122377.jpg"
-                width={900}
+            <div className="relative grid min-h-[340px] place-items-center overflow-hidden rounded-lg border border-white/10 bg-black">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,95,37,0.22),transparent_36%),radial-gradient(circle_at_68%_30%,rgba(156,207,154,0.14),transparent_30%)]" />
+              <div className="absolute inset-x-12 top-10 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              <LogoMark
+                className="relative h-72 w-72 sm:h-96 sm:w-96"
+                preload
+                sizes="(max-width: 640px) 288px, 384px"
               />
               <div className="absolute inset-x-0 bottom-0 border-t border-white/10 bg-black/70 p-4 backdrop-blur">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-xs uppercase tracking-[0.18em] text-[#FF8A5F]">
-                      Live room
+                      New mark
                     </p>
                     <p className="mt-1 text-lg font-semibold text-white">
-                      Evening sync
+                      Rooted private spaces
                     </p>
                   </div>
                   <div className="rounded-full bg-[#FF5F25] px-3 py-1.5 text-xs font-bold text-black">
-                    Active now
+                    Doshab
                   </div>
                 </div>
               </div>

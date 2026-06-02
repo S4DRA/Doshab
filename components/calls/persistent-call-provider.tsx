@@ -2,7 +2,6 @@
 
 import {
   ControlBar,
-  GridLayout,
   LiveKitRoom,
   ParticipantTile,
   RoomAudioRenderer,
@@ -17,6 +16,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -171,8 +171,8 @@ function ActiveCallDock({
   session: PersistentCallSession;
 }) {
   return (
-    <section className="fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] right-3 z-[60] w-[calc(100vw-1.5rem)] max-w-md overflow-hidden rounded-xl border border-[#FF5F25]/40 bg-[#070a12] shadow-2xl shadow-black/50 sm:bottom-4 sm:right-4">
-      <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+    <section className="fixed inset-x-3 bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] overflow-x-hidden overflow-y-auto rounded-xl border border-[#FF5F25]/40 bg-[#070a12] shadow-2xl shadow-black/50 sm:inset-x-auto sm:bottom-4 sm:right-4 sm:w-[min(28rem,calc(100vw-2rem))]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
             {session.kind === "friend" ? "Friend call" : "Voice room"}
@@ -216,10 +216,10 @@ function ActiveCallDock({
       </div>
       {expanded ? (
         <>
-          <div className="max-h-[45vh] min-h-48 p-3">
+          <div className="min-h-0 max-h-[min(45dvh,24rem)] overflow-hidden p-3">
             <PersistentCallParticipants />
           </div>
-          <div className="border-t border-white/10 px-3 py-3">
+          <div className="overflow-x-auto border-t border-white/10 px-3 py-3">
             <ControlBar
               controls={{
                 microphone: true,
@@ -274,27 +274,27 @@ export function PersistentCallSurface({
   }
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col bg-[#050705] px-3 py-3 sm:px-5 sm:py-4">
-      <div className="mb-3 flex shrink-0 items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#0b0f0b] px-4 py-3">
+    <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#050705] px-2 py-2 sm:px-4 sm:py-3">
+      <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-[#0b0f0b] px-3 py-2">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
             {activeCall.kind === "friend" ? "Friend call" : "Voice room"}
           </p>
-          <h2 className="mt-1 truncate text-xl font-semibold text-white">{activeCall.title}</h2>
+          <h2 className="mt-0.5 truncate text-base font-semibold text-white">{activeCall.title}</h2>
           {activeCall.subtitle ? (
-            <p className="mt-1 truncate text-xs text-slate-400">{activeCall.subtitle}</p>
+            <p className="truncate text-[11px] text-slate-400">{activeCall.subtitle}</p>
           ) : null}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
           <button
-            className="app-button-secondary h-9 rounded-lg px-3 text-xs font-semibold transition"
+            className="app-button-secondary h-8 rounded-lg px-3 text-xs font-semibold transition"
             onClick={() => setPoppedOut(true)}
             type="button"
           >
             Pop out
           </button>
           <button
-            className="h-9 rounded-lg border border-red-400/40 px-3 text-xs font-semibold text-red-100 transition hover:bg-red-500/20"
+            className="h-8 rounded-lg border border-red-400/40 px-3 text-xs font-semibold text-red-100 transition hover:bg-red-500/20"
             onClick={endCall}
             type="button"
           >
@@ -302,10 +302,10 @@ export function PersistentCallSurface({
           </button>
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-white/10 bg-black">
+      <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-white/10 bg-black">
         <PersistentCallParticipants showScreenShareFocus />
       </div>
-      <div className="mt-3 shrink-0 rounded-xl border border-white/10 bg-[#0b0f0b] px-3 py-3">
+      <div className="mt-2 shrink-0 overflow-x-auto rounded-lg border border-white/10 bg-[#0b0f0b] px-2 py-2">
         <ControlBar
           controls={{
             microphone: true,
@@ -328,71 +328,270 @@ function PersistentCallParticipants({
 }: {
   showScreenShareFocus?: boolean;
 }) {
+  const [focusedTrackKey, setFocusedTrackKey] = useState<string | null>(null);
   const tracks = useTracks(
     [
       { source: Track.Source.ScreenShare, withPlaceholder: false },
       { source: Track.Source.Camera, withPlaceholder: true },
-      { source: Track.Source.Microphone, withPlaceholder: true },
     ],
     { onlySubscribed: false },
   );
-  const screenShareTracks = tracks.filter(
-    (track) => getTrackSource(track) === Track.Source.ScreenShare,
+  const orderedTracks = useMemo(
+    () =>
+      [...tracks].sort((first, second) => {
+        const firstIsShare = getTrackSource(first) === Track.Source.ScreenShare;
+        const secondIsShare = getTrackSource(second) === Track.Source.ScreenShare;
+
+        if (firstIsShare !== secondIsShare) {
+          return firstIsShare ? -1 : 1;
+        }
+
+        return getParticipantLabel(first).localeCompare(getParticipantLabel(second));
+      }),
+    [tracks],
   );
-  const participantTracks = tracks.filter(
-    (track) => getTrackSource(track) !== Track.Source.ScreenShare,
-  );
+  const focusedTrack = orderedTracks.find((track) => getTrackKey(track) === focusedTrackKey);
 
   if (!tracks.length) {
     return (
-      <div className="grid h-full min-h-40 place-items-center rounded-lg border border-dashed border-white/10 bg-white/[0.03] p-6 text-center text-sm text-slate-400">
+      <div className="grid h-full min-h-0 place-items-center rounded-lg border border-dashed border-white/10 bg-white/[0.03] p-6 text-center text-sm text-slate-400">
         Waiting for participants.
       </div>
     );
   }
 
-  if (showScreenShareFocus && screenShareTracks.length) {
-    const [focusedShare, ...otherShares] = screenShareTracks;
-    const secondaryTracks = [...otherShares, ...participantTracks];
-
-    return (
-      <div className="flex h-full min-h-0 flex-col gap-2 bg-[#050705] p-2">
-        <div className="flex min-h-0 flex-[3] flex-col overflow-hidden rounded-lg border border-[#FF5F25]/30 bg-[#070a12]">
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
-            <p className="truncate text-xs font-semibold text-white">
-              {getParticipantLabel(focusedShare)} is sharing
-            </p>
-            <span className="rounded-full border border-[#FF5F25]/40 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FFB199]">
-              Live screen
-            </span>
-          </div>
-          <div className="min-h-0 flex-1">
-            <ParticipantTile className="h-full rounded-none" trackRef={focusedShare} />
-          </div>
-        </div>
-        {secondaryTracks.length ? (
-          <GridLayout
-            className="min-h-28 flex-[1] rounded-lg bg-[#0b1020] p-2"
-            tracks={secondaryTracks}
-          >
-            <ParticipantTile />
-          </GridLayout>
-        ) : null}
-      </div>
-    );
-  }
-
   return (
-    <GridLayout className="h-full min-h-40 rounded-lg bg-[#0b1020] p-2" tracks={tracks}>
-      <ParticipantTile />
-    </GridLayout>
+    <div className="h-full min-h-0 overflow-y-auto bg-[#050705] p-3">
+      {showScreenShareFocus && focusedTrack ? (
+        <FocusedCallCard
+          onClose={() => setFocusedTrackKey(null)}
+          track={focusedTrack}
+        />
+      ) : null}
+      <div className="flex flex-wrap content-start justify-center gap-3">
+        {orderedTracks.map((track) => (
+          <SmallCallCard
+            active={getTrackKey(track) === focusedTrackKey}
+            key={getTrackKey(track)}
+            onSelect={() => setFocusedTrackKey(getTrackKey(track))}
+            track={track}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
 type PersistentTrack = ReturnType<typeof useTracks>[number];
 
+function FocusedCallCard({
+  onClose,
+  track,
+}: {
+  onClose: () => void;
+  track: PersistentTrack;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const isShare = getTrackSource(track) === Track.Source.ScreenShare;
+
+  useEffect(() => {
+    const updateFullscreenElement = () => {
+      setIsFullscreen(Boolean(cardRef.current && document.fullscreenElement === cardRef.current));
+    };
+
+    updateFullscreenElement();
+    document.addEventListener("fullscreenchange", updateFullscreenElement);
+
+    return () => document.removeEventListener("fullscreenchange", updateFullscreenElement);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    const element = cardRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    if (document.fullscreenElement === element) {
+      void document.exitFullscreen().catch(() => null);
+      return;
+    }
+
+    void element.requestFullscreen().catch(() => null);
+  }, []);
+
+  return (
+    <section
+      className="mx-auto mb-3 flex h-[clamp(14rem,48dvh,34rem)] w-full max-w-5xl flex-col overflow-hidden rounded-lg border border-[#FF5F25]/40 bg-[#070a12] fullscreen:h-screen fullscreen:max-w-none fullscreen:rounded-none fullscreen:border-0 fullscreen:bg-black"
+      ref={cardRef}
+    >
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 px-3 py-2">
+        <div className="min-w-0">
+          <p className="truncate text-xs font-semibold text-white">
+            {getParticipantLabel(track)}
+          </p>
+          <p className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FFB199]">
+            {isShare ? "Screen share" : "Participant"}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen card"}
+            className="app-icon-button h-8 w-8"
+            onClick={toggleFullscreen}
+            type="button"
+          >
+            <FullscreenIcon active={isFullscreen} />
+          </button>
+          <button
+            aria-label="Close large card"
+            className="app-icon-button h-8 w-8"
+            onClick={onClose}
+            type="button"
+          >
+            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div className="min-h-0 flex-1">
+        <CallCardContent focused track={track} />
+      </div>
+    </section>
+  );
+}
+
+function SmallCallCard({
+  active,
+  onSelect,
+  track,
+}: {
+  active: boolean;
+  onSelect: () => void;
+  track: PersistentTrack;
+}) {
+  const isShare = getTrackSource(track) === Track.Source.ScreenShare;
+
+  return (
+    <div
+      aria-label={`${isShare ? "Screen share" : "Participant"} card for ${getParticipantLabel(track)}`}
+      aria-pressed={active}
+      className={`group relative h-[clamp(20rem,26vw,24rem)] w-[clamp(30rem,40vw,36rem)] cursor-pointer overflow-hidden rounded-lg border bg-[#0b1020] transition hover:border-[#FF5F25]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F25]/50 ${
+        active ? "border-[#FF5F25]/70" : "border-white/10"
+      }`}
+      onClick={onSelect}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      <CallCardContent track={track} />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+        <p className="truncate text-xs font-semibold text-white">{getParticipantLabel(track)}</p>
+        {isShare ? (
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FFB199]">
+            Screen share
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function CallCardContent({
+  focused = false,
+  track,
+}: {
+  focused?: boolean;
+  track: PersistentTrack;
+}) {
+  const isShare = getTrackSource(track) === Track.Source.ScreenShare;
+
+  if (isShare && isLocalTrack(track)) {
+    return <LocalScreenSharePreview focused={focused} />;
+  }
+
+  return (
+    <ParticipantTile
+      className="h-full rounded-none [&_.lk-focus-toggle-button]:hidden [&_.lk-participant-media-video]:!object-contain [&_.lk-participant-media-video]:!object-center"
+      trackRef={track}
+    />
+  );
+}
+
+function LocalScreenSharePreview({ focused = false }: { focused?: boolean }) {
+  return (
+    <div className={`grid h-full min-h-0 place-items-center bg-[#111511] p-3 text-center ${focused ? "p-6" : ""}`}>
+      <div className="max-w-xs">
+        <div className={`${focused ? "size-12" : "size-9"} mx-auto grid place-items-center rounded-lg border border-[#FF5F25]/40 bg-[#FF5F25]/12 text-[#FFB199]`}>
+          <ScreenShareGlyph className={focused ? "h-6 w-6" : "h-4 w-4"} />
+        </div>
+        <p className={`${focused ? "mt-4 text-sm" : "mt-2 text-xs"} truncate font-semibold text-white`}>
+          Your screen is being shared
+        </p>
+        <p className={`${focused ? "mt-2 text-xs leading-5" : "mt-1 text-[10px] leading-4"} text-slate-400`}>
+          The local preview is hidden.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function FullscreenIcon({ active }: { active: boolean }) {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      {active ? (
+        <>
+          <path d="M8 3v5H3" />
+          <path d="M16 3v5h5" />
+          <path d="M8 21v-5H3" />
+          <path d="M16 21v-5h5" />
+        </>
+      ) : (
+        <>
+          <path d="M8 3H3v5" />
+          <path d="M16 3h5v5" />
+          <path d="M8 21H3v-5" />
+          <path d="M16 21h5v-5" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+function ScreenShareGlyph({ className }: { className: string }) {
+  return (
+    <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <path d="M3 4h18v12H3z" />
+      <path d="M8 20h8" />
+      <path d="M12 16v4" />
+      <path d="m9 10 3-3 3 3" />
+      <path d="M12 7v7" />
+    </svg>
+  );
+}
+
 function getTrackSource(track: PersistentTrack) {
   return track.publication?.source ?? track.source;
+}
+
+function isLocalTrack(track: PersistentTrack) {
+  return Boolean(track.participant.isLocal);
+}
+
+function getTrackKey(track: PersistentTrack) {
+  return [
+    track.participant.identity,
+    getTrackSource(track),
+    track.publication?.trackSid ?? "placeholder",
+  ].join(":");
 }
 
 function getParticipantLabel(track: PersistentTrack) {

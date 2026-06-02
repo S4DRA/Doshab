@@ -11,6 +11,8 @@ const allowedStatuses: UserStatus[] = [
   "OFFLINE",
 ];
 
+const maxProfileImageBytes = 262_144;
+
 function redirectWithMessage(
   request: NextRequest,
   type: "error" | "message",
@@ -54,8 +56,8 @@ export async function POST(request: NextRequest) {
       return redirectWithMessage(request, "error", "Please upload a valid image file.");
     }
 
-    if (imageFile.size > 3_145_728) {
-      return redirectWithMessage(request, "error", "Image must be under 3 MB.");
+    if (imageFile.size > maxProfileImageBytes) {
+      return redirectWithMessage(request, "error", "Image must be under 256 KB.");
     }
 
     const arrayBuffer = await imageFile.arrayBuffer();

@@ -6,7 +6,6 @@ import { friendFromPair } from "@/lib/friends";
 import { getAuthState } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { AgentAmirTheme } from "@/components/theme/presets/agent-amir/agent-amir-theme";
 
 export default async function DashboardLayout({
   children,
@@ -24,10 +23,9 @@ export default async function DashboardLayout({
   }
 
   const sidebarData = await getInitialSidebarData(auth.user.id);
-  const isAmirPreset = sidebarData.currentUser?.name?.trim().toLowerCase() === "amir";
 
   return (
-    <AgentAmirThemeWrapper enabled={isAmirPreset}>
+    <>
       <DashboardSidebar
         initialCurrentUser={sidebarData?.currentUser}
         initialFriends={sidebarData?.friends}
@@ -39,22 +37,8 @@ export default async function DashboardLayout({
         <div className="dashboard-content-frame min-w-0 overflow-hidden sm:pl-16">{children}</div>
         <IncomingCallWatcher />
       </PersistentCallProvider>
-    </AgentAmirThemeWrapper>
+    </>
   );
-}
-
-function AgentAmirThemeWrapper({
-  children,
-  enabled,
-}: {
-  children: React.ReactNode;
-  enabled: boolean;
-}) {
-  if (!enabled) {
-    return children;
-  }
-
-  return <AgentAmirTheme>{children}</AgentAmirTheme>;
 }
 
 async function getInitialSidebarData(userId: string) {
