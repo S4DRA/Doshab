@@ -10,6 +10,7 @@ import {
 import { Track } from "livekit-client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import {
   createContext,
   useCallback,
@@ -19,6 +20,8 @@ import {
   useRef,
   useState,
 } from "react";
+
+import { cn } from "@/lib/utils";
 
 type PersistentCallSession = {
   href?: string;
@@ -157,6 +160,10 @@ export function usePersistentCall() {
   return context;
 }
 
+export function useOptionalPersistentCall() {
+  return useContext(PersistentCallContext);
+}
+
 function ActiveCallDock({
   expanded,
   onEnd,
@@ -170,9 +177,108 @@ function ActiveCallDock({
   onUnpop: () => void;
   session: PersistentCallSession;
 }) {
+  const dockRef = useRef<HTMLElement>(null);
+  const dragStateRef = useRef<{
+    offsetX: number;
+    offsetY: number;
+    pointerId: number;
+  } | null>(null);
+  const [dockPosition, setDockPosition] = useState<{ x: number; y: number } | null>(null);
+
+  const clampDockPosition = useCallback((x: number, y: number) => {
+    const rect = dockRef.current?.getBoundingClientRect();
+    const margin = 12;
+    const width = rect?.width ?? 448;
+    const height = rect?.height ?? 280;
+    const maxX = Math.max(margin, window.innerWidth - width - margin);
+    const maxY = Math.max(margin, window.innerHeight - height - margin);
+
+    return {
+      x: Math.min(Math.max(x, margin), maxX),
+      y: Math.min(Math.max(y, margin), maxY),
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!dockPosition) {
+      return;
+    }
+
+    const handleResize = () => {
+      setDockPosition((current) => (
+        current ? clampDockPosition(current.x, current.y) : current
+      ));
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [clampDockPosition, dockPosition]);
+
+  const beginDockDrag = (event: ReactPointerEvent<HTMLElement>) => {
+    if (
+      event.button !== 0 ||
+      (event.target as HTMLElement).closest("a, button, input, select, textarea, [role='button']")
+    ) {
+      return;
+    }
+
+    const rect = dockRef.current?.getBoundingClientRect();
+
+    if (!rect) {
+      return;
+    }
+
+    dragStateRef.current = {
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      pointerId: event.pointerId,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDockPosition(clampDockPosition(rect.left, rect.top));
+  };
+
+  const moveDock = (event: ReactPointerEvent<HTMLElement>) => {
+    const dragState = dragStateRef.current;
+
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+    setDockPosition(clampDockPosition(
+      event.clientX - dragState.offsetX,
+      event.clientY - dragState.offsetY,
+    ));
+  };
+
+  const endDockDrag = (event: ReactPointerEvent<HTMLElement>) => {
+    if (dragStateRef.current?.pointerId === event.pointerId) {
+      dragStateRef.current = null;
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    }
+  };
+
   return (
-    <section className="fixed inset-x-3 bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] overflow-x-hidden overflow-y-auto rounded-xl border border-[#FF5F25]/40 bg-[#070a12] shadow-2xl shadow-black/50 sm:inset-x-auto sm:bottom-4 sm:right-4 sm:w-[min(28rem,calc(100vw-2rem))]">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+    <section
+      className={cn(
+        "fixed z-[60] max-h-[calc(100dvh_-_1.5rem)] overflow-x-hidden overflow-y-auto rounded-xl border border-[#FF5F25]/40 bg-[#070a12] shadow-2xl shadow-black/50",
+        dockPosition
+          ? "w-[min(28rem,calc(100vw-1.5rem))]"
+          : "inset-x-3 bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] sm:inset-x-auto sm:bottom-4 sm:right-4 sm:w-[min(28rem,calc(100vw-2rem))]",
+      )}
+      ref={dockRef}
+      style={dockPosition ? { left: dockPosition.x, top: dockPosition.y } : undefined}
+    >
+      <div
+        className="flex touch-none cursor-move select-none flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3"
+        onPointerCancel={endDockDrag}
+        onPointerDown={beginDockDrag}
+        onPointerMove={moveDock}
+        onPointerUp={endDockDrag}
+        title="Drag to move call window"
+      >
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
             {session.kind === "friend" ? "Friend call" : "Voice room"}
@@ -183,6 +289,20 @@ function ActiveCallDock({
           ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {dockPosition ? (
+            <button
+              aria-label="Reset call window position"
+              className="app-icon-button h-10 w-10"
+              onClick={() => setDockPosition(null)}
+              title="Reset position"
+              type="button"
+            >
+              <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M3 12a9 9 0 1 0 3-6.7" />
+                <path d="M3 4v6h6" />
+              </svg>
+            </button>
+          ) : null}
           <Link
             aria-label="Open call page"
             className="app-icon-button h-10 w-10"
@@ -221,7 +341,7 @@ function ActiveCallDock({
           <div className="min-h-0 max-h-[min(45dvh,24rem)] overflow-hidden p-3">
             <PersistentCallParticipants />
           </div>
-          <div className="overflow-x-auto border-t border-white/10 px-3 py-3">
+          <div className="overflow-visible border-t border-white/10 px-3 py-3">
             <ControlBar
               controls={{
                 microphone: true,
@@ -307,7 +427,7 @@ export function PersistentCallSurface({
       <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-white/10 bg-black">
         <PersistentCallParticipants showScreenShareFocus />
       </div>
-      <div className="mt-2 shrink-0 overflow-x-auto rounded-lg border border-white/10 bg-[#0b0f0b] px-2 py-2">
+      <div className="mt-2 shrink-0 overflow-visible rounded-lg border border-white/10 bg-[#0b0f0b] px-2 py-2">
         <ControlBar
           controls={{
             microphone: true,
@@ -394,18 +514,52 @@ function FocusedCallCard({
   track: PersistentTrack;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const hideControlsTimerRef = useRef<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [topBarVisible, setTopBarVisible] = useState(true);
   const isShare = getTrackSource(track) === Track.Source.ScreenShare;
+
+  const revealTopBar = useCallback((holdOpen = false) => {
+    if (hideControlsTimerRef.current) {
+      window.clearTimeout(hideControlsTimerRef.current);
+      hideControlsTimerRef.current = null;
+    }
+
+    setTopBarVisible(true);
+
+    if (!holdOpen && document.fullscreenElement === cardRef.current) {
+      hideControlsTimerRef.current = window.setTimeout(() => {
+        setTopBarVisible(false);
+      }, 2800);
+    }
+  }, []);
 
   useEffect(() => {
     const updateFullscreenElement = () => {
-      setIsFullscreen(Boolean(cardRef.current && document.fullscreenElement === cardRef.current));
+      const fullscreen = Boolean(cardRef.current && document.fullscreenElement === cardRef.current);
+      setIsFullscreen(fullscreen);
+      setTopBarVisible(true);
+
+      if (fullscreen) {
+        revealTopBar();
+      } else if (hideControlsTimerRef.current) {
+        window.clearTimeout(hideControlsTimerRef.current);
+        hideControlsTimerRef.current = null;
+      }
     };
 
-    updateFullscreenElement();
     document.addEventListener("fullscreenchange", updateFullscreenElement);
 
     return () => document.removeEventListener("fullscreenchange", updateFullscreenElement);
+  }, [revealTopBar]);
+
+  useEffect(() => {
+    return () => {
+      if (hideControlsTimerRef.current) {
+        window.clearTimeout(hideControlsTimerRef.current);
+        hideControlsTimerRef.current = null;
+      }
+    };
   }, []);
 
   const toggleFullscreen = useCallback(() => {
@@ -425,10 +579,21 @@ function FocusedCallCard({
 
   return (
     <section
-      className="mx-auto mb-3 flex h-[clamp(14rem,48dvh,34rem)] w-full max-w-5xl flex-col overflow-hidden rounded-lg border border-[#FF5F25]/40 bg-[#070a12] fullscreen:h-screen fullscreen:max-w-none fullscreen:rounded-none fullscreen:border-0 fullscreen:bg-black"
+      className="relative mx-auto mb-3 flex h-[clamp(14rem,48dvh,34rem)] w-full max-w-5xl flex-col overflow-hidden rounded-lg border border-[#FF5F25]/40 bg-[#070a12] fullscreen:h-screen fullscreen:max-w-none fullscreen:rounded-none fullscreen:border-0 fullscreen:bg-black"
+      onFocusCapture={() => revealTopBar(true)}
+      onKeyDown={() => revealTopBar()}
+      onPointerMove={() => revealTopBar()}
+      onTouchStart={() => revealTopBar()}
       ref={cardRef}
     >
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 px-3 py-2">
+      <div
+        className={cn(
+          "flex shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-[#070a12]/95 px-3 py-2 backdrop-blur transition duration-200 fullscreen:absolute fullscreen:inset-x-0 fullscreen:top-0 fullscreen:z-20",
+          isFullscreen && !topBarVisible && "pointer-events-none -translate-y-2 opacity-0",
+        )}
+        onMouseEnter={() => revealTopBar(true)}
+        onMouseLeave={() => revealTopBar()}
+      >
         <div className="min-w-0">
           <p className="truncate text-xs font-semibold text-white">
             {getParticipantLabel(track)}

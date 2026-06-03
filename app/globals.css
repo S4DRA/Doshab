@@ -7483,6 +7483,64 @@ html[data-theme] body::before {
   animation: none !important;
 }
 
+/* LiveKit call controls need to escape the bottom control bar without being clipped. */
+.lk-control-bar,
+.lk-button-group,
+.lk-disconnect-button,
+.lk-button-menu {
+  overflow: visible !important;
+}
+
+.lk-control-bar {
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+}
+
+.lk-button-menu {
+  position: relative !important;
+  z-index: 2147483000 !important;
+}
+
+.lk-device-menu {
+  position: fixed !important;
+  z-index: 2147483001 !important;
+  max-width: min(22rem, calc(100vw - 1rem)) !important;
+  max-height: min(22rem, calc(100dvh - var(--dashboard-bottom-nav-height) - 1rem)) !important;
+  overflow: auto !important;
+  border: 1px solid rgba(255, 95, 37, 0.4) !important;
+  border-radius: 0.75rem !important;
+  background: rgba(7, 10, 18, 0.98) !important;
+  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.55) !important;
+  color: rgba(248, 250, 252, 0.94) !important;
+}
+
+.lk-device-menu :is(button, select, option, .lk-button) {
+  color: inherit !important;
+}
+
+.lk-device-menu-heading {
+  color: rgba(255, 177, 153, 0.9) !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+}
+
+@media (max-width: 639px) {
+  .lk-device-menu {
+    position: fixed !important;
+    inset: auto 0.75rem calc(var(--dashboard-bottom-nav-height) + 0.75rem) 0.75rem !important;
+    max-width: none !important;
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fullscreen\:absolute {
+    transition: none !important;
+  }
+}
+
 html[data-theme="agent-amir"] body::before {
   content: "";
   position: fixed;

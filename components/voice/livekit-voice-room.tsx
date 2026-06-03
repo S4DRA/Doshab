@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import {
   PersistentCallSurface,
@@ -30,7 +30,11 @@ export function LiveKitVoiceRoom({ channelId, channelName, groupId }: LiveKitVoi
   const [error, setError] = useState<string | null>(null);
   const activeHere = activeCall?.id === `group:${channelId}`;
 
-  async function joinRoom() {
+  const joinRoom = useCallback(async () => {
+    if (isJoining || activeHere) {
+      return;
+    }
+
     setIsJoining(true);
     setError(null);
 
@@ -70,7 +74,7 @@ export function LiveKitVoiceRoom({ channelId, channelName, groupId }: LiveKitVoi
     } finally {
       setIsJoining(false);
     }
-  }
+  }, [activeHere, channelId, channelName, groupId, isJoining, startCall]);
 
   return (
     activeHere ? (
