@@ -29,8 +29,10 @@ export function FriendCallRoom({ callId }: FriendCallRoomProps) {
   const { activeCall, startCall } = usePersistentCall();
   const [friend, setFriend] = useState<FriendPerson | null>(null);
   const [error, setError] = useState("");
+  const [hasJoinedOnce, setHasJoinedOnce] = useState(false);
   const loadedRef = useRef(false);
   const activeHere = activeCall?.id === `friend:${callId}`;
+  const callEnded = hasJoinedOnce && !activeHere && !error && Boolean(friend);
 
   useEffect(() => {
     if (loadedRef.current || activeHere) {
@@ -53,6 +55,7 @@ export function FriendCallRoom({ callId }: FriendCallRoomProps) {
         }
 
         setFriend(data.call.friend);
+        setHasJoinedOnce(true);
         startCall({
           endUrl: `/api/friend-calls/${callId}/end`,
           href: `/dashboard/calls/${callId}`,
@@ -83,7 +86,7 @@ export function FriendCallRoom({ callId }: FriendCallRoomProps) {
           Friend call
         </p>
         <h1 className="mt-3 text-2xl font-semibold text-white">
-          {error ? "Call unavailable" : activeHere ? "Call running" : "Joining call..."}
+          {error ? "Call unavailable" : callEnded ? "Call ended" : activeHere ? "Call running" : "Joining call..."}
         </h1>
         {friend ? (
           <div className="mt-5 flex items-center justify-center gap-3">
@@ -98,7 +101,9 @@ export function FriendCallRoom({ callId }: FriendCallRoomProps) {
         ) : null}
         {error ? <p className="mt-3 text-sm leading-6 text-slate-300">{error}</p> : null}
         {!error ? (
-          <p className="mt-3 text-sm leading-6 text-slate-300">Connecting the call...</p>
+          <p className="mt-3 text-sm leading-6 text-slate-300">
+            {callEnded ? "You left the call. It will not reconnect unless you start or answer a new call." : "Connecting the call..."}
+          </p>
         ) : null}
         <Link
           className="app-button-secondary mt-6 inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition"

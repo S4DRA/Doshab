@@ -28,7 +28,9 @@ export function LiveKitVoiceRoom({ channelId, channelName, groupId }: LiveKitVoi
   const { activeCall, startCall } = usePersistentCall();
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [joinedOnce, setJoinedOnce] = useState(false);
   const activeHere = activeCall?.id === `group:${channelId}`;
+  const leftRoom = joinedOnce && !activeHere && !isJoining;
 
   const joinRoom = useCallback(async () => {
     if (isJoining || activeHere) {
@@ -65,6 +67,7 @@ export function LiveKitVoiceRoom({ channelId, channelName, groupId }: LiveKitVoi
         title: channelName,
         token: data.token,
       });
+      setJoinedOnce(true);
     } catch (joinError) {
       setError(
         joinError instanceof Error
@@ -100,7 +103,9 @@ export function LiveKitVoiceRoom({ channelId, channelName, groupId }: LiveKitVoi
               </div>
             </div>
             <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-400 min-[1180px]:mx-0 min-[1180px]:mt-4 min-[1180px]:max-w-xl">
-              Join this room once and keep talking while you move around the dashboard.
+              {leftRoom
+                ? "You left this voice room. Rejoin only when you are ready."
+                : "Join this room once and keep talking while you move around the dashboard."}
             </p>
 
             {error ? (
@@ -115,7 +120,7 @@ export function LiveKitVoiceRoom({ channelId, channelName, groupId }: LiveKitVoi
               onClick={joinRoom}
               type="button"
             >
-              {isJoining ? "Joining..." : "Join voice room"}
+              {isJoining ? "Joining..." : leftRoom ? "Rejoin voice room" : "Join voice room"}
             </button>
           </div>
           <div className="hidden border-l border-white/10 bg-[#0d100e]/70 p-6 min-[1180px]:block">
