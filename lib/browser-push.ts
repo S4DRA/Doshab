@@ -88,6 +88,12 @@ export async function registerPushNotifications(): Promise<PushRegistrationResul
     "";
 
   if (!publicKey) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        "Doshab push notifications are missing VAPID keys. Add NEXT_PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, and VAPID_SUBJECT to enable Web Push.",
+      );
+    }
+
     return { ok: false, reason: "missing-key" };
   }
 

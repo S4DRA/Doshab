@@ -13,9 +13,14 @@ function getSupabaseEnv() {
 }
 
 export async function updateSession(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(
+    "x-doshab-path",
+    `${request.nextUrl.pathname}${request.nextUrl.search}`,
+  );
   const response = NextResponse.next({
     request: {
-      headers: request.headers,
+      headers: requestHeaders,
     },
   });
 

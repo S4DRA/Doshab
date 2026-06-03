@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth";
-import { isCallExpired } from "@/lib/calls";
+import { isCallExpired, markFriendCallMissed } from "@/lib/calls";
 import { prisma } from "@/lib/prisma";
 
 type CallStatusRouteProps = {
@@ -23,8 +23,26 @@ export async function GET(_: NextRequest, { params }: CallStatusRouteProps) {
       id: callId,
     },
     select: {
+      caller: {
+        select: {
+          email: true,
+          id: true,
+          image: true,
+          name: true,
+          status: true,
+        },
+      },
       callerId: true,
       expiresAt: true,
+      receiver: {
+        select: {
+          email: true,
+          id: true,
+          image: true,
+          name: true,
+          status: true,
+        },
+      },
       receiverId: true,
       status: true,
     },
@@ -48,9 +66,54 @@ export async function GET(_: NextRequest, { params }: CallStatusRouteProps) {
         status: "MISSED",
       },
     });
+    await markFriendCallMissed({
+      callId,
+      caller: call.caller,
+      receiverId: call.receiverId,
+    });
 
-    return NextResponse.json({ status: "MISSED" });
+    return NextResponse.json({
+      call: buildCallStatusResponse(call, user.id, "MISSED"),
+      status: "MISSED",
+    });
   }
 
-  return NextResponse.json({ status: call.status });
+  return NextResponse.json({
+    call: buildCallStatusResponse(call, user.id, call.status),
+    status: call.status,
+  });
+}
+
+function buildCallStatusResponse(
+  call: {
+    caller: {
+      email: string;
+      id: string;
+      image: string | null;
+      name: string;
+      status: string;
+    };
+    callerId: string;
+    expiresAt: Date;
+    receiver: {
+      email: string;
+      id: string;
+      image: string | null;
+      name: string;
+      status: string;
+    };
+    receiverId: string;
+  },
+  userId: string,
+  status: string,
+) {
+  const isCaller = call.callerId === userId;
+
+  return {
+    expiresAt: call.expiresAt.toISOString(),
+    friend: isCaller ? call.receiver : call.caller,
+    isCaller,
+    isReceiver: call.receiverId === userId,
+    status,
+  };
 }

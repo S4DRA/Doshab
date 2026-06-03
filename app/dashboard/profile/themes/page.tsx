@@ -13,11 +13,6 @@ export default function ProfileThemesPage() {
               <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
                 Choose your Doshab theme
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-                Pick a global visual style for Doshab. The selected theme changes
-                backgrounds, cards, buttons, borders, accents, hover effects, and
-                decorative details across the app.
-              </p>
             </div>
             <Link
               className="app-button-secondary inline-flex h-10 w-fit items-center rounded-lg px-4 text-sm font-bold transition"

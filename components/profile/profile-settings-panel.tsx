@@ -176,6 +176,9 @@ export function ProfileSettingsPanel() {
               <span className="block text-sm leading-5 text-slate-400">
                 Enable notifications so you do not miss messages, invites, or incoming calls.
               </span>
+              <span className="mt-2 block max-w-2xl text-xs leading-5 text-slate-500">
+                Call notifications appear as phone notifications when Doshab is installed and notification permission is enabled. Some phones/browsers may not support full-screen call screens from a PWA.
+              </span>
               <span className="mt-2 inline-flex rounded-md border border-white/10 bg-white/7 px-2 py-1 text-xs text-slate-300">
                 Browser permission: {permissionStatus}
               </span>

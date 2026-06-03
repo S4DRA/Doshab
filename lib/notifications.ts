@@ -36,6 +36,7 @@ type CreateNotificationInput = {
   messageId?: string;
   push?: {
     actions?: { action: string; title: string }[];
+    data?: Record<string, string | undefined>;
     requireInteraction?: boolean;
     tag?: string;
   };
@@ -81,7 +82,11 @@ export async function createNotification({
     actions: push?.actions,
     body,
     data: {
+      ...push?.data,
       callId: callId ?? "",
+      channelId: channelId ?? "",
+      expiresAt: expiresAt?.toISOString(),
+      groupId: groupId ?? "",
       notificationId: notification.id,
       notificationType: type,
       type: callId ? "call" : type.toLowerCase(),

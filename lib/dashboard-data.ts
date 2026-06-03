@@ -16,11 +16,40 @@ export const getDashboardGroups = cache(async (userId: string) =>
       createdAt: "asc",
     },
     select: {
+      channels: {
+        orderBy: {
+          createdAt: "asc",
+        },
+        select: {
+          id: true,
+          name: true,
+          type: true,
+        },
+      },
       id: true,
       name: true,
       description: true,
       image: true,
       isDirectMessage: true,
+      members: {
+        orderBy: {
+          createdAt: "asc",
+        },
+        select: {
+          id: true,
+          role: true,
+          createdAt: true,
+          user: {
+            select: {
+              email: true,
+              id: true,
+              image: true,
+              name: true,
+              status: true,
+            },
+          },
+        },
+      },
     },
   }),
 );

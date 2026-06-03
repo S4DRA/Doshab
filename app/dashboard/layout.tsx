@@ -6,6 +6,7 @@ import { friendFromPair } from "@/lib/friends";
 import { getAuthState } from "@/lib/auth";
 import { dashboardNotificationSelect } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
@@ -20,7 +21,10 @@ export default async function DashboardLayout({
   }
 
   if (auth.status !== "authenticated") {
-    redirect("/login");
+    const headerList = await headers();
+    const returnTo = getSafeDashboardReturnTo(headerList.get("x-doshab-path"));
+
+    redirect(`/login?returnTo=${encodeURIComponent(returnTo)}`);
   }
 
   const sidebarData = await getInitialSidebarData(auth.user.id);
@@ -40,6 +44,14 @@ export default async function DashboardLayout({
       </PersistentCallProvider>
     </>
   );
+}
+
+function getSafeDashboardReturnTo(path: string | null) {
+  return path && isDashboardPath(path) ? path : "/dashboard";
+}
+
+function isDashboardPath(path: string) {
+  return path === "/dashboard" || path.startsWith("/dashboard/") || path.startsWith("/dashboard?");
 }
 
 async function getInitialSidebarData(userId: string) {

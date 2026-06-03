@@ -69,7 +69,9 @@ export async function POST(request: NextRequest) {
 
   const now = new Date();
   const callId = randomUUID();
+  const expiresAt = new Date(now.getTime() + friendCallDurationMs);
   const href = getFriendCallHref(callId);
+  const callerName = user.name || user.email;
 
   const previousRingingCalls = await prisma.friendCall.findMany({
     where: {
@@ -115,7 +117,7 @@ export async function POST(request: NextRequest) {
     data: {
       id: callId,
       callerId: user.id,
-      expiresAt: new Date(now.getTime() + friendCallDurationMs),
+      expiresAt,
       receiverId: friend.id,
       roomName: createFriendCallRoomName(callId),
     },
@@ -126,28 +128,33 @@ export async function POST(request: NextRequest) {
 
   await createNotification({
     actorId: user.id,
-    body: `${user.name || user.email} is calling you.`,
+    body: `${callerName} is calling you on Doshab`,
     callId: call.id,
     data: {
       callId: call.id,
+      callerId: user.id,
       type: "call",
     },
-    expiresAt: new Date(now.getTime() + friendCallDurationMs),
+    expiresAt,
     href,
-    title: "Incoming call",
+    title: `Incoming call from ${callerName}`,
     type: "INCOMING_CALL",
     userId: friend.id,
     push: {
       actions: [
         {
-          action: "answer-call",
+          action: "answer",
           title: "Answer",
         },
         {
-          action: "decline-call",
+          action: "decline",
           title: "Decline",
         },
       ],
+      data: {
+        callerId: user.id,
+        url: href,
+      },
       requireInteraction: true,
       tag: `friend-call-${call.id}`,
     },

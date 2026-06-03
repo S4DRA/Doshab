@@ -1,11 +1,8 @@
 import Link from "next/link";
 
 import { RealtimeMessagePanel } from "@/components/chat/realtime-message-panel";
-import { FriendRequestList } from "@/components/friends/friend-request-list";
-import { FriendSearchForm } from "@/components/friends/friend-search-form";
 import { ChannelList } from "@/components/groups/channel-list";
 import { CreateGroupForm } from "@/components/groups/create-group-form";
-import { GroupInvitesList } from "@/components/groups/group-invites-list";
 import { GroupMembersList } from "@/components/groups/group-members-list";
 import { Alert } from "@/components/ui/alert";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
@@ -15,21 +12,14 @@ import type {
   ChatMessage,
   DashboardGroup,
   FriendPerson,
-  FriendRequestItem,
   GroupChannel,
-  GroupInviteItem,
   GroupMemberItem,
   MessageThread,
 } from "@/types";
 
 type DashboardHomeData = {
-  addFriendMessage?: string;
-  addFriendQuery?: string;
-  addFriendResult?: FriendPerson | null;
   friends: FriendPerson[];
-  groupInvites: GroupInviteItem[];
-  incomingRequests: FriendRequestItem[];
-  outgoingRequests: FriendRequestItem[];
+  message?: string;
 };
 
 type DashboardShellProps = {
@@ -114,13 +104,29 @@ export function DashboardShell({
               </p>
               <h1 className="mt-2 text-lg font-semibold text-white">Your spaces</h1>
             </div>
-            <div className="flex-1 overflow-y-auto px-1 py-3">
-            {groups.length ? (
-                <p className="text-sm leading-6 text-slate-300">
-                  Pick a space from navigation or create a new private space.
-                </p>
+            <div className="min-h-0 flex-1 overflow-y-auto py-3">
+              {groups.length ? (
+                <div className="grid gap-2">
+                  {groups.map((group) => (
+                    <Link
+                      className="app-row flex min-w-0 items-center gap-3 px-3 py-3 transition hover:border-[#FF5F25]/70"
+                      href={`/dashboard/groups/${group.id}`}
+                      key={group.id}
+                    >
+                      <AvatarInitials imageUrl={group.image} value={group.name} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-white">
+                          {group.name}
+                        </span>
+                        <span className="block truncate text-xs text-slate-400">
+                          {formatSpaceMembers(group.members)}
+                        </span>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
               ) : (
-                <p className="text-sm leading-6 text-slate-300">
+                <p className="px-1 text-sm leading-6 text-slate-300">
                   Create your first private space for voice, chat, and collaboration.
                 </p>
               )}
@@ -197,11 +203,23 @@ export function DashboardShell({
         ) : activeSection === "messages" ? (
           <MessagesHome threads={messageThreads} />
         ) : (
-          <DashboardHome data={homeData} />
+          <DashboardHome data={homeData} groups={groups} />
         )}
       </section>
     </main>
   );
+}
+
+function formatSpaceMembers(members: GroupMemberItem[] | undefined) {
+  if (!members?.length) {
+    return "No people yet";
+  }
+
+  const names = members
+    .slice(0, 3)
+    .map((member) => member.user.name || member.user.email);
+
+  return members.length > 3 ? `${names.join(", ")} ....` : names.join(", ");
 }
 
 function MessageThreadSidebar({
@@ -355,6 +373,21 @@ function PhoneIcon({ className }: { className?: string }) {
       viewBox="0 0 24 24"
     >
       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.89.66 2.78a2 2 0 0 1-.45 2.11L8.05 9.88a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45c.89.31 1.82.53 2.78.66A2 2 0 0 1 22 16.92Z" />
+    </svg>
+  );
+}
+
+function MessageIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
     </svg>
   );
 }
@@ -564,138 +597,215 @@ function ChannelMain({
   );
 }
 
-function DashboardHome({ data }: { data?: DashboardHomeData }) {
+function DashboardHome({
+  data,
+  groups,
+}: {
+  data?: DashboardHomeData;
+  groups: DashboardGroup[];
+}) {
   const friends = data?.friends ?? [];
-  const onlineCount = friends.filter((friend) => friend.status === "ONLINE").length;
+  const onlineFriends = friends.filter((friend) => friend.status === "ONLINE");
 
   return (
     <div className="app-page-scroll">
       <div className="app-page-container grid gap-5">
         <section className="app-page-header">
-          <div className="flex flex-col gap-4 min-[760px]:flex-row min-[760px]:items-end min-[760px]:justify-between">
+          <div className="flex flex-col gap-4 min-[760px]:flex-row min-[760px]:items-center min-[760px]:justify-between">
             <div className="min-w-0">
-              <p className="app-section-title">Dashboard</p>
+              <p className="app-section-title">Home</p>
               <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
-                Your private workspace
+                Home
               </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-                Start from friends, pending requests, and invites. Spaces and messages stay one click away in the sidebars.
-              </p>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-right min-[760px]:min-w-52">
-              <MetricCard label="Friends" value={friends.length} />
-              <MetricCard label="Online" value={onlineCount} />
-            </div>
+            <Link
+              className="app-button-primary inline-flex h-11 w-fit items-center rounded-lg px-4 text-sm font-bold transition"
+              href="#create-group"
+            >
+              Create group
+            </Link>
           </div>
         </section>
 
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)]">
-          <FriendSearchForm
-            message={data?.addFriendMessage}
-            query={data?.addFriendQuery}
-            redirectTo="/dashboard"
-            result={data?.addFriendResult}
-          />
-          <FriendStatusPanel
-            friends={friends}
-            onlineCount={onlineCount}
-          />
-        </div>
+        {data?.message ? <Alert>{data.message}</Alert> : null}
 
-        <div className="grid gap-5 xl:grid-cols-2">
-          <FriendRequestList
-            emptyText="No incoming requests."
-            kind="incoming"
-            requests={data?.incomingRequests ?? []}
-            title="Incoming requests"
-          />
-          <FriendRequestList
-            emptyText="No outgoing requests."
-            kind="outgoing"
-            requests={data?.outgoingRequests ?? []}
-            title="Outgoing requests"
-          />
-        </div>
+        <section className="grid gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="app-section-title">Groups</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Your groups</h2>
+            </div>
+            <span className="app-badge px-3 py-1 text-xs font-semibold">
+              {groups.length} total
+            </span>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {groups.length ? (
+              groups.map((group) => <HomeGroupCard group={group} key={group.id} />)
+            ) : (
+              <div className="app-card p-5 text-sm leading-6 text-slate-400 md:col-span-2 xl:col-span-3">
+                No groups yet. Create one below to start a private space.
+              </div>
+            )}
+          </div>
+        </section>
 
-        <GroupInvitesList invites={data?.groupInvites ?? []} />
+        <section className="grid gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="app-section-title">Online friends</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Friends online</h2>
+            </div>
+            <span className="app-badge px-3 py-1 text-xs font-semibold">
+              {onlineFriends.length} online
+            </span>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {onlineFriends.length ? (
+              onlineFriends.map((friend) => (
+                <OnlineFriendCard friend={friend} key={friend.id} />
+              ))
+            ) : (
+              <div className="app-card p-5 text-sm leading-6 text-slate-400 md:col-span-2 xl:col-span-3">
+                No friends are online right now.
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="app-panel p-5">
+          <p className="app-section-title">Update news</p>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <UpdateNewsItem
+              body="Incoming calls now use stronger PWA notifications and direct call links."
+              title="Call alerts improved"
+            />
+            <UpdateNewsItem
+              body="The friends icon opens a focused list with message and call actions."
+              title="Friends shortcut"
+            />
+            <UpdateNewsItem
+              body="Theme settings are back as compact visual cards."
+              title="Theme cards"
+            />
+          </div>
+        </section>
+
+        <section className="app-panel p-5" id="create-group">
+          <div className="mb-4">
+            <p className="app-section-title">Create group</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">Create group</h2>
+          </div>
+          <CreateGroupForm />
+        </section>
       </div>
     </div>
   );
 }
 
-function FriendStatusPanel({
-  friends,
-  onlineCount,
-}: {
-  friends: FriendPerson[];
-  onlineCount: number;
-}) {
-  return (
-    <section className="app-panel p-5">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="app-section-title">
-            Friends status
-          </p>
-          <h2 className="mt-2 text-base font-semibold text-white">
-            {onlineCount} online
-          </h2>
-        </div>
-        <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
-          {friends.length} total
-        </span>
-      </div>
+function HomeGroupCard({ group }: { group: DashboardGroup }) {
+  const members = group.members ?? [];
+  const visibleMembers = members.slice(0, 3);
 
-      {friends.length ? (
-        <div className="mt-5 max-h-80 space-y-2 overflow-y-auto pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {friends.map((friend) => (
-            <div
-              className="app-row flex w-full min-w-0 items-center gap-3 p-3 transition"
-              key={friend.id}
-            >
-              <AvatarInitials
-                imageUrl={friend.image}
-                value={friend.name || friend.email}
-              />
-              <form action="/api/private-messages" className="min-w-0 flex-1" method="post">
-                <input name="friendId" type="hidden" value={friend.id} />
-                <button className="w-full min-w-0 text-left" type="submit">
-                  <span className="block truncate text-sm font-semibold text-white">
-                    {friend.name || friend.email}
-                  </span>
-                  <span className="block truncate text-xs text-slate-500">
-                    {friend.email}
-                  </span>
-                </button>
-              </form>
-              <span className="flex shrink-0 items-center gap-2 text-xs text-slate-400">
-                <span className="app-status-dot" data-status={friend.status ?? "OFFLINE"} />
-                <span className="hidden sm:inline">
-                  {formatUserStatus(friend.status)}
-                </span>
-              </span>
-              <form action="/api/friend-calls/start" method="post">
-                <input name="friendId" type="hidden" value={friend.id} />
-                <button
-                  aria-label={`Call ${friend.name || friend.email}`}
-                  className="app-icon-button app-icon-button-primary h-11 w-11 sm:h-9 sm:w-9"
-                  title={`Call ${friend.name || friend.email}`}
-                  type="submit"
+  return (
+    <Link
+      className="app-card grid min-h-44 content-between gap-4 p-4 transition hover:border-[#FF5F25]/70"
+      href={`/dashboard/groups/${group.id}`}
+    >
+      <span className="flex min-w-0 items-start gap-3">
+        <AvatarInitials imageUrl={group.image} value={group.name} />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-base font-semibold text-white">
+            {group.name}
+          </span>
+          <span className="mt-1 block text-xs text-slate-400">
+            {(group.channels ?? []).length} channels
+          </span>
+        </span>
+      </span>
+
+      <span className="block min-w-0">
+        <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#FF5F25]">
+          People
+        </span>
+        <span className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
+          {visibleMembers.length ? (
+            <>
+              {visibleMembers.map((member) => (
+                <span
+                  className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1"
+                  key={member.id}
                 >
-                  <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.89.66 2.78a2 2 0 0 1-.45 2.11L8.05 9.88a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45c.89.31 1.82.53 2.78.66A2 2 0 0 1 22 16.92Z" />
-                  </svg>
-                </button>
-              </form>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="mt-5 text-sm leading-6 text-slate-400">
-          No friends online yet. Accepted friends will appear here with their status.
+                  <AvatarInitials
+                    imageUrl={member.user.image}
+                    size="sm"
+                    value={member.user.name || member.user.email}
+                  />
+                  <span className="truncate text-xs font-semibold text-slate-200">
+                    {member.user.name || member.user.email}
+                  </span>
+                </span>
+              ))}
+              {members.length > 3 ? (
+                <span className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 text-xs font-bold text-slate-300">
+                  ....
+                </span>
+              ) : null}
+            </>
+          ) : (
+            <span className="text-sm text-slate-400">No people yet</span>
+          )}
+        </span>
+      </span>
+    </Link>
+  );
+}
+
+function OnlineFriendCard({ friend }: { friend: FriendPerson }) {
+  const friendLabel = friend.name || friend.email;
+
+  return (
+    <article className="app-card flex min-w-0 items-center gap-3 p-4">
+      <AvatarInitials imageUrl={friend.image} value={friendLabel} />
+      <div className="min-w-0 flex-1">
+        <h3 className="truncate text-sm font-semibold text-white">{friendLabel}</h3>
+        <p className="mt-1 flex items-center gap-2 text-xs text-emerald-300">
+          <span className="app-status-dot" data-status={friend.status ?? "OFFLINE"} />
+          {formatUserStatus(friend.status)}
         </p>
-      )}
-    </section>
+      </div>
+      <form action="/api/private-messages" method="post">
+        <input name="friendId" type="hidden" value={friend.id} />
+        <button
+          aria-label={`Message ${friendLabel}`}
+          className="app-icon-button h-10 w-10"
+          title={`Message ${friendLabel}`}
+          type="submit"
+        >
+          <MessageIcon className="h-4 w-4" />
+        </button>
+      </form>
+      <form action="/api/friend-calls/start" method="post">
+        <input name="friendId" type="hidden" value={friend.id} />
+        <button
+          aria-label={`Call ${friendLabel}`}
+          className="app-icon-button app-icon-button-primary h-10 w-10"
+          title={`Call ${friendLabel}`}
+          type="submit"
+        >
+          <PhoneIcon className="h-4 w-4" />
+        </button>
+      </form>
+    </article>
+  );
+}
+
+function UpdateNewsItem({ body, title }: { body: string; title: string }) {
+  return (
+    <article className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+      <h3 className="text-sm font-semibold text-white">{title}</h3>
+      <p className="mt-2 text-xs leading-5 text-slate-400">{body}</p>
+    </article>
   );
 }
 

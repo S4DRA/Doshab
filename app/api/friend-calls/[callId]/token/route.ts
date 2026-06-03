@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth";
-import { isCallExpired } from "@/lib/calls";
+import { isCallExpired, markFriendCallMissed } from "@/lib/calls";
 import { createLiveKitToken } from "@/lib/livekit";
 import { prisma } from "@/lib/prisma";
 
@@ -73,6 +73,11 @@ export async function POST(_: NextRequest, { params }: CallTokenRouteProps) {
         endedAt: new Date(),
         status: "MISSED",
       },
+    });
+    await markFriendCallMissed({
+      callId: call.id,
+      caller: call.caller,
+      receiverId: call.receiverId,
     });
 
     return jsonError("This call was missed.", 410);

@@ -1,5 +1,8 @@
+const incomingCallType = "INCOMING_CALL";
+const missedCallType = "MISSED_CALL";
+
 self.addEventListener("push", (event) => {
-  let data = {
+  let payload = {
     actions: [],
     body: "You have a new message.",
     data: {},
@@ -11,36 +14,51 @@ self.addEventListener("push", (event) => {
 
   if (event.data) {
     try {
-      data = {
-        ...data,
+      payload = {
+        ...payload,
         ...event.data.json(),
       };
     } catch {
-      data.body = event.data.text();
+      payload.body = event.data.text();
     }
   }
 
-  const isCall = isCallNotification(data);
+  const notificationType = getNotificationType(payload);
+  const isIncomingCall = notificationType === incomingCallType;
+  const isCall = isIncomingCall || notificationType === missedCallType || payload.data?.type === "call";
+  const callId = payload.data?.callId;
+  const callUrl = getCallUrl(payload, isIncomingCall);
+  const callerLabel = getCallerLabel(payload);
+  const title = isIncomingCall && callerLabel
+    ? `Incoming call from ${callerLabel}`
+    : payload.title;
+  const body = isIncomingCall && callerLabel
+    ? `${callerLabel} is calling you on Doshab`
+    : payload.body;
+
   const notificationOptions = {
-    body: data.body,
-    actions: Array.isArray(data.actions) ? data.actions : [],
+    body,
+    actions: isIncomingCall ? getIncomingCallActions(payload.actions) : safeActions(payload.actions),
+    badge: "/doshab-icon-192.png",
     data: {
-      href: data.href,
-      ...(data.data || {}),
+      ...(payload.data || {}),
+      callId,
+      href: callUrl,
+      type: isIncomingCall ? incomingCallType : payload.data?.type,
+      url: callUrl,
     },
     icon: "/doshab-icon-512.png",
-    badge: "/doshab-icon-192.png",
-    requireInteraction: Boolean(data.requireInteraction || isCall),
-    renotify: isCall,
+    requireInteraction: Boolean(payload.requireInteraction || isIncomingCall),
+    renotify: isIncomingCall,
     silent: false,
-    tag: data.tag,
+    tag: isIncomingCall && callId ? `friend-call-${callId}` : payload.tag,
     timestamp: Date.now(),
-    vibrate: isCall ? [250, 100, 250, 100, 450, 150, 450] : [90],
+    vibrate: isIncomingCall ? [250, 100, 250, 100, 450, 150, 450] : [90],
   };
 
   event.waitUntil(
     Promise.all([
-      self.registration.showNotification(data.title, notificationOptions),
+      self.registration.showNotification(title, notificationOptions),
       setAppBadge(isCall ? 1 : undefined),
     ]),
   );
@@ -49,35 +67,49 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const href = event.notification.data?.href || "/dashboard";
-  const callId = event.notification.data?.callId;
+  const data = event.notification.data || {};
+  const callId = data.callId;
+  const isIncomingCall = data.type === incomingCallType || data.notificationType === incomingCallType;
+  const expired = hasExpired(data.expiresAt);
+  const baseCallUrl = data.url || data.href || (callId ? `/dashboard/calls/${callId}` : "/dashboard");
 
-  if (event.action === "decline-call" && callId) {
+  if ((event.action === "decline" || event.action === "decline-call") && callId) {
     event.waitUntil(
       Promise.all([
-        fetch(`/api/friend-calls/${callId}/decline`, {
-          credentials: "same-origin",
-          method: "POST",
-        }).catch(() => null),
+        expired ? Promise.resolve() : declineCall(callId),
         clearAppBadge(),
       ]),
     );
     return;
   }
 
-  if (event.action === "answer-call" && callId) {
+  if ((event.action === "answer" || event.action === "answer-call") && callId) {
+    const answerUrl = addCallQuery(baseCallUrl, {
+      autoJoin: expired ? undefined : "1",
+      callExpired: expired ? "1" : undefined,
+      callId,
+    });
+
     event.waitUntil(
       Promise.all([
-        openOrFocusWindow(`/dashboard/calls/${callId}`),
+        openOrFocusWindow(answerUrl),
         clearAppBadge(),
       ]),
     );
     return;
   }
+
+  const openUrl = isIncomingCall && callId
+    ? addCallQuery(baseCallUrl, {
+        callExpired: expired ? "1" : undefined,
+        callId,
+        incoming: expired ? undefined : "1",
+      })
+    : baseCallUrl;
 
   event.waitUntil(
     Promise.all([
-      openOrFocusWindow(href),
+      openOrFocusWindow(openUrl),
       clearAppBadge(),
     ]),
   );
@@ -87,60 +119,141 @@ self.addEventListener("notificationclose", (event) => {
   event.waitUntil(clearAppBadge());
 });
 
+function getNotificationType(payload) {
+  return payload?.data?.notificationType || payload?.data?.type || "";
+}
+
+function getCallerLabel(payload) {
+  const title = typeof payload.title === "string" ? payload.title : "";
+  const body = typeof payload.body === "string" ? payload.body : "";
+  const fromTitle = title.match(/^Incoming call from (.+)$/i)?.[1]?.trim();
+  const fromBody = body.match(/^(.+?) is calling/i)?.[1]?.trim();
+
+  return fromTitle || fromBody || "";
+}
+
+function getCallUrl(payload, incoming) {
+  const callId = payload.data?.callId;
+  const url = payload.data?.url || payload.href;
+
+  if (url) {
+    return url;
+  }
+
+  if (incoming && callId) {
+    return `/dashboard/calls/${callId}`;
+  }
+
+  return "/dashboard";
+}
+
+function getIncomingCallActions(actions) {
+  const provided = safeActions(actions);
+
+  if (provided.length) {
+    return provided.map((action) => {
+      if (action.action === "answer-call") {
+        return { ...action, action: "answer" };
+      }
+
+      if (action.action === "decline-call") {
+        return { ...action, action: "decline" };
+      }
+
+      return action;
+    });
+  }
+
+  return [
+    {
+      action: "answer",
+      title: "Answer",
+    },
+    {
+      action: "decline",
+      title: "Decline",
+    },
+  ];
+}
+
+function safeActions(actions) {
+  return Array.isArray(actions)
+    ? actions.filter((action) => action?.action && action?.title)
+    : [];
+}
+
+function hasExpired(expiresAt) {
+  if (!expiresAt) {
+    return false;
+  }
+
+  const expiresAtMs = Date.parse(expiresAt);
+
+  return Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now();
+}
+
+function addCallQuery(href, values) {
+  const targetUrl = new URL(href, self.location.origin);
+
+  Object.entries(values).forEach(([key, value]) => {
+    if (value) {
+      targetUrl.searchParams.set(key, value);
+    }
+  });
+
+  return targetUrl.href;
+}
+
+function declineCall(callId) {
+  const declineUrl = new URL(`/api/friend-calls/${callId}/decline`, self.location.origin);
+
+  return fetch(declineUrl.href, {
+    credentials: "same-origin",
+    method: "POST",
+  }).catch(() => null);
+}
+
 function openOrFocusWindow(href) {
   const targetUrl = new URL(href, self.location.origin);
 
   return self.clients
-      .matchAll({
-        includeUncontrolled: true,
-        type: "window",
-      })
-      .then((clients) => {
-        const matchingClient = clients.find((client) => {
-          try {
-            return new URL(client.url).pathname === targetUrl.pathname;
-          } catch {
-            return client.url.endsWith(href);
-          }
-        });
-        const sameOriginClient = clients.find((client) => {
-          try {
-            return new URL(client.url).origin === targetUrl.origin;
-          } catch {
-            return false;
-          }
-        });
-
-        if (matchingClient) {
-          if (matchingClient.navigate) {
-            return matchingClient
-              .navigate(targetUrl.href)
-              .then((client) => client?.focus?.() || matchingClient.focus());
-          }
-
-          return matchingClient.focus();
+    .matchAll({
+      includeUncontrolled: true,
+      type: "window",
+    })
+    .then((clients) => {
+      const matchingClient = clients.find((client) => isSamePath(client.url, targetUrl));
+      const sameOriginClient = clients.find((client) => {
+        try {
+          return new URL(client.url).origin === targetUrl.origin;
+        } catch {
+          return false;
         }
-
-        if (sameOriginClient) {
-          if (sameOriginClient.navigate) {
-            return sameOriginClient
-              .navigate(targetUrl.href)
-              .then((client) => client?.focus?.() || sameOriginClient.focus());
-          }
-
-          return sameOriginClient.focus();
-        }
-
-        return self.clients.openWindow(targetUrl.href);
       });
+      const clientToUse = matchingClient || sameOriginClient;
+
+      if (clientToUse) {
+        if (clientToUse.navigate) {
+          return clientToUse
+            .navigate(targetUrl.href)
+            .then((client) => client?.focus?.() || clientToUse.focus());
+        }
+
+        return clientToUse.focus();
+      }
+
+      return self.clients.openWindow(targetUrl.href);
+    });
 }
 
-function isCallNotification(data) {
-  return (
-    data?.data?.type === "call" ||
-    data?.data?.notificationType === "INCOMING_CALL" ||
-    data?.data?.notificationType === "MISSED_CALL"
-  );
+function isSamePath(clientUrl, targetUrl) {
+  try {
+    const url = new URL(clientUrl);
+
+    return url.origin === targetUrl.origin && url.pathname === targetUrl.pathname;
+  } catch {
+    return false;
+  }
 }
 
 function setAppBadge(value) {

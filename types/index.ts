@@ -13,6 +13,7 @@ export type DashboardGroup = {
   image?: string | null;
   isDirectMessage?: boolean;
   channels?: GroupChannel[];
+  members?: GroupMemberItem[];
 };
 
 export type GroupChannel = {

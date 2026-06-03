@@ -10,17 +10,19 @@ type LoginPageProps = {
     error?: string;
     message?: string;
     registered?: string;
+    returnTo?: string;
   }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const user = await getCurrentUser();
 
-  if (user) {
-    redirect("/dashboard");
-  }
-
   const params = await searchParams;
+  const returnTo = getSafeReturnTo(params?.returnTo);
+
+  if (user) {
+    redirect(returnTo);
+  }
 
   return (
     <AuthCard
@@ -33,6 +35,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       notice={params?.message ?? (params?.registered ? "Account created. You can log in now." : undefined)}
     >
       <form action="/api/auth/login" className="space-y-4" method="post">
+        <input name="returnTo" type="hidden" value={returnTo} />
         <AuthField label="Email" name="email" type="email" autoComplete="email" />
         <AuthField
           label="Password"
@@ -57,4 +60,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       </form>
     </AuthCard>
   );
+}
+
+function getSafeReturnTo(returnTo?: string) {
+  return returnTo && isDashboardPath(returnTo) ? returnTo : "/dashboard";
+}
+
+function isDashboardPath(path: string) {
+  return path === "/dashboard" || path.startsWith("/dashboard/") || path.startsWith("/dashboard?");
 }

@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth";
-import { getFriendCallHref } from "@/lib/calls";
-import { createNotification } from "@/lib/notifications";
+import { markFriendCallMissed } from "@/lib/calls";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -46,35 +45,13 @@ export async function GET() {
     });
 
     await Promise.all(
-      expiredCalls.map(async (expiredCall) => {
-        const existingNotification = await prisma.notification.findFirst({
-          where: {
-            callId: expiredCall.id,
-            type: "MISSED_CALL",
-            userId: user.id,
-          },
-          select: {
-            id: true,
-          },
-        });
-
-        if (existingNotification) {
-          return;
-        }
-
-        await createNotification({
-          actorId: expiredCall.caller.id,
-          body: `You missed a call from ${expiredCall.caller.name || expiredCall.caller.email}.`,
+      expiredCalls.map((expiredCall) =>
+        markFriendCallMissed({
           callId: expiredCall.id,
-          data: {
-            callId: expiredCall.id,
-          },
-          href: getFriendCallHref(expiredCall.id),
-          title: "Missed call",
-          type: "MISSED_CALL",
-          userId: user.id,
-        });
-      }),
+          caller: expiredCall.caller,
+          receiverId: user.id,
+        }),
+      ),
     );
   }
 

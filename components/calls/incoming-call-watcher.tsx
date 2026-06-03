@@ -98,14 +98,18 @@ export function IncomingCallWatcher() {
       } | null;
 
       if (!cancelled) {
-        setCall(data?.call ?? null);
+        setCall((current) => {
+          const nextCall = data?.call ?? null;
+
+          return current?.id === nextCall?.id ? current : nextCall;
+        });
       }
     }
 
     void loadIncomingCall();
     const timer = window.setInterval(() => {
       void loadIncomingCall();
-    }, 3000);
+    }, 1200);
 
     return () => {
       cancelled = true;
@@ -131,6 +135,66 @@ export function IncomingCallWatcher() {
 
     return stopRingtone;
   }, [call, muted, startRingtone, stopRingtone]);
+
+  const declineCall = useCallback(async () => {
+    if (!call || declining) {
+      return;
+    }
+
+    setDeclining(true);
+    setError("");
+    stopRingtone();
+
+    try {
+      await fetch(`/api/friend-calls/${call.id}/decline`, {
+        method: "POST",
+      });
+      setCall(null);
+    } catch {
+      setError("Could not decline this call.");
+    } finally {
+      setDeclining(false);
+    }
+  }, [call, declining, stopRingtone]);
+
+  useEffect(() => {
+    if (!call) {
+      return;
+    }
+
+    const expiresInMs = Date.parse(call.expiresAt) - Date.now();
+
+    if (expiresInMs <= 0) {
+      stopRingtone();
+      const timer = window.setTimeout(() => setCall(null), 0);
+
+      return () => window.clearTimeout(timer);
+    }
+
+    const timer = window.setTimeout(() => {
+      stopRingtone();
+      setCall(null);
+    }, expiresInMs);
+
+    return () => window.clearTimeout(timer);
+  }, [call, stopRingtone]);
+
+  useEffect(() => {
+    if (!call) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !accepting && !declining) {
+        event.preventDefault();
+        void declineCall();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [accepting, call, declining, declineCall]);
 
   useEffect(() => () => {
     stopRingtone();
@@ -178,27 +242,6 @@ export function IncomingCallWatcher() {
     }
   }
 
-  async function declineCall() {
-    if (!call || declining) {
-      return;
-    }
-
-    setDeclining(true);
-    setError("");
-    stopRingtone();
-
-    try {
-      await fetch(`/api/friend-calls/${call.id}/decline`, {
-        method: "POST",
-      });
-      setCall(null);
-    } catch {
-      setError("Could not decline this call.");
-    } finally {
-      setDeclining(false);
-    }
-  }
-
   if (!call) {
     return null;
   }
@@ -208,6 +251,7 @@ export function IncomingCallWatcher() {
   return (
     <div
       aria-label={`Incoming voice call from ${callerLabel}`}
+      aria-modal="true"
       className="fixed inset-0 z-[90] grid place-items-center bg-black/84 px-4 pb-[calc(var(--dashboard-bottom-nav-height)_+_env(safe-area-inset-bottom)_+_1rem)] pt-6 text-white backdrop-blur-md sm:pb-6 sm:pl-20"
       role="alertdialog"
     >
@@ -224,7 +268,7 @@ export function IncomingCallWatcher() {
           {callerLabel}
         </h2>
         <p className="mt-2 text-sm text-slate-300">
-          Private call. Answer to join now.
+          Private call on Doshab. Answer to join now.
         </p>
         {error ? (
           <p className="mt-5 rounded-lg border border-amber-300/20 bg-amber-400/10 px-4 py-3 text-sm leading-5 text-amber-100">

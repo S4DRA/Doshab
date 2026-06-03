@@ -1,4 +1,5 @@
 import { orderedFriendshipPair } from "@/lib/friends";
+import { createNotification } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
 export const friendCallDurationMs = 60_000;
@@ -26,4 +27,46 @@ export async function findFriendship(userId: string, friendId: string) {
 
 export function isCallExpired(expiresAt: Date) {
   return expiresAt.getTime() <= Date.now();
+}
+
+export async function markFriendCallMissed({
+  callId,
+  caller,
+  receiverId,
+}: {
+  callId: string;
+  caller: {
+    email: string;
+    id: string;
+    name: string;
+  };
+  receiverId: string;
+}) {
+  const existingNotification = await prisma.notification.findFirst({
+    where: {
+      callId,
+      type: "MISSED_CALL",
+      userId: receiverId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (existingNotification) {
+    return;
+  }
+
+  await createNotification({
+    actorId: caller.id,
+    body: `You missed a call from ${caller.name || caller.email}.`,
+    callId,
+    data: {
+      callId,
+    },
+    href: getFriendCallHref(callId),
+    title: "Missed call",
+    type: "MISSED_CALL",
+    userId: receiverId,
+  });
 }

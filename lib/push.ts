@@ -8,6 +8,8 @@ type PushNotificationAction = {
   title: string;
 };
 
+type PushNotificationData = Record<string, string | undefined>;
+
 let configured = false;
 let envLoaded = false;
 
@@ -72,7 +74,7 @@ export async function sendPushNotifications({
 }: {
   actions?: PushNotificationAction[];
   body: string;
-  data?: Record<string, string>;
+  data?: PushNotificationData;
   href: string;
   recipientIds: string[];
   requireInteraction?: boolean;
@@ -113,7 +115,7 @@ export async function sendPushNotifications({
           JSON.stringify({
             actions,
             body,
-            data,
+            data: compactPushData(data),
             href,
             requireInteraction,
             tag: tag ?? href,
@@ -143,5 +145,15 @@ export async function sendPushNotifications({
         }
       }
     }),
+  );
+}
+
+function compactPushData(data: PushNotificationData | undefined) {
+  if (!data) {
+    return undefined;
+  }
+
+  return Object.fromEntries(
+    Object.entries(data).filter((entry): entry is [string, string] => Boolean(entry[1])),
   );
 }
