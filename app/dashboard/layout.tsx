@@ -4,6 +4,7 @@ import { PersistentCallProvider } from "@/components/calls/persistent-call-provi
 import { getDashboardSidebarGroups } from "@/lib/dashboard-data";
 import { friendFromPair } from "@/lib/friends";
 import { getAuthState } from "@/lib/auth";
+import { dashboardNotificationSelect } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
@@ -88,22 +89,7 @@ async function getInitialSidebarData(userId: string) {
         createdAt: "desc",
       },
       take: 12,
-      select: {
-        id: true,
-        title: true,
-        body: true,
-        href: true,
-        readAt: true,
-        createdAt: true,
-        actor: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            status: true,
-          },
-        },
-      },
+      select: dashboardNotificationSelect,
     }),
     prisma.notification.count({
       where: {

@@ -9,22 +9,33 @@ import {
 } from "@/lib/browser-push";
 
 type ProfileSettings = {
+  callNotifications: boolean;
   enableNotifications: boolean;
+  friendInviteNotifications: boolean;
+  messageNotifications: boolean;
   shareOnlineStatus: boolean;
+  showMessagePreview: boolean;
+  soundEnabled: boolean;
 };
 
 const defaultSettings: ProfileSettings = {
+  callNotifications: true,
   enableNotifications: false,
+  friendInviteNotifications: true,
+  messageNotifications: true,
   shareOnlineStatus: true,
+  showMessagePreview: true,
+  soundEnabled: true,
 };
 
 export function ProfileSettingsPanel() {
   const [settings, setSettings] = useState(defaultSettings);
   const [saved, setSaved] = useState(false);
   const [notificationStatus, setNotificationStatus] = useState<
-    "idle" | "saving" | "enabled" | "error"
+    "idle" | "saving" | "enabled" | "testing" | "tested" | "error"
   >("idle");
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [permissionStatus, setPermissionStatus] = useState("Not enabled");
   const loadedSettingsRef = useRef(false);
 
   useEffect(() => {
@@ -44,6 +55,7 @@ export function ProfileSettingsPanel() {
       }
 
       loadedSettingsRef.current = true;
+      setPermissionStatus(getBrowserPermissionStatus());
     });
 
     return () => window.cancelAnimationFrame(frame);
@@ -92,6 +104,7 @@ export function ProfileSettingsPanel() {
         updateSetting("enableNotifications", true);
         setNotificationMessage(getPushRegistrationMessage(result));
         setNotificationStatus("enabled");
+        setPermissionStatus(getBrowserPermissionStatus());
         return;
       }
 
@@ -100,6 +113,7 @@ export function ProfileSettingsPanel() {
         enableNotifications: false,
       }));
       setNotificationMessage(getPushRegistrationMessage(result));
+      setPermissionStatus(getBrowserPermissionStatus());
     } catch {
       setSettings((current) => ({
         ...current,
@@ -111,9 +125,30 @@ export function ProfileSettingsPanel() {
           reason: "subscription-failed",
         } satisfies PushRegistrationResult),
       );
+      setPermissionStatus(getBrowserPermissionStatus());
     }
 
     setNotificationStatus("error");
+  };
+
+  const sendTestNotification = async () => {
+    setNotificationStatus("testing");
+
+    try {
+      const response = await fetch("/api/push/test", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Test notification failed.");
+      }
+
+      setNotificationMessage("Test notification sent.");
+      setNotificationStatus("tested");
+    } catch {
+      setNotificationMessage("Could not send a test notification on this device.");
+      setNotificationStatus("error");
+    }
   };
 
   return (
@@ -134,25 +169,73 @@ export function ProfileSettingsPanel() {
       </div>
 
       <div className="grid gap-3">
-        <label className="app-row flex items-center justify-between gap-4 px-4 py-4">
-          <span className="min-w-0">
-            <span className="block text-sm font-semibold text-white">Phone alerts</span>
-            <span className="block text-sm leading-5 text-slate-400">
-              Receive message and call notifications outside the app.
+        <div className="app-row p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-white">Notifications</span>
+              <span className="block text-sm leading-5 text-slate-400">
+                Enable notifications so you do not miss messages, invites, or incoming calls.
+              </span>
+              <span className="mt-2 inline-flex rounded-md border border-white/10 bg-white/7 px-2 py-1 text-xs text-slate-300">
+                Browser permission: {permissionStatus}
+              </span>
             </span>
-          </span>
-          <input
-            aria-label="Enable phone alerts"
-            checked={settings.enableNotifications}
-            className="app-switch"
-            onChange={(event) => void updateNotifications(event.target.checked)}
-            type="checkbox"
-          />
-        </label>
+            <label className="flex shrink-0 items-center gap-3">
+              <span className="text-sm font-semibold text-white">Enable</span>
+              <input
+                aria-label="Enable browser notifications"
+                checked={settings.enableNotifications}
+                className="app-switch"
+                onChange={(event) => void updateNotifications(event.target.checked)}
+                type="checkbox"
+              />
+            </label>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <NotificationToggle
+              checked={settings.messageNotifications}
+              description="Alerts for direct messages and channel notifications."
+              label="Message notifications"
+              onChange={(checked) => updateSetting("messageNotifications", checked)}
+            />
+            <NotificationToggle
+              checked={settings.callNotifications}
+              description="Incoming and missed call alerts."
+              label="Call notifications"
+              onChange={(checked) => updateSetting("callNotifications", checked)}
+            />
+            <NotificationToggle
+              checked={settings.friendInviteNotifications}
+              description="Friend requests and space invites."
+              label="Friend/invite notifications"
+              onChange={(checked) => updateSetting("friendInviteNotifications", checked)}
+            />
+            <NotificationToggle
+              checked={settings.soundEnabled}
+              description="Short sound for incoming calls when allowed."
+              label="Sound"
+              onChange={(checked) => updateSetting("soundEnabled", checked)}
+            />
+            <NotificationToggle
+              checked={settings.showMessagePreview}
+              description="Show message previews in local alerts."
+              label="Message previews"
+              onChange={(checked) => updateSetting("showMessagePreview", checked)}
+            />
+            <button
+              className="app-button-secondary min-h-12 rounded-lg px-4 text-sm font-semibold transition"
+              disabled={!settings.enableNotifications || notificationStatus === "testing"}
+              onClick={sendTestNotification}
+              type="button"
+            >
+              {notificationStatus === "testing" ? "Sending test..." : "Test notification"}
+            </button>
+          </div>
+        </div>
         {notificationStatus === "saving" ? (
-          <p className="-mt-1 px-4 text-xs text-slate-400">Enabling phone alerts...</p>
+          <p className="-mt-1 px-4 text-xs text-slate-400">Opening browser permission prompt...</p>
         ) : null}
-        {notificationStatus === "enabled" ? (
+        {notificationStatus === "enabled" || notificationStatus === "tested" ? (
           <p className="-mt-1 px-4 text-xs text-emerald-300">{notificationMessage}</p>
         ) : null}
         {notificationStatus === "error" ? (
@@ -251,4 +334,49 @@ export function ProfileSettingsPanel() {
       </div>
     </section>
   );
+}
+
+function NotificationToggle({
+  checked,
+  description,
+  label,
+  onChange,
+}: {
+  checked: boolean;
+  description: string;
+  label: string;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+      <span className="flex items-center justify-between gap-3">
+        <span className="text-sm font-semibold text-white">{label}</span>
+        <input
+          aria-label={label}
+          checked={checked}
+          className="app-switch"
+          onChange={(event) => onChange(event.target.checked)}
+          type="checkbox"
+        />
+      </span>
+      <span className="mt-2 block text-xs leading-5 text-slate-400">
+        {description}
+      </span>
+    </label>
+  );
+}
+
+function getBrowserPermissionStatus() {
+  if (typeof window === "undefined" || !("Notification" in window)) {
+    return "Not supported";
+  }
+
+  switch (Notification.permission) {
+    case "granted":
+      return "Allowed";
+    case "denied":
+      return "Blocked";
+    default:
+      return "Not enabled";
+  }
 }

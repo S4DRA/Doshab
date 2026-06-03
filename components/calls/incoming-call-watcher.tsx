@@ -1,27 +1,89 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { usePersistentCall } from "@/components/calls/persistent-call-provider";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import type { FriendPerson } from "@/types";
 
 type IncomingCall = {
-  id: string;
+  caller: FriendPerson;
   createdAt: string;
   expiresAt: string;
-  caller: FriendPerson;
+  id: string;
+};
+
+type FriendCallTokenResponse = {
+  call: {
+    friend: FriendPerson;
+    id: string;
+    status: string;
+  };
+  livekitUrl: string;
+  roomName: string;
+  token: string;
 };
 
 export function IncomingCallWatcher() {
+  const router = useRouter();
+  const { startCall } = usePersistentCall();
   const [call, setCall] = useState<IncomingCall | null>(null);
+  const [accepting, setAccepting] = useState(false);
   const [declining, setDeclining] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [error, setError] = useState("");
+  const acceptButtonRef = useRef<HTMLButtonElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const toneTimerRef = useRef<number | null>(null);
+
+  const stopRingtone = useCallback(() => {
+    if (toneTimerRef.current) {
+      window.clearInterval(toneTimerRef.current);
+      toneTimerRef.current = null;
+    }
+  }, []);
+
+  const startRingtone = useCallback(() => {
+    stopRingtone();
+
+    try {
+      const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+
+      if (!AudioContextConstructor) {
+        return;
+      }
+
+      const audioContext = audioContextRef.current ?? new AudioContextConstructor();
+      audioContextRef.current = audioContext;
+
+      const playTone = () => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.frequency.value = 740;
+        oscillator.type = "sine";
+        gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.07, audioContext.currentTime + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.38);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.42);
+      };
+
+      playTone();
+      toneTimerRef.current = window.setInterval(playTone, 1800);
+    } catch {
+      // Browsers can block audio without a recent user gesture. The visual call UI still works.
+    }
+  }, [stopRingtone]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadIncomingCall() {
       const response = await fetch("/api/friend-calls/incoming", {
+        cache: "no-store",
         headers: {
           accept: "application/json",
         },
@@ -43,7 +105,7 @@ export function IncomingCallWatcher() {
     void loadIncomingCall();
     const timer = window.setInterval(() => {
       void loadIncomingCall();
-    }, 5000);
+    }, 3000);
 
     return () => {
       cancelled = true;
@@ -51,18 +113,87 @@ export function IncomingCallWatcher() {
     };
   }, []);
 
-  async function declineCall() {
+  useEffect(() => {
     if (!call) {
+      stopRingtone();
+      return;
+    }
+
+    acceptButtonRef.current?.focus();
+
+    if (getNotificationSettings().soundEnabled !== false && !muted) {
+      startRingtone();
+    }
+
+    if ("vibrate" in navigator) {
+      navigator.vibrate?.([180, 80, 180]);
+    }
+
+    return stopRingtone;
+  }, [call, muted, startRingtone, stopRingtone]);
+
+  useEffect(() => () => {
+    stopRingtone();
+  }, [stopRingtone]);
+
+  async function acceptCall() {
+    if (!call || accepting) {
+      return;
+    }
+
+    setAccepting(true);
+    setError("");
+    stopRingtone();
+
+    try {
+      const response = await fetch(`/api/friend-calls/${call.id}/token`, {
+        method: "POST",
+      });
+      const data = (await response.json().catch(() => null)) as
+        | (Partial<FriendCallTokenResponse> & { error?: string })
+        | null;
+
+      if (!response.ok || !data?.token || !data.livekitUrl || !data.roomName || !data.call) {
+        throw new Error(data?.error ?? "Could not answer this call.");
+      }
+
+      startCall({
+        endUrl: `/api/friend-calls/${call.id}/end`,
+        href: `/dashboard/calls/${call.id}`,
+        id: `friend:${call.id}`,
+        kind: "friend",
+        livekitUrl: data.livekitUrl,
+        roomName: data.roomName,
+        statusUrl: `/api/friend-calls/${call.id}/status`,
+        subtitle: "Private call",
+        title: data.call.friend.name || data.call.friend.email,
+        token: data.token,
+      });
+      setCall(null);
+      router.push(`/dashboard/calls/${call.id}`);
+    } catch (acceptError) {
+      setError(acceptError instanceof Error ? acceptError.message : "Could not answer this call.");
+    } finally {
+      setAccepting(false);
+    }
+  }
+
+  async function declineCall() {
+    if (!call || declining) {
       return;
     }
 
     setDeclining(true);
+    setError("");
+    stopRingtone();
 
     try {
       await fetch(`/api/friend-calls/${call.id}/decline`, {
         method: "POST",
       });
       setCall(null);
+    } catch {
+      setError("Could not decline this call.");
     } finally {
       setDeclining(false);
     }
@@ -72,48 +203,86 @@ export function IncomingCallWatcher() {
     return null;
   }
 
+  const callerLabel = call.caller.name || call.caller.email;
+
   return (
-    <div className="fixed inset-x-3 bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] z-[70] sm:inset-x-auto sm:bottom-4 sm:right-4 sm:w-96">
-      <section className="app-panel border-[#FF5F25]/50 p-4">
-        <div className="flex items-center gap-3">
-          <div className="relative shrink-0">
-            <span className="absolute inset-0 rounded-lg bg-[#FF5F25]/30 motion-safe:animate-ping" />
-            <AvatarInitials
-              imageUrl={call.caller.image}
-              value={call.caller.name || call.caller.email}
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
-              Incoming call
-            </p>
-            <h2 className="truncate text-base font-semibold text-white">
-              {call.caller.name || call.caller.email}
-            </h2>
-          </div>
+    <div
+      aria-label={`Incoming voice call from ${callerLabel}`}
+      className="fixed inset-0 z-[90] grid place-items-center bg-black/84 px-4 pb-[calc(var(--dashboard-bottom-nav-height)_+_env(safe-area-inset-bottom)_+_1rem)] pt-6 text-white backdrop-blur-md sm:pb-6 sm:pl-20"
+      role="alertdialog"
+    >
+      <section className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-[#FF5F25]/45 bg-[#070a12] p-6 text-center shadow-2xl shadow-black/60 sm:p-8">
+        <div className="absolute inset-x-0 top-0 h-1 bg-[#FF5F25]" />
+        <div className="mx-auto grid w-fit place-items-center">
+          <span className="absolute h-28 w-28 rounded-full bg-[#FF5F25]/20 motion-safe:animate-ping" />
+          <AvatarInitials imageUrl={call.caller.image} size="lg" value={callerLabel} />
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-2">
+        <p className="mt-6 text-xs font-semibold uppercase tracking-[0.22em] text-[#FF5F25]">
+          Incoming voice call
+        </p>
+        <h2 className="mt-3 truncate text-3xl font-bold text-white">
+          {callerLabel}
+        </h2>
+        <p className="mt-2 text-sm text-slate-300">
+          Private call. Answer to join now.
+        </p>
+        {error ? (
+          <p className="mt-5 rounded-lg border border-amber-300/20 bg-amber-400/10 px-4 py-3 text-sm leading-5 text-amber-100">
+            {error}
+          </p>
+        ) : null}
+        <div className="mt-7 grid grid-cols-2 gap-3">
           <button
             aria-busy={declining}
-            className="app-button-danger h-11 rounded-lg px-3 text-sm font-semibold transition disabled:opacity-60 sm:h-10"
-            disabled={declining}
+            className="app-button-danger h-14 rounded-xl px-4 text-base font-bold transition disabled:opacity-60"
+            disabled={declining || accepting}
             onClick={declineCall}
             type="button"
           >
             {declining ? "Declining..." : "Decline"}
           </button>
-          <Link
-            className="app-button-primary inline-flex h-11 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold transition sm:h-10"
-            href={`/dashboard/calls/${call.id}`}
-            title={`Answer call from ${call.caller.name || call.caller.email}`}
+          <button
+            aria-busy={accepting}
+            className="app-button-primary h-14 rounded-xl px-4 text-base font-bold transition disabled:opacity-60"
+            disabled={accepting || declining}
+            onClick={acceptCall}
+            ref={acceptButtonRef}
+            type="button"
           >
-            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.89.66 2.78a2 2 0 0 1-.45 2.11L8.05 9.88a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45c.89.31 1.82.53 2.78.66A2 2 0 0 1 22 16.92Z" />
-            </svg>
-            Answer
-          </Link>
+            {accepting ? "Answering..." : "Accept"}
+          </button>
         </div>
+        <button
+          className="mt-4 min-h-11 rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:border-white/30 hover:text-white"
+          onClick={() => {
+            setMuted((current) => !current);
+            stopRingtone();
+          }}
+          type="button"
+        >
+          {muted ? "Sound muted" : "Mute ringtone"}
+        </button>
       </section>
     </div>
   );
+}
+
+type NotificationSettings = {
+  soundEnabled?: boolean;
+};
+
+function getNotificationSettings(): NotificationSettings {
+  try {
+    const stored = window.localStorage.getItem("doshabProfileSettings");
+
+    return stored ? (JSON.parse(stored) as NotificationSettings) : {};
+  } catch {
+    return {};
+  }
+}
+
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext;
+  }
 }

@@ -77,11 +77,21 @@ export type MessageThread = {
 };
 
 export type DashboardNotification = {
-  id: string;
-  title: string;
+  actor: FriendPerson | null;
   body: string;
-  href: string;
-  readAt: Date | string | null;
+  callId?: string | null;
   createdAt: Date | string;
-  actor: FriendPerson;
+  dataJson?: unknown;
+  expiresAt?: Date | string | null;
+  href: string;
+  id: string;
+  readAt: Date | string | null;
+  title: string;
+  type:
+    | "FRIEND_REQUEST"
+    | "GROUP_INVITE"
+    | "INCOMING_CALL"
+    | "MESSAGE"
+    | "MISSED_CALL"
+    | "SYSTEM";
 };

@@ -46,7 +46,7 @@ export function getPushRegistrationMessage(result: PushRegistrationResult) {
     case "insecure-context":
       return "Phone alerts need HTTPS, or localhost on the same device.";
     case "missing-key":
-      return "Phone alerts are missing the deployment push key. Add VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY to the published app.";
+      return "Phone alerts are missing deployment push keys. Add NEXT_PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, and VAPID_SUBJECT to the app.";
     case "subscription-failed":
       return "Phone alerts could not be saved. Please sign in and try again.";
     case "unsupported":

@@ -209,6 +209,7 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
         href,
         messageId: message.id,
         title,
+        type: "MESSAGE",
         userId: recipientId,
       })),
     });
@@ -225,6 +226,9 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
   if (result.recipients.length) {
     await sendPushNotifications({
       body: result.notificationBody,
+      data: {
+        type: "message",
+      },
       href: result.href,
       recipientIds: result.recipients,
       title: result.notificationTitle,

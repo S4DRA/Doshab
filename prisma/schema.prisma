@@ -161,24 +161,29 @@ model Message {
 model Notification {
   id        String           @id @default(cuid())
   userId    String
-  actorId   String
-  groupId   String
-  channelId String
-  messageId String
+  actorId   String?
+  groupId   String?
+  channelId String?
+  messageId String?
+  callId    String?          @map("call_id")
   type      NotificationType @default(MESSAGE)
   title     String
   body      String
   href      String
+  dataJson  Json?            @map("data_json")
   readAt    DateTime?
+  expiresAt DateTime?
   createdAt DateTime         @default(now())
-  actor     User             @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
-  channel   Channel          @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  group     Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  message   Message          @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  actor     User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  channel   Channel?         @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  group     Group?           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  message   Message?         @relation(fields: [messageId], references: [id], onDelete: Cascade)
   user      User             @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, readAt, createdAt])
+  @@index([userId, type, createdAt])
   @@index([actorId])
+  @@index([callId])
   @@index([groupId])
   @@index([channelId])
   @@index([messageId])
@@ -264,6 +269,11 @@ enum ChannelType {
 
 enum NotificationType {
   MESSAGE
+  FRIEND_REQUEST
+  GROUP_INVITE
+  INCOMING_CALL
+  MISSED_CALL
+  SYSTEM
 }
 
 enum FriendCallStatus {

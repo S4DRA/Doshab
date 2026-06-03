@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth";
 import { orderedFriendshipPair } from "@/lib/friends";
+import { createNotification } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
 function getRedirectPath(formData: FormData) {
@@ -74,12 +75,27 @@ export async function POST(request: NextRequest) {
     return redirectWithMessage(request, redirectPath, "A pending request already exists.");
   }
 
-  await prisma.friendRequest.create({
+  const requestRecord = await prisma.friendRequest.create({
     data: {
       senderId: user.id,
       receiverId,
       status: "PENDING",
     },
+    select: {
+      id: true,
+    },
+  });
+
+  await createNotification({
+    actorId: user.id,
+    body: `${user.name || user.email} sent you a friend request.`,
+    data: {
+      friendRequestId: requestRecord.id,
+    },
+    href: "/dashboard/friends",
+    title: "New friend request",
+    type: "FRIEND_REQUEST",
+    userId: receiverId,
   });
 
   return redirectWithMessage(request, redirectPath, "Friend request sent.");

@@ -9,8 +9,8 @@ import {
   findFriendship,
 } from "@/lib/calls";
 import { getCurrentUser } from "@/lib/auth";
+import { createNotification } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
-import { sendPushNotifications } from "@/lib/push";
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
@@ -71,6 +71,17 @@ export async function POST(request: NextRequest) {
   const callId = randomUUID();
   const href = getFriendCallHref(callId);
 
+  const previousRingingCalls = await prisma.friendCall.findMany({
+    where: {
+      callerId: user.id,
+      receiverId: friend.id,
+      status: "RINGING",
+    },
+    select: {
+      id: true,
+    },
+  });
+
   await prisma.friendCall.updateMany({
     where: {
       callerId: user.id,
@@ -82,6 +93,23 @@ export async function POST(request: NextRequest) {
       status: "MISSED",
     },
   });
+
+  await Promise.all(
+    previousRingingCalls.map((previousCall) =>
+      createNotification({
+        actorId: user.id,
+        body: `You missed a call from ${user.name || user.email}.`,
+        callId: previousCall.id,
+        data: {
+          callId: previousCall.id,
+        },
+        href: getFriendCallHref(previousCall.id),
+        title: "Missed call",
+        type: "MISSED_CALL",
+        userId: friend.id,
+      }),
+    ),
+  );
 
   const call = await prisma.friendCall.create({
     data: {
@@ -96,29 +124,33 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  await sendPushNotifications({
-    actions: [
-      {
-        action: "answer-call",
-        title: "Answer",
-      },
-      {
-        action: "decline-call",
-        title: "Decline",
-      },
-    ],
+  await createNotification({
+    actorId: user.id,
     body: `${user.name || user.email} is calling you.`,
+    callId: call.id,
     data: {
       callId: call.id,
       type: "call",
     },
+    expiresAt: new Date(now.getTime() + friendCallDurationMs),
     href,
-    recipientIds: [friend.id],
-    requireInteraction: true,
-    tag: `friend-call-${call.id}`,
     title: "Incoming call",
-  }).catch((error: unknown) => {
-    console.error("Failed to send call push notification", error);
+    type: "INCOMING_CALL",
+    userId: friend.id,
+    push: {
+      actions: [
+        {
+          action: "answer-call",
+          title: "Answer",
+        },
+        {
+          action: "decline-call",
+          title: "Decline",
+        },
+      ],
+      requireInteraction: true,
+      tag: `friend-call-${call.id}`,
+    },
   });
 
   if (isJsonRequest) {

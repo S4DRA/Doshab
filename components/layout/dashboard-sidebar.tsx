@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PushNotificationToggle } from "@/components/notifications/push-notification-toggle";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
@@ -57,6 +57,8 @@ type SidebarUser = {
 
 const mobileChannelPinCacheKey = "doshab-mobile-channel-pin-v1";
 const sidebarCacheKey = "doshab-sidebar-v6";
+const notificationSettingsKey = "doshabProfileSettings";
+const notificationPollIntervalMs = 15000;
 
 type DashboardSidebarProps = {
   initialCurrentUser?: SidebarUser | null;
@@ -81,6 +83,7 @@ export function DashboardSidebar({
     initialNotifications,
   );
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
+  const [toastNotification, setToastNotification] = useState<DashboardNotification | null>(null);
   const [channelsOpen, setChannelsOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -92,6 +95,52 @@ export function DashboardSidebar({
 
     return window.localStorage.getItem(mobileChannelPinCacheKey);
   });
+  const seenNotificationIdsRef = useRef(new Set(initialNotifications.map((item) => item.id)));
+  const toastTimerRef = useRef<number | null>(null);
+
+  const announceNotification = useCallback((notification: DashboardNotification) => {
+    const settings = getNotificationSettings();
+
+    if (!notificationAllowedBySettings(notification, settings)) {
+      return;
+    }
+
+    if (
+      document.visibilityState !== "visible" &&
+      settings.enableNotifications &&
+      "Notification" in window &&
+      Notification.permission === "granted"
+    ) {
+      const browserNotification = new Notification(notification.title, {
+        body: settings.showMessagePreview === false && notification.type === "MESSAGE"
+          ? "Open Doshab to read this message."
+          : notification.body,
+        data: {
+          href: notification.href,
+        },
+        tag: notification.callId ?? notification.id,
+      });
+
+      browserNotification.onclick = () => {
+        window.focus();
+        window.location.assign(notification.href);
+        browserNotification.close();
+      };
+
+      return;
+    }
+
+    setToastNotification(notification);
+
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+
+    toastTimerRef.current = window.setTimeout(() => {
+      setToastNotification(null);
+      toastTimerRef.current = null;
+    }, notification.type === "INCOMING_CALL" ? 9000 : 5200);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -182,6 +231,107 @@ export function DashboardSidebar({
       window.clearInterval(refreshTimer);
     };
   }, [initialCurrentUser, initialGroups]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadNotifications({ announce }: { announce: boolean }) {
+      const response = await fetch("/api/notifications", {
+        cache: "no-store",
+        headers: {
+          accept: "application/json",
+        },
+      }).catch(() => null);
+
+      if (!response?.ok || cancelled) {
+        return;
+      }
+
+      const data = (await response.json().catch(() => null)) as {
+        notifications?: DashboardNotification[];
+        unreadCount?: number;
+      } | null;
+      const nextNotifications = data?.notifications ?? [];
+      const nextUnreadCount = data?.unreadCount ?? 0;
+      const freshNotifications = nextNotifications.filter(
+        (notification) => !seenNotificationIdsRef.current.has(notification.id),
+      );
+
+      freshNotifications.forEach((notification) => {
+        seenNotificationIdsRef.current.add(notification.id);
+      });
+
+      setNotifications(nextNotifications);
+      setUnreadCount(nextUnreadCount);
+      window.sessionStorage.removeItem(sidebarCacheKey);
+
+      if (!announce) {
+        return;
+      }
+
+      freshNotifications
+        .filter((notification) => !notification.readAt && notification.href !== pathname)
+        .forEach((notification) => announceNotification(notification));
+    }
+
+    void loadNotifications({ announce: false });
+
+    const timer = window.setInterval(() => {
+      void loadNotifications({ announce: true });
+    }, notificationPollIntervalMs);
+
+    const handleVisibilityChange = () => {
+      void loadNotifications({ announce: false });
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [announceNotification, pathname]);
+
+  useEffect(() => {
+    const matchingUnreadIds = notifications
+      .filter((notification) => !notification.readAt && notification.href === pathname)
+      .map((notification) => notification.id);
+
+    if (!matchingUnreadIds.length) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setUnreadCount((count) => Math.max(0, count - matchingUnreadIds.length));
+      setNotifications((items) =>
+        items.map((item) =>
+          matchingUnreadIds.includes(item.id)
+            ? {
+                ...item,
+                readAt: item.readAt ?? new Date().toISOString(),
+              }
+            : item,
+        ),
+      );
+
+      void fetch("/api/notifications/read", {
+        body: JSON.stringify({ ids: matchingUnreadIds }),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+      }).catch(() => null);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [notifications, pathname]);
+
+  useEffect(() => () => {
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+  }, []);
 
   if (!pathname.startsWith("/dashboard")) {
     return null;
@@ -384,14 +534,18 @@ export function DashboardSidebar({
   ) : null;
 
   const notificationMenu = notificationsOpen ? (
-    <div className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-50 max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-0 sm:left-14 sm:right-auto sm:top-auto sm:w-[calc(100vw-4.25rem)] sm:max-w-80">
+    <div
+      aria-label="Notifications"
+      className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-50 max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-0 sm:left-14 sm:right-auto sm:top-auto sm:w-[calc(100vw-4.25rem)] sm:max-w-96"
+      role="dialog"
+    >
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
             Notifications
           </p>
           <p className="mt-1 text-xs text-slate-400">
-            PMs and space messages
+            Messages, invites, and calls
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -401,7 +555,7 @@ export function DashboardSidebar({
               onClick={markNotificationsRead}
               type="button"
             >
-              Read
+              Mark read
             </button>
           ) : null}
           {notifications.length ? (
@@ -416,11 +570,12 @@ export function DashboardSidebar({
         </div>
       </div>
 
-      <div className="mt-3 max-h-72 space-y-1 overflow-y-auto pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="mt-3 max-h-[min(27rem,calc(100dvh_-_13rem))] space-y-1 overflow-y-auto pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {notifications.length ? (
           notifications.map((notification) => (
             <Link
-              className={`block rounded-lg border px-3 py-2.5 transition hover:border-[#FF5F25]/70 hover:bg-white/10 ${
+              aria-label={`${notification.readAt ? "" : "Unread "}${notification.title}. ${notification.body}`}
+              className={`flex min-w-0 gap-3 rounded-lg border px-3 py-2.5 transition hover:border-[#FF5F25]/70 hover:bg-white/10 ${
                 notification.readAt
                   ? "border-transparent"
                   : "border-[#FF5F25]/50 bg-[#FF5F25]/10"
@@ -433,20 +588,47 @@ export function DashboardSidebar({
               }}
               prefetch={false}
             >
-              <span className="block truncate text-sm font-semibold text-white">
-                {notification.title}
+              <span
+                className={`mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-[9px] font-black ${
+                  notification.type === "INCOMING_CALL"
+                    ? "border-emerald-300/40 bg-emerald-400/15 text-emerald-200"
+                    : notification.type === "MISSED_CALL"
+                      ? "border-red-300/40 bg-red-500/15 text-red-200"
+                      : notification.readAt
+                        ? "border-white/10 bg-white/7 text-slate-300"
+                        : "border-[#FF5F25]/40 bg-[#FF5F25]/15 text-[#FFB199]"
+                }`}
+              >
+                {getNotificationIcon(notification.type)}
               </span>
-              <span className="mt-1 block line-clamp-2 text-xs leading-5 text-slate-300">
-                {notification.body}
-              </span>
-              <span className="mt-1 block text-[11px] text-slate-500">
-                {formatNotificationTime(notification.createdAt)}
+              <span className="min-w-0 flex-1">
+                <span className="flex items-start justify-between gap-2">
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-white">
+                      {notification.title}
+                    </span>
+                    <span className="mt-1 block line-clamp-2 text-xs leading-5 text-slate-300">
+                      {notification.body}
+                    </span>
+                  </span>
+                  {!notification.readAt ? (
+                    <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#FF5F25]" aria-label="Unread" />
+                  ) : null}
+                </span>
+                <span className="mt-2 flex items-center justify-between gap-3">
+                  <span className="text-[11px] text-slate-500">
+                    {formatNotificationTime(notification.createdAt)}
+                  </span>
+                  <span className="text-[11px] font-semibold text-[#FFB199]">
+                    {getNotificationActionLabel(notification.type)}
+                  </span>
+                </span>
               </span>
             </Link>
           ))
         ) : (
           <p className="rounded-lg border border-dashed border-white/20 px-3 py-4 text-sm leading-6 text-slate-400">
-            No notifications yet. New PMs and space messages will appear here.
+            No notifications yet. Messages, invites, and calls will appear here.
           </p>
         )}
       </div>
@@ -476,6 +658,49 @@ export function DashboardSidebar({
   ) : null;
   return (
     <>
+    <div aria-live="polite" className="sr-only">
+      {toastNotification ? `${toastNotification.title}. ${toastNotification.body}` : ""}
+    </div>
+    {toastNotification ? (
+      <div
+        className="app-panel fixed inset-x-3 bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] z-[65] flex max-w-md gap-3 border-[#FF5F25]/45 p-3 shadow-2xl shadow-black/40 sm:inset-x-auto sm:bottom-4 sm:right-4 sm:w-96"
+        role={toastNotification.type === "INCOMING_CALL" ? "alert" : "status"}
+      >
+        <Link
+          className="flex min-w-0 flex-1 gap-3"
+          href={toastNotification.href}
+          onClick={() => setToastNotification(null)}
+          prefetch={false}
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#FF5F25]/35 bg-[#FF5F25]/15 text-[10px] font-black text-[#FFB199]">
+            {getNotificationIcon(toastNotification.type)}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold text-white">
+              {toastNotification.title}
+            </span>
+            <span className="mt-1 block line-clamp-2 text-xs leading-5 text-slate-300">
+              {toastNotification.body}
+            </span>
+          </span>
+        </Link>
+        <button
+          aria-label="Dismiss notification"
+          className="app-icon-button h-9 w-9 shrink-0"
+          onClick={(event) => {
+            event.preventDefault();
+            setToastNotification(null);
+          }}
+          title="Dismiss"
+          type="button"
+        >
+          <svg aria-hidden="true" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+      </div>
+    ) : null}
     <aside className="fixed inset-x-0 bottom-0 z-50 flex h-[var(--dashboard-bottom-nav-height)] items-center border-t border-white/10 bg-[#090c0a]/95 px-2 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] backdrop-blur sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-16 sm:flex-col sm:border-r sm:border-t-0 sm:px-2 sm:py-3 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] min-[1180px]:w-[4.75rem]">
       {createMenu}
       {channelMenu}
@@ -827,4 +1052,77 @@ function formatNotificationTime(value: Date | string) {
   }
 
   return `${Math.floor(diffHours / 24)}d ago`;
+}
+
+type LocalNotificationSettings = {
+  callNotifications?: boolean;
+  enableNotifications?: boolean;
+  friendInviteNotifications?: boolean;
+  messageNotifications?: boolean;
+  showMessagePreview?: boolean;
+  soundEnabled?: boolean;
+};
+
+function getNotificationSettings(): LocalNotificationSettings {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const stored = window.localStorage.getItem(notificationSettingsKey);
+
+    return stored ? (JSON.parse(stored) as LocalNotificationSettings) : {};
+  } catch {
+    return {};
+  }
+}
+
+function notificationAllowedBySettings(
+  notification: DashboardNotification,
+  settings: LocalNotificationSettings,
+) {
+  switch (notification.type) {
+    case "INCOMING_CALL":
+    case "MISSED_CALL":
+      return settings.callNotifications !== false;
+    case "FRIEND_REQUEST":
+    case "GROUP_INVITE":
+      return settings.friendInviteNotifications !== false;
+    case "MESSAGE":
+      return settings.messageNotifications !== false;
+    default:
+      return true;
+  }
+}
+
+function getNotificationIcon(type: DashboardNotification["type"]) {
+  switch (type) {
+    case "FRIEND_REQUEST":
+      return "FR";
+    case "GROUP_INVITE":
+      return "IN";
+    case "INCOMING_CALL":
+      return "CALL";
+    case "MISSED_CALL":
+      return "MISS";
+    case "SYSTEM":
+      return "SYS";
+    default:
+      return "MSG";
+  }
+}
+
+function getNotificationActionLabel(type: DashboardNotification["type"]) {
+  switch (type) {
+    case "FRIEND_REQUEST":
+      return "Review";
+    case "GROUP_INVITE":
+      return "Open invites";
+    case "INCOMING_CALL":
+      return "Answer";
+    case "MISSED_CALL":
+      return "Details";
+    default:
+      return "Open";
+  }
 }

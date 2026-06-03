@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth";
 import { orderedFriendshipPair } from "@/lib/friends";
+import { createNotification } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
 type InviteRouteContext = {
@@ -43,6 +44,11 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
       },
     },
     select: {
+      group: {
+        select: {
+          name: true,
+        },
+      },
       role: true,
     },
   });
@@ -50,6 +56,9 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
   if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
     return redirectToGroup(request, groupId, "Only owners and admins can invite friends.");
   }
+
+  const currentUser = user;
+  const currentMembership = membership;
 
   const receiver = await prisma.user.findUnique({
     where: {
@@ -119,7 +128,7 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
   }
 
   if (existingInvite?.status === "REJECTED") {
-    await prisma.groupInvite.update({
+    const invite = await prisma.groupInvite.update({
       where: {
         id: existingInvite.id,
       },
@@ -127,17 +136,42 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
         inviterId: user.id,
         status: "PENDING",
       },
+      select: {
+        id: true,
+      },
     });
+
+    await createGroupInviteNotification(invite.id);
   } else {
-    await prisma.groupInvite.create({
+    const invite = await prisma.groupInvite.create({
       data: {
         groupId,
         inviterId: user.id,
         receiverId,
         status: "PENDING",
       },
+      select: {
+        id: true,
+      },
     });
+
+    await createGroupInviteNotification(invite.id);
   }
 
   return redirectToGroup(request, groupId, "Space invite sent.");
+
+  async function createGroupInviteNotification(inviteId: string) {
+    await createNotification({
+      actorId: currentUser.id,
+      body: `${currentUser.name || currentUser.email} invited you to ${currentMembership.group.name}.`,
+      data: {
+        groupInviteId: inviteId,
+      },
+      groupId,
+      href: "/dashboard/friends",
+      title: "New space invite",
+      type: "GROUP_INVITE",
+      userId: receiverId,
+    });
+  }
 }

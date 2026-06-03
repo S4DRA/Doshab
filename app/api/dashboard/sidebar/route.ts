@@ -6,6 +6,7 @@ import {
 } from "@/lib/dashboard-data";
 import { getAuthState } from "@/lib/auth";
 import { friendFromPair } from "@/lib/friends";
+import { dashboardNotificationSelect } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -70,22 +71,7 @@ export async function GET() {
         createdAt: "desc",
       },
       take: 12,
-      select: {
-        id: true,
-        title: true,
-        body: true,
-        href: true,
-        readAt: true,
-        createdAt: true,
-        actor: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            status: true,
-          },
-        },
-      },
+      select: dashboardNotificationSelect,
     }),
     prisma.notification.count({
       where: {

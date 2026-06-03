@@ -70,12 +70,16 @@ function openOrFocusWindow(href) {
         type: "window",
       })
       .then((clients) => {
-        const matchingClient = clients.find((client) =>
-          client.url.endsWith(href),
-        );
+        const matchingClient = clients.find((client) => {
+          try {
+            return new URL(client.url).pathname === new URL(href, self.location.origin).pathname;
+          } catch {
+            return client.url.endsWith(href);
+          }
+        });
 
         if (matchingClient) {
-          return matchingClient.focus();
+          return matchingClient.focus().then((client) => client.navigate?.(href) || client);
         }
 
         return self.clients.openWindow(href);
