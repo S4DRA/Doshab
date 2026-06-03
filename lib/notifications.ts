@@ -83,7 +83,8 @@ export async function createNotification({
     data: {
       callId: callId ?? "",
       notificationId: notification.id,
-      type,
+      notificationType: type,
+      type: callId ? "call" : type.toLowerCase(),
     },
     href,
     recipientIds: [userId],

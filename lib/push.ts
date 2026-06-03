@@ -119,6 +119,11 @@ export async function sendPushNotifications({
             tag: tag ?? href,
             title,
           }),
+          {
+            TTL: requireInteraction ? 60 : 3600,
+            topic: tag?.replace(/[^A-Za-z0-9_-]/g, "-").slice(0, 32),
+            urgency: requireInteraction ? "high" : "normal",
+          },
         );
       } catch (error) {
         const statusCode =
