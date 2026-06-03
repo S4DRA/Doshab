@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { Alert } from "@/components/ui/alert";
+
 type AuthCardProps = {
   title: string;
   subtitle: string;
@@ -23,7 +25,7 @@ export function AuthCard({
   notice,
 }: AuthCardProps) {
   return (
-    <main className="grid min-h-[calc(100vh-6rem)] place-items-center px-5 py-10 text-white">
+    <main className="grid min-h-[calc(100dvh-2rem)] place-items-center px-3 py-4 text-white sm:min-h-[calc(100vh-6rem)] sm:px-5 sm:py-10">
       <section className="app-surface grid w-full max-w-5xl overflow-hidden rounded-xl lg:grid-cols-[0.92fr_1.08fr]">
         <div className="hidden min-h-[560px] flex-col justify-between border-r border-white/10 bg-[#263324] p-8 text-white lg:flex">
           <div>
@@ -42,25 +44,25 @@ export function AuthCard({
           </div>
         </div>
 
-        <div className="p-6 sm:p-8">
-          <div className="mb-7">
+        <div className="p-5 sm:p-8">
+          <div className="mb-6 sm:mb-7">
             <Link href="/" className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
               Doshab
             </Link>
-            <h1 className="mt-5 text-3xl font-semibold tracking-tight text-white">{title}</h1>
+            <h1 className="mt-5 text-2xl font-semibold tracking-tight text-white sm:text-3xl">{title}</h1>
             <p className="mt-2 text-sm leading-6 text-slate-300">{subtitle}</p>
           </div>
 
           {error ? (
-            <p className="mb-5 rounded-xl border border-[#FF5F25]/40 bg-[#FF5F25]/10 px-4 py-3 text-sm text-white">
-              {error}
-            </p>
+            <div className="mb-5">
+              <Alert tone="error">{error}</Alert>
+            </div>
           ) : null}
 
           {notice ? (
-            <p className="mb-5 rounded-xl border border-[#445242] bg-[#445242]/40 px-4 py-3 text-sm text-white">
-              {notice}
-            </p>
+            <div className="mb-5">
+              <Alert tone="success">{notice}</Alert>
+            </div>
           ) : null}
 
           {children}

@@ -31,7 +31,7 @@ export function InviteFriendForm({ groupId, friends }: InviteFriendFormProps) {
           method="post"
         >
           <select
-            className="h-11 w-full min-w-0 max-w-full truncate rounded-lg border border-white/10 bg-[#0b1020] px-3 text-sm text-slate-100 outline-none transition focus:border-[#FF5F25]/60"
+            className="h-12 w-full min-w-0 max-w-full truncate rounded-lg border border-white/10 bg-[#0b1020] px-3 text-base text-slate-100 outline-none transition focus:border-[#FF5F25]/60 sm:h-11 sm:text-sm"
             name="receiverId"
             required
           >
@@ -42,7 +42,7 @@ export function InviteFriendForm({ groupId, friends }: InviteFriendFormProps) {
             ))}
           </select>
           <SubmitButton
-            className="app-button-primary h-11 w-full rounded-lg px-4 font-bold transition min-[760px]:w-auto"
+            className="app-button-primary h-12 w-full rounded-lg px-4 font-bold transition sm:h-11 min-[760px]:w-auto"
             pendingText="Inviting..."
           >
             Send invite
@@ -50,7 +50,7 @@ export function InviteFriendForm({ groupId, friends }: InviteFriendFormProps) {
         </form>
       ) : (
         <p className="mt-4 break-words rounded-lg border border-dashed border-white/10 bg-[#0b1020] px-4 py-3 text-sm leading-6 text-slate-500">
-          No eligible friends to invite right now.
+          No eligible friends to invite right now. Add a friend first, then return here.
         </p>
       )}
     </section>

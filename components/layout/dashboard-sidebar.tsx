@@ -247,7 +247,7 @@ export function DashboardSidebar({
         }}
       >
         <input
-          className="h-10 w-full rounded-lg border border-white/20 bg-[#050505] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-[#FF5F25]"
+          className="h-11 w-full rounded-lg border border-white/20 bg-[#050505] px-3 text-base text-white outline-none placeholder:text-slate-500 focus:border-[#FF5F25] sm:h-10 sm:text-sm"
           maxLength={80}
           name="name"
           placeholder="Create a space"
@@ -255,7 +255,7 @@ export function DashboardSidebar({
           type="text"
         />
         <button
-          className="app-button-primary h-10 w-full rounded-lg text-sm font-bold transition"
+          className="app-button-primary h-11 w-full rounded-lg text-sm font-bold transition sm:h-10"
           type="submit"
         >
           Create space
@@ -301,7 +301,8 @@ export function DashboardSidebar({
                 <input name="friendId" type="hidden" value={friend.id} />
                 <button
                   aria-label={`Call ${friend.name || friend.email}`}
-                  className="app-icon-button h-8 w-8"
+                  className="app-icon-button h-10 w-10 sm:h-8 sm:w-8"
+                  title={`Call ${friend.name || friend.email}`}
                   type="submit"
                 >
                   <svg aria-hidden="true" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -337,7 +338,7 @@ export function DashboardSidebar({
           </p>
         </div>
         <Link
-          className="rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-slate-200"
+          className="inline-flex min-h-10 items-center rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-slate-200"
           href="/dashboard/channels"
           onClick={() => setChannelsOpen(false)}
           prefetch={false}
@@ -396,7 +397,7 @@ export function DashboardSidebar({
         <div className="flex items-center gap-2">
           {unreadCount ? (
             <button
-              className="rounded-lg border border-white/20 px-2 py-1 text-xs font-semibold text-white transition hover:border-[#FF5F25] hover:text-[#FF5F25]"
+              className="min-h-9 rounded-lg border border-white/20 px-3 py-1 text-xs font-semibold text-white transition hover:border-[#FF5F25] hover:text-[#FF5F25]"
               onClick={markNotificationsRead}
               type="button"
             >
@@ -405,7 +406,7 @@ export function DashboardSidebar({
           ) : null}
           {notifications.length ? (
             <button
-              className="rounded-lg border border-white/20 px-2 py-1 text-xs font-semibold text-white transition hover:border-[#FF5F25] hover:text-[#FF5F25]"
+              className="min-h-9 rounded-lg border border-white/20 px-3 py-1 text-xs font-semibold text-white transition hover:border-[#FF5F25] hover:text-[#FF5F25]"
               onClick={clearNotifications}
               type="button"
             >
@@ -456,7 +457,7 @@ export function DashboardSidebar({
   const profileMenu = profileOpen ? (
     <div className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] right-3 z-50 w-[calc(100vw-1.5rem)] max-w-44 rounded-lg p-2 sm:absolute sm:bottom-0 sm:left-14 sm:right-auto sm:top-auto sm:w-[calc(100vw-4.25rem)]">
       <Link
-        className="block rounded-lg px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+        className="block min-h-10 rounded-lg px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
         href="/dashboard/profile"
         onClick={() => setProfileOpen(false)}
         prefetch={false}
@@ -465,7 +466,7 @@ export function DashboardSidebar({
       </Link>
       <form action="/api/auth/logout" method="post">
         <button
-          className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-[#FF5F25] transition hover:bg-[#FF5F25] hover:text-black"
+          className="mt-1 min-h-10 w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-[#FF5F25] transition hover:bg-[#FF5F25] hover:text-black"
           type="submit"
         >
           Log out
@@ -484,13 +485,15 @@ export function DashboardSidebar({
         <div className="flex min-w-0 items-center justify-start gap-0.5">
           <Link
             aria-label="Friends"
-            className={`grid size-9 place-items-center rounded-lg border transition min-[390px]:size-10 ${
+            className={`grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
               pathname.startsWith("/dashboard/friends")
                 ? "border-[#FF5F25] text-[#FF5F25]"
                 : "border-transparent text-slate-300"
             }`}
             href="/dashboard/friends"
+            aria-current={pathname.startsWith("/dashboard/friends") ? "page" : undefined}
             prefetch={false}
+            title="Friends"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -502,7 +505,7 @@ export function DashboardSidebar({
           <button
             aria-expanded={createOpen}
             aria-label="Create menu"
-            className={`grid size-9 place-items-center rounded-lg border transition min-[390px]:size-10 ${
+            className={`grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
               createOpen ? "border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
             }`}
             onClick={() => {
@@ -511,6 +514,7 @@ export function DashboardSidebar({
               setNotificationsOpen(false);
               setProfileOpen(false);
             }}
+            title="Create"
             type="button"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -521,13 +525,19 @@ export function DashboardSidebar({
           <div className="flex items-center rounded-lg border border-transparent">
             <Link
               aria-label={pinnedGroup ? `${pinnedGroup.name} channel shortcut` : "Channels"}
-              className={`grid size-9 place-items-center rounded-lg transition min-[390px]:size-10 ${
+              className={`grid size-10 place-items-center rounded-lg transition min-[390px]:size-11 ${
                 pathname.startsWith("/dashboard/groups") || pathname.startsWith("/dashboard/channels")
                   ? "text-[#FF5F25]"
                   : "text-slate-300"
               }`}
               href={pinnedGroupHref}
+              aria-current={
+                pathname.startsWith("/dashboard/groups") || pathname.startsWith("/dashboard/channels")
+                  ? "page"
+                  : undefined
+              }
               prefetch={false}
+              title={pinnedGroup ? `${pinnedGroup.name} channels` : "Channels"}
             >
               {pinnedGroup ? (
                 <AvatarInitials imageUrl={pinnedGroup.image} size="sm" value={pinnedGroup.name} />
@@ -542,7 +552,7 @@ export function DashboardSidebar({
             <button
               aria-expanded={channelsOpen}
               aria-label="Choose channel shortcut"
-              className={`grid h-9 w-5 place-items-center rounded-lg transition min-[390px]:h-10 min-[390px]:w-6 ${
+              className={`grid h-10 w-6 place-items-center rounded-lg transition min-[390px]:h-11 ${
                 channelsOpen ? "text-[#FF5F25]" : "text-slate-400"
               }`}
               onClick={() => {
@@ -551,6 +561,7 @@ export function DashboardSidebar({
                 setNotificationsOpen(false);
                 setProfileOpen(false);
               }}
+              title="Choose channel shortcut"
               type="button"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -562,13 +573,15 @@ export function DashboardSidebar({
 
         <Link
           aria-label="Home"
-          className={`grid size-11 place-items-center rounded-lg border transition ${
+          className={`grid size-11 place-items-center rounded-lg border transition min-[390px]:size-12 ${
             pathname === "/dashboard"
               ? "border-[#FF5F25] text-[#FF5F25]"
               : "border-transparent text-slate-300"
           }`}
           href="/dashboard"
+          aria-current={pathname === "/dashboard" ? "page" : undefined}
           prefetch={false}
+          title="Home"
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path d="M3 12 12 3l9 9" />
@@ -580,7 +593,7 @@ export function DashboardSidebar({
           <button
             aria-expanded={notificationsOpen}
             aria-label="Notifications"
-            className={`relative grid size-9 place-items-center rounded-lg border transition min-[390px]:size-10 ${
+            className={`relative grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
               notificationsOpen ? "border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
             }`}
             onClick={() => {
@@ -589,6 +602,7 @@ export function DashboardSidebar({
               setCreateOpen(false);
               setProfileOpen(false);
             }}
+            title="Notifications"
             type="button"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -604,7 +618,7 @@ export function DashboardSidebar({
           <button
             aria-expanded={profileOpen}
             aria-label="Profile menu"
-            className={`grid size-9 place-items-center rounded-lg border transition min-[390px]:size-10 ${
+            className={`grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
               profileActive || profileOpen ? "border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
             }`}
             onClick={() => {
@@ -613,6 +627,7 @@ export function DashboardSidebar({
               setCreateOpen(false);
               setNotificationsOpen(false);
             }}
+            title="Profile menu"
             type="button"
           >
             {currentUser ? (
@@ -656,6 +671,7 @@ export function DashboardSidebar({
                   : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
               }`}
               href={item.href}
+              aria-current={active ? "page" : undefined}
               key={item.href}
               prefetch={false}
               title={item.label}
@@ -702,6 +718,7 @@ export function DashboardSidebar({
                   : "border-transparent bg-white/7 text-slate-200 hover:border-white/40 hover:bg-white/10 hover:text-white"
               }`}
               href={href}
+              aria-current={active ? "page" : undefined}
               key={group.id}
               prefetch={false}
               title={group.name}

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { AuthCard } from "@/components/layout/auth-card";
 import { AuthField } from "@/components/ui/auth-field";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { getCurrentUser } from "@/lib/auth";
 
 type ForgotPasswordPageProps = {
@@ -34,12 +35,12 @@ export default async function ForgotPasswordPage({
     >
       <form action="/api/auth/forgot-password" className="space-y-4" method="post">
         <AuthField label="Email" name="email" type="email" autoComplete="email" />
-        <button
+        <SubmitButton
           className="app-button-primary mt-2 h-12 w-full rounded-lg text-sm font-bold transition"
-          type="submit"
+          pendingText="Sending link..."
         >
           Send reset link
-        </button>
+        </SubmitButton>
       </form>
     </AuthCard>
   );

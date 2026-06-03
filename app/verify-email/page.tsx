@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { AuthCard } from "@/components/layout/auth-card";
 import { AuthField } from "@/components/ui/auth-field";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { getCurrentUser } from "@/lib/auth";
 
 type VerifyEmailPageProps = {
@@ -49,12 +50,12 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
           ) : (
             <AuthField label="Email" name="email" type="email" autoComplete="email" />
           )}
-          <button
+          <SubmitButton
             className="app-button-secondary inline-flex h-12 w-full items-center justify-center rounded-lg text-sm font-bold transition"
-            type="submit"
+            pendingText="Sending email..."
           >
             Send a fresh verification email
-          </button>
+          </SubmitButton>
         </form>
         <Link
           className="app-button-primary inline-flex h-12 w-full items-center justify-center rounded-lg text-sm font-bold transition"

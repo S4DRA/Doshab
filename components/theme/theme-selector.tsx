@@ -15,14 +15,14 @@ export function ThemeSelector() {
   const activeTheme = getDoshabTheme(themeId);
 
   return (
-    <section className="app-row p-4">
+    <section className="app-row overflow-hidden p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="app-section-title">Themes</p>
           <h3 className="mt-2 text-lg font-bold text-white">Choose your Doshab style</h3>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-            Themes update the global background, panels, buttons, borders, accents, and
-            decorative motion where supported.
+            Choose one visual system for the whole app. Cards, buttons, borders,
+            focus states, loading screens, and theme details update together.
           </p>
         </div>
         <span className="app-badge w-fit px-3 py-1 text-xs font-semibold">
@@ -45,28 +45,41 @@ export function ThemeSelector() {
                 theme.id === "threez-street-hero" ? "theme-choice-card-threez-street-hero" : ""
               } ${
                 theme.id === "hamp-root-forge" ? "theme-choice-card-hamp-root-forge" : ""
+              } ${
+                theme.id === "mehran-blue-corner" ? "theme-choice-card-mehran-blue-corner" : ""
               }`}
               key={theme.id}
             >
-              <div className="theme-choice-card-layout grid gap-3 min-[520px]:grid-cols-[9.5rem_1fr] min-[520px]:items-center">
+              <div className="theme-choice-card-layout grid min-w-0 gap-3 min-[520px]:grid-cols-[9.5rem_minmax(0,1fr)] min-[520px]:items-center">
                 <ThemePreview theme={theme} />
                 <div className="min-w-0">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <h4 className="text-base font-bold text-white">{theme.name}</h4>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="text-base font-bold text-white">{theme.name}</h4>
+                        {active ? (
+                          <span className="app-badge px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]">
+                            Current
+                          </span>
+                        ) : null}
+                      </div>
                       <p className="mt-1 text-sm leading-5 text-slate-400">
                         {theme.description}
                       </p>
                     </div>
                     <button
+                      aria-label={
+                        active ? `${theme.name} is the current theme` : `Use ${theme.name} theme`
+                      }
                       aria-pressed={active}
-                      className={`h-9 shrink-0 rounded-lg px-3 text-xs font-bold transition ${
+                      className={`h-11 w-full shrink-0 rounded-lg px-3 text-xs font-bold transition sm:h-9 sm:w-auto ${
                         active ? "app-button-primary" : "app-button-secondary"
                       }`}
                       onClick={() => setThemeId(theme.id)}
+                      title={active ? "Current theme" : `Use ${theme.name}`}
                       type="button"
                     >
-                      {active ? "Active" : "Select"}
+                      {active ? "Selected" : "Use theme"}
                     </button>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-1.5">
@@ -115,6 +128,10 @@ function ThemePreview({ theme }: { theme: DoshabThemeConfig }) {
 
   if (theme.id === "hamp-root-forge") {
     return <HampRootForgePreview theme={theme} />;
+  }
+
+  if (theme.id === "mehran-blue-corner") {
+    return <MehranBlueCornerPreview theme={theme} />;
   }
 
   return (
@@ -472,12 +489,21 @@ function HampRootForgePreview({ theme }: { theme: DoshabThemeConfig }) {
       <div className="hamp-preview-founder" aria-hidden="true">
         <span className="hamp-preview-founder-core" />
       </div>
-      <div className="hamp-preview-emblem" aria-hidden="true">
-        <ThemeIcon className="h-8 w-8" id="root-system" />
+      <div className="hamp-preview-circuit" aria-hidden="true">
+        <span />
+        <span />
+        <span />
       </div>
       <div className="hamp-preview-panel">
-        <div className="hamp-preview-kicker">Founder Mode</div>
-        <h5>Hamp: Root Forge</h5>
+        <div className="hamp-preview-title-row">
+          <span className="hamp-preview-seal">
+            <ThemeIcon className="h-4 w-4" id="system-core" />
+          </span>
+          <div className="min-w-0">
+            <div className="hamp-preview-kicker">Founder Mode</div>
+            <h5>Hamp: Root Forge</h5>
+          </div>
+        </div>
         <div className="hamp-preview-status-list">
           <span>
             <ThemeIcon className="h-3.5 w-3.5" id="root-system" />
@@ -489,21 +515,100 @@ function HampRootForgePreview({ theme }: { theme: DoshabThemeConfig }) {
           </span>
           <span>
             <ThemeIcon className="h-3.5 w-3.5" id="ai-agent-network" />
-            AI Agent Ready
+            AI Agent Network: <strong>Ready</strong>
           </span>
           <span>
-            <ThemeIcon className="h-3.5 w-3.5" id="system-status" />
-            Path Confirmed
+            <ThemeIcon className="h-3.5 w-3.5" id="command-node" />
+            Command Core Stable
           </span>
           <span>
-            <ThemeIcon className="h-3.5 w-3.5" id="protocol-network" />
+            <ThemeIcon className="h-3.5 w-3.5" id="protocol-lock" />
             Powered by Rootonset
           </span>
         </div>
+        <div className="hamp-preview-terminal" aria-hidden="true">
+          <span>root://system</span>
+          <strong>operational</strong>
+        </div>
         <button className="hamp-preview-console" type="button">
-          Founder Console
+          Open Founder Console
         </button>
       </div>
+    </div>
+  );
+}
+
+function MehranBlueCornerPreview({ theme }: { theme: DoshabThemeConfig }) {
+  return (
+    <div
+      className={`theme-preview mehran-preview-rich relative overflow-hidden rounded-lg border ${
+        theme.decorativeClassName ?? ""
+      }`}
+      style={{
+        "--theme-preview-accent": theme.colors.accent,
+        "--theme-preview-accent-secondary": theme.colors.accentSecondary,
+        "--theme-preview-background": theme.backgroundStyle,
+        "--theme-preview-border": theme.colors.border,
+        "--theme-preview-button": theme.buttonStyle,
+        "--theme-preview-card": theme.cardStyle,
+        "--theme-preview-glow": theme.accentStyle,
+        "--theme-preview-surface": theme.colors.surface,
+        "--theme-preview-text": theme.colors.text,
+      } as CSSProperties}
+    >
+      <div className="mehran-preview-smoke" aria-hidden="true">
+        <span />
+        <span />
+      </div>
+      <div className="mehran-preview-ring" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <div className="mehran-preview-panel">
+        <div className="mehran-preview-title-row">
+          <span className="mehran-preview-mark">M</span>
+          <div className="min-w-0">
+            <h5>Mehran: Blue Corner</h5>
+            <p>Silent Mode - Blue Corner</p>
+          </div>
+          <ThemeIcon className="h-5 w-5" id="blue-corner-marker" />
+        </div>
+        <div className="mehran-preview-status-list">
+          <span>
+            <ThemeIcon className="h-3.5 w-3.5" id="focus-heartbeat" />
+            Fight Status: <strong>Calm</strong>
+          </span>
+          <span>
+            <ThemeIcon className="h-3.5 w-3.5" id="silent-mode" />
+            Words Used: <strong>0</strong>
+          </span>
+          <span>
+            <ThemeIcon className="h-3.5 w-3.5" id="mma-glove" />
+            MMA Focus
+          </span>
+          <span>
+            <ThemeIcon className="h-3.5 w-3.5" id="guard-shield" />
+            Threat Level: <em>Quiet</em>
+          </span>
+          <span>
+            <ThemeIcon className="h-3.5 w-3.5" id="corner-stool" />
+            Corner Presence
+          </span>
+        </div>
+        <div className="mehran-preview-actions">
+          <button type="button">Active</button>
+          <span>
+            <ThemeIcon className="h-3.5 w-3.5" id="fight-card" />
+            Fight-card: locked
+          </span>
+        </div>
+      </div>
+      <aside className="mehran-preview-corner-panel">
+        <ThemeIcon className="h-8 w-8" id="boxing-glove" />
+        <span>Blue Corner</span>
+        <strong>Threat Quiet</strong>
+      </aside>
     </div>
   );
 }
@@ -1049,6 +1154,180 @@ function ThemeIcon({
           <path d="M7 11.2v4.2c1.4 1.2 3.1 1.8 5 1.8s3.6-.6 5-1.8v-4.2" />
           <path d="M20 9v6" />
           <path d="m12 18.2 1.1 1.8 2.1.5-1.4 1.5.2 2-2-1-2 1 .2-2-1.4-1.5 2.1-.5 1.1-1.8Z" />
+        </svg>
+      );
+    case "boxing-glove":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M8.5 4.2c3.2-1.1 6.7.7 7.6 4 .4 1.4.2 2.8-.4 4l2.1 2.8-4 3.3-2.3-2.8c-1.7.2-3.6-.5-4.8-2-2.4-3-1.7-7.8 1.8-9.3Z" />
+          <path d="M7.8 13.2 5 15.5l3.8 4.6 3.2-2.7M13.2 6.1c-1.4.2-2.4 1-3 2.2M15.7 12.2c-1 .3-2 .3-3-.1" />
+        </svg>
+      );
+    case "mma-glove":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M7 5.8c0-1.1.8-1.9 1.8-1.9.8 0 1.4.4 1.7 1.1.3-.7.9-1.1 1.7-1.1s1.4.4 1.7 1.1c.3-.6.9-1 1.6-1 1 0 1.8.8 1.8 1.9v5.2l1.1 2.1c.8 1.6.2 3.5-1.3 4.4l-3.2 1.9c-1.8 1-4 .5-5.1-1.3L7 14.7V5.8Z" />
+          <path d="M10.5 5v5M13.9 5v5M7 10h10.3M9.2 17l5.4-3.4" />
+        </svg>
+      );
+    case "fight-card":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M5 4.5h14v15H5z" />
+          <path d="M8 8h8M8 12h3M13 12h3M8 16h8" />
+          <path d="m10 10 4 4M14 10l-4 4" />
+        </svg>
+      );
+    case "corner-stool":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M8 9h8l1.2 3H6.8L8 9Z" />
+          <path d="M9 12 7 20M15 12l2 8M12 12v8M7.8 16h8.4" />
+          <path d="M7 5h10" />
+        </svg>
+      );
+    case "blue-corner-marker":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M4 20V4h16" />
+          <path d="M7 17V7h10" />
+          <path d="M10 14v-4h4" />
+          <path d="m15.5 8.5 2-2M18 11h2.5M13 6V3.5" />
+        </svg>
+      );
+    case "guard-shield":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M12 3 5.5 5.6v5.2c0 4 2.6 7.6 6.5 9.2 3.9-1.6 6.5-5.2 6.5-9.2V5.6L12 3Z" />
+          <path d="M8.5 13c1.1-2.2 2.3-3.3 3.5-3.3s2.4 1.1 3.5 3.3" />
+          <path d="M9.2 15.5h5.6" />
+        </svg>
+      );
+    case "focus-heartbeat":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M3 13h3l2-5 4 10 2.3-6H21" />
+          <path d="M12 5.8c1.3-2 4.5-1.8 5.6.4.7 1.5.4 3-.8 4.4" />
+          <path d="M12 5.8C10.7 3.8 7.5 4 6.4 6.2c-.2.4-.3.8-.4 1.2" />
+        </svg>
+      );
+    case "silent-mode":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M5 9v6h4l5 4V5L9 9H5Z" />
+          <path d="m18 9 3 6M21 9l-3 6" />
+        </svg>
+      );
+    case "watchful-eye":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M3 12s3.4-5.8 9-5.8S21 12 21 12s-3.4 5.8-9 5.8S3 12 3 12Z" />
+          <circle cx="12" cy="12" r="2.5" />
+          <path d="M12 3.5v1.2M12 19.3v1.2" />
+        </svg>
+      );
+    case "smoke-fog":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M5 9c2.4-2.2 4.7-2.2 7 0 1.8 1.8 3.8 1.8 6 0" />
+          <path d="M3 14c2.6-2 5.1-2 7.5 0 2 1.7 4.8 1.7 8.5 0" />
+          <path d="M6 18c1.5-.8 3-.8 4.5 0 1.5.8 3 .8 4.5 0" />
+        </svg>
+      );
+    case "icy-spark":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M12 3v18M5.6 6.2l12.8 11.6M18.4 6.2 5.6 17.8M4 12h16" />
+          <path d="m12 3 2 2M12 3l-2 2M12 21l2-2M12 21l-2-2" />
+        </svg>
+      );
+    case "discipline-badge":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M12 3 5 7v6c0 3.6 2.6 6.1 7 8 4.4-1.9 7-4.4 7-8V7l-7-4Z" />
+          <path d="M8.5 12.5h7M10 9.5h4M10 15.5h4" />
+        </svg>
+      );
+    case "strength-mark":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M7 8v8M17 8v8M4 10v4M20 10v4M7 12h10" />
+          <path d="M9.5 6.5c.8-1.5 1.6-2.3 2.5-2.3s1.7.8 2.5 2.3" />
+        </svg>
+      );
+    case "calm-status":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="7.5" />
+          <path d="M7.5 13.5c1.5 1.4 3 2.1 4.5 2.1s3-.7 4.5-2.1" />
+          <path d="M9 10h.01M15 10h.01" />
+        </svg>
+      );
+    case "command-node":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <rect x="8" y="8" width="8" height="8" rx="1.4" />
+          <path d="M12 3v5M12 16v5M3 12h5M16 12h5" />
+          <path d="M6 6l2.2 2.2M18 6l-2.2 2.2M6 18l2.2-2.2M18 18l-2.2-2.2" />
+        </svg>
+      );
+    case "forge-hammer":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M4 20 14.5 9.5" />
+          <path d="m13 4 7 7-2.4 2.4-7-7L13 4Z" />
+          <path d="m10.6 6.4 3-3M17.6 13.4l3-3" />
+          <path d="M3 20h8" />
+        </svg>
+      );
+    case "server-rack":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <rect x="5" y="4" width="14" height="5" rx="1.2" />
+          <rect x="5" y="9.5" width="14" height="5" rx="1.2" />
+          <rect x="5" y="15" width="14" height="5" rx="1.2" />
+          <path d="M8 6.5h.01M8 12h.01M8 17.5h.01M12 6.5h4M12 12h4M12 17.5h4" />
+        </svg>
+      );
+    case "code-brackets":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="m8 7-5 5 5 5M16 7l5 5-5 5" />
+          <path d="m14 4-4 16" />
+        </svg>
+      );
+    case "protocol-lock":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M7.5 10V7.8a4.5 4.5 0 0 1 9 0V10" />
+          <rect x="5" y="10" width="14" height="10" rx="1.8" />
+          <path d="M12 14v2M4 6h2M18 6h2M3 18h2M19 18h2" />
+        </svg>
+      );
+    case "system-core":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3.2" />
+          <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+          <path d="m6.4 6.4 2.1 2.1M15.5 15.5l2.1 2.1M17.6 6.4l-2.1 2.1M8.5 15.5l-2.1 2.1" />
+          <circle cx="12" cy="12" r="7.8" />
+        </svg>
+      );
+    case "war-room-map":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="m4 6 5-2 6 2 5-2v14l-5 2-6-2-5 2V6Z" />
+          <path d="M9 4v14M15 6v14" />
+          <path d="m6.5 14 2.5-2 3 1.5 3.5-4 2 1.5" />
+          <circle cx="15.5" cy="9.5" r="1" />
+        </svg>
+      );
+    case "power-core":
+      return (
+        <svg aria-hidden="true" className={iconClassName} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24">
+          <path d="M12 3v8" />
+          <path d="M8 5.2a8 8 0 1 0 8 0" />
+          <circle cx="12" cy="13" r="2.2" />
         </svg>
       );
     case "protocol-network":

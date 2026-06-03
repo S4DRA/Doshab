@@ -7,15 +7,15 @@ type DashboardErrorProps = {
 
 export default function DashboardError({ error, reset }: DashboardErrorProps) {
   return (
-    <main className="grid min-h-[100dvh] place-items-center bg-[#050705] px-4 pl-18 text-white sm:pl-20">
-      <section className="w-full max-w-lg rounded-2xl border border-white/20 bg-[#111111] p-5">
+    <main className="grid min-h-[100dvh] place-items-center bg-[#050705] px-4 py-8 pb-[calc(var(--dashboard-bottom-nav-height)+1rem)] text-white sm:pb-8 sm:pl-20">
+      <section className="app-panel w-full max-w-lg p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
-          Something stopped loading
+          Something did not load
         </p>
-        <h1 className="mt-3 text-2xl font-bold">Dashboard needs a retry</h1>
+        <h1 className="mt-3 text-2xl font-bold">Try opening the dashboard again</h1>
         <p className="mt-3 text-sm leading-6 text-slate-300">
-          The browser extension error can be ignored, but this page hit a server
-          render problem. Try again, and check server logs if it keeps happening.
+          The page hit a rendering problem before it finished. Retry now; if it
+          keeps happening, the server logs will have the exact cause.
         </p>
         {error.digest ? (
           <p className="mt-3 rounded-xl border border-white/10 bg-black px-3 py-2 text-xs text-slate-400">
@@ -23,11 +23,11 @@ export default function DashboardError({ error, reset }: DashboardErrorProps) {
           </p>
         ) : null}
         <button
-          className="mt-5 h-11 rounded-xl bg-[#FF5F25] px-5 text-sm font-bold text-black transition hover:bg-[#ff7847]"
+          className="app-button-primary mt-5 h-11 rounded-xl px-5 text-sm font-bold transition"
           onClick={reset}
           type="button"
         >
-          Retry
+          Retry dashboard
         </button>
       </section>
     </main>

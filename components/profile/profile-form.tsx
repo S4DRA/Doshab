@@ -83,7 +83,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 Display name
               </span>
               <input
-                className="mt-2 h-11 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+                className="mt-2 h-12 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
                 defaultValue={user.name}
                 maxLength={40}
                 minLength={2}
@@ -98,7 +98,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 Status
               </span>
               <select
-                className="mt-2 h-11 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-sm text-white outline-none transition focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+                className="mt-2 h-12 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
                 defaultValue={user.status}
                 name="status"
                 required
@@ -128,7 +128,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 <label className="block rounded-lg border border-white/10 bg-[#0b1020] px-4 py-3">
                   <span className="text-sm font-semibold text-white">Choose photo</span>
                   <input
-                    className="mt-3 w-full text-sm text-slate-200 file:rounded-lg file:border file:border-white/10 file:bg-[#FF5F25]/20 file:px-3 file:py-2 file:text-slate-100"
+                    className="mt-3 w-full text-base text-slate-200 file:rounded-lg file:border file:border-white/10 file:bg-[#FF5F25]/20 file:px-3 file:py-2 file:text-sm file:text-slate-100 sm:text-sm"
                     accept="image/*"
                     name="profileImage"
                     onChange={handleFileChange}
@@ -167,7 +167,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             </div>
 
             <SubmitButton
-              className="app-button-primary mt-2 h-11 w-full rounded-lg px-5 text-sm font-semibold transition sm:w-max"
+              className="app-button-primary mt-2 h-12 w-full rounded-lg px-5 text-sm font-semibold transition sm:h-11 sm:w-max"
               pendingText="Saving..."
             >
               Save profile

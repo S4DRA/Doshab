@@ -41,18 +41,18 @@ export function FriendRequestList({
                   name={person?.name ?? ""}
                 />
                 {kind === "incoming" ? (
-                  <div className="flex flex-wrap gap-2">
-                    <form action={`/api/friends/requests/${request.id}/accept`} method="post">
+                  <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+                    <form action={`/api/friends/requests/${request.id}/accept`} className="min-w-0 flex-1 sm:flex-none" method="post">
                       <SubmitButton
-                        className="h-10 rounded-lg bg-emerald-500 px-4 text-xs font-semibold text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-400"
+                        className="h-11 w-full rounded-lg bg-emerald-500 px-4 text-xs font-semibold text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-400 sm:h-10"
                         pendingText="Accepting..."
                       >
                         Accept
                       </SubmitButton>
                     </form>
-                    <form action={`/api/friends/requests/${request.id}/reject`} method="post">
+                    <form action={`/api/friends/requests/${request.id}/reject`} className="min-w-0 flex-1 sm:flex-none" method="post">
                       <SubmitButton
-                        className="app-button-secondary h-10 rounded-lg px-4 text-xs font-semibold transition"
+                        className="app-button-secondary h-11 w-full rounded-lg px-4 text-xs font-semibold transition sm:h-10"
                         pendingText="Rejecting..."
                       >
                         Reject

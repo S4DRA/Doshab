@@ -189,7 +189,7 @@ export function RealtimeMessagePanel({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden sm:min-h-[28rem]">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden sm:min-h-[28rem]">
       <div className="shrink-0 space-y-2">
         {!encryptionReady ? (
           <p className="app-card p-3 text-xs leading-5 text-slate-400">
@@ -204,15 +204,15 @@ export function RealtimeMessagePanel({
         ) : null}
       </div>
 
-      <div className="message-feed min-h-0 flex-1 overflow-y-auto overscroll-contain py-3 pr-1 sm:max-h-none">
+      <div className="message-feed min-h-0 flex-1 scroll-pb-24 overflow-y-auto overscroll-contain py-2 pr-1 sm:max-h-none sm:py-3">
         <MessageList messages={displayedMessages} />
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="shrink-0 border-t border-white/10 bg-[#070907]/95 pt-3 backdrop-blur">
+      <div className="shrink-0 border-t border-white/10 bg-[#070907]/95 pb-[max(env(safe-area-inset-bottom),0.25rem)] pt-3 backdrop-blur">
         <form className="flex items-end gap-2 sm:gap-3" onSubmit={sendMessage}>
           <textarea
-            className="h-11 max-h-11 min-h-11 flex-1 resize-none overflow-y-auto rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60 sm:h-auto sm:max-h-36"
+            className="max-h-28 min-h-12 flex-1 resize-none overflow-y-auto rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-11 sm:max-h-36 sm:text-sm"
             disabled={!encryptionReady || !currentUser}
             maxLength={2000}
             onChange={(event) => setDraft(event.target.value)}
@@ -228,8 +228,9 @@ export function RealtimeMessagePanel({
           />
           <button
             aria-label="Send message"
-            className="app-icon-button app-icon-button-primary h-11 w-11 shrink-0 disabled:cursor-not-allowed disabled:opacity-60"
+            className="app-icon-button app-icon-button-primary h-12 w-12 shrink-0 disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:w-11"
             disabled={!encryptionReady || !draft.trim() || !currentUser}
+            title="Send message"
             type="submit"
           >
             <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -239,7 +240,8 @@ export function RealtimeMessagePanel({
           </button>
         </form>
         <div className="mt-2 flex items-center justify-between gap-3 text-[11px] text-slate-500">
-          <span>Enter to send. Shift+Enter for a new line.</span>
+          <span className="hidden sm:inline">Enter to send. Shift+Enter for a new line.</span>
+          <span className="sm:hidden">Encrypted chat</span>
           <span>{draft.length}/2000</span>
         </div>
         {sendError ? <p className="mt-2 text-xs text-amber-200">{sendError}</p> : null}

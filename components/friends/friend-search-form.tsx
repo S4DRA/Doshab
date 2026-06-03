@@ -38,14 +38,14 @@ export function FriendSearchForm({
       <form action="/api/friends/search" className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]" method="get">
         <input name="redirectTo" type="hidden" value={redirectTo} />
         <input
-          className="h-11 rounded-lg border border-white/10 bg-[#050505] px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+          className="h-12 rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
           defaultValue={query}
           name="email"
           placeholder="Search by email"
           type="email"
         />
         <SubmitButton
-          className="app-button-primary h-11 rounded-lg px-5 text-sm font-semibold transition"
+          className="app-button-primary h-12 rounded-lg px-5 text-sm font-semibold transition sm:h-11"
           pendingText="Searching..."
         >
           Search
@@ -70,7 +70,7 @@ export function FriendSearchForm({
               <input name="receiverId" type="hidden" value={result.id} />
               <input name="redirectTo" type="hidden" value={redirectTo} />
               <SubmitButton
-                className="app-button-secondary h-10 rounded-lg px-4 text-sm font-semibold transition"
+                className="app-button-secondary h-11 w-full rounded-lg px-4 text-sm font-semibold transition sm:h-10 sm:w-auto"
                 pendingText="Sending..."
               >
                 Add

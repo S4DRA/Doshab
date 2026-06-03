@@ -36,18 +36,18 @@ export function GroupInvitesList({ invites }: GroupInvitesListProps) {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <form action={`/api/groups/invites/${invite.id}/accept`} method="post">
+              <div className="flex w-full gap-2 sm:w-auto">
+                <form action={`/api/groups/invites/${invite.id}/accept`} className="min-w-0 flex-1 sm:flex-none" method="post">
                   <SubmitButton
-                    className="h-9 rounded-lg bg-emerald-500/20 px-3 text-xs text-emerald-100 hover:bg-emerald-500/30"
+                    className="h-11 w-full rounded-lg bg-emerald-500/20 px-3 text-xs text-emerald-100 hover:bg-emerald-500/30 sm:h-9"
                     pendingText="Accepting..."
                   >
                     Accept
                   </SubmitButton>
                 </form>
-                <form action={`/api/groups/invites/${invite.id}/reject`} method="post">
+                <form action={`/api/groups/invites/${invite.id}/reject`} className="min-w-0 flex-1 sm:flex-none" method="post">
                   <SubmitButton
-                    className="app-button-secondary h-9 rounded-lg px-3 text-xs transition"
+                    className="app-button-secondary h-11 w-full rounded-lg px-3 text-xs transition sm:h-9"
                     pendingText="Rejecting..."
                   >
                     Reject
@@ -59,7 +59,7 @@ export function GroupInvitesList({ invites }: GroupInvitesListProps) {
         </div>
       ) : (
         <p className="mt-3 text-sm leading-6 text-slate-500">
-          Space invites from friends will appear here.
+          No pending invites. New space invitations will appear here with accept and reject actions.
         </p>
       )}
     </section>

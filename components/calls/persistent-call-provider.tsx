@@ -185,9 +185,10 @@ function ActiveCallDock({
         <div className="flex shrink-0 items-center gap-2">
           <Link
             aria-label="Open call page"
-            className="app-icon-button h-8 w-8"
+            className="app-icon-button h-10 w-10"
             href={getCallHref(session)}
             onClick={onUnpop}
+            title="Open call page"
           >
             <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M15 3h6v6" />
@@ -197,8 +198,9 @@ function ActiveCallDock({
           </Link>
           <button
             aria-label={expanded ? "Minimize call" : "Expand call"}
-            className="app-icon-button h-8 w-8"
+            className="app-icon-button h-10 w-10"
             onClick={onToggle}
+            title={expanded ? "Minimize call" : "Expand call"}
             type="button"
           >
             <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -206,11 +208,11 @@ function ActiveCallDock({
             </svg>
           </button>
           <button
-            className="h-8 rounded-lg border border-red-400/40 px-3 text-xs font-semibold text-red-100 transition hover:bg-red-500/20"
+            className="app-button-danger h-11 rounded-lg px-3 text-xs font-semibold transition sm:h-10"
             onClick={onEnd}
             type="button"
           >
-            End
+            End call
           </button>
         </div>
       </div>
@@ -262,7 +264,7 @@ export function PersistentCallSurface({
             This call is popped out. You can keep moving around the dashboard.
           </p>
           <button
-            className="app-button-primary mt-6 h-10 rounded-lg px-4 text-sm font-semibold transition"
+            className="app-button-primary mt-6 h-11 rounded-lg px-4 text-sm font-semibold transition"
             onClick={() => setPoppedOut(false)}
             type="button"
           >
@@ -287,18 +289,18 @@ export function PersistentCallSurface({
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
           <button
-            className="app-button-secondary h-8 rounded-lg px-3 text-xs font-semibold transition"
+            className="app-button-secondary h-11 rounded-lg px-3 text-xs font-semibold transition sm:h-10"
             onClick={() => setPoppedOut(true)}
             type="button"
           >
             Pop out
           </button>
           <button
-            className="h-8 rounded-lg border border-red-400/40 px-3 text-xs font-semibold text-red-100 transition hover:bg-red-500/20"
+            className="app-button-danger h-11 rounded-lg px-3 text-xs font-semibold transition sm:h-10"
             onClick={endCall}
             type="button"
           >
-            End
+            End call
           </button>
         </div>
       </div>
@@ -355,7 +357,7 @@ function PersistentCallParticipants({
   if (!tracks.length) {
     return (
       <div className="grid h-full min-h-0 place-items-center rounded-lg border border-dashed border-white/10 bg-white/[0.03] p-6 text-center text-sm text-slate-400">
-        Waiting for participants.
+        Waiting for participants. The room will update as soon as someone joins.
       </div>
     );
   }
@@ -438,16 +440,18 @@ function FocusedCallCard({
         <div className="flex shrink-0 items-center gap-2">
           <button
             aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen card"}
-            className="app-icon-button h-8 w-8"
+            className="app-icon-button h-10 w-10"
             onClick={toggleFullscreen}
+            title={isFullscreen ? "Exit fullscreen" : "Open fullscreen"}
             type="button"
           >
             <FullscreenIcon active={isFullscreen} />
           </button>
           <button
             aria-label="Close large card"
-            className="app-icon-button h-8 w-8"
+            className="app-icon-button h-10 w-10"
             onClick={onClose}
+            title="Close large card"
             type="button"
           >
             <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -479,7 +483,7 @@ function SmallCallCard({
     <div
       aria-label={`${isShare ? "Screen share" : "Participant"} card for ${getParticipantLabel(track)}`}
       aria-pressed={active}
-      className={`group relative h-[clamp(20rem,26vw,24rem)] w-[clamp(30rem,40vw,36rem)] cursor-pointer overflow-hidden rounded-lg border bg-[#0b1020] transition hover:border-[#FF5F25]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F25]/50 ${
+      className={`group relative h-[clamp(13rem,48vw,24rem)] w-full max-w-[36rem] cursor-pointer overflow-hidden rounded-lg border bg-[#0b1020] transition hover:border-[#FF5F25]/70 focus:outline-none focus:ring-2 focus:ring-[#FF5F25]/50 sm:h-[clamp(20rem,26vw,24rem)] sm:w-[clamp(30rem,40vw,36rem)] ${
         active ? "border-[#FF5F25]/70" : "border-white/10"
       }`}
       onClick={onSelect}

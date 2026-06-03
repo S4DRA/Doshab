@@ -177,7 +177,7 @@ export function ProfileSettingsPanel() {
           />
         </label>
 
-        <div className="app-row flex items-center justify-between gap-4 px-4 py-4">
+        <div className="app-row flex flex-col items-stretch gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <span className="min-w-0">
             <span className="block text-sm font-semibold text-white">Themes</span>
             <span className="block text-sm leading-5 text-slate-400">
@@ -185,7 +185,7 @@ export function ProfileSettingsPanel() {
             </span>
           </span>
           <Link
-            className="app-button-primary inline-flex h-10 shrink-0 items-center rounded-lg px-4 text-sm font-bold transition"
+            className="app-button-primary inline-flex h-11 shrink-0 items-center justify-center rounded-lg px-4 text-sm font-bold transition sm:h-10"
             href="/dashboard/profile/themes"
           >
             Theme settings
@@ -208,7 +208,7 @@ export function ProfileSettingsPanel() {
                 </span>
                 <input
                   autoComplete="new-password"
-                  className="mt-2 h-11 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+                  className="mt-2 h-12 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
                   minLength={8}
                   name="password"
                   required
@@ -221,7 +221,7 @@ export function ProfileSettingsPanel() {
                 </span>
                 <input
                   autoComplete="new-password"
-                  className="mt-2 h-11 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+                  className="mt-2 h-12 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
                   minLength={8}
                   name="confirmPassword"
                   required
@@ -229,7 +229,7 @@ export function ProfileSettingsPanel() {
                 />
               </label>
               <button
-                className="app-button-primary h-11 w-full rounded-lg px-4 text-sm font-bold transition sm:w-auto"
+                className="app-button-primary h-12 w-full rounded-lg px-4 text-sm font-bold transition sm:h-11 sm:w-auto"
                 type="submit"
               >
                 Change password
@@ -237,7 +237,7 @@ export function ProfileSettingsPanel() {
             </form>
             <form action="/api/auth/logout" method="post">
               <button
-                className="app-button-secondary h-11 w-full rounded-lg px-4 text-sm font-bold transition sm:w-auto"
+                className="app-button-secondary h-12 w-full rounded-lg px-4 text-sm font-bold transition sm:h-11 sm:w-auto"
                 type="submit"
               >
                 Log out

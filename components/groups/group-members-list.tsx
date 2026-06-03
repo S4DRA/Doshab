@@ -57,7 +57,8 @@ export function GroupMembersList({ currentUserId, members }: GroupMembersListPro
                       <input name="friendId" type="hidden" value={member.user.id} />
                       <button
                         aria-label={`Message ${member.user.name || member.user.email}`}
-                        className="app-icon-button h-8 w-8"
+                        className="app-icon-button h-10 w-10 sm:h-8 sm:w-8"
+                        title={`Message ${member.user.name || member.user.email}`}
                         type="submit"
                       >
                         <svg aria-hidden="true" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -69,7 +70,8 @@ export function GroupMembersList({ currentUserId, members }: GroupMembersListPro
                       <input name="friendId" type="hidden" value={member.user.id} />
                       <button
                         aria-label={`Call ${member.user.name || member.user.email}`}
-                        className="app-icon-button app-icon-button-primary h-8 w-8"
+                        className="app-icon-button app-icon-button-primary h-10 w-10 sm:h-8 sm:w-8"
+                        title={`Call ${member.user.name || member.user.email}`}
                         type="submit"
                       >
                         <svg aria-hidden="true" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -85,7 +87,7 @@ export function GroupMembersList({ currentUserId, members }: GroupMembersListPro
         </div>
       ) : (
         <p className="mt-3 text-sm leading-6 text-slate-500">
-          Members will appear here as people join this space.
+          No members yet. Invited friends will appear here after they join.
         </p>
       )}
     </section>

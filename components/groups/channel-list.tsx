@@ -84,6 +84,7 @@ function ChannelSection({
               key={channel.id}
             >
               <Link
+                aria-current={selectedChannelId === channel.id ? "page" : undefined}
                 className="flex min-w-0 flex-1 items-center justify-between gap-2"
                 href={`/dashboard/groups/${groupId}/channels/${channel.id}`}
               >
@@ -96,7 +97,7 @@ function ChannelSection({
                   </span>
                 </span>
                 <span className="hidden rounded-md bg-white/7 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 min-[1180px]:inline-flex">
-                  {channel.type}
+                  {selectedChannelId === channel.id ? "Selected" : channel.type}
                 </span>
               </Link>
               {canManageChannels && showManagementActions ? (
@@ -137,7 +138,7 @@ function ChannelSection({
         </div>
       ) : (
         <p className="rounded-xl border border-dashed border-white/10 bg-white/[0.03] px-3 py-2 text-xs leading-5 text-slate-400">
-          No {label.toLowerCase()} yet.
+          No {label.toLowerCase()} yet. Add one from space settings when you are ready.
         </p>
       )}
     </section>

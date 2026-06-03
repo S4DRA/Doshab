@@ -12,7 +12,7 @@ export function CreateGroupForm({ compact = false }: CreateGroupFormProps) {
           Space name
         </span>
         <input
-          className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#050505] px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+          className="mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
           maxLength={80}
           name="name"
           placeholder="Weekend crew"
@@ -26,7 +26,7 @@ export function CreateGroupForm({ compact = false }: CreateGroupFormProps) {
             Description
           </span>
           <textarea
-            className="mt-2 min-h-20 w-full resize-none rounded-xl border border-white/10 bg-[#050505] px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+            className="mt-2 min-h-24 w-full resize-none rounded-xl border border-white/10 bg-[#050505] px-3 py-2 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:min-h-20 sm:text-sm"
             maxLength={180}
             name="description"
             placeholder="Optional"
@@ -34,7 +34,7 @@ export function CreateGroupForm({ compact = false }: CreateGroupFormProps) {
         </label>
       ) : null}
       <SubmitButton
-        className="h-11 w-full rounded-xl bg-[#FF5F25] text-sm font-bold text-black transition hover:bg-[#ff7847]"
+        className="h-12 w-full rounded-xl bg-[#FF5F25] text-sm font-bold text-black transition hover:bg-[#ff7847] sm:h-11"
         pendingText="Creating..."
       >
         Create space

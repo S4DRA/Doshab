@@ -115,9 +115,9 @@ export function DashboardShell({
               <h1 className="mt-2 text-lg font-semibold text-white">Your spaces</h1>
             </div>
             <div className="flex-1 overflow-y-auto px-1 py-3">
-              {groups.length ? (
+            {groups.length ? (
                 <p className="text-sm leading-6 text-slate-300">
-                  Select a space from the sidebar or create a new private space.
+                  Pick a space from navigation or create a new private space.
                 </p>
               ) : (
                 <p className="text-sm leading-6 text-slate-300">
@@ -133,7 +133,7 @@ export function DashboardShell({
       </aside>
 
       <section className="flex min-w-0 flex-1 flex-col overflow-hidden sm:overflow-visible min-[1180px]:overflow-hidden">
-        <header className="flex min-h-14 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 py-2 pl-3 pr-24 backdrop-blur sm:px-6 min-[1180px]:min-h-16 min-[1180px]:px-7">
+        <header className="flex min-h-14 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 backdrop-blur sm:px-6 min-[1180px]:min-h-16 min-[1180px]:px-7">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#FF5F25] min-[1180px]:text-[11px]">
               {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : activeSection === "messages" ? "Messages" : "Dashboard"}
@@ -159,7 +159,8 @@ export function DashboardShell({
               <input name="friendId" type="hidden" value={selectedMessageThread.friend.id} />
               <button
                 aria-label={`Call ${selectedMessageThread.name}`}
-                className="app-icon-button app-icon-button-primary h-9 w-9 min-[1180px]:h-8 min-[1180px]:w-8"
+                className="app-icon-button app-icon-button-primary h-11 w-11 min-[1180px]:h-8 min-[1180px]:w-8"
+                title={`Call ${selectedMessageThread.name}`}
                 type="submit"
               >
                 <PhoneIcon className="h-4 w-4" />
@@ -253,7 +254,8 @@ function MessageThreadSidebar({
                     <input name="friendId" type="hidden" value={thread.friend.id} />
                     <button
                       aria-label={`Call ${thread.name}`}
-                    className="app-icon-button app-icon-button-primary h-7 w-7"
+                    className="app-icon-button app-icon-button-primary h-10 w-10 min-[1180px]:h-7 min-[1180px]:w-7"
+                      title={`Call ${thread.name}`}
                       type="submit"
                     >
                       <PhoneIcon className="h-3.5 w-3.5" />
@@ -267,7 +269,7 @@ function MessageThreadSidebar({
           <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.03] p-4">
             <p className="text-sm font-semibold text-white">No private chats yet</p>
             <p className="mt-2 text-xs leading-5 text-slate-400">
-              Use the plus button in the sidebar and choose a friend to start a PM.
+              Use Create, choose a friend, and Doshab will open a private chat.
             </p>
           </div>
         )}
@@ -319,11 +321,12 @@ function MessagesHome({ threads }: { threads: MessageThread[] }) {
                 {thread.friend ? (
                   <form action="/api/friend-calls/start" method="post">
                     <input name="friendId" type="hidden" value={thread.friend.id} />
-                    <button
-                      aria-label={`Call ${thread.name}`}
-                      className="app-icon-button app-icon-button-primary h-10 w-10"
-                      type="submit"
-                    >
+                <button
+                  aria-label={`Call ${thread.name}`}
+                  className="app-icon-button app-icon-button-primary h-10 w-10"
+                  title={`Call ${thread.name}`}
+                  type="submit"
+                >
                       <PhoneIcon className="h-4 w-4" />
                     </button>
                   </form>
@@ -332,7 +335,7 @@ function MessagesHome({ threads }: { threads: MessageThread[] }) {
             ))
           ) : (
             <div className="app-card p-5 text-sm leading-6 text-slate-300">
-              No PMs yet. Click the plus button in the left sidebar and choose a friend.
+              No private chats yet. Use Create and choose a friend to start one.
             </div>
           )}
         </section>
@@ -463,7 +466,7 @@ function ChannelsHome({
                       ))
                     ) : (
                       <p className="rounded-lg border border-dashed border-white/10 px-3 py-4 text-sm text-slate-400">
-                        No channels in this space yet.
+                        No channels yet. Create one in space settings to start talking.
                       </p>
                     )}
                   </div>
@@ -527,7 +530,7 @@ function ChannelMain({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col px-3 py-3 sm:px-4 sm:py-4 min-[1180px]:h-full min-[1180px]:px-7 min-[1180px]:py-5">
+      <div className="flex min-h-0 flex-1 flex-col px-2.5 py-2.5 sm:px-4 sm:py-4 min-[1180px]:h-full min-[1180px]:px-7 min-[1180px]:py-5">
       <section className="app-surface shrink-0 rounded-xl p-3 sm:p-4 min-[1180px]:rounded-lg min-[1180px]:p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
@@ -548,7 +551,7 @@ function ChannelMain({
           ) : null}
         </div>
       </section>
-      <div className="mt-4 min-h-0 flex-1 sm:min-h-[28rem] min-[1180px]:min-h-0">
+      <div className="mt-3 min-h-0 flex-1 sm:mt-4 sm:min-h-[28rem] min-[1180px]:min-h-0">
         <RealtimeMessagePanel
           channelId={channel.id}
           channelName={channel.name}
@@ -675,7 +678,8 @@ function FriendStatusPanel({
                 <input name="friendId" type="hidden" value={friend.id} />
                 <button
                   aria-label={`Call ${friend.name || friend.email}`}
-                  className="app-icon-button app-icon-button-primary h-9 w-9"
+                  className="app-icon-button app-icon-button-primary h-11 w-11 sm:h-9 sm:w-9"
+                  title={`Call ${friend.name || friend.email}`}
                   type="submit"
                 >
                   <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -688,7 +692,7 @@ function FriendStatusPanel({
         </div>
       ) : (
         <p className="mt-5 text-sm leading-6 text-slate-400">
-          Friends will appear here after requests are accepted.
+          No friends online yet. Accepted friends will appear here with their status.
         </p>
       )}
     </section>
@@ -766,7 +770,7 @@ function GroupMain({
             ))
           ) : (
             <div className="app-card p-5 text-sm text-slate-300">
-              No channels yet.
+              No channels yet. Create one to start talking in this space.
             </div>
           )}
         </section>
@@ -859,7 +863,7 @@ function GroupMain({
               </div>
               <form action={`/api/groups/${group.id}/delete`} method="post">
                 <button
-                  className="app-button-secondary h-10 rounded-lg px-4 text-sm font-semibold transition"
+                  className="app-button-danger h-11 rounded-lg px-4 text-sm font-semibold transition sm:h-10"
                   type="submit"
                 >
                   Delete space

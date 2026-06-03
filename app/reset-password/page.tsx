@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { AuthCard } from "@/components/layout/auth-card";
 import { AuthField } from "@/components/ui/auth-field";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type ResetStatus = "checking" | "ready" | "error";
@@ -150,13 +151,14 @@ export default function ResetPasswordPage() {
           autoComplete="new-password"
           minLength={8}
         />
-        <button
+        <SubmitButton
           className="app-button-primary mt-2 h-12 w-full rounded-lg text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60"
           disabled={status !== "ready"}
-          type="submit"
+          pendingText="Updating password..."
+          title={status !== "ready" ? "Wait for the reset link to finish verifying" : "Update password"}
         >
           Update password
-        </button>
+        </SubmitButton>
       </form>
     </AuthCard>
   );

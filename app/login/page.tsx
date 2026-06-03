@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { AuthCard } from "@/components/layout/auth-card";
 import { AuthField } from "@/components/ui/auth-field";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { getCurrentUser } from "@/lib/auth";
 
 type LoginPageProps = {
@@ -47,12 +48,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Forgot password?
           </a>
         </div>
-        <button
+        <SubmitButton
           className="app-button-primary mt-2 h-12 w-full rounded-lg text-sm font-bold transition"
-          type="submit"
+          pendingText="Logging in..."
         >
           Log in
-        </button>
+        </SubmitButton>
       </form>
     </AuthCard>
   );

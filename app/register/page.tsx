@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { AuthCard } from "@/components/layout/auth-card";
 import { AuthField } from "@/components/ui/auth-field";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { getCurrentUser } from "@/lib/auth";
 
 type RegisterPageProps = {
@@ -38,12 +39,12 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
           autoComplete="new-password"
           minLength={8}
         />
-        <button
+        <SubmitButton
           className="app-button-primary mt-2 h-12 w-full rounded-lg text-sm font-bold transition"
-          type="submit"
+          pendingText="Creating account..."
         >
           Create account
-        </button>
+        </SubmitButton>
       </form>
     </AuthCard>
   );

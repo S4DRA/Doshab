@@ -47,6 +47,14 @@ export type DoshabThemeIconId =
   | "blueprint"
   | "system-status"
   | "protocol-network"
+  | "command-node"
+  | "forge-hammer"
+  | "server-rack"
+  | "code-brackets"
+  | "protocol-lock"
+  | "system-core"
+  | "war-room-map"
+  | "power-core"
   | "credit-coin"
   | "wallet"
   | "coin-stack"
@@ -75,7 +83,21 @@ export type DoshabThemeIconId =
   | "power-up-dumbbell"
   | "speech-bubble"
   | "chaos-spark"
-  | "campus-legend-badge";
+  | "campus-legend-badge"
+  | "boxing-glove"
+  | "mma-glove"
+  | "fight-card"
+  | "corner-stool"
+  | "blue-corner-marker"
+  | "guard-shield"
+  | "focus-heartbeat"
+  | "silent-mode"
+  | "watchful-eye"
+  | "smoke-fog"
+  | "icy-spark"
+  | "discipline-badge"
+  | "strength-mark"
+  | "calm-status";
 
 export type DoshabThemeConfig = {
   id: DoshabThemeId;
@@ -358,45 +380,49 @@ export const DOSHAB_THEMES: DoshabThemeConfig[] = [
     name: "Hamp: Root Forge",
     shortName: "Forge",
     description:
-      "A premium founder/developer theme with ancient metal, vintage technology, AI system-builder identity, and lone-warrior command energy.",
+      "A dark founder-warrior command center for system architecture, AI agents, forged infrastructure, and Rootonset creator mode.",
     personality:
-      "Founder mode, system architect, lone builder, ancient-tech craftsman, and calm premium dashboard authority.",
+      "Lone founder, software warlord, armored system architect, ancient-tech blacksmith, and silent final-boss builder.",
     colors: {
-      background: "#030407",
-      surface: "#0a0c10",
-      card: "#151820",
-      accent: "#b88a52",
-      accentSecondary: "#33d7ff",
-      border: "rgba(184, 138, 82, 0.36)",
-      text: "#f0e7d7",
+      background: "#010202",
+      surface: "#070808",
+      card: "#111314",
+      accent: "#9a6a3a",
+      accentSecondary: "#4f7b5f",
+      border: "rgba(154, 106, 58, 0.38)",
+      text: "#d8d1c3",
     },
     backgroundStyle:
-      "radial-gradient(circle at 16% 12%, rgba(184, 138, 82, 0.2), transparent 34%), radial-gradient(circle at 82% 74%, rgba(54, 23, 86, 0.42), transparent 40%), radial-gradient(circle at 78% 22%, rgba(51, 215, 255, 0.12), transparent 28%), repeating-linear-gradient(110deg, rgba(184, 138, 82, 0.07) 0 1px, transparent 1px 18px), linear-gradient(180deg, #101217, #030407)",
+      "radial-gradient(circle at 16% 12%, rgba(154, 106, 58, 0.16), transparent 34%), radial-gradient(circle at 84% 74%, rgba(79, 123, 95, 0.08), transparent 38%), repeating-linear-gradient(110deg, rgba(120, 112, 100, 0.045) 0 1px, transparent 1px 20px), linear-gradient(180deg, #090a0a, #010202)",
     cardStyle:
-      "radial-gradient(circle at 14% 0%, rgba(51, 215, 255, 0.14), transparent 34%), radial-gradient(circle at 86% 8%, rgba(91, 50, 155, 0.2), transparent 34%), linear-gradient(180deg, #1d2029, #080a0d)",
-    buttonStyle: "#b88a52",
+      "linear-gradient(135deg, rgba(154, 106, 58, 0.09), transparent 34%), linear-gradient(180deg, #151719, #050606)",
+    buttonStyle: "linear-gradient(180deg, #1b1c1c, #0a0b0b)",
     accentStyle:
-      "0 0 0 1px rgba(184, 138, 82, 0.46), 0 20px 62px -38px rgba(51, 215, 255, 0.72)",
+      "0 0 0 1px rgba(154, 106, 58, 0.46), 0 22px 64px -42px rgba(0, 0, 0, 0.9)",
     decorativeClassName: "theme-preview-hamp-root-forge",
     themeIcons: [
-      { id: "root-system", label: "Root system" },
-      { id: "ai-agent-network", label: "AI agent network" },
-      { id: "forge-build", label: "Forge/build" },
-      { id: "shield-security", label: "Shield/security" },
       { id: "terminal", label: "Terminal" },
+      { id: "command-node", label: "Command node" },
+      { id: "root-system", label: "Root network" },
+      { id: "forge-hammer", label: "Forge hammer" },
+      { id: "shield-security", label: "Shield" },
       { id: "database", label: "Database" },
-      { id: "automation", label: "Automation" },
       { id: "deployment", label: "Deployment" },
+      { id: "server-rack", label: "Server rack" },
+      { id: "code-brackets", label: "Code brackets" },
+      { id: "ai-agent-network", label: "AI network" },
       { id: "blueprint", label: "Blueprint" },
-      { id: "system-status", label: "System status" },
-      { id: "protocol-network", label: "Protocol/network" },
+      { id: "protocol-lock", label: "Protocol lock" },
+      { id: "system-core", label: "System core" },
+      { id: "war-room-map", label: "War-room map" },
+      { id: "power-core", label: "Power core" },
     ],
     previewDetails: [
       "Founder Mode",
       "Root System: Online",
       "Forge Status: Active",
-      "AI Agent Ready",
-      "Path Confirmed",
+      "AI Agent Network: Ready",
+      "Command Core Stable",
       "Powered by Rootonset",
     ],
   },
@@ -409,22 +435,39 @@ export const DOSHAB_THEMES: DoshabThemeConfig[] = [
     personality:
       "Silent fighter in the corner, cold blue confidence, quiet danger, MMA focus, and calm intimidating control.",
     colors: {
-      background: "#020711",
-      surface: "#07111d",
-      card: "#101927",
-      accent: "#65caff",
-      accentSecondary: "#b9ecff",
-      border: "rgba(101, 202, 255, 0.34)",
-      text: "#e9f7ff",
+      background: "#010713",
+      surface: "#06111d",
+      card: "#0e1a29",
+      accent: "#7fd7ff",
+      accentSecondary: "#d7f5ff",
+      border: "rgba(127, 215, 255, 0.38)",
+      text: "#ecfbff",
     },
     backgroundStyle:
-      "radial-gradient(circle at 12% 18%, rgba(101, 202, 255, 0.2), transparent 34%), radial-gradient(circle at 88% 72%, rgba(185, 236, 255, 0.1), transparent 36%), linear-gradient(110deg, transparent 0 46%, rgba(101, 202, 255, 0.1) 47%, transparent 49%), linear-gradient(180deg, #07111d, #020711)",
+      "radial-gradient(circle at 14% 16%, rgba(127, 215, 255, 0.2), transparent 34%), radial-gradient(circle at 86% 70%, rgba(215, 245, 255, 0.1), transparent 36%), radial-gradient(circle at 74% 18%, rgba(112, 48, 52, 0.12), transparent 24%), linear-gradient(110deg, transparent 0 46%, rgba(127, 215, 255, 0.1) 47%, transparent 49%), linear-gradient(180deg, #06111d, #010713)",
     cardStyle:
-      "radial-gradient(circle at 12% 0%, rgba(101, 202, 255, 0.16), transparent 38%), linear-gradient(180deg, #101927, #07111d)",
-    buttonStyle: "linear-gradient(135deg, #65caff, #b9ecff)",
+      "radial-gradient(circle at 12% 0%, rgba(127, 215, 255, 0.17), transparent 38%), linear-gradient(180deg, #0e1a29, #06111d)",
+    buttonStyle: "linear-gradient(135deg, #7fd7ff, #d7f5ff)",
     accentStyle:
-      "0 0 0 1px rgba(101, 202, 255, 0.42), 0 20px 58px -38px rgba(101, 202, 255, 0.72)",
+      "0 0 0 1px rgba(127, 215, 255, 0.46), 0 20px 58px -38px rgba(127, 215, 255, 0.76)",
     decorativeClassName: "theme-preview-mehran-blue-corner",
+    themeIcons: [
+      { id: "boxing-glove", label: "Boxing glove" },
+      { id: "mma-glove", label: "MMA glove" },
+      { id: "fight-card", label: "Fight card" },
+      { id: "corner-stool", label: "Corner stool" },
+      { id: "blue-corner-marker", label: "Blue corner marker" },
+      { id: "guard-shield", label: "Guard shield" },
+      { id: "focus-heartbeat", label: "Heartbeat / focus" },
+      { id: "silent-mode", label: "Silent mode" },
+      { id: "watchful-eye", label: "Watchful presence" },
+      { id: "smoke-fog", label: "Smoke / fog" },
+      { id: "icy-spark", label: "Icy spark" },
+      { id: "alert-triangle", label: "Warning triangle" },
+      { id: "discipline-badge", label: "Discipline badge" },
+      { id: "strength-mark", label: "Strength icon" },
+      { id: "calm-status", label: "Calm status" },
+    ],
     previewDetails: [
       "Silent Mode",
       "Blue Corner",

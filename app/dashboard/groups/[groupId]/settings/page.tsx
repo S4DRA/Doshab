@@ -182,7 +182,7 @@ function GroupSettingsPanel({
                 Space name
               </span>
               <input
-                className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#050505] px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+                className="mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
                 defaultValue={group.name}
                 disabled={!canManage}
                 maxLength={80}
@@ -198,7 +198,7 @@ function GroupSettingsPanel({
                 Picture URL
               </span>
               <input
-                className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-[#050505] px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+                className="mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
                 defaultValue={group.image ?? ""}
                 disabled={!canManage}
                 name="image"
@@ -212,7 +212,7 @@ function GroupSettingsPanel({
                 Description
               </span>
               <textarea
-                className="mt-2 min-h-24 w-full resize-none rounded-xl border border-white/10 bg-[#050505] px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20"
+                className="mt-2 min-h-28 w-full resize-none rounded-xl border border-white/10 bg-[#050505] px-3 py-2 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:min-h-24 sm:text-sm"
                 defaultValue={group.description ?? ""}
                 disabled={!canManage}
                 maxLength={180}
@@ -222,7 +222,7 @@ function GroupSettingsPanel({
             </label>
 
             <button
-              className="h-11 rounded-xl bg-[#FF5F25] px-5 text-sm font-bold text-black transition hover:bg-[#ff7847] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500"
+              className="h-12 rounded-xl bg-[#FF5F25] px-5 text-sm font-bold text-black transition hover:bg-[#ff7847] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500 sm:h-11"
               disabled={!canManage}
               type="submit"
             >
@@ -306,7 +306,7 @@ function GroupSettingsPanel({
             {isOwner ? (
               <form action={`/api/groups/${group.id}/delete`} className="mt-4" method="post">
                 <button
-                  className="app-button-secondary h-10 rounded-lg px-4 text-sm font-semibold transition"
+                  className="app-button-danger h-11 w-full rounded-lg px-4 text-sm font-semibold transition sm:h-10 sm:w-auto"
                   type="submit"
                 >
                   Delete space
@@ -315,7 +315,7 @@ function GroupSettingsPanel({
             ) : (
               <form action={`/api/groups/${group.id}/leave`} className="mt-4" method="post">
                 <button
-                  className="app-button-secondary h-10 rounded-lg px-4 text-sm font-semibold transition"
+                  className="app-button-danger h-11 w-full rounded-lg px-4 text-sm font-semibold transition sm:h-10 sm:w-auto"
                   type="submit"
                 >
                   Leave space
