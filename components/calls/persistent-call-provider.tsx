@@ -2,6 +2,7 @@
 
 import {
   ControlBar,
+  DisconnectButton,
   LiveKitRoom,
   ParticipantTile,
   RoomAudioRenderer,
@@ -9,7 +10,7 @@ import {
 } from "@livekit/components-react";
 import { Track } from "livekit-client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import {
   createContext,
@@ -22,6 +23,9 @@ import {
 } from "react";
 
 import { cn } from "@/lib/utils";
+
+const endedCallIdsStorageKey = "palaver:ended-call-ids";
+const maxRememberedEndedCalls = 50;
 
 type PersistentCallSession = {
   href?: string;
@@ -39,6 +43,7 @@ type PersistentCallSession = {
 type PersistentCallContextValue = {
   activeCall: PersistentCallSession | null;
   endCall: () => void;
+  endedCallIds: ReadonlySet<string>;
   poppedOut: boolean;
   setPoppedOut: (poppedOut: boolean) => void;
   startCall: (session: PersistentCallSession) => void;
@@ -46,11 +51,55 @@ type PersistentCallContextValue = {
 
 const PersistentCallContext = createContext<PersistentCallContextValue | null>(null);
 
+function readRememberedEndedCallIds() {
+  if (typeof window === "undefined") {
+    return new Set<string>();
+  }
+
+  try {
+    const value = window.sessionStorage.getItem(endedCallIdsStorageKey);
+    const parsed = value ? JSON.parse(value) : [];
+
+    if (!Array.isArray(parsed)) {
+      return new Set<string>();
+    }
+
+    return new Set(parsed.filter((item): item is string => typeof item === "string"));
+  } catch {
+    return new Set<string>();
+  }
+}
+
+function rememberEndedCallIds(callIds: ReadonlySet<string>) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    const remembered = Array.from(callIds).slice(-maxRememberedEndedCalls);
+    window.sessionStorage.setItem(endedCallIdsStorageKey, JSON.stringify(remembered));
+  } catch {
+    // A storage failure should not make leaving a call fail.
+  }
+}
+
 export function PersistentCallProvider({ children }: { children: React.ReactNode }) {
   const [activeCall, setActiveCall] = useState<PersistentCallSession | null>(null);
+  const [endedCallIds, setEndedCallIds] = useState<ReadonlySet<string>>(readRememberedEndedCallIds);
   const [expanded, setExpanded] = useState(true);
   const [poppedOut, setPoppedOut] = useState(false);
+  const activeCallRef = useRef<PersistentCallSession | null>(null);
+  const endedCallIdsRef = useRef<ReadonlySet<string>>(endedCallIds);
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    activeCallRef.current = activeCall;
+  }, [activeCall]);
+
+  useEffect(() => {
+    endedCallIdsRef.current = endedCallIds;
+  }, [endedCallIds]);
 
   const postEnd = useCallback((session: PersistentCallSession | null) => {
     if (session?.endUrl) {
@@ -58,27 +107,64 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
     }
   }, []);
 
+  const markCallEnded = useCallback((sessionId: string) => {
+    if (endedCallIdsRef.current.has(sessionId)) {
+      return;
+    }
+
+    const next = new Set(endedCallIdsRef.current);
+    next.add(sessionId);
+    endedCallIdsRef.current = next;
+    rememberEndedCallIds(next);
+    setEndedCallIds(next);
+  }, []);
+
+  const leaveCallPage = useCallback((session: PersistentCallSession | null) => {
+    if (session?.kind === "friend" && pathname === getCallHref(session)) {
+      router.replace("/dashboard/messages");
+    }
+  }, [pathname, router]);
+
   const endCall = useCallback(() => {
-    setActiveCall((current) => {
+    const current = activeCallRef.current;
+
+    if (current) {
       postEnd(current);
-      return null;
-    });
+      markCallEnded(current.id);
+    }
+
+    activeCallRef.current = null;
+    setActiveCall(null);
     setPoppedOut(false);
-  }, [postEnd]);
+    leaveCallPage(current);
+  }, [leaveCallPage, markCallEnded, postEnd]);
 
   const startCall = useCallback(
     (session: PersistentCallSession) => {
-      setActiveCall((current) => {
-        if (current && current.id !== session.id) {
-          postEnd(current);
+      const current = activeCallRef.current;
+
+      if (current && current.id !== session.id) {
+        postEnd(current);
+        markCallEnded(current.id);
+      }
+
+      setEndedCallIds((currentEndedCallIds) => {
+        if (!currentEndedCallIds.has(session.id)) {
+          return currentEndedCallIds;
         }
 
-        return session;
+        const next = new Set(currentEndedCallIds);
+        next.delete(session.id);
+        endedCallIdsRef.current = next;
+        rememberEndedCallIds(next);
+        return next;
       });
+      activeCallRef.current = session;
+      setActiveCall(session);
       setExpanded(true);
       setPoppedOut(false);
     },
-    [postEnd],
+    [markCallEnded, postEnd],
   );
 
   useEffect(() => {
@@ -98,22 +184,28 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
       } | null;
 
       if (data?.status === "DECLINED" || data?.status === "MISSED" || data?.status === "ENDED") {
+        markCallEnded(activeCall.id);
+        if (activeCallRef.current?.id === activeCall.id) {
+          activeCallRef.current = null;
+        }
         setActiveCall(null);
+        leaveCallPage(activeCall);
       }
     }, 3000);
 
     return () => window.clearInterval(timer);
-  }, [activeCall?.statusUrl]);
+  }, [activeCall, leaveCallPage, markCallEnded]);
 
   const value = useMemo(
     () => ({
       activeCall,
       endCall,
+      endedCallIds,
       poppedOut,
       setPoppedOut,
       startCall,
     }),
-    [activeCall, endCall, poppedOut, startCall],
+    [activeCall, endCall, endedCallIds, poppedOut, startCall],
   );
   const showDock = Boolean(activeCall && (poppedOut || !isActiveCallPage(activeCall, pathname)));
 
@@ -349,11 +441,17 @@ function ActiveCallDock({
                 screenShare: true,
                 chat: false,
                 settings: false,
-                leave: true,
+                leave: false,
               }}
               saveUserChoices={false}
               variation="minimal"
             />
+            <DisconnectButton
+              className="app-button-danger h-11 rounded-lg px-3 text-xs font-semibold transition sm:h-10"
+              onClick={onEnd}
+            >
+              Leave
+            </DisconnectButton>
           </div>
         </>
       ) : null}
@@ -375,7 +473,7 @@ export function PersistentCallSurface({
   if (poppedOut) {
     return (
       <div className="grid min-h-0 flex-1 place-items-center px-5 py-8">
-        <section className="app-panel w-full max-w-md p-6 text-center">
+        <div className="w-full max-w-md rounded-lg border border-white/10 bg-[#0b0f0b] p-6 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
             {activeCall.kind === "friend" ? "Friend call" : "Voice room"}
           </p>
@@ -390,7 +488,7 @@ export function PersistentCallSurface({
           >
             Return to full call
           </button>
-        </section>
+        </div>
       </div>
     );
   }
@@ -435,11 +533,17 @@ export function PersistentCallSurface({
             screenShare: true,
             chat: false,
             settings: false,
-            leave: true,
+            leave: false,
           }}
           saveUserChoices={false}
           variation="minimal"
         />
+        <DisconnectButton
+          className="app-button-danger h-11 rounded-lg px-3 text-xs font-semibold transition sm:h-10"
+          onClick={endCall}
+        >
+          Leave
+        </DisconnectButton>
       </div>
     </section>
   );

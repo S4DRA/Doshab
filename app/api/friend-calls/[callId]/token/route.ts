@@ -83,7 +83,7 @@ export async function POST(_: NextRequest, { params }: CallTokenRouteProps) {
   }
 
   if (call.status === "MISSED" || call.status === "ENDED") {
-    return jsonError("This call has ended.", 409);
+    return jsonError("Call ended.", 409);
   }
 
   if (isReceiver && call.status === "RINGING") {
