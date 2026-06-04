@@ -113,7 +113,7 @@ export function DashboardShell({
                       href={`/dashboard/groups/${group.id}`}
                       key={group.id}
                     >
-                      <AvatarInitials imageUrl={group.image} value={group.name} />
+                      <AvatarInitials fallback="group" imageUrl={group.image} value={group.name} />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-semibold text-white">
                           {group.name}
@@ -425,7 +425,7 @@ function ChannelsHome({
               return (
                 <article className="app-card overflow-hidden" key={group.id}>
                   <div className="flex items-start gap-3 border-b border-white/10 p-4">
-                    <AvatarInitials imageUrl={group.image} size="lg" value={group.name} />
+                    <AvatarInitials fallback="group" imageUrl={group.image} size="lg" value={group.name} />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="truncate text-lg font-semibold text-white">
@@ -611,19 +611,11 @@ function DashboardHome({
     <div className="app-page-scroll">
       <div className="app-page-container grid gap-5">
         <section className="app-page-header">
-          <div className="flex flex-col gap-4 min-[760px]:flex-row min-[760px]:items-center min-[760px]:justify-between">
-            <div className="min-w-0">
-              <p className="app-section-title">Home</p>
-              <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
-                Home
-              </h1>
-            </div>
-            <Link
-              className="app-button-primary inline-flex h-11 w-fit items-center rounded-lg px-4 text-sm font-bold transition"
-              href="#create-group"
-            >
-              Create group
-            </Link>
+          <div className="min-w-0">
+            <p className="app-section-title">Home</p>
+            <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
+              Home
+            </h1>
           </div>
         </section>
 
@@ -713,7 +705,7 @@ function HomeGroupCard({ group }: { group: DashboardGroup }) {
       href={`/dashboard/groups/${group.id}`}
     >
       <span className="flex min-w-0 items-start gap-3">
-        <AvatarInitials imageUrl={group.image} value={group.name} />
+        <AvatarInitials fallback="group" imageUrl={group.image} value={group.name} />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-base font-semibold text-white">
             {group.name}

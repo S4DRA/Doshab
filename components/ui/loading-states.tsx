@@ -42,60 +42,24 @@ export function AppLoadingScreen({ label = "Loading" }: { label?: string }) {
 
 export function DashboardLoadingShell() {
   return (
-    <main className="flex h-[100dvh] w-full overflow-hidden bg-[#050705] text-white">
-      <aside className="hidden w-16 shrink-0 border-r border-white/10 bg-[#090c0a]/95 p-3 sm:flex sm:flex-col sm:items-center sm:gap-3">
-        <div className="app-skeleton h-10 w-10 rounded-lg" />
-        <div className="app-skeleton mt-4 h-10 w-10 rounded-lg" />
-        <div className="app-skeleton h-10 w-10 rounded-lg" />
-        <div className="app-skeleton h-10 w-10 rounded-lg" />
-        <div className="mt-auto app-skeleton h-10 w-10 rounded-lg" />
-      </aside>
+    <main className="app-page-scroll bg-[#050705] text-white" aria-busy="true">
+      <div className="app-page-container grid gap-4">
+        <section className="app-page-header">
+          <div className="app-skeleton h-3 w-20 rounded-full" />
+          <div className="app-skeleton mt-3 h-8 w-48 rounded-full" />
+        </section>
 
-      <aside className="dashboard-secondary-sidebar hidden w-[260px] shrink-0 flex-col border-r border-white/10 bg-[#0d100e] p-4 min-[1180px]:flex min-[1500px]:w-[280px]">
-        <div className="app-card p-4">
-          <div className="app-skeleton h-3 w-16 rounded-full" />
-          <div className="app-skeleton mt-3 h-5 w-36 rounded-full" />
-          <div className="app-skeleton mt-3 h-3 w-full rounded-full" />
-        </div>
-        <div className="mt-5 grid gap-2">
-          <div className="app-skeleton h-3 w-28 rounded-full" />
-          {Array.from({ length: 5 }).map((_, index) => (
-            <div className="app-skeleton h-11 rounded-lg" key={index} />
-          ))}
-        </div>
-      </aside>
-
-      <section className="flex min-w-0 flex-1 flex-col">
-        <header className="flex min-h-12 items-center border-b border-white/10 bg-[#090c0a]/92 px-3 py-1.5 sm:px-5">
-          <div className="min-w-0 flex-1">
-            <div className="app-skeleton h-3 w-28 rounded-full" />
-            <div className="app-skeleton mt-2 h-3 w-44 rounded-full" />
-          </div>
-          <div className="app-skeleton h-9 w-9 rounded-lg" />
-        </header>
-
-        <div className="app-page-scroll grid place-items-center">
-          <div className="app-page-container grid gap-5">
-            <BrandLoader label="Preparing dashboard" size="sm" />
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <section className="app-card p-4" key={index}>
-                  <div className="app-skeleton h-4 w-24 rounded-full" />
-                  <div className="app-skeleton mt-4 h-7 w-32 rounded-full" />
-                  <div className="app-skeleton mt-4 h-3 w-full rounded-full" />
-                  <div className="app-skeleton mt-2 h-3 w-4/5 rounded-full" />
-                </section>
-              ))}
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div className="app-card p-4" key={index}>
+              <div className="app-skeleton h-4 w-24 rounded-full" />
+              <div className="app-skeleton mt-4 h-7 w-32 rounded-full" />
+              <div className="app-skeleton mt-4 h-3 w-full rounded-full" />
+              <div className="app-skeleton mt-2 h-3 w-4/5 rounded-full" />
             </div>
-          </div>
-        </div>
-      </section>
-
-      <nav className="fixed inset-x-0 bottom-0 z-50 flex h-16 items-center gap-2 border-t border-white/10 bg-[#090c0a]/95 px-3 sm:hidden">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <div className="app-skeleton h-10 w-10 rounded-lg" key={index} />
-        ))}
-      </nav>
+          ))}
+        </section>
+      </div>
     </main>
   );
 }

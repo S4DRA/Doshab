@@ -21,8 +21,9 @@ export function GroupInvitesList({ invites }: GroupInvitesListProps) {
             >
               <div className="flex min-w-0 items-center gap-3">
                 <AvatarInitials
-                  imageUrl={invite.inviter.image}
-                  value={invite.inviter.name || invite.inviter.email}
+                  fallback="group"
+                  imageUrl={invite.group.image}
+                  value={invite.group.name}
                 />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-white">

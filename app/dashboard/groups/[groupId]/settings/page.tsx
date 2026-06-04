@@ -158,7 +158,7 @@ function GroupSettingsPanel({
             Space settings
           </p>
           <div className="mt-4 flex items-center gap-4">
-            <AvatarInitials imageUrl={group.image} size="lg" value={group.name} />
+            <AvatarInitials fallback="group" imageUrl={group.image} size="lg" value={group.name} />
             <div className="min-w-0">
               <h1 className="truncate text-2xl font-bold text-white">{group.name}</h1>
               <p className="mt-2 text-sm leading-6 text-slate-400">

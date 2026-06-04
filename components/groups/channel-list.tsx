@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ChannelRoutePrefetcher } from "@/components/groups/channel-route-prefetcher";
 import { VoiceChannelJoinButton } from "@/components/groups/voice-channel-join-button";
 import { VoiceChannelPresence } from "@/components/groups/voice-channel-presence";
 import { cn } from "@/lib/utils";
@@ -24,9 +25,13 @@ export function ChannelList({
 }: ChannelListProps) {
   const textChannels = channels.filter((channel) => channel.type === "TEXT");
   const voiceChannels = channels.filter((channel) => channel.type === "VOICE");
+  const channelHrefs = textChannels.map(
+    (channel) => `/dashboard/groups/${groupId}/channels/${channel.id}`,
+  );
 
   return (
-    <div className="min-h-0 space-y-5 overflow-y-auto px-0 py-2 pr-1 min-[1180px]:space-y-4">
+    <div className="min-h-0 space-y-5 overflow-y-auto px-0 py-2 pr-1 min-[1180px]:space-y-4" data-tour-target="channels-list">
+      <ChannelRoutePrefetcher hrefs={channelHrefs} />
       <ChannelSection
         channels={textChannels}
         canManageChannels={canManageChannels}
@@ -71,7 +76,7 @@ function ChannelSection({
   showManagementActions: boolean;
 }) {
   return (
-    <section>
+    <section data-tour-target={label === "Voice rooms" ? "voice-channels" : undefined}>
       <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 min-[1180px]:text-[10px] min-[1180px]:tracking-[0.18em]">
         {label}
       </p>

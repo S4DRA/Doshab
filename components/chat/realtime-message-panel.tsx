@@ -189,7 +189,7 @@ export function RealtimeMessagePanel({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden sm:min-h-[28rem]">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden sm:min-h-[28rem]" data-tour-target="chat-panel">
       <div className="shrink-0 space-y-2">
         {!encryptionReady ? (
           <p className="app-card p-3 text-xs leading-5 text-slate-400">
@@ -210,7 +210,7 @@ export function RealtimeMessagePanel({
       </div>
 
       <div className="shrink-0 border-t border-white/10 bg-[#070907]/95 pb-[max(env(safe-area-inset-bottom),0.25rem)] pt-3 backdrop-blur">
-        <form className="flex items-end gap-2 sm:gap-3" onSubmit={sendMessage}>
+        <form className="flex items-end gap-2 sm:gap-3" data-tour-target="message-composer" onSubmit={sendMessage}>
           <textarea
             className="max-h-28 min-h-12 flex-1 resize-none overflow-y-auto rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-11 sm:max-h-36 sm:text-sm"
             disabled={!encryptionReady || !currentUser}

@@ -434,24 +434,27 @@ function ActiveCallDock({
             <PersistentCallParticipants />
           </div>
           <div className="overflow-visible border-t border-white/10 px-3 py-3">
-            <ControlBar
-              controls={{
-                microphone: true,
-                camera: session.kind === "group",
-                screenShare: true,
-                chat: false,
-                settings: false,
-                leave: false,
-              }}
-              saveUserChoices={false}
-              variation="minimal"
-            />
-            <DisconnectButton
-              className="app-button-danger h-11 rounded-lg px-3 text-xs font-semibold transition sm:h-10"
-              onClick={onEnd}
-            >
-              Leave
-            </DisconnectButton>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <ControlBar
+                className="!w-auto !border-0 !bg-transparent !p-0"
+                controls={{
+                  microphone: true,
+                  camera: session.kind === "group",
+                  screenShare: true,
+                  chat: false,
+                  settings: false,
+                  leave: false,
+                }}
+                saveUserChoices={false}
+                variation="minimal"
+              />
+              <DisconnectButton
+                className="app-button-danger h-11 rounded-lg px-3 text-xs font-semibold transition sm:h-10"
+                onClick={onEnd}
+              >
+                Leave
+              </DisconnectButton>
+            </div>
           </div>
         </>
       ) : null}
@@ -513,37 +516,33 @@ export function PersistentCallSurface({
           >
             Pop out
           </button>
-          <button
-            className="app-button-danger h-11 rounded-lg px-3 text-xs font-semibold transition sm:h-10"
-            onClick={endCall}
-            type="button"
-          >
-            End call
-          </button>
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-white/10 bg-black">
         <PersistentCallParticipants showScreenShareFocus />
       </div>
       <div className="mt-2 shrink-0 overflow-visible rounded-lg border border-white/10 bg-[#0b0f0b] px-2 py-2">
-        <ControlBar
-          controls={{
-            microphone: true,
-            camera: activeCall.kind === "group",
-            screenShare: true,
-            chat: false,
-            settings: false,
-            leave: false,
-          }}
-          saveUserChoices={false}
-          variation="minimal"
-        />
-        <DisconnectButton
-          className="app-button-danger h-11 rounded-lg px-3 text-xs font-semibold transition sm:h-10"
-          onClick={endCall}
-        >
-          Leave
-        </DisconnectButton>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <ControlBar
+            className="!w-auto !border-0 !bg-transparent !p-0"
+            controls={{
+              microphone: true,
+              camera: activeCall.kind === "group",
+              screenShare: true,
+              chat: false,
+              settings: false,
+              leave: false,
+            }}
+            saveUserChoices={false}
+            variation="minimal"
+          />
+          <DisconnectButton
+            className="app-button-danger h-11 rounded-lg px-3 text-xs font-semibold transition sm:h-10"
+            onClick={endCall}
+          >
+            Leave
+          </DisconnectButton>
+        </div>
       </div>
     </section>
   );

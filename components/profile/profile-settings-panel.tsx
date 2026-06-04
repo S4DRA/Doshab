@@ -3,8 +3,10 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import {
+  getBrowserPushDiagnostics,
   getPushRegistrationMessage,
   registerPushNotifications,
+  type BrowserPushDiagnostics,
   type PushRegistrationResult,
 } from "@/lib/browser-push";
 
@@ -36,6 +38,8 @@ export function ProfileSettingsPanel() {
   >("idle");
   const [notificationMessage, setNotificationMessage] = useState("");
   const [permissionStatus, setPermissionStatus] = useState("Not enabled");
+  const [pushDiagnostics, setPushDiagnostics] = useState<BrowserPushDiagnostics | null>(null);
+  const [showPhoneSteps, setShowPhoneSteps] = useState(false);
   const loadedSettingsRef = useRef(false);
 
   useEffect(() => {
@@ -56,6 +60,7 @@ export function ProfileSettingsPanel() {
 
       loadedSettingsRef.current = true;
       setPermissionStatus(getBrowserPermissionStatus());
+      void refreshPushDiagnostics();
     });
 
     return () => window.cancelAnimationFrame(frame);
@@ -102,9 +107,18 @@ export function ProfileSettingsPanel() {
 
       if (result.ok) {
         updateSetting("enableNotifications", true);
+        setSettings((current) => ({
+          ...current,
+          callNotifications: true,
+          enableNotifications: true,
+          friendInviteNotifications: true,
+          messageNotifications: true,
+        }));
+        window.localStorage.setItem("doshabNotificationOnboardingCompleted", "true");
         setNotificationMessage(getPushRegistrationMessage(result));
         setNotificationStatus("enabled");
         setPermissionStatus(getBrowserPermissionStatus());
+        void refreshPushDiagnostics();
         return;
       }
 
@@ -114,6 +128,7 @@ export function ProfileSettingsPanel() {
       }));
       setNotificationMessage(getPushRegistrationMessage(result));
       setPermissionStatus(getBrowserPermissionStatus());
+      void refreshPushDiagnostics();
     } catch {
       setSettings((current) => ({
         ...current,
@@ -126,6 +141,7 @@ export function ProfileSettingsPanel() {
         } satisfies PushRegistrationResult),
       );
       setPermissionStatus(getBrowserPermissionStatus());
+      void refreshPushDiagnostics();
     }
 
     setNotificationStatus("error");
@@ -145,10 +161,30 @@ export function ProfileSettingsPanel() {
 
       setNotificationMessage("Test notification sent.");
       setNotificationStatus("tested");
+      void refreshPushDiagnostics();
     } catch {
       setNotificationMessage("Could not send a test notification on this device.");
       setNotificationStatus("error");
     }
+  };
+
+  async function refreshPushDiagnostics() {
+    const diagnostics = await getBrowserPushDiagnostics();
+    setPushDiagnostics(diagnostics);
+    setPermissionStatus(formatPermissionStatus(diagnostics.notificationPermission));
+
+    if (diagnostics.status === "enabled") {
+      window.localStorage.setItem("doshabNotificationOnboardingCompleted", "true");
+    }
+  }
+
+  const restartPlatformTour = () => {
+    window.localStorage.removeItem("doshabTourCompleted");
+    window.localStorage.removeItem("doshabTourSkippedAt");
+    window.localStorage.setItem("doshabTourStep", "0");
+    window.dispatchEvent(new Event("doshab:restart-platform-tour"));
+    setNotificationMessage("Platform tour restarted.");
+    setNotificationStatus("tested");
   };
 
   return (
@@ -169,7 +205,7 @@ export function ProfileSettingsPanel() {
       </div>
 
       <div className="grid gap-3">
-        <div className="app-row p-4">
+        <div className="app-row p-4" data-tour-target="notifications-settings">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <span className="min-w-0">
               <span className="block text-sm font-semibold text-white">Notifications</span>
@@ -178,9 +214,6 @@ export function ProfileSettingsPanel() {
               </span>
               <span className="mt-2 block max-w-2xl text-xs leading-5 text-slate-500">
                 Call notifications appear as phone notifications when Doshab is installed and notification permission is enabled. Some phones/browsers may not support full-screen call screens from a PWA.
-              </span>
-              <span className="mt-2 inline-flex rounded-md border border-white/10 bg-white/7 px-2 py-1 text-xs text-slate-300">
-                Browser permission: {permissionStatus}
               </span>
             </span>
             <label className="flex shrink-0 items-center gap-3">
@@ -193,6 +226,26 @@ export function ProfileSettingsPanel() {
                 type="checkbox"
               />
             </label>
+          </div>
+          <div className="mt-4 grid gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-3 sm:grid-cols-2">
+            <StatusLine label="Browser permission" value={permissionStatus} />
+            <StatusLine
+              label="Push subscription"
+              value={formatDiagnosticsValue(pushDiagnostics?.pushSubscription)}
+            />
+            <StatusLine
+              label="Service worker"
+              value={formatDiagnosticsValue(pushDiagnostics?.serviceWorker)}
+            />
+            <StatusLine
+              label="Installed PWA mode"
+              value={formatDiagnosticsValue(pushDiagnostics?.installedPwa)}
+            />
+            <StatusLine label="Message notifications" value={settings.messageNotifications ? "On" : "Off"} />
+            <StatusLine label="Call notifications" value={settings.callNotifications ? "On" : "Off"} />
+            <StatusLine label="Invite notifications" value={settings.friendInviteNotifications ? "On" : "Off"} />
+            <StatusLine label="Sound" value={settings.soundEnabled ? "On" : "Off"} />
+            <StatusLine label="Message previews" value={settings.showMessagePreview ? "On" : "Off"} />
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <NotificationToggle
@@ -233,7 +286,24 @@ export function ProfileSettingsPanel() {
             >
               {notificationStatus === "testing" ? "Sending test..." : "Test notification"}
             </button>
+            <button
+              className="app-button-secondary min-h-12 rounded-lg px-4 text-sm font-semibold transition"
+              onClick={() => void refreshPushDiagnostics()}
+              type="button"
+            >
+              Refresh status
+            </button>
+            <button
+              className="min-h-12 rounded-lg border border-white/15 px-4 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/60 hover:text-white"
+              onClick={() => setShowPhoneSteps((current) => !current)}
+              type="button"
+            >
+              {pushDiagnostics?.status === "blocked" ? "Fix blocked notifications" : "Show phone setup steps"}
+            </button>
           </div>
+          {showPhoneSteps || pushDiagnostics?.status === "blocked" ? (
+            <NotificationSetupGuide installedPwa={pushDiagnostics?.installedPwa === "yes"} />
+          ) : null}
         </div>
         {notificationStatus === "saving" ? (
           <p className="-mt-1 px-4 text-xs text-slate-400">Opening browser permission prompt...</p>
@@ -263,7 +333,7 @@ export function ProfileSettingsPanel() {
           />
         </label>
 
-        <div className="app-row flex flex-col items-stretch gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="app-row flex flex-col items-stretch gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between" data-tour-target="themes-settings">
           <span className="min-w-0">
             <span className="block text-sm font-semibold text-white">Themes</span>
             <span className="block text-sm leading-5 text-slate-400">
@@ -276,6 +346,22 @@ export function ProfileSettingsPanel() {
           >
             Theme settings
           </Link>
+        </div>
+
+        <div className="app-row flex flex-col items-stretch gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold text-white">Platform tour</span>
+            <span className="block text-sm leading-5 text-slate-400">
+              Replay the guided Doshab tour from the beginning.
+            </span>
+          </span>
+          <button
+            className="app-button-secondary h-12 shrink-0 rounded-lg px-4 text-sm font-bold transition sm:h-11"
+            onClick={restartPlatformTour}
+            type="button"
+          >
+            Restart platform tour
+          </button>
         </div>
 
         <div className="app-row p-4 text-sm text-slate-400">
@@ -369,6 +455,61 @@ function NotificationToggle({
   );
 }
 
+function StatusLine({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="flex items-center justify-between gap-3 rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-xs">
+      <span className="text-slate-400">{label}</span>
+      <span className="font-semibold text-white">{value}</span>
+    </span>
+  );
+}
+
+function NotificationSetupGuide({ installedPwa }: { installedPwa: boolean }) {
+  const isIos =
+    typeof navigator !== "undefined" && /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const steps = isIos
+    ? [
+        "Open Settings.",
+        "Tap Notifications.",
+        "Find Doshab if it is installed.",
+        "Allow Notifications.",
+        "Enable Lock Screen, Notification Center, and Banners.",
+      ]
+    : installedPwa
+      ? [
+          "Long press the Doshab app icon.",
+          "Tap App info.",
+          "Tap Notifications.",
+          "Turn on notifications.",
+          "Enable Pop-up, Floating, Banner, or Lock screen notifications if available.",
+          "Enable Lock screen notifications if desired.",
+        ]
+      : [
+          "Open Chrome settings.",
+          "Open Site settings.",
+          "Tap Notifications.",
+          "Find Doshab.",
+          "Allow notifications.",
+        ];
+
+  return (
+    <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3">
+      <p className="text-sm font-semibold text-white">Phone notification setup</p>
+      <p className="mt-2 text-xs leading-5 text-slate-400">
+        Browsers and PWAs cannot reliably open every phone&apos;s floating notification settings page. Use these steps if banners, pop-ups, or lock screen alerts are missing.
+      </p>
+      <ol className="mt-3 grid gap-2 text-sm leading-5 text-slate-300">
+        {steps.map((step, index) => (
+          <li className="flex gap-2" key={step}>
+            <span className="text-[#FFB199]">{index + 1}.</span>
+            <span>{step}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 function getBrowserPermissionStatus() {
   if (typeof window === "undefined" || !("Notification" in window)) {
     return "Not supported";
@@ -381,5 +522,41 @@ function getBrowserPermissionStatus() {
       return "Blocked";
     default:
       return "Not enabled";
+  }
+}
+
+function formatPermissionStatus(
+  permission: BrowserPushDiagnostics["notificationPermission"],
+) {
+  switch (permission) {
+    case "granted":
+      return "Allowed";
+    case "denied":
+      return "Blocked";
+    case "default":
+      return "Not enabled";
+    default:
+      return "Unsupported";
+  }
+}
+
+function formatDiagnosticsValue(value?: string) {
+  switch (value) {
+    case "active":
+      return "Active";
+    case "denied":
+      return "Blocked";
+    case "granted":
+      return "Allowed";
+    case "missing":
+      return "Missing";
+    case "no":
+      return "No";
+    case "unsupported":
+      return "Unsupported";
+    case "yes":
+      return "Yes";
+    default:
+      return "Unknown";
   }
 }

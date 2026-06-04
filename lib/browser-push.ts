@@ -12,6 +12,22 @@ export type PushRegistrationResult =
         | "unsupported";
     };
 
+export type NotificationOnboardingStatus =
+  | "blocked"
+  | "enabled"
+  | "not_enabled"
+  | "unsupported";
+
+export type BrowserPushDiagnostics = {
+  installedPwa: "no" | "unknown" | "yes";
+  notificationPermission: "default" | "denied" | "granted" | "unsupported";
+  pushSubscription: "active" | "missing" | "unknown";
+  serviceWorker: "active" | "missing" | "unsupported";
+  status: NotificationOnboardingStatus;
+  supportsPush: boolean;
+  supportsServiceWorker: boolean;
+};
+
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = `${base64String}${padding}`.replace(/-/g, "+").replace(/_/g, "/");
@@ -33,6 +49,86 @@ export function canUsePushNotifications() {
     "serviceWorker" in navigator &&
     "PushManager" in window
   );
+}
+
+export function isInstalledPwa() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.matchMedia("(display-mode: window-controls-overlay)").matches ||
+    Boolean(window.navigator.standalone)
+  );
+}
+
+export async function getBrowserPushDiagnostics(): Promise<BrowserPushDiagnostics> {
+  const baseDiagnostics: BrowserPushDiagnostics = {
+    installedPwa: typeof window === "undefined" ? "unknown" : isInstalledPwa() ? "yes" : "no",
+    notificationPermission: "unsupported",
+    pushSubscription: "unknown",
+    serviceWorker: "unsupported",
+    status: "unsupported",
+    supportsPush: false,
+    supportsServiceWorker: false,
+  };
+
+  if (typeof window === "undefined" || typeof navigator === "undefined") {
+    return baseDiagnostics;
+  }
+
+  const hasNotifications = "Notification" in window;
+  const supportsServiceWorker = "serviceWorker" in navigator;
+  const supportsPush = "PushManager" in window;
+  const notificationPermission = hasNotifications
+    ? Notification.permission
+    : "unsupported";
+
+  if (!window.isSecureContext || !hasNotifications || !supportsServiceWorker || !supportsPush) {
+    return {
+      ...baseDiagnostics,
+      notificationPermission,
+      serviceWorker: supportsServiceWorker ? "missing" : "unsupported",
+      supportsPush,
+      supportsServiceWorker,
+    };
+  }
+
+  let serviceWorker: BrowserPushDiagnostics["serviceWorker"] = "missing";
+  let pushSubscription: BrowserPushDiagnostics["pushSubscription"] = "missing";
+
+  try {
+    const registration =
+      (await navigator.serviceWorker.getRegistration("/push-sw.js")) ??
+      (await navigator.serviceWorker.getRegistration());
+
+    serviceWorker = registration?.active ? "active" : "missing";
+
+    if (registration) {
+      const subscription = await registration.pushManager.getSubscription();
+      pushSubscription = subscription ? "active" : "missing";
+    }
+  } catch {
+    pushSubscription = "unknown";
+  }
+
+  const status: NotificationOnboardingStatus =
+    notificationPermission === "denied"
+      ? "blocked"
+      : notificationPermission === "granted" && pushSubscription === "active"
+        ? "enabled"
+        : "not_enabled";
+
+  return {
+    installedPwa: isInstalledPwa() ? "yes" : "no",
+    notificationPermission,
+    pushSubscription,
+    serviceWorker,
+    status,
+    supportsPush,
+    supportsServiceWorker,
+  };
 }
 
 export function getPushRegistrationMessage(result: PushRegistrationResult) {
@@ -115,4 +211,10 @@ export async function registerPushNotifications(): Promise<PushRegistrationResul
   });
 
   return response.ok ? { ok: true } : { ok: false, reason: "subscription-failed" };
+}
+
+declare global {
+  interface Navigator {
+    standalone?: boolean;
+  }
 }

@@ -95,7 +95,6 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
               aria-label="Add friend"
               className="app-button-primary grid h-11 w-11 shrink-0 place-items-center rounded-lg text-xl font-bold transition"
               href="/dashboard/friends?add=1"
-              prefetch={false}
               title="Add friend"
             >
               +

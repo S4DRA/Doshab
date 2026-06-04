@@ -136,6 +136,14 @@ export function IncomingCallWatcher() {
     return stopRingtone;
   }, [call, muted, startRingtone, stopRingtone]);
 
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-doshab-incoming-call", Boolean(call));
+
+    return () => {
+      document.documentElement.removeAttribute("data-doshab-incoming-call");
+    };
+  }, [call]);
+
   const declineCall = useCallback(async () => {
     if (!call || declining) {
       return;
@@ -253,6 +261,7 @@ export function IncomingCallWatcher() {
       aria-label={`Incoming voice call from ${callerLabel}`}
       aria-modal="true"
       className="fixed inset-0 z-[90] grid place-items-center bg-black/84 px-4 pb-[calc(var(--dashboard-bottom-nav-height)_+_env(safe-area-inset-bottom)_+_1rem)] pt-6 text-white backdrop-blur-md sm:pb-6 sm:pl-20"
+      data-doshab-incoming-call-overlay="true"
       role="alertdialog"
     >
       <section className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-[#FF5F25]/45 bg-[#070a12] p-6 text-center shadow-2xl shadow-black/60 sm:p-8">

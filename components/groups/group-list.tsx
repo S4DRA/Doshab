@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
+import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { LogoMark } from "@/components/ui/logo-mark";
 import type { DashboardGroup } from "@/types";
 
@@ -59,22 +60,13 @@ export function GroupList({
             "grid size-11 place-items-center rounded-md bg-white/7 text-sm font-bold text-slate-300 transition hover:bg-white/12 hover:text-white",
             selectedGroupId === group.id && "bg-white/14 text-white ring-2 ring-[#FF5F25]/70",
           )}
-          href={`/dashboard/groups/${group.id}`}
-          key={group.id}
-          title={group.name}
-        >
-          {getInitials(group.name)}
+        href={`/dashboard/groups/${group.id}`}
+        key={group.id}
+        title={group.name}
+      >
+          <AvatarInitials fallback="group" imageUrl={group.image} value={group.name} />
         </Link>
       ))}
     </>
   );
-}
-
-function getInitials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
 }

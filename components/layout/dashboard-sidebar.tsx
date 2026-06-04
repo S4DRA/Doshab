@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PushNotificationToggle } from "@/components/notifications/push-notification-toggle";
@@ -14,17 +14,14 @@ const navItems = [
     href: "/dashboard",
     label: "Home",
     icon: (
-      <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-        <path d="M3 12 12 3l9 9" />
-        <path d="M9 21v-9h6v9" />
-      </svg>
+      <LogoMark className="h-8 w-8 sm:h-9 sm:w-9 min-[1180px]:h-10 min-[1180px]:w-10" sizes="48px" />
     ),
   },
   {
     href: "/dashboard/friends",
     label: "Friends",
     icon: (
-      <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
@@ -76,6 +73,7 @@ export function DashboardSidebar({
   initialUnreadCount = 0,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [currentUser, setCurrentUser] = useState<SidebarUser | null>(initialCurrentUser);
   const [friends, setFriends] = useState<SidebarFriend[]>(initialFriends);
   const [groups, setGroups] = useState<SidebarGroup[]>(initialGroups);
@@ -334,6 +332,26 @@ export function DashboardSidebar({
     }
   }, []);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const dashboardRoutes = [
+        "/dashboard",
+        "/dashboard/friends",
+        "/dashboard/channels",
+        "/dashboard/messages",
+        "/dashboard/profile",
+        "/dashboard/profile/themes",
+        ...groups.slice(0, 8).map((group) => `/dashboard/groups/${group.id}`),
+      ];
+
+      Array.from(new Set(dashboardRoutes)).forEach((href) => {
+        router.prefetch(href);
+      });
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [groups, router]);
+
   if (!pathname.startsWith("/dashboard")) {
     return null;
   }
@@ -385,86 +403,105 @@ export function DashboardSidebar({
   }
 
   const friendsMenu = friendsOpen ? (
-    <div className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-50 max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-auto sm:left-14 sm:right-auto sm:top-24 sm:w-[calc(100vw-4.25rem)] sm:max-w-80">
-      <div className="flex items-center justify-between gap-3">
+    <div
+      aria-label="Friends sidebar"
+      className="app-surface fixed inset-x-0 bottom-[var(--dashboard-bottom-nav-height)] top-0 z-40 flex flex-col overflow-hidden rounded-none border-l-0 border-r-0 p-3 sm:bottom-0 sm:left-16 sm:right-auto sm:w-80 sm:border-l sm:border-r min-[1180px]:left-[4.75rem] min-[1180px]:w-96"
+      role="dialog"
+    >
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 pb-3">
         <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
           Friends
         </p>
-        <Link
-          aria-label="Add friend"
-          className="app-button-primary grid h-9 w-9 shrink-0 place-items-center rounded-lg text-lg font-bold transition"
-          href="/dashboard/friends?add=1"
-          onClick={() => setFriendsOpen(false)}
-          prefetch={false}
-          title="Add friend"
-        >
-          +
-        </Link>
-      </div>
-      <div className="mt-3 grid gap-1.5">
-        {friends.length ? (
-          friends.map((friend) => {
-            const friendLabel = friend.name || friend.email;
-
-            return (
-              <div
-                className="flex min-w-0 items-center gap-2 rounded-lg px-2 py-2 transition hover:bg-white/10"
-                key={friend.id}
-              >
-                <AvatarInitials imageUrl={friend.image} size="sm" value={friendLabel} />
-                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">
-                  {friendLabel}
-                </span>
-                <form
-                  action="/api/private-messages"
-                  method="post"
-                  onSubmit={() => {
-                    setFriendsOpen(false);
-                    window.sessionStorage.removeItem(sidebarCacheKey);
-                  }}
-                >
-                  <input name="friendId" type="hidden" value={friend.id} />
-                  <button
-                    aria-label={`Message ${friendLabel}`}
-                    className="app-icon-button h-10 w-10"
-                    title={`Message ${friendLabel}`}
-                    type="submit"
-                  >
-                    <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
-                    </svg>
-                  </button>
-                </form>
-                <form
-                  action="/api/friend-calls/start"
-                  method="post"
-                  onSubmit={() => setFriendsOpen(false)}
-                >
-                  <input name="friendId" type="hidden" value={friend.id} />
-                  <button
-                    aria-label={`Call ${friendLabel}`}
-                    className="app-icon-button app-icon-button-primary h-10 w-10"
-                    title={`Call ${friendLabel}`}
-                    type="submit"
-                  >
-                    <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.89.66 2.78a2 2 0 0 1-.45 2.11L8.05 9.88a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45c.89.31 1.82.53 2.78.66A2 2 0 0 1 22 16.92Z" />
-                    </svg>
-                  </button>
-                </form>
-              </div>
-            );
-          })
-        ) : (
+        <div className="flex items-center gap-2">
           <Link
-            className="block rounded-lg border border-dashed border-white/15 px-3 py-4 text-sm font-semibold text-slate-300 transition hover:border-[#FF5F25]/50 hover:text-white"
+            aria-label="Add friend"
+            className="app-button-primary grid h-10 w-10 shrink-0 place-items-center rounded-lg text-lg font-bold transition"
             href="/dashboard/friends?add=1"
             onClick={() => setFriendsOpen(false)}
-            prefetch={false}
+            title="Add friend"
           >
             +
           </Link>
-        )}
+          <button
+            aria-label="Close friends sidebar"
+            className="app-icon-button h-10 w-10"
+            onClick={() => setFriendsOpen(false)}
+            title="Close"
+            type="button"
+          >
+            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto py-3">
+        <div className="grid gap-2">
+          {friends.length ? (
+            friends.map((friend) => {
+              const friendLabel = friend.name || friend.email;
+
+              return (
+                <div
+                  className="app-row flex min-w-0 items-center gap-3 px-3 py-3"
+                  key={friend.id}
+                >
+                  <AvatarInitials imageUrl={friend.image} value={friendLabel} />
+                  <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">
+                    {friendLabel}
+                  </span>
+                  <form
+                    action="/api/private-messages"
+                    method="post"
+                    onSubmit={() => {
+                      setFriendsOpen(false);
+                      window.sessionStorage.removeItem(sidebarCacheKey);
+                    }}
+                  >
+                    <input name="friendId" type="hidden" value={friend.id} />
+                    <button
+                      aria-label={`Message ${friendLabel}`}
+                      className="app-icon-button h-10 w-10"
+                      title={`Message ${friendLabel}`}
+                      type="submit"
+                    >
+                      <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
+                      </svg>
+                    </button>
+                  </form>
+                  <form
+                    action="/api/friend-calls/start"
+                    method="post"
+                    onSubmit={() => setFriendsOpen(false)}
+                  >
+                    <input name="friendId" type="hidden" value={friend.id} />
+                    <button
+                      aria-label={`Call ${friendLabel}`}
+                      className="app-icon-button app-icon-button-primary h-10 w-10"
+                      title={`Call ${friendLabel}`}
+                      type="submit"
+                    >
+                      <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.89.66 2.78a2 2 0 0 1-.45 2.11L8.05 9.88a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45c.89.31 1.82.53 2.78.66A2 2 0 0 1 22 16.92Z" />
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              );
+            })
+          ) : (
+            <Link
+              aria-label="Add friend"
+              className="app-row grid min-h-24 place-items-center text-2xl font-bold text-slate-300 transition hover:border-[#FF5F25]/50 hover:text-white"
+              href="/dashboard/friends?add=1"
+              onClick={() => setFriendsOpen(false)}
+            >
+              +
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   ) : null;
@@ -510,9 +547,11 @@ export function DashboardSidebar({
               className="flex items-center gap-2 rounded-lg px-2 py-2 transition hover:bg-white/10"
               key={friend.id}
             >
-              <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/20 bg-[#050505] text-xs font-black text-white">
-                {getInitials(friend.name || friend.email)}
-              </span>
+              <AvatarInitials
+                imageUrl={friend.image}
+                size="sm"
+                value={friend.name || friend.email}
+              />
               <form
                 action="/api/private-messages"
                 className="min-w-0 flex-1"
@@ -553,7 +592,6 @@ export function DashboardSidebar({
             className="block rounded-xl px-2 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
             href="/dashboard/friends"
             onClick={() => setCreateOpen(false)}
-            prefetch={false}
           >
             Add friends first
           </Link>
@@ -577,7 +615,6 @@ export function DashboardSidebar({
           className="inline-flex min-h-10 items-center rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-slate-200"
           href="/dashboard/channels"
           onClick={() => setChannelsOpen(false)}
-          prefetch={false}
         >
           All
         </Link>
@@ -597,9 +634,8 @@ export function DashboardSidebar({
                 window.localStorage.setItem(mobileChannelPinCacheKey, group.id);
                 setChannelsOpen(false);
               }}
-              prefetch={false}
             >
-              <AvatarInitials imageUrl={group.image} value={group.name} />
+              <AvatarInitials fallback="group" imageUrl={group.image} value={group.name} />
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold text-white">
                   {group.name}
@@ -672,7 +708,6 @@ export function DashboardSidebar({
                 setNotificationsOpen(false);
                 void markNotificationsRead();
               }}
-              prefetch={false}
             >
               <span
                 className={`mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-[9px] font-black ${
@@ -728,7 +763,6 @@ export function DashboardSidebar({
         className="block min-h-10 rounded-lg px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
         href="/dashboard/profile"
         onClick={() => setProfileOpen(false)}
-        prefetch={false}
       >
         Settings
       </Link>
@@ -756,7 +790,6 @@ export function DashboardSidebar({
           className="flex min-w-0 flex-1 gap-3"
           href={toastNotification.href}
           onClick={() => setToastNotification(null)}
-          prefetch={false}
         >
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#FF5F25]/35 bg-[#FF5F25]/15 text-[10px] font-black text-[#FFB199]">
             {getNotificationIcon(toastNotification.type)}
@@ -787,7 +820,7 @@ export function DashboardSidebar({
         </button>
       </div>
     ) : null}
-    <aside className="fixed inset-x-0 bottom-0 z-50 flex h-[var(--dashboard-bottom-nav-height)] items-center border-t border-white/10 bg-[#090c0a]/95 px-2 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] backdrop-blur sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-16 sm:flex-col sm:border-r sm:border-t-0 sm:px-2 sm:py-3 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] min-[1180px]:w-[4.75rem]">
+    <aside className="fixed inset-x-0 bottom-0 z-50 flex h-[var(--dashboard-bottom-nav-height)] items-center border-t border-white/10 bg-[#0d100e]/95 px-2 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] backdrop-blur sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-16 sm:flex-col sm:border-r sm:border-t-0 sm:px-2 sm:py-3 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] min-[1180px]:w-[4.75rem]" data-tour-target="groups-sidebar">
       {createMenu}
       {friendsMenu}
       {channelMenu}
@@ -803,6 +836,7 @@ export function DashboardSidebar({
                 : "border-transparent text-slate-300"
             }`}
             aria-expanded={friendsOpen}
+            data-tour-target="friends-nav"
             onClick={() => {
               setFriendsOpen((open) => !open);
               setChannelsOpen(false);
@@ -813,7 +847,7 @@ export function DashboardSidebar({
             title="Friends"
             type="button"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
               <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
@@ -836,7 +870,7 @@ export function DashboardSidebar({
             title="Create"
             type="button"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M12 5v14" />
               <path d="M5 12h14" />
             </svg>
@@ -855,13 +889,12 @@ export function DashboardSidebar({
                   ? "page"
                   : undefined
               }
-              prefetch={false}
               title={pinnedGroup ? `${pinnedGroup.name} channels` : "Channels"}
             >
               {pinnedGroup ? (
-                <AvatarInitials imageUrl={pinnedGroup.image} size="sm" value={pinnedGroup.name} />
+                <AvatarInitials fallback="group" imageUrl={pinnedGroup.image} size="sm" value={pinnedGroup.name} />
               ) : (
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path d="M4 6h16" />
                   <path d="M4 12h16" />
                   <path d="M4 18h16" />
@@ -900,13 +933,9 @@ export function DashboardSidebar({
           }`}
           href="/dashboard"
           aria-current={pathname === "/dashboard" ? "page" : undefined}
-          prefetch={false}
           title="Home"
         >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path d="M3 12 12 3l9 9" />
-            <path d="M9 21v-9h6v9" />
-          </svg>
+          <LogoMark className="h-9 w-9 min-[390px]:h-10 min-[390px]:w-10" sizes="48px" />
         </Link>
 
         <div className="flex min-w-0 items-center justify-end gap-0.5">
@@ -916,6 +945,7 @@ export function DashboardSidebar({
             className={`relative grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
               notificationsOpen ? "border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
             }`}
+            data-tour-target="notifications-nav"
             onClick={() => {
               setNotificationsOpen((open) => !open);
               setChannelsOpen(false);
@@ -926,7 +956,7 @@ export function DashboardSidebar({
             title="Notifications"
             type="button"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
@@ -958,7 +988,7 @@ export function DashboardSidebar({
                 value={currentUser.name || currentUser.email}
               />
             ) : (
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="8" r="4" />
                 <path d="M4 21a8 8 0 0 1 16 0" />
               </svg>
@@ -966,17 +996,8 @@ export function DashboardSidebar({
           </button>
         </div>
       </nav>
-      <Link
-        aria-label="Dashboard"
-        className="hidden size-12 place-items-center transition sm:grid sm:size-14 min-[1180px]:size-16"
-        href="/dashboard"
-        prefetch={false}
-      >
-        <LogoMark className="h-12 w-12 sm:h-14 sm:w-14 min-[1180px]:h-16 min-[1180px]:w-16" />
-      </Link>
-
       <nav
-        className="hidden min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overscroll-contain px-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mt-4 sm:flex sm:min-h-0 sm:flex-col sm:items-center sm:gap-2 sm:overflow-x-hidden sm:overflow-y-auto sm:px-0 sm:pb-2 [&::-webkit-scrollbar]:hidden"
+        className="hidden min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overscroll-contain px-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:flex sm:min-h-0 sm:flex-col sm:items-center sm:gap-2 sm:overflow-x-hidden sm:overflow-y-auto sm:px-0 sm:pb-2 [&::-webkit-scrollbar]:hidden"
         aria-label="Dashboard"
       >
         {navItems.map((item) => {
@@ -989,12 +1010,13 @@ export function DashboardSidebar({
               <button
                 aria-expanded={friendsOpen}
                 aria-label="Friends"
-                className={`grid size-10 shrink-0 place-items-center rounded-lg border transition sm:size-11 min-[1180px]:size-12 [&_svg]:min-[1180px]:h-6 [&_svg]:min-[1180px]:w-6 ${
+                className={`grid size-11 shrink-0 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
                   active || friendsOpen
                     ? "border-[#FF5F25] text-[#FF5F25]"
                     : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
                 }`}
                 key={item.href}
+                data-tour-target="friends-nav"
                 onClick={() => {
                   setFriendsOpen((open) => !open);
                   setCreateOpen(false);
@@ -1012,7 +1034,7 @@ export function DashboardSidebar({
           return (
             <Link
               aria-label={item.label}
-              className={`grid size-10 shrink-0 place-items-center rounded-lg border transition sm:size-11 min-[1180px]:size-12 [&_svg]:min-[1180px]:h-6 [&_svg]:min-[1180px]:w-6 ${
+              className={`grid size-11 shrink-0 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
                 active
                   ? "border-[#FF5F25] text-[#FF5F25]"
                   : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
@@ -1020,7 +1042,6 @@ export function DashboardSidebar({
               href={item.href}
               aria-current={active ? "page" : undefined}
               key={item.href}
-              prefetch={false}
               title={item.label}
             >
               {item.icon}
@@ -1031,7 +1052,7 @@ export function DashboardSidebar({
           <button
             aria-expanded={createOpen}
             aria-label="Create menu"
-            className={`grid size-10 shrink-0 place-items-center rounded-lg border transition sm:size-11 min-[1180px]:size-12 [&_svg]:min-[1180px]:h-6 [&_svg]:min-[1180px]:w-6 ${
+            className={`grid size-11 shrink-0 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
               createOpen
                 ? "border-[#FF5F25] text-[#FF5F25]"
                 : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
@@ -1044,7 +1065,7 @@ export function DashboardSidebar({
             }}
             type="button"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M12 5v14" />
               <path d="M5 12h14" />
             </svg>
@@ -1060,7 +1081,7 @@ export function DashboardSidebar({
           return (
             <Link
               aria-label={`${group.name} space`}
-              className={`grid size-10 shrink-0 place-items-center rounded-lg border text-sm font-black transition sm:size-11 min-[1180px]:size-12 min-[1180px]:text-base ${
+              className={`grid size-11 shrink-0 place-items-center rounded-lg border text-sm font-black transition sm:size-12 min-[1180px]:size-[3.25rem] min-[1180px]:text-base ${
                 active
                   ? "border-[#FF5F25] text-[#FF5F25]"
                   : "border-transparent bg-white/7 text-slate-200 hover:border-white/40 hover:bg-white/10 hover:text-white"
@@ -1068,10 +1089,9 @@ export function DashboardSidebar({
               href={href}
               aria-current={active ? "page" : undefined}
               key={group.id}
-              prefetch={false}
               title={group.name}
             >
-              <AvatarInitials imageUrl={group.image} value={group.name} />
+              <AvatarInitials fallback="group" imageUrl={group.image} value={group.name} />
             </Link>
           );
         })}
@@ -1082,11 +1102,12 @@ export function DashboardSidebar({
           <button
             aria-expanded={notificationsOpen}
             aria-label="Notifications"
-            className={`relative grid size-10 place-items-center rounded-lg border transition sm:size-11 min-[1180px]:size-12 [&_svg]:min-[1180px]:h-6 [&_svg]:min-[1180px]:w-6 ${
+            className={`relative grid size-11 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
               notificationsOpen
                 ? "border-[#FF5F25] text-[#FF5F25]"
                 : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
             }`}
+            data-tour-target="notifications-nav"
             onClick={() => {
               setNotificationsOpen((open) => !open);
               setCreateOpen(false);
@@ -1095,7 +1116,7 @@ export function DashboardSidebar({
             }}
             type="button"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
@@ -1111,7 +1132,7 @@ export function DashboardSidebar({
           <button
             aria-expanded={profileOpen}
             aria-label="Profile menu"
-            className={`grid size-10 place-items-center rounded-lg border transition sm:size-11 min-[1180px]:size-12 [&_svg]:min-[1180px]:h-6 [&_svg]:min-[1180px]:w-6 ${
+            className={`grid size-11 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
               profileActive || profileOpen
                 ? "border-[#FF5F25] text-[#FF5F25]"
                 : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
@@ -1130,7 +1151,7 @@ export function DashboardSidebar({
                 value={currentUser.name || currentUser.email}
               />
             ) : (
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="8" r="4" />
                 <path d="M4 21a8 8 0 0 1 16 0" />
               </svg>
@@ -1141,15 +1162,6 @@ export function DashboardSidebar({
     </aside>
     </>
   );
-}
-
-function getInitials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
 }
 
 function formatNotificationTime(value: Date | string) {

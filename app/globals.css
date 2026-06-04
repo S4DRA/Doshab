@@ -2,45 +2,45 @@
 
 :root {
   --dashboard-bottom-nav-height: calc(4rem + env(safe-area-inset-bottom));
-  --background: #060807;
+  --background: #2B0000;
   --foreground: #ffffff;
-  --surface-canvas: #090c0a;
-  --surface-sidebar: #0d100e;
-  --surface-panel: #121612;
-  --surface-raised: #191e19;
-  --surface-hover: #222a23;
-  --border-strong: #f5f1e8;
-  --border-soft: rgba(245, 241, 232, 0.14);
+  --surface-canvas: #2B0000;
+  --surface-sidebar: #050505;
+  --surface-panel: #200006;
+  --surface-raised: #32000b;
+  --surface-hover: #470012;
+  --border-strong: #ffe4ec;
+  --border-soft: rgba(255, 228, 236, 0.16);
   --text-high: #ffffff;
-  --text-body: #d9dfd6;
-  --text-muted: #a0aa9d;
-  --text-faint: #697267;
-  --accent: #FF5F25;
-  --accent-hover: #ff7847;
-  --accent-muted: #3d4b3b;
-  --success: #9ccf9a;
+  --text-body: #f7dce4;
+  --text-muted: #d39aac;
+  --text-faint: #8f5062;
+  --accent: #ff002b;
+  --accent-hover: #ff4f87;
+  --accent-muted: #4a0014;
+  --success: #ff8ab0;
   --warning: #f1b36d;
   --control: var(--accent);
   --control-hover: var(--accent-hover);
-  --control-text: #050505;
-  --control-subtle: #151b16;
-  --control-subtle-hover: #222a23;
+  --control-text: #ffffff;
+  --control-subtle: #1d0005;
+  --control-subtle-hover: #32000b;
   --control-subtle-text: #f8fafc;
   --shadow: 0 24px 80px -48px rgba(0, 0, 0, 0.92);
   --background-aura:
-    radial-gradient(circle at 18% 0%, rgba(255, 95, 37, 0.12), transparent 28rem),
-    radial-gradient(circle at 86% 18%, rgba(156, 207, 154, 0.08), transparent 24rem);
+    radial-gradient(circle at 18% 0%, rgba(255, 0, 84, 0.18), transparent 28rem),
+    radial-gradient(circle at 86% 18%, rgba(255, 138, 176, 0.1), transparent 24rem);
   --background-texture:
     linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   --background-texture-size: 4.5rem 4.5rem;
   --background-detail-opacity: 0.32;
   --page-live-background:
-    radial-gradient(circle at 12% 48%, rgba(255, 95, 37, 0.11), transparent 22rem),
-    radial-gradient(circle at 88% 42%, rgba(156, 207, 154, 0.1), transparent 24rem),
-    radial-gradient(circle at 50% 106%, rgba(255, 95, 37, 0.07), transparent 28rem);
+    radial-gradient(circle at 12% 48%, rgba(255, 0, 84, 0.16), transparent 22rem),
+    radial-gradient(circle at 88% 42%, rgba(255, 138, 176, 0.1), transparent 24rem),
+    radial-gradient(circle at 50% 106%, rgba(255, 0, 84, 0.09), transparent 28rem);
   --page-live-pattern:
-    linear-gradient(115deg, transparent 0 46%, rgba(255, 95, 37, 0.055) 49%, transparent 53%),
+    linear-gradient(115deg, transparent 0 46%, rgba(255, 0, 84, 0.065) 49%, transparent 53%),
     radial-gradient(circle at center, rgba(255, 255, 255, 0.045) 1px, transparent 1.5px);
   --page-live-pattern-size: auto, 4.25rem 4.25rem;
   --page-live-opacity: 0.82;
@@ -48,42 +48,42 @@
 }
 
 html[data-theme="light"] {
-  --background: #f8f7f2;
+  --background: #fff5f8;
   --foreground: #000000;
-  --surface-canvas: #f8f7f2;
-  --surface-sidebar: #edeee7;
+  --surface-canvas: #fff5f8;
+  --surface-sidebar: #ffe8ef;
   --surface-panel: #ffffff;
   --surface-raised: #ffffff;
-  --surface-hover: #eceee8;
-  --border-strong: #151812;
-  --border-soft: rgba(21, 24, 18, 0.14);
-  --text-high: #151812;
-  --text-body: #31372f;
-  --text-muted: #65705f;
-  --text-faint: #8d9588;
-  --control: #FF5F25;
-  --control-hover: #d94e1d;
-  --control-text: #000000;
+  --surface-hover: #ffe8ef;
+  --border-strong: #2B0000;
+  --border-soft: rgba(43, 0, 0, 0.14);
+  --text-high: #2B0000;
+  --text-body: #520014;
+  --text-muted: #8a4054;
+  --text-faint: #bd7488;
+  --control: #ff002b;
+  --control-hover: #cc0043;
+  --control-text: #ffffff;
   --control-subtle: #ffffff;
-  --control-subtle-hover: #efefef;
-  --control-subtle-text: #000000;
-  --shadow: 0 20px 60px -44px rgba(21, 24, 18, 0.38);
+  --control-subtle-hover: #ffe8ef;
+  --control-subtle-text: #2B0000;
+  --shadow: 0 20px 60px -44px rgba(43, 0, 0, 0.38);
   --background-aura:
-    radial-gradient(circle at 14% 0%, rgba(255, 95, 37, 0.16), transparent 30rem),
-    radial-gradient(circle at 82% 8%, rgba(101, 112, 95, 0.14), transparent 28rem),
+    radial-gradient(circle at 14% 0%, rgba(255, 0, 84, 0.16), transparent 30rem),
+    radial-gradient(circle at 82% 8%, rgba(43, 0, 0, 0.1), transparent 28rem),
     radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.85), transparent 26rem);
   --background-texture:
-    linear-gradient(rgba(21, 24, 18, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(21, 24, 18, 0.035) 1px, transparent 1px);
+    linear-gradient(rgba(43, 0, 0, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 0, 0, 0.035) 1px, transparent 1px);
   --background-texture-size: 3.75rem 3.75rem;
   --background-detail-opacity: 0.42;
   --page-live-background:
-    radial-gradient(circle at 11% 44%, rgba(255, 95, 37, 0.18), transparent 22rem),
-    radial-gradient(circle at 90% 40%, rgba(101, 112, 95, 0.14), transparent 26rem),
+    radial-gradient(circle at 11% 44%, rgba(255, 0, 84, 0.18), transparent 22rem),
+    radial-gradient(circle at 90% 40%, rgba(43, 0, 0, 0.1), transparent 26rem),
     radial-gradient(circle at 50% 108%, rgba(255, 255, 255, 0.9), transparent 28rem);
   --page-live-pattern:
-    linear-gradient(115deg, transparent 0 46%, rgba(255, 95, 37, 0.07) 49%, transparent 53%),
-    radial-gradient(circle at center, rgba(21, 24, 18, 0.055) 1px, transparent 1.5px);
+    linear-gradient(115deg, transparent 0 46%, rgba(255, 0, 84, 0.07) 49%, transparent 53%),
+    radial-gradient(circle at center, rgba(43, 0, 0, 0.055) 1px, transparent 1.5px);
   --page-live-pattern-size: auto, 3.75rem 3.75rem;
   --page-live-opacity: 0.88;
   --page-live-pattern-opacity: 0.28;
@@ -434,6 +434,34 @@ main.app-page-scroll {
 .app-icon-button-primary:hover {
   background: var(--control-hover);
   color: var(--control-text);
+}
+
+.theme-avatar {
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--border-soft));
+  background:
+    radial-gradient(circle at 28% 18%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 48%),
+    color-mix(in srgb, var(--surface-raised) 76%, var(--surface-sidebar));
+  color: var(--accent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--text-high) 8%, transparent),
+    0 12px 28px -24px color-mix(in srgb, var(--accent) 44%, black);
+}
+
+.theme-avatar-person {
+  background:
+    radial-gradient(circle at 34% 20%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 50%),
+    color-mix(in srgb, var(--surface-raised) 70%, var(--surface-sidebar));
+}
+
+.theme-avatar-group {
+  border-color: color-mix(in srgb, var(--accent) 26%, var(--border-soft));
+  background:
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 58%),
+    color-mix(in srgb, var(--surface-sidebar) 82%, black);
+}
+
+.theme-avatar-initials {
+  color: var(--accent);
 }
 
 .app-button-primary {
@@ -854,14 +882,28 @@ a[aria-current="page"] {
   color: var(--text-body);
 }
 
+.theme-preview-mini-bar {
+  display: block;
+  width: 100%;
+  height: 0.42rem;
+  min-width: 2.4rem;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.64;
+}
+
+.theme-preview-mini-bar-short {
+  width: 72%;
+}
+
 .theme-icon-strip {
   color: var(--text-muted);
 }
 
 .theme-icon-token {
   display: inline-grid;
-  width: 1.9rem;
-  height: 1.9rem;
+  width: 2.35rem;
+  height: 2.35rem;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--border-soft) 88%, transparent);
   border-radius: 8px;
@@ -900,14 +942,14 @@ a[aria-current="page"] {
 }
 
 .theme-choice-card-hamp-root-forge .theme-icon-token {
-  border-color: rgba(184, 138, 82, 0.28);
+  border-color: rgba(216, 181, 106, 0.52);
   background:
-    linear-gradient(135deg, rgba(51, 215, 255, 0.08), transparent 46%),
-    linear-gradient(180deg, rgba(21, 24, 32, 0.92), rgba(5, 6, 8, 0.92));
-  color: #33d7ff;
+    linear-gradient(135deg, rgba(134, 215, 154, 0.12), transparent 46%),
+    linear-gradient(180deg, rgba(26, 29, 28, 0.94), rgba(5, 6, 8, 0.94));
+  color: #f1d79b;
   box-shadow:
-    inset 0 0 0 1px rgba(240, 231, 215, 0.04),
-    0 0 18px rgba(51, 215, 255, 0.08);
+    inset 0 0 0 1px rgba(244, 234, 215, 0.08),
+    0 0 18px rgba(216, 181, 106, 0.14);
 }
 
 .theme-choice-card-araz-credit-empire .theme-icon-token {
@@ -2990,7 +3032,7 @@ a[aria-current="page"] {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 42%, rgba(255, 95, 37, 0.16), transparent 17rem),
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 17rem),
     radial-gradient(circle at 50% 58%, rgba(255, 255, 255, 0.08), transparent 20rem),
     linear-gradient(180deg, var(--surface-canvas), var(--background));
 }
@@ -3065,7 +3107,7 @@ a[aria-current="page"] {
 
 .doshab-loader-pulse {
   inset: 1.4rem;
-  background: radial-gradient(circle, rgba(255, 95, 37, 0.2), transparent 68%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 20%, transparent), transparent 68%);
   animation: doshab-loader-pulse 1600ms ease-in-out infinite;
   z-index: 0;
 }
@@ -6039,16 +6081,17 @@ html[data-theme="hamp-root-forge"] div[class*="border-dashed"] {
 
 .theme-preview-hamp-rich {
   min-height: 18.5rem;
-  border-color: rgba(154, 106, 58, 0.46);
+  border-color: rgba(216, 181, 106, 0.78);
   background:
-    radial-gradient(circle at 18% 8%, rgba(154, 106, 58, 0.14), transparent 28%),
-    radial-gradient(circle at 82% 72%, rgba(79, 123, 95, 0.08), transparent 34%),
-    linear-gradient(180deg, #090a0a, #010202);
+    radial-gradient(circle at 18% 8%, rgba(216, 181, 106, 0.2), transparent 28%),
+    radial-gradient(circle at 82% 72%, rgba(134, 215, 154, 0.12), transparent 34%),
+    linear-gradient(180deg, #0d0f0e, #010202);
   box-shadow:
-    0 0 0 1px rgba(154, 106, 58, 0.18),
+    0 0 0 1px rgba(216, 181, 106, 0.34),
+    0 0 34px rgba(216, 181, 106, 0.14),
     0 28px 78px -48px rgba(0, 0, 0, 0.96),
-    inset 0 0 0 1px rgba(216, 209, 195, 0.035);
-  filter: saturate(0.78) contrast(1.16);
+    inset 0 0 0 1px rgba(244, 234, 215, 0.08);
+  filter: saturate(1.02) contrast(1.12);
 }
 
 .theme-preview-hamp-rich::before {
@@ -6158,13 +6201,14 @@ html[data-theme="hamp-root-forge"] div[class*="border-dashed"] {
 
 .hamp-preview-panel {
   inset: 0.75rem 34% 0.75rem 0.75rem;
-  border-color: rgba(154, 106, 58, 0.42);
+  border-color: rgba(216, 181, 106, 0.72);
   border-radius: 4px;
   background:
-    linear-gradient(135deg, rgba(154, 106, 58, 0.07), transparent 28%),
-    linear-gradient(180deg, rgba(17, 19, 20, 0.94), rgba(1, 2, 2, 0.9));
+    linear-gradient(135deg, rgba(216, 181, 106, 0.1), transparent 28%),
+    linear-gradient(180deg, rgba(24, 27, 26, 0.94), rgba(1, 2, 2, 0.9));
   box-shadow:
-    inset 0 0 0 1px rgba(216, 209, 195, 0.035),
+    inset 0 0 0 1px rgba(244, 234, 215, 0.08),
+    0 0 0 1px rgba(216, 181, 106, 0.16),
     0 24px 52px -36px rgba(0, 0, 0, 0.96);
 }
 
@@ -6180,23 +6224,25 @@ html[data-theme="hamp-root-forge"] div[class*="border-dashed"] {
   width: 2.2rem;
   height: 2.2rem;
   place-items: center;
-  border: 1px solid rgba(154, 106, 58, 0.58);
+  border: 1px solid rgba(216, 181, 106, 0.78);
   background:
     linear-gradient(180deg, rgba(26, 28, 29, 0.95), rgba(3, 4, 4, 0.95));
-  color: #9a6a3a;
-  box-shadow: inset 0 0 0 1px rgba(216, 209, 195, 0.035);
+  color: #f1d79b;
+  box-shadow:
+    inset 0 0 0 1px rgba(244, 234, 215, 0.08),
+    0 0 18px rgba(216, 181, 106, 0.12);
 }
 
 .hamp-preview-kicker {
-  border-color: rgba(154, 106, 58, 0.34);
+  border-color: rgba(216, 181, 106, 0.52);
   border-radius: 2px;
-  background: rgba(154, 106, 58, 0.08);
-  color: #b8ad9b;
+  background: rgba(216, 181, 106, 0.12);
+  color: #f1d79b;
 }
 
 .hamp-preview-panel h5 {
   margin-top: 0.34rem;
-  color: #d8d1c3;
+  color: #f4ead7;
   font-size: clamp(0.9rem, 2.8vw, 1.12rem);
   font-weight: 900;
   letter-spacing: 0.03em;
@@ -6208,7 +6254,7 @@ html[data-theme="hamp-root-forge"] div[class*="border-dashed"] {
 }
 
 .hamp-preview-status-list svg {
-  color: rgba(154, 106, 58, 0.88);
+  color: rgba(241, 215, 155, 0.95);
   filter: none;
 }
 
@@ -6237,14 +6283,14 @@ html[data-theme="hamp-root-forge"] div[class*="border-dashed"] {
 
 .hamp-preview-console {
   min-height: 1.95rem;
-  border-color: rgba(154, 106, 58, 0.68);
+  border-color: rgba(216, 181, 106, 0.82);
   border-radius: 3px;
   background:
     linear-gradient(180deg, rgba(31, 32, 31, 0.96), rgba(8, 9, 9, 0.96));
-  color: #c6aa80;
+  color: #f1d79b;
   box-shadow:
-    inset 0 0 0 1px rgba(216, 209, 195, 0.04),
-    0 0 18px rgba(154, 106, 58, 0.12);
+    inset 0 0 0 1px rgba(244, 234, 215, 0.08),
+    0 0 22px rgba(216, 181, 106, 0.18);
 }
 
 .hamp-preview-console::after {
@@ -6300,22 +6346,22 @@ html[data-theme="hamp-root-forge"] div[class*="border-dashed"] {
 
 html[data-theme="hamp-root-forge"] {
   --background: #010202;
-  --foreground: #d8d1c3;
+  --foreground: #f4ead7;
   --surface-canvas: #030404;
   --surface-sidebar: #070808;
-  --surface-panel: #0b0d0d;
-  --surface-raised: #111314;
-  --surface-hover: #1b1e1f;
-  --border-strong: #9a6a3a;
-  --border-soft: rgba(154, 106, 58, 0.28);
-  --text-high: #d8d1c3;
-  --text-body: rgba(216, 209, 195, 0.86);
-  --text-muted: rgba(184, 173, 155, 0.66);
-  --text-faint: rgba(120, 112, 100, 0.5);
-  --accent: #9a6a3a;
-  --accent-hover: #c6aa80;
-  --accent-muted: rgba(154, 106, 58, 0.14);
-  --success: #6c9a78;
+  --surface-panel: #101312;
+  --surface-raised: #171b19;
+  --surface-hover: #232823;
+  --border-strong: #f1d79b;
+  --border-soft: rgba(216, 181, 106, 0.42);
+  --text-high: #f4ead7;
+  --text-body: rgba(244, 234, 215, 0.9);
+  --text-muted: rgba(218, 197, 158, 0.72);
+  --text-faint: rgba(184, 173, 155, 0.58);
+  --accent: #d8b56a;
+  --accent-hover: #f1d79b;
+  --accent-muted: rgba(216, 181, 106, 0.18);
+  --success: #86d79a;
   --warning: #8d2928;
   --control: #171817;
   --control-hover: #242523;
@@ -6327,16 +6373,16 @@ html[data-theme="hamp-root-forge"] {
   --root-forge-graphite: #111314;
   --root-forge-gunmetal: #1b1e1f;
   --root-forge-steel: #787064;
-  --root-forge-bronze: #9a6a3a;
-  --root-forge-emerald: #6c9a78;
+  --root-forge-bronze: #d8b56a;
+  --root-forge-emerald: #86d79a;
   --root-forge-crimson: #8d2928;
 }
 
 html[data-theme="hamp-root-forge"] body {
   background:
-    radial-gradient(circle at 14% 10%, rgba(154, 106, 58, 0.11), transparent 31rem),
-    radial-gradient(circle at 84% 16%, rgba(79, 123, 95, 0.055), transparent 28rem),
-    linear-gradient(180deg, #070808, #010202 64%, #000000);
+    radial-gradient(circle at 14% 10%, rgba(216, 181, 106, 0.15), transparent 31rem),
+    radial-gradient(circle at 84% 16%, rgba(134, 215, 154, 0.085), transparent 28rem),
+    linear-gradient(180deg, #0a0d0c, #010202 64%, #000000);
 }
 
 html[data-theme="hamp-root-forge"] body::before {
@@ -6349,22 +6395,23 @@ html[data-theme="hamp-root-forge"] body::before {
 }
 
 html[data-theme="hamp-root-forge"] .app-section-title {
-  color: #c6aa80;
+  color: #f1d79b;
   text-shadow: none;
 }
 
 html[data-theme="hamp-root-forge"] :is(.app-card, .app-panel, .app-row, .app-page-header, .app-surface) {
-  border-color: rgba(154, 106, 58, 0.24);
+  border-color: rgba(216, 181, 106, 0.42);
 }
 
 html[data-theme="hamp-root-forge"] :is(.app-card, .app-panel, .app-page-header) {
   border-radius: 4px;
   background:
-    linear-gradient(135deg, rgba(154, 106, 58, 0.055), transparent 30%),
-    linear-gradient(180deg, rgba(17, 19, 20, 0.97), rgba(3, 4, 4, 0.96));
+    linear-gradient(135deg, rgba(216, 181, 106, 0.075), transparent 30%),
+    linear-gradient(180deg, rgba(20, 24, 23, 0.97), rgba(3, 4, 4, 0.96));
   box-shadow:
     0 30px 96px -60px rgba(0, 0, 0, 0.98),
-    inset 0 0 0 1px rgba(216, 209, 195, 0.03);
+    0 0 0 1px rgba(216, 181, 106, 0.12),
+    inset 0 0 0 1px rgba(244, 234, 215, 0.05);
 }
 
 html[data-theme="hamp-root-forge"] :is(.app-card, .app-panel, .app-page-header)::before {
@@ -6383,14 +6430,15 @@ html[data-theme="hamp-root-forge"] :is(.app-card, .app-panel, .app-page-header):
 
 html[data-theme="hamp-root-forge"] :is(.app-card, .app-panel, .app-row, .app-page-header):hover {
   transform: translateY(-1px);
-  border-color: rgba(154, 106, 58, 0.46);
+  border-color: rgba(241, 215, 155, 0.72);
   box-shadow:
     0 34px 90px -62px rgba(0, 0, 0, 1),
-    0 0 0 1px rgba(154, 106, 58, 0.08);
+    0 0 0 1px rgba(216, 181, 106, 0.18),
+    0 0 28px rgba(216, 181, 106, 0.08);
 }
 
 html[data-theme="hamp-root-forge"] :is(.app-button-primary, .app-icon-button-primary) {
-  border: 1px solid rgba(154, 106, 58, 0.68) !important;
+  border: 1px solid rgba(241, 215, 155, 0.76) !important;
   border-radius: 4px;
   background:
     linear-gradient(180deg, rgba(32, 33, 32, 0.98), rgba(8, 9, 9, 0.98)) !important;
@@ -7508,9 +7556,9 @@ html[data-theme] body::before {
   max-width: min(22rem, calc(100vw - 1rem)) !important;
   max-height: min(22rem, calc(100dvh - var(--dashboard-bottom-nav-height) - 1rem)) !important;
   overflow: auto !important;
-  border: 1px solid rgba(255, 95, 37, 0.4) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
   border-radius: 0.75rem !important;
-  background: rgba(7, 10, 18, 0.98) !important;
+  background: color-mix(in srgb, var(--surface-panel) 98%, black) !important;
   box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.55) !important;
   color: rgba(248, 250, 252, 0.94) !important;
 }

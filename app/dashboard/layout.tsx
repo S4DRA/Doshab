@@ -1,4 +1,5 @@
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
+import { DashboardOnboardingCoordinator } from "@/components/onboarding/dashboard-onboarding-coordinator";
 import { IncomingCallWatcher } from "@/components/calls/incoming-call-watcher";
 import { PersistentCallProvider } from "@/components/calls/persistent-call-provider";
 import { getDashboardSidebarGroups } from "@/lib/dashboard-data";
@@ -40,6 +41,7 @@ export default async function DashboardLayout({
       />
       <PersistentCallProvider>
         <div className="dashboard-content-frame min-w-0 overflow-hidden sm:pl-16">{children}</div>
+        <DashboardOnboardingCoordinator />
         <IncomingCallWatcher />
       </PersistentCallProvider>
     </>

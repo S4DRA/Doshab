@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    background_color: "#060807",
+    background_color: "#2B0000",
     description: "Private encrypted chat, spaces, and live rooms.",
     display: "standalone",
     icons: [
@@ -28,6 +28,6 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     short_name: "Doshab",
     start_url: "/dashboard",
-    theme_color: "#060807",
+    theme_color: "#2B0000",
   };
 }

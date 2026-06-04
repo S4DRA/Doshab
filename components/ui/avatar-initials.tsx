@@ -1,6 +1,8 @@
 import { getInitials } from "@/lib/utils";
+import { LogoMark } from "@/components/ui/logo-mark";
 
 type AvatarInitialsProps = {
+  fallback?: "group" | "initials" | "person";
   imageUrl?: string | null;
   size?: "sm" | "md" | "lg";
   value: string;
@@ -13,13 +15,15 @@ const sizeClasses = {
 };
 
 export function AvatarInitials({
+  fallback = "person",
   imageUrl,
   size = "md",
   value,
 }: AvatarInitialsProps) {
-  const className = `${sizeClasses[size]} grid shrink-0 place-items-center overflow-hidden rounded-lg border border-white/10 bg-[#223022] font-bold text-[#FF8A5F] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]`;
+  const className = `${sizeClasses[size]} theme-avatar grid shrink-0 place-items-center overflow-hidden rounded-lg font-bold`;
+  const normalizedImageUrl = imageUrl?.trim();
 
-  if (imageUrl) {
+  if (normalizedImageUrl) {
     return (
       <span className={className}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -27,15 +31,54 @@ export function AvatarInitials({
           alt=""
           className="size-full object-cover"
           referrerPolicy="no-referrer"
-          src={imageUrl}
+          src={normalizedImageUrl}
         />
       </span>
     );
   }
 
+  if (fallback === "group") {
+    return (
+      <span className={`${className} theme-avatar-group`} title={value}>
+        <LogoMark
+          className="h-[72%] w-[72%] opacity-55"
+          sizes={size === "lg" ? "80px" : "48px"}
+        />
+        <span className="sr-only">{value}</span>
+      </span>
+    );
+  }
+
+  if (fallback === "person") {
+    return (
+      <span className={`${className} theme-avatar-person`} title={value}>
+        <PersonIcon className={size === "lg" ? "h-9 w-9" : "h-5 w-5"} />
+        <span className="sr-only">{value}</span>
+      </span>
+    );
+  }
+
   return (
-    <span className={className}>
+    <span className={`${className} theme-avatar-initials`} title={value}>
       {getInitials(value)}
     </span>
+  );
+}
+
+function PersonIcon({ className }: { className: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4.5 21a7.5 7.5 0 0 1 15 0" />
+    </svg>
   );
 }
