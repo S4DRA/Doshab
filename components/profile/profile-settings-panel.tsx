@@ -179,9 +179,17 @@ export function ProfileSettingsPanel() {
   }
 
   const restartPlatformTour = () => {
+    const isMobile = window.innerWidth < 768;
+    const variantCompletedKey = isMobile
+      ? "doshabTourVariantCompletedMobile"
+      : "doshabTourVariantCompletedDesktop";
+    const variantStepKey = isMobile ? "doshabTourStepMobile" : "doshabTourStepDesktop";
+
     window.localStorage.removeItem("doshabTourCompleted");
+    window.localStorage.removeItem(variantCompletedKey);
     window.localStorage.removeItem("doshabTourSkippedAt");
     window.localStorage.setItem("doshabTourStep", "0");
+    window.localStorage.setItem(variantStepKey, "0");
     window.dispatchEvent(new Event("doshab:restart-platform-tour"));
     setNotificationMessage("Platform tour restarted.");
     setNotificationStatus("tested");

@@ -40,7 +40,7 @@ export default async function DashboardLayout({
         initialUnreadCount={sidebarData?.unreadCount}
       />
       <PersistentCallProvider>
-        <div className="dashboard-content-frame min-w-0 overflow-hidden sm:pl-16">{children}</div>
+        <div className="dashboard-content-frame min-w-0 overflow-hidden sm:pl-24 min-[1180px]:pl-[6.5rem]">{children}</div>
         <DashboardOnboardingCoordinator />
         <IncomingCallWatcher />
       </PersistentCallProvider>

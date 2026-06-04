@@ -370,6 +370,56 @@ main.app-page-scroll {
 }
 
 @media (min-width: 640px) {
+  .dashboard-main-sidebar > nav[aria-label="Dashboard"] {
+    gap: 0.6rem;
+  }
+
+  .dashboard-main-sidebar > nav[aria-label="Dashboard"] :is(a, button),
+  .dashboard-main-sidebar > div.hidden > div > button {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+
+  .dashboard-main-sidebar > nav[aria-label="Dashboard"] svg,
+  .dashboard-main-sidebar > div.hidden > div > button svg {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .dashboard-main-sidebar > nav[aria-label="Dashboard"] .theme-avatar,
+  .dashboard-main-sidebar > div.hidden > div > button .theme-avatar {
+    width: 3.45rem;
+    height: 3.45rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 1180px) {
+  .dashboard-main-sidebar > nav[aria-label="Dashboard"] {
+    gap: 0.7rem;
+  }
+
+  .dashboard-main-sidebar > nav[aria-label="Dashboard"] :is(a, button),
+  .dashboard-main-sidebar > div.hidden > div > button {
+    width: 4.9rem;
+    height: 4.9rem;
+  }
+
+  .dashboard-main-sidebar > nav[aria-label="Dashboard"] svg,
+  .dashboard-main-sidebar > div.hidden > div > button svg {
+    width: 2.45rem;
+    height: 2.45rem;
+  }
+
+  .dashboard-main-sidebar > nav[aria-label="Dashboard"] .theme-avatar,
+  .dashboard-main-sidebar > div.hidden > div > button .theme-avatar {
+    width: 3.85rem;
+    height: 3.85rem;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 640px) {
   .dashboard-content-frame {
     min-height: 100dvh;
     height: auto;

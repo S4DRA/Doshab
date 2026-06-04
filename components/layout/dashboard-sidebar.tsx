@@ -14,7 +14,7 @@ const navItems = [
     href: "/dashboard",
     label: "Home",
     icon: (
-      <LogoMark className="h-8 w-8 sm:h-9 sm:w-9 min-[1180px]:h-10 min-[1180px]:w-10" sizes="48px" />
+      <LogoMark className="h-8 w-8 sm:h-11 sm:w-11 min-[1180px]:h-12 min-[1180px]:w-12" sizes="80px" />
     ),
   },
   {
@@ -405,7 +405,7 @@ export function DashboardSidebar({
   const friendsMenu = friendsOpen ? (
     <div
       aria-label="Friends sidebar"
-      className="app-surface fixed inset-x-0 bottom-[var(--dashboard-bottom-nav-height)] top-0 z-40 flex flex-col overflow-hidden rounded-none border-l-0 border-r-0 p-3 sm:bottom-0 sm:left-16 sm:right-auto sm:w-80 sm:border-l sm:border-r min-[1180px]:left-[4.75rem] min-[1180px]:w-96"
+      className="app-surface fixed inset-x-0 bottom-[var(--dashboard-bottom-nav-height)] top-0 z-40 flex flex-col overflow-hidden rounded-none border-l-0 border-r-0 p-3 sm:bottom-0 sm:left-24 sm:right-auto sm:w-80 sm:border-l sm:border-r min-[1180px]:left-[6.5rem] min-[1180px]:w-96"
       role="dialog"
     >
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 pb-3">
@@ -507,7 +507,7 @@ export function DashboardSidebar({
   ) : null;
 
   const createMenu = createOpen ? (
-    <div className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-50 max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-auto sm:left-14 sm:right-auto sm:top-32 sm:w-[calc(100vw-4.25rem)] sm:max-w-72">
+    <div className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-50 max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-auto sm:left-[5.75rem] sm:right-auto sm:top-32 sm:w-[calc(100vw-7rem)] sm:max-w-72 min-[1180px]:left-[6.25rem]">
       <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
         Create
       </p>
@@ -658,7 +658,7 @@ export function DashboardSidebar({
   const notificationMenu = notificationsOpen ? (
     <div
       aria-label="Notifications"
-      className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-50 max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-0 sm:left-14 sm:right-auto sm:top-auto sm:w-[calc(100vw-4.25rem)] sm:max-w-96"
+      className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-50 max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-0 sm:left-[5.75rem] sm:right-auto sm:top-auto sm:w-[calc(100vw-7rem)] sm:max-w-96 min-[1180px]:left-[6.25rem]"
       role="dialog"
     >
       <div className="flex items-center justify-between gap-3">
@@ -758,7 +758,7 @@ export function DashboardSidebar({
   ) : null;
 
   const profileMenu = profileOpen ? (
-    <div className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] right-3 z-50 w-[calc(100vw-1.5rem)] max-w-44 rounded-lg p-2 sm:absolute sm:bottom-0 sm:left-14 sm:right-auto sm:top-auto sm:w-[calc(100vw-4.25rem)]">
+    <div className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] right-3 z-50 w-[calc(100vw-1.5rem)] max-w-44 rounded-lg p-2 sm:absolute sm:bottom-0 sm:left-[5.75rem] sm:right-auto sm:top-auto sm:w-[calc(100vw-7rem)] min-[1180px]:left-[6.25rem]">
       <Link
         className="block min-h-10 rounded-lg px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
         href="/dashboard/profile"
@@ -820,13 +820,13 @@ export function DashboardSidebar({
         </button>
       </div>
     ) : null}
-    <aside className="fixed inset-x-0 bottom-0 z-50 flex h-[var(--dashboard-bottom-nav-height)] items-center border-t border-white/10 bg-[#0d100e]/95 px-2 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] backdrop-blur sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-16 sm:flex-col sm:border-r sm:border-t-0 sm:px-2 sm:py-3 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] min-[1180px]:w-[4.75rem]" data-tour-target="groups-sidebar">
+    <aside className="dashboard-main-sidebar fixed inset-x-0 bottom-0 z-50 flex h-[var(--dashboard-bottom-nav-height)] items-center border-t border-white/10 bg-[#0d100e]/95 px-2 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] backdrop-blur sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-24 sm:flex-col sm:border-r sm:border-t-0 sm:px-3 sm:py-4 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] min-[1180px]:w-[6.5rem]" data-tour-target="groups-sidebar">
       {createMenu}
       {friendsMenu}
       {channelMenu}
       {notificationMenu}
       {profileMenu}
-      <nav className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-0.5 sm:hidden" aria-label="Mobile dashboard">
+      <nav className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-0.5 sm:hidden" aria-label="Mobile dashboard" data-tour-target="mobile-bottom-nav">
         <div className="flex min-w-0 items-center justify-start gap-0.5">
           <button
             aria-label="Friends"
@@ -875,7 +875,7 @@ export function DashboardSidebar({
               <path d="M5 12h14" />
             </svg>
           </button>
-          <div className="flex items-center rounded-lg border border-transparent">
+          <div className="flex items-center rounded-lg border border-transparent" data-tour-target="mobile-channel-drawer">
             <Link
               aria-label={pinnedGroup ? `${pinnedGroup.name} channel shortcut` : "Channels"}
               className={`grid size-10 place-items-center rounded-lg transition min-[390px]:size-11 ${

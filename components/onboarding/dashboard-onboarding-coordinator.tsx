@@ -14,8 +14,12 @@ import {
 } from "@/lib/browser-push";
 
 const tourCompletedKey = "doshabTourCompleted";
+const desktopTourCompletedKey = "doshabTourVariantCompletedDesktop";
+const mobileTourCompletedKey = "doshabTourVariantCompletedMobile";
 const tourSkippedAtKey = "doshabTourSkippedAt";
 const tourStepKey = "doshabTourStep";
+const desktopTourStepKey = "doshabTourStepDesktop";
+const mobileTourStepKey = "doshabTourStepMobile";
 const notificationCompletedKey = "doshabNotificationOnboardingCompleted";
 const notificationDismissedAtKey = "doshabNotificationOnboardingDismissedAt";
 const notificationRemindLaterAtKey = "doshabNotificationOnboardingRemindLaterAt";
@@ -24,6 +28,7 @@ const notificationDismissalCooldownMs = 7 * 24 * 60 * 60 * 1000;
 
 type CoordinatorMode = "idle" | "notification" | "tour";
 type NotificationFlowStatus = "blocked" | "error" | "idle" | "saving" | "success" | "unsupported";
+type TourVariant = "desktop" | "mobile";
 
 type TourStep = {
   icon: React.ReactNode;
@@ -33,7 +38,7 @@ type TourStep = {
   title: string;
 };
 
-const tourSteps: TourStep[] = [
+const desktopTourSteps: TourStep[] = [
   {
     icon: <SparkIcon />,
     primaryLabel: "Start tour",
@@ -90,6 +95,62 @@ const tourSteps: TourStep[] = [
   },
 ];
 
+const mobileTourSteps: TourStep[] = [
+  {
+    icon: <SparkIcon />,
+    primaryLabel: "Start tour",
+    text: "Doshab keeps your groups, calls, friends, and themes close while leaving room for the conversation.",
+    title: "Welcome to Doshab",
+  },
+  {
+    icon: <ChannelIcon />,
+    target: "mobile-bottom-nav",
+    text: "Use the bottom bar to jump between friends, create actions, spaces, notifications, and your profile.",
+    title: "Bottom navigation",
+  },
+  {
+    icon: <GroupIcon />,
+    target: "mobile-channel-drawer",
+    text: "Tap the channel shortcut to pin a space or open the full channels view when you need more room.",
+    title: "Groups and channels drawer",
+  },
+  {
+    icon: <MicIcon />,
+    target: "voice-channels",
+    text: "Voice rooms open with one tap, and Doshab shows who is inside before you join.",
+    title: "Tap voice to join",
+  },
+  {
+    icon: <MessageIcon />,
+    target: "chat-panel",
+    text: "The composer stays large enough for quick replies while the chat keeps scrolling above it.",
+    title: "Chat and composer",
+  },
+  {
+    icon: <FriendsIcon />,
+    target: "friends-nav",
+    text: "Open friends to add people, answer requests, start messages, or invite them into spaces.",
+    title: "Friends and invites",
+  },
+  {
+    icon: <BellIcon />,
+    target: "notifications-nav",
+    text: "Mobile alerts help Doshab reach you for incoming calls, missed calls, messages, and invites.",
+    title: "Mobile notifications and calls",
+  },
+  {
+    icon: <PaletteIcon />,
+    target: "themes-settings",
+    text: "Themes carry across mobile and desktop, so Doshab can keep the same personality everywhere.",
+    title: "Themes",
+  },
+  {
+    icon: <CheckIcon />,
+    text: "You are ready to create a group, join a voice room, or invite friends from your phone.",
+    title: "You're ready",
+  },
+];
+
 export function DashboardOnboardingCoordinator() {
   const pathname = usePathname();
   const callContext = useOptionalPersistentCall();
@@ -100,12 +161,15 @@ export function DashboardOnboardingCoordinator() {
   const [notificationStatus, setNotificationStatus] = useState<NotificationFlowStatus>("idle");
   const [notificationMessage, setNotificationMessage] = useState("");
   const [showPhoneSteps, setShowPhoneSteps] = useState(false);
-  const [notificationReturnStep, setNotificationReturnStep] = useState<number | null>(null);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 768,
+  );
+  const [activeTourVariant, setActiveTourVariant] = useState<TourVariant>("desktop");
   const dialogRef = useRef<HTMLElement | null>(null);
 
-  const step = tourSteps[stepIndex] ?? tourSteps[0];
+  const currentTourSteps = activeTourVariant === "mobile" ? mobileTourSteps : desktopTourSteps;
+  const step = currentTourSteps[stepIndex] ?? currentTourSteps[0];
   const shouldAvoidPrompts = useCallback(
     () => Boolean(activeCall) || isIncomingCallVisible(),
     [activeCall],
@@ -122,31 +186,8 @@ export function DashboardOnboardingCoordinator() {
     return nextDiagnostics;
   }, []);
 
-  const openNotificationFlow = useCallback(
-    async ({ returnStep }: { returnStep?: number } = {}) => {
-      if (shouldAvoidPrompts()) {
-        return;
-      }
-
-      setNotificationReturnStep(returnStep ?? null);
-      setNotificationStatus("idle");
-      setNotificationMessage("");
-      setShowPhoneSteps(false);
-      const nextDiagnostics = await refreshDiagnostics();
-
-      if (nextDiagnostics.status === "blocked") {
-        setNotificationStatus("blocked");
-      } else if (nextDiagnostics.status === "unsupported") {
-        setNotificationStatus("unsupported");
-      }
-
-      setMode("notification");
-    },
-    [refreshDiagnostics, shouldAvoidPrompts],
-  );
-
   const maybeOpenNotificationFlow = useCallback(async () => {
-    if (shouldAvoidPrompts() || !canAutoShowNotificationPrompt()) {
+    if (!isMobile || shouldAvoidPrompts() || !canAutoShowNotificationPrompt()) {
       return;
     }
 
@@ -159,58 +200,55 @@ export function DashboardOnboardingCoordinator() {
         }
       }, 900);
     }
-  }, [refreshDiagnostics, shouldAvoidPrompts]);
+  }, [isMobile, refreshDiagnostics, shouldAvoidPrompts]);
 
-  const closeNotificationFlow = useCallback(
-    ({ resumeTour = true }: { resumeTour?: boolean } = {}) => {
-      if (resumeTour && notificationReturnStep !== null) {
-        setStepIndex(notificationReturnStep);
-        writeStorage(tourStepKey, String(notificationReturnStep));
-        setMode("tour");
-        setNotificationReturnStep(null);
-        return;
-      }
-
-      setNotificationReturnStep(null);
-      setMode("idle");
-    },
-    [notificationReturnStep],
-  );
+  const closeNotificationFlow = useCallback(() => {
+    setMode("idle");
+  }, []);
 
   const completeTour = useCallback(() => {
     writeStorage(tourCompletedKey, "true");
+    writeStorage(getTourCompletionKey(activeTourVariant), "true");
     removeStorage(tourSkippedAtKey);
     removeStorage(tourStepKey);
+    removeStorage(getTourStepKey(activeTourVariant));
     setMode("idle");
     void maybeOpenNotificationFlow();
-  }, [maybeOpenNotificationFlow]);
+  }, [activeTourVariant, maybeOpenNotificationFlow]);
 
   const skipTour = useCallback(() => {
     writeStorage(tourSkippedAtKey, new Date().toISOString());
     removeStorage(tourStepKey);
+    removeStorage(getTourStepKey(activeTourVariant));
     setMode("idle");
     window.setTimeout(() => void maybeOpenNotificationFlow(), 1800);
-  }, [maybeOpenNotificationFlow]);
+  }, [activeTourVariant, maybeOpenNotificationFlow]);
 
   const goNext = useCallback(() => {
-    if (stepIndex >= tourSteps.length - 1) {
+    if (stepIndex >= currentTourSteps.length - 1) {
       completeTour();
       return;
     }
 
     const nextStep = stepIndex + 1;
     setStepIndex(nextStep);
+    writeStorage(getTourStepKey(activeTourVariant), String(nextStep));
     writeStorage(tourStepKey, String(nextStep));
-  }, [completeTour, stepIndex]);
+  }, [activeTourVariant, completeTour, currentTourSteps.length, stepIndex]);
 
   const handlePrimaryTourAction = useCallback(() => {
-    if (stepIndex === 6) {
-      void openNotificationFlow({ returnStep: 7 });
-      return;
-    }
-
     goNext();
-  }, [goNext, openNotificationFlow, stepIndex]);
+  }, [goNext]);
+
+  useEffect(() => {
+    const updateViewport = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", updateViewport);
+
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(async () => {
@@ -218,14 +256,17 @@ export function DashboardOnboardingCoordinator() {
         return;
       }
 
-      const storedStep = readStorage(tourStepKey);
-      const completed = readStorage(tourCompletedKey) === "true";
+      const variant = window.innerWidth < 768 ? "mobile" : "desktop";
+      const steps = variant === "mobile" ? mobileTourSteps : desktopTourSteps;
+      const storedStep = readStorage(getTourStepKey(variant)) ?? readStorage(tourStepKey);
+      const completed = readStorage(getTourCompletionKey(variant)) === "true";
       const skipped = Boolean(readStorage(tourSkippedAtKey));
 
       if (!completed && !skipped) {
         const parsedStep = Number(storedStep);
+        setActiveTourVariant(variant);
         setStepIndex(
-          Number.isInteger(parsedStep) && parsedStep >= 0 && parsedStep < tourSteps.length
+          Number.isInteger(parsedStep) && parsedStep >= 0 && parsedStep < steps.length
             ? parsedStep
             : 0,
         );
@@ -253,11 +294,15 @@ export function DashboardOnboardingCoordinator() {
 
   useEffect(() => {
     const handleRestart = () => {
+      const variant: TourVariant = window.innerWidth < 768 ? "mobile" : "desktop";
+
       removeStorage(tourCompletedKey);
+      removeStorage(getTourCompletionKey(variant));
       removeStorage(tourSkippedAtKey);
       writeStorage(tourStepKey, "0");
+      writeStorage(getTourStepKey(variant), "0");
+      setActiveTourVariant(variant);
       setStepIndex(0);
-      setNotificationReturnStep(null);
       setMode("tour");
     };
 
@@ -274,8 +319,6 @@ export function DashboardOnboardingCoordinator() {
     }
 
     const updateTargetRect = () => {
-      setIsMobile(window.innerWidth < 768);
-
       if (!step.target) {
         setTargetRect(null);
         return;
@@ -396,7 +439,7 @@ export function DashboardOnboardingCoordinator() {
       {mode === "tour" ? (
         <TourOverlay
           canGoBack={stepIndex > 0}
-          isMobile={isMobile}
+          isMobile={activeTourVariant === "mobile"}
           onBack={() => {
             const previousStep = Math.max(0, stepIndex - 1);
             setStepIndex(previousStep);
@@ -409,6 +452,7 @@ export function DashboardOnboardingCoordinator() {
           step={step}
           stepIndex={stepIndex}
           targetRect={targetRect}
+          totalSteps={currentTourSteps.length}
         />
       ) : (
         <NotificationOnboarding
@@ -438,6 +482,7 @@ function TourOverlay({
   step,
   stepIndex,
   targetRect,
+  totalSteps,
 }: {
   canGoBack: boolean;
   isMobile: boolean;
@@ -449,8 +494,9 @@ function TourOverlay({
   step: TourStep;
   stepIndex: number;
   targetRect: DOMRect | null;
+  totalSteps: number;
 }) {
-  const isFinalStep = stepIndex === tourSteps.length - 1;
+  const isFinalStep = stepIndex === totalSteps - 1;
   const cardPosition = useMemo(() => getTourCardPosition(targetRect), [targetRect]);
 
   return (
@@ -495,7 +541,7 @@ function TourOverlay({
           </button>
         </div>
         <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
-          Step {stepIndex + 1} of {tourSteps.length}
+          Step {stepIndex + 1} of {totalSteps}
         </p>
         <h2 className="mt-2 text-2xl font-bold text-white">{step.title}</h2>
         <p className="mt-3 text-sm leading-6 text-slate-300">{step.text}</p>
@@ -507,7 +553,7 @@ function TourOverlay({
         <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10">
           <div
             className="h-full rounded-full bg-[#FF5F25] motion-safe:transition-all"
-            style={{ width: `${((stepIndex + 1) / tourSteps.length) * 100}%` }}
+            style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }}
           />
         </div>
         <div className="mt-5 grid gap-2 sm:grid-cols-[auto_1fr_auto]">
@@ -782,6 +828,14 @@ function canAutoShowNotificationPrompt() {
   const remindLaterAt = Date.parse(readStorage(notificationRemindLaterAtKey) ?? "");
 
   return Number.isNaN(remindLaterAt) || remindLaterAt <= Date.now();
+}
+
+function getTourCompletionKey(variant: TourVariant) {
+  return variant === "mobile" ? mobileTourCompletedKey : desktopTourCompletedKey;
+}
+
+function getTourStepKey(variant: TourVariant) {
+  return variant === "mobile" ? mobileTourStepKey : desktopTourStepKey;
 }
 
 function enableLocalNotificationDefaults() {
