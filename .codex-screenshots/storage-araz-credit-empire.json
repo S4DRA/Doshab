@@ -1,0 +1,16 @@
+{
+    "cookies":  [
+
+                ],
+    "origins":  [
+                    {
+                        "localStorage":  [
+                                             {
+                                                 "value":  "araz-credit-empire",
+                                                 "name":  "doshab-theme"
+                                             }
+                                         ],
+                        "origin":  "http://localhost:3000"
+                    }
+                ]
+}

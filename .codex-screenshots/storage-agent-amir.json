@@ -1,0 +1,16 @@
+{
+    "cookies":  [
+
+                ],
+    "origins":  [
+                    {
+                        "localStorage":  [
+                                             {
+                                                 "value":  "agent-amir",
+                                                 "name":  "doshab-theme"
+                                             }
+                                         ],
+                        "origin":  "http://localhost:3000"
+                    }
+                ]
+}

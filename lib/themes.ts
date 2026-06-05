@@ -127,7 +127,7 @@ export type DoshabThemeConfig = {
   previewDetails: string[];
 };
 
-export const DEFAULT_DOSHAB_THEME_ID: DoshabThemeId = "dark";
+export const DEFAULT_DOSHAB_THEME_ID: DoshabThemeId = "bios-core";
 
 export const DOSHAB_THEMES: DoshabThemeConfig[] = [
   {

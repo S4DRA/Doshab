@@ -405,7 +405,7 @@ export function DashboardSidebar({
   const friendsMenu = friendsOpen ? (
     <div
       aria-label="Friends sidebar"
-      className="app-surface fixed inset-x-0 bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] top-0 z-40 flex flex-col overflow-hidden rounded-none border-l-0 border-r-0 p-3 sm:bottom-0 sm:left-24 sm:right-auto sm:w-80 sm:border-l sm:border-r min-[1180px]:left-[6.5rem] min-[1180px]:w-96"
+      className="dashboard-sidebar-popover app-surface fixed inset-x-0 bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] top-0 z-[60] flex flex-col overflow-hidden rounded-none border-l-0 border-r-0 p-3 sm:bottom-3 sm:left-[calc(var(--dashboard-primary-sidebar-width)+0.75rem)] sm:right-auto sm:top-3 sm:w-80 sm:border-l sm:border-r min-[1180px]:w-96"
       role="dialog"
     >
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 pb-3">
@@ -507,7 +507,7 @@ export function DashboardSidebar({
   ) : null;
 
   const createMenu = createOpen ? (
-    <div className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-50 max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-auto sm:left-[5.75rem] sm:right-auto sm:top-32 sm:w-[calc(100vw-7rem)] sm:max-w-72 min-[1180px]:left-[6.25rem]">
+    <div className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-auto sm:left-[calc(100%+0.75rem)] sm:right-auto sm:top-32 sm:w-[calc(100vw-8rem)] sm:max-w-72">
       <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
         Create
       </p>
@@ -601,7 +601,7 @@ export function DashboardSidebar({
   ) : null;
 
   const channelMenu = channelsOpen ? (
-    <div className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-50 max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] overflow-y-auto rounded-lg p-3 sm:hidden">
+    <div className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] overflow-y-auto rounded-lg p-3 sm:hidden">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
@@ -658,7 +658,7 @@ export function DashboardSidebar({
   const notificationMenu = notificationsOpen ? (
     <div
       aria-label="Notifications"
-      className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-50 max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-0 sm:left-[5.75rem] sm:right-auto sm:top-auto sm:w-[calc(100vw-7rem)] sm:max-w-96 min-[1180px]:left-[6.25rem]"
+      className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-3 sm:left-[calc(100%+0.75rem)] sm:right-auto sm:top-auto sm:w-[calc(100vw-8rem)] sm:max-w-96"
       role="dialog"
     >
       <div className="flex items-center justify-between gap-3">
@@ -758,7 +758,7 @@ export function DashboardSidebar({
   ) : null;
 
   const profileMenu = profileOpen ? (
-    <div className="app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] right-3 z-50 w-[calc(100vw-1.5rem)] max-w-44 rounded-lg p-2 sm:absolute sm:bottom-0 sm:left-[5.75rem] sm:right-auto sm:top-auto sm:w-[calc(100vw-7rem)] min-[1180px]:left-[6.25rem]">
+    <div className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] w-[calc(100vw-1.5rem)] max-w-44 origin-bottom-right overflow-y-auto rounded-lg p-2 sm:absolute sm:bottom-3 sm:left-[calc(100%+0.75rem)] sm:right-auto sm:top-auto sm:w-[calc(100vw-8rem)] sm:origin-bottom-left">
       <Link
         className="block min-h-10 rounded-lg px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
         href="/dashboard/profile"
@@ -830,9 +830,9 @@ export function DashboardSidebar({
         <div className="flex min-w-0 items-center justify-start gap-0.5">
           <button
             aria-label="Friends"
-            className={`grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
+            className={`dashboard-nav-icon grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
               pathname.startsWith("/dashboard/friends") || friendsOpen
-                ? "border-[#FF5F25] text-[#FF5F25]"
+                ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
                 : "border-transparent text-slate-300"
             }`}
             aria-expanded={friendsOpen}
@@ -857,8 +857,8 @@ export function DashboardSidebar({
           <button
             aria-expanded={createOpen}
             aria-label="Create menu"
-            className={`grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
-              createOpen ? "border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
+            className={`dashboard-nav-icon grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
+              createOpen ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
             }`}
             onClick={() => {
               setCreateOpen((open) => !open);
@@ -878,9 +878,9 @@ export function DashboardSidebar({
           <div className="flex items-center rounded-lg border border-transparent" data-tour-target="mobile-channel-drawer">
             <Link
               aria-label={pinnedGroup ? `${pinnedGroup.name} channel shortcut` : "Channels"}
-              className={`grid size-10 place-items-center rounded-lg transition min-[390px]:size-11 ${
+              className={`dashboard-nav-icon grid size-10 place-items-center rounded-lg transition min-[390px]:size-11 ${
                 pathname.startsWith("/dashboard/groups") || pathname.startsWith("/dashboard/channels")
-                  ? "text-[#FF5F25]"
+                  ? "dashboard-nav-icon-active text-[#FF5F25]"
                   : "text-slate-300"
               }`}
               href={pinnedGroupHref}
@@ -926,9 +926,9 @@ export function DashboardSidebar({
 
         <Link
           aria-label="Home"
-          className={`grid size-11 place-items-center rounded-lg border transition min-[390px]:size-12 ${
+          className={`dashboard-nav-icon grid size-11 place-items-center rounded-lg border transition min-[390px]:size-12 ${
             pathname === "/dashboard"
-              ? "border-[#FF5F25] text-[#FF5F25]"
+              ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
               : "border-transparent text-slate-300"
           }`}
           href="/dashboard"
@@ -942,8 +942,8 @@ export function DashboardSidebar({
           <button
             aria-expanded={notificationsOpen}
             aria-label="Notifications"
-            className={`relative grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
-              notificationsOpen ? "border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
+            className={`dashboard-nav-icon relative grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
+              notificationsOpen ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
             }`}
             data-tour-target="notifications-nav"
             onClick={() => {
@@ -969,8 +969,8 @@ export function DashboardSidebar({
           <button
             aria-expanded={profileOpen}
             aria-label="Profile menu"
-            className={`grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
-              profileActive || profileOpen ? "border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
+            className={`dashboard-nav-icon grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
+              profileActive || profileOpen ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
             }`}
             onClick={() => {
               setProfileOpen((open) => !open);
@@ -1010,9 +1010,9 @@ export function DashboardSidebar({
               <button
                 aria-expanded={friendsOpen}
                 aria-label="Friends"
-                className={`grid size-11 shrink-0 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
+                className={`dashboard-nav-icon grid size-11 shrink-0 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
                   active || friendsOpen
-                    ? "border-[#FF5F25] text-[#FF5F25]"
+                    ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
                     : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
                 }`}
                 key={item.href}
@@ -1034,9 +1034,9 @@ export function DashboardSidebar({
           return (
             <Link
               aria-label={item.label}
-              className={`grid size-11 shrink-0 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
+              className={`dashboard-nav-icon grid size-11 shrink-0 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
                 active
-                  ? "border-[#FF5F25] text-[#FF5F25]"
+                  ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
                   : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
               }`}
               href={item.href}
@@ -1052,9 +1052,9 @@ export function DashboardSidebar({
           <button
             aria-expanded={createOpen}
             aria-label="Create menu"
-            className={`grid size-11 shrink-0 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
+            className={`dashboard-nav-icon grid size-11 shrink-0 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
               createOpen
-                ? "border-[#FF5F25] text-[#FF5F25]"
+                ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
                 : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
             }`}
             onClick={() => {
@@ -1081,9 +1081,9 @@ export function DashboardSidebar({
           return (
             <Link
               aria-label={`${group.name} space`}
-              className={`grid size-11 shrink-0 place-items-center rounded-lg border text-sm font-black transition sm:size-12 min-[1180px]:size-[3.25rem] min-[1180px]:text-base ${
+              className={`dashboard-nav-icon grid size-11 shrink-0 place-items-center rounded-lg border text-sm font-black transition sm:size-12 min-[1180px]:size-[3.25rem] min-[1180px]:text-base ${
                 active
-                  ? "border-[#FF5F25] text-[#FF5F25]"
+                  ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
                   : "border-transparent bg-white/7 text-slate-200 hover:border-white/40 hover:bg-white/10 hover:text-white"
               }`}
               href={href}
@@ -1102,9 +1102,9 @@ export function DashboardSidebar({
           <button
             aria-expanded={notificationsOpen}
             aria-label="Notifications"
-            className={`relative grid size-11 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
+            className={`dashboard-nav-icon relative grid size-11 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
               notificationsOpen
-                ? "border-[#FF5F25] text-[#FF5F25]"
+                ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
                 : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
             }`}
             data-tour-target="notifications-nav"
@@ -1132,9 +1132,9 @@ export function DashboardSidebar({
           <button
             aria-expanded={profileOpen}
             aria-label="Profile menu"
-            className={`grid size-11 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
+            className={`dashboard-nav-icon grid size-11 place-items-center rounded-lg border transition sm:size-12 min-[1180px]:size-[3.25rem] [&_svg]:h-6 [&_svg]:w-6 [&_svg]:min-[1180px]:h-7 [&_svg]:min-[1180px]:w-7 ${
               profileActive || profileOpen
-                ? "border-[#FF5F25] text-[#FF5F25]"
+                ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
                 : "border-transparent text-slate-300 hover:border-white/40 hover:bg-white/10 hover:text-white"
             }`}
             onClick={() => {

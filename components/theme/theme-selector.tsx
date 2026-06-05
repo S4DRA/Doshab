@@ -15,7 +15,7 @@ export function ThemeSelector() {
   const activeTheme = getDoshabTheme(themeId);
 
   return (
-    <section className="app-row overflow-hidden p-4">
+    <section className="theme-selector-shell app-row overflow-hidden p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="app-section-title">Themes</p>
@@ -26,7 +26,7 @@ export function ThemeSelector() {
         </span>
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="theme-selector-grid mt-4 grid gap-4">
         {DOSHAB_THEMES.map((theme) => {
           const active = theme.id === themeId;
 
@@ -48,8 +48,9 @@ export function ThemeSelector() {
               }`}
               key={theme.id}
             >
-              <ThemePreview theme={theme} />
-              <div className="flex min-w-0 flex-1 flex-col gap-4">
+              <div className="theme-choice-card-layout grid min-w-0 gap-4">
+                <ThemePreview theme={theme} />
+                <div className="theme-choice-card-body flex min-w-0 flex-1 flex-col gap-4">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <h4 className="text-lg font-bold text-white">{theme.name}</h4>
@@ -73,12 +74,19 @@ export function ThemeSelector() {
                     ))}
                   </div>
                 ) : null}
+                <div className="theme-detail-grid grid gap-2">
+                  {theme.previewDetails.slice(0, 4).map((detail) => (
+                    <span className="theme-detail-pill" key={detail}>
+                      {detail}
+                    </span>
+                  ))}
+                </div>
                 <button
                   aria-label={
                     active ? `${theme.name} is the current theme` : `Use ${theme.name} theme`
                   }
                   aria-pressed={active}
-                  className={`mt-auto h-11 w-full rounded-lg px-3 text-xs font-bold transition ${
+                  className={`theme-select-button mt-auto h-11 w-full rounded-lg px-3 text-xs font-bold transition ${
                     active ? "app-button-primary" : "app-button-secondary"
                   }`}
                   onClick={() => setThemeId(theme.id)}
@@ -87,6 +95,7 @@ export function ThemeSelector() {
                 >
                   {active ? "Selected" : "Use theme"}
                 </button>
+                </div>
               </div>
             </article>
           );

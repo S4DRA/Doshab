@@ -58,7 +58,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#2B0000",
+  themeColor: "#000080",
 };
 
 const themeBootScript = `try{var theme=localStorage.getItem("${DOSHAB_THEME_STORAGE_KEY}");document.documentElement.dataset.theme=${JSON.stringify(
@@ -75,7 +75,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       data-scroll-behavior="smooth"
-      data-theme="dark"
+      data-theme={DEFAULT_DOSHAB_THEME_ID}
       suppressHydrationWarning
     >
       <head>

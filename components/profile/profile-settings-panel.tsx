@@ -341,7 +341,7 @@ export function ProfileSettingsPanel() {
           />
         </label>
 
-        <div className="app-row flex flex-col items-stretch gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between" data-tour-target="themes-settings">
+        <div className="settings-shortcut-row app-row flex flex-col items-stretch gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between" data-tour-target="themes-settings">
           <span className="min-w-0">
             <span className="block text-sm font-semibold text-white">Themes</span>
             <span className="block text-sm leading-5 text-slate-400">
@@ -349,7 +349,7 @@ export function ProfileSettingsPanel() {
             </span>
           </span>
           <Link
-            className="app-button-primary inline-flex h-11 shrink-0 items-center justify-center rounded-lg px-4 text-sm font-bold transition sm:h-10"
+            className="settings-shortcut-button app-button-primary inline-flex h-11 shrink-0 items-center justify-center rounded-lg px-4 text-sm font-bold transition sm:h-10"
             href="/dashboard/profile/themes"
           >
             Theme settings

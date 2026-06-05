@@ -27,7 +27,7 @@ export function AuthCard({
   return (
     <main className="grid min-h-[calc(100dvh-2rem)] place-items-center px-3 py-4 text-white sm:min-h-[calc(100vh-6rem)] sm:px-5 sm:py-10">
       <section className="app-surface grid w-full max-w-5xl overflow-hidden rounded-xl lg:grid-cols-[0.92fr_1.08fr]">
-        <div className="hidden min-h-[560px] flex-col justify-between border-r border-white/10 bg-[#263324] p-8 text-white lg:flex">
+        <div className="auth-feature-panel hidden min-h-[560px] flex-col justify-between border-r border-white/10 bg-[#263324] p-8 text-white lg:flex">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/70">
               Doshab

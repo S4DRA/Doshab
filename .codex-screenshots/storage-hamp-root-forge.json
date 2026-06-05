@@ -1,0 +1,16 @@
+{
+    "cookies":  [
+
+                ],
+    "origins":  [
+                    {
+                        "localStorage":  [
+                                             {
+                                                 "value":  "hamp-root-forge",
+                                                 "name":  "doshab-theme"
+                                             }
+                                         ],
+                        "origin":  "http://localhost:3000"
+                    }
+                ]
+}
