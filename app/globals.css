@@ -894,6 +894,7 @@ html[data-theme="nima-last-light"],
 html[data-theme="araz-credit-empire"],
 html[data-theme="threez-street-hero"],
 html[data-theme="hamp-root-forge"],
+html[data-theme="bios-core"],
 html[data-theme="mehran-blue-corner"] {
   color-scheme: dark;
 }
@@ -7773,6 +7774,449 @@ html[data-theme] body::after {
 
 html[data-theme] body::before {
   animation: none !important;
+}
+
+html[data-theme="bios-core"] {
+  --background: #000080;
+  --foreground: #ffffff;
+  --surface-canvas: #000080;
+  --surface-sidebar: #000066;
+  --surface-panel: #0000aa;
+  --surface-raised: #404040;
+  --surface-hover: #0000cc;
+  --border-strong: #c0c0c0;
+  --border-soft: rgba(192, 192, 192, 0.62);
+  --text-high: #ffffff;
+  --text-body: #f8fafc;
+  --text-muted: #c0c0c0;
+  --text-faint: #808080;
+  --accent: #ffff00;
+  --accent-hover: #fff36d;
+  --accent-muted: #0000aa;
+  --success: #22c55e;
+  --warning: #ffff00;
+  --control: #ffff00;
+  --control-hover: #fff36d;
+  --control-text: #000000;
+  --control-subtle: #0000aa;
+  --control-subtle-hover: #0000cc;
+  --control-subtle-text: #ffffff;
+  --shadow: 0 24px 72px -48px rgba(0, 0, 0, 0.72);
+  --background-aura:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 18rem),
+    radial-gradient(circle at 84% 76%, rgba(255, 255, 0, 0.08), transparent 26rem);
+  --background-texture:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 4px),
+    linear-gradient(rgba(192, 192, 192, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192, 192, 192, 0.035) 1px, transparent 1px);
+  --background-texture-size: auto, 3.5rem 3.5rem, 3.5rem 3.5rem;
+  --background-detail-opacity: 0.34;
+}
+
+html[data-theme="bios-core"] body {
+  background:
+    var(--background-aura),
+    linear-gradient(180deg, #0000aa 0%, #000080 58%, #000066 100%);
+}
+
+html[data-theme="bios-core"] body::before {
+  opacity: 0.24;
+  mask-image: linear-gradient(180deg, black, transparent 72%);
+}
+
+html[data-theme="bios-core"] body::after {
+  display: block !important;
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.05) 0 1px,
+    transparent 1px 4px
+  );
+  opacity: 0.16;
+  animation: doshab-bios-scanline 9s linear infinite !important;
+}
+
+html[data-theme="bios-core"] :is(.app-card, .app-panel, .app-row, .app-page-header, .app-surface) {
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--accent) 44%, black);
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(74, 74, 74, 0.92), rgba(40, 40, 40, 0.88)),
+    color-mix(in srgb, var(--surface-raised) 82%, #000080);
+  box-shadow:
+    inset 2px 2px 0 rgba(255, 255, 255, 0.22),
+    inset -2px -2px 0 rgba(0, 0, 0, 0.42),
+    0 24px 68px -52px rgba(0, 0, 0, 0.78);
+}
+
+html[data-theme="bios-core"] :is(.app-card, .app-panel, .app-page-header, .app-surface)::before {
+  content: "SYSTEM";
+  position: absolute;
+  top: 0.45rem;
+  right: 0.55rem;
+  color: rgba(255, 255, 255, 0.2);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  pointer-events: none;
+}
+
+html[data-theme="bios-core"] :is(.app-card, .app-panel, .app-row, .app-page-header, .app-surface):hover {
+  border-color: #ffff00;
+}
+
+html[data-theme="bios-core"] .app-section-title {
+  color: #ffff00;
+  font-family: var(--font-geist-mono), monospace;
+  letter-spacing: 0.16em;
+}
+
+html[data-theme="bios-core"] :is(.app-button-primary, .app-icon-button-primary) {
+  border-color: #000000;
+  background: linear-gradient(180deg, #ffff00, #d6c900);
+  color: #000000;
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 900;
+  box-shadow:
+    inset 0 -2px 0 rgba(3, 7, 18, 0.32),
+    0 12px 26px -20px rgba(255, 255, 0, 0.6);
+}
+
+html[data-theme="bios-core"] :is(.app-button-primary, .app-icon-button-primary):hover {
+  border-color: #ffffff;
+  background: linear-gradient(180deg, #fff36d, #ffff00);
+}
+
+html[data-theme="bios-core"] .app-button-secondary,
+html[data-theme="bios-core"] .app-icon-button {
+  border-color: rgba(192, 192, 192, 0.74);
+  background: linear-gradient(180deg, #0000aa, #000080);
+  color: #ffffff;
+}
+
+html[data-theme="bios-core"] .app-button-secondary:hover,
+html[data-theme="bios-core"] .app-icon-button:hover {
+  border-color: #ffff00;
+  background: #0000cc;
+  color: #ffff00;
+}
+
+html[data-theme="bios-core"] .app-button-danger {
+  border-color: rgba(239, 68, 68, 0.62);
+  background: rgba(127, 29, 29, 0.32);
+  color: #fecaca;
+}
+
+html[data-theme="bios-core"] :is(.app-button-primary, .app-button-secondary, .app-button-danger, .app-icon-button):active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 0 rgba(3, 7, 18, 0.38);
+}
+
+html[data-theme="bios-core"] :is(input, textarea, select) {
+  border-color: rgba(192, 192, 192, 0.74) !important;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    #000080 !important;
+  background-size: 100% 0.5rem, auto !important;
+  color: #ffffff !important;
+  caret-color: #ffff00;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+html[data-theme="bios-core"] :is(input, textarea)::placeholder {
+  color: rgba(192, 192, 192, 0.72) !important;
+}
+
+html[data-theme="bios-core"] :is(input, textarea, select):focus {
+  border-color: #ffff00 !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 0, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16) !important;
+}
+
+html[data-theme="bios-core"] :is(.dashboard-main-sidebar, .dashboard-secondary-sidebar, header) {
+  border-color: rgba(192, 192, 192, 0.74) !important;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(0, 0, 170, 0.96), rgba(0, 0, 102, 0.98)) !important;
+  background-size: 100% 0.7rem, auto !important;
+}
+
+html[data-theme="bios-core"] aside :is(a, button)[class*="text-[#FF5F25]"],
+html[data-theme="bios-core"] aside :is(a, button)[class*="border-[#FF5F25]"] {
+  border-color: #ffff00 !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 0, 0.94), rgba(255, 255, 0, 0.82)) !important;
+  color: #000000 !important;
+  box-shadow:
+    inset 3px 0 0 #ffffff,
+    inset 0 0 0 1px rgba(0, 0, 0, 0.36);
+}
+
+html[data-theme="bios-core"] aside :is(a, button):hover {
+  border-color: rgba(255, 255, 0, 0.82) !important;
+  background: #0000cc !important;
+  color: #ffff00 !important;
+}
+
+html[data-theme="bios-core"] :is(.app-badge, .theme-preview-chip, [class*="rounded-full"][class*="border"]) {
+  border-color: rgba(192, 192, 192, 0.72);
+  background: rgba(0, 0, 128, 0.78);
+  color: #ffffff;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+html[data-theme="bios-core"] .app-status-dot[data-status="ONLINE"] {
+  background: #22c55e;
+  color: #22c55e;
+}
+
+html[data-theme="bios-core"] .app-status-dot[data-status="IDLE"] {
+  background: #facc15;
+  color: #facc15;
+}
+
+html[data-theme="bios-core"] .app-status-dot[data-status="DO_NOT_DISTURB"] {
+  background: #ef4444;
+  color: #ef4444;
+}
+
+html[data-theme="bios-core"] .app-skeleton {
+  border-color: rgba(192, 192, 192, 0.72);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 0, 0.12), transparent 36%),
+    #404040;
+}
+
+html[data-theme="bios-core"] .app-skeleton::before {
+  content: "BOOTING MODULE...";
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  transform: translateY(-50%);
+}
+
+html[data-theme="bios-core"] .app-skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 0, 0.32), transparent);
+}
+
+html[data-theme="bios-core"] :is(.app-card, .app-panel)[class*="border-dashed"],
+html[data-theme="bios-core"] p[class*="border-dashed"],
+html[data-theme="bios-core"] div[class*="border-dashed"] {
+  border-color: rgba(192, 192, 192, 0.72) !important;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    rgba(0, 0, 128, 0.62) !important;
+  background-size: 100% 0.65rem, auto !important;
+}
+
+html[data-theme="bios-core"] .message-feed .app-card p:first-child {
+  font-family: var(--font-geist-mono), monospace;
+}
+
+html[data-theme="bios-core"] .message-feed .app-card p:first-child::after {
+  content: " / SYSTEM WAITING FOR INPUT";
+  color: #ffff00;
+}
+
+.bios-preview-rich {
+  min-height: 18.5rem;
+  border-color: rgba(192, 192, 192, 0.88);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(180deg, #0000aa, #000080);
+  background-size: 1.3rem 1.3rem, 1.3rem 1.3rem, auto, auto;
+  color: #ffffff;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.bios-preview-rich::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.08) 0 1px,
+    transparent 1px 4px
+  );
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+.bios-preview-scanline {
+  position: absolute;
+  inset-inline: 0;
+  top: -30%;
+  height: 36%;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  animation: doshab-bios-preview-scan 4.8s linear infinite;
+}
+
+.bios-preview-panel {
+  position: relative;
+  z-index: 1;
+  margin: 0.8rem;
+  border: 2px solid #c0c0c0;
+  background: #404040;
+  box-shadow:
+    inset 2px 2px 0 rgba(255, 255, 255, 0.26),
+    inset -2px -2px 0 rgba(0, 0, 0, 0.55);
+}
+
+.bios-preview-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border-bottom: 2px solid #c0c0c0;
+  padding: 0.7rem;
+}
+
+.bios-preview-chip {
+  display: grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  place-items: center;
+  border: 1px solid #ffff00;
+  background: #000080;
+  color: #ffff00;
+}
+
+.bios-preview-title-row p {
+  color: #ffff00;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.bios-preview-title-row h5 {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.bios-preview-menu {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+}
+
+.bios-preview-menu div {
+  display: flex;
+  min-height: 1.85rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid rgba(192, 192, 192, 0.5);
+  padding: 0.25rem 0.45rem;
+  color: #ffffff;
+  font-size: 0.68rem;
+}
+
+.bios-preview-menu strong {
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.bios-preview-menu .bios-preview-selected-row {
+  border-color: #ffff00;
+  background: #ffff00;
+  color: #000000;
+}
+
+.bios-preview-menu .bios-preview-selected-row strong {
+  color: #000000;
+}
+
+.bios-preview-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 2px solid #c0c0c0;
+  padding: 0.65rem 0.75rem;
+  color: #ffff00;
+  font-size: 0.64rem;
+  font-weight: 900;
+}
+
+.bios-preview-footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.bios-preview-footer button {
+  border: 1px solid #000000;
+  background: #ffff00;
+  padding: 0.35rem 0.75rem;
+  color: #000000;
+  font-weight: 900;
+}
+
+@keyframes doshab-bios-scanline {
+  0% {
+    background-position-y: 0;
+  }
+  100% {
+    background-position-y: 4rem;
+  }
+}
+
+@keyframes doshab-bios-preview-scan {
+  0% {
+    transform: translateY(-20%);
+  }
+  100% {
+    transform: translateY(360%);
+  }
+}
+
+@media (max-width: 639px) {
+  html[data-theme="bios-core"] {
+    --background-detail-opacity: 0.16;
+  }
+
+  html[data-theme="bios-core"] body::after {
+    display: none !important;
+  }
+
+  html[data-theme="bios-core"] :is(.app-card, .app-panel, .app-row, .app-page-header, .app-surface)::before {
+    display: none;
+  }
+
+  .bios-preview-rich {
+    min-height: 16.5rem;
+    background-size: 1.8rem 1.8rem, 1.8rem 1.8rem, auto, auto;
+  }
+
+  .bios-preview-panel {
+    margin: 0.55rem;
+  }
+
+  .bios-preview-menu div {
+    font-size: 0.62rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="bios-core"] body::after,
+  .bios-preview-scanline {
+    animation: none !important;
+  }
 }
 
 /* LiveKit call controls need to escape the bottom control bar without being clipped. */

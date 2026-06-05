@@ -42,6 +42,8 @@ export function ThemeSelector() {
               } ${
                 theme.id === "hamp-root-forge" ? "theme-choice-card-hamp-root-forge" : ""
               } ${
+                theme.id === "bios-core" ? "theme-choice-card-bios-core" : ""
+              } ${
                 theme.id === "mehran-blue-corner" ? "theme-choice-card-mehran-blue-corner" : ""
               }`}
               key={theme.id}
@@ -113,6 +115,10 @@ function ThemePreview({ theme }: { theme: DoshabThemeConfig }) {
 
   if (theme.id === "hamp-root-forge") {
     return <HampRootForgePreview theme={theme} />;
+  }
+
+  if (theme.id === "bios-core") {
+    return <BiosCorePreview theme={theme} />;
   }
 
   if (theme.id === "mehran-blue-corner") {
@@ -594,6 +600,62 @@ function MehranBlueCornerPreview({ theme }: { theme: DoshabThemeConfig }) {
         <span>Blue Corner</span>
         <strong>Threat Quiet</strong>
       </aside>
+    </div>
+  );
+}
+
+function BiosCorePreview({ theme }: { theme: DoshabThemeConfig }) {
+  return (
+    <div
+      className={`theme-preview bios-preview-rich relative overflow-hidden rounded-lg border ${
+        theme.decorativeClassName ?? ""
+      }`}
+      style={{
+        "--theme-preview-accent": theme.colors.accent,
+        "--theme-preview-accent-secondary": theme.colors.accentSecondary,
+        "--theme-preview-background": theme.backgroundStyle,
+        "--theme-preview-border": theme.colors.border,
+        "--theme-preview-button": theme.buttonStyle,
+        "--theme-preview-card": theme.cardStyle,
+        "--theme-preview-glow": theme.accentStyle,
+        "--theme-preview-surface": theme.colors.surface,
+        "--theme-preview-text": theme.colors.text,
+      } as CSSProperties}
+    >
+      <div className="bios-preview-scanline" aria-hidden="true" />
+      <div className="bios-preview-panel">
+        <div className="bios-preview-title-row">
+          <span className="bios-preview-chip">
+            <ThemeIcon className="h-4 w-4" id="system-core" />
+          </span>
+          <div className="min-w-0">
+            <p>SYSTEM READY</p>
+            <h5>BIOS Core</h5>
+          </div>
+          <ThemeIcon className="h-5 w-5" id="terminal" />
+        </div>
+        <div className="bios-preview-menu" aria-label="BIOS Core preview status">
+          {[
+            ["BOOT MODE", "DOSHAB"],
+            ["VOICE MODULE", "ONLINE"],
+            ["CHAT BUS", "ACTIVE"],
+            ["NOTIFICATIONS", "ENABLED"],
+            ["MEMORY CHECK", "PASSED"],
+          ].map(([label, value], index) => (
+            <div className={index === 0 ? "bios-preview-selected-row" : ""} key={label}>
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </div>
+          ))}
+        </div>
+        <div className="bios-preview-footer">
+          <span>
+            <ThemeIcon className="h-3.5 w-3.5" id="protocol-network" />
+            SIGNAL LOCKED
+          </span>
+          <button type="button">ENTER</button>
+        </div>
+      </div>
     </div>
   );
 }

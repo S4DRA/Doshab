@@ -19,6 +19,7 @@ import {
 import type { ChatMessage } from "@/types";
 
 type RealtimeMessagePanelProps = {
+  canPinMessages?: boolean;
   channelId: string;
   channelName: string;
   currentUser?: ChatMessage["sender"];
@@ -30,6 +31,7 @@ type PendingMessage = ChatMessage & {
 };
 
 export function RealtimeMessagePanel({
+  canPinMessages = false,
   channelId,
   channelName,
   currentUser,
@@ -40,6 +42,15 @@ export function RealtimeMessagePanel({
   const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [encryptionReady, setEncryptionReady] = useState(false);
+  const [pinnedMessages, setPinnedMessages] = useState<ChatMessage[]>([]);
+  const [pinnedOpen, setPinnedOpen] = useState(false);
+  const [pinnedLoading, setPinnedLoading] = useState(false);
+  const [pollOpen, setPollOpen] = useState(false);
+  const [pollOptions, setPollOptions] = useState(["", ""]);
+  const [pollQuestion, setPollQuestion] = useState("");
+  const [replyTarget, setReplyTarget] = useState<ChatMessage | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [sendError, setSendError] = useState<string | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -48,6 +59,19 @@ export function RealtimeMessagePanel({
     () => mergeMessages(decryptedMessages, pendingMessages),
     [decryptedMessages, pendingMessages],
   );
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    if (!query) {
+      return [];
+    }
+
+    return displayedMessages.filter((message) => {
+      const sender = `${message.sender.name} ${message.sender.email}`.toLowerCase();
+
+      return message.content.toLowerCase().includes(query) || sender.includes(query);
+    });
+  }, [displayedMessages, searchQuery]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ block: "end" });
@@ -58,14 +82,7 @@ export function RealtimeMessagePanel({
 
     async function decryptMessages() {
       const messages = await Promise.all(
-        encryptedMessages.map(async (message) => {
-          const result = await decryptMessageContent(message.content);
-
-          return {
-            ...message,
-            content: result.text,
-          };
-        }),
+        encryptedMessages.map((message) => decryptChatMessage(message)),
       );
 
       if (!cancelled) {
@@ -127,6 +144,46 @@ export function RealtimeMessagePanel({
     return () => eventSource.close();
   }, [channelId]);
 
+  function handleMessageUpdate(message: ChatMessage) {
+    setDecryptedMessages((current) => mergeMessages(current, [message]));
+    setPinnedMessages((current) => {
+      const nextMessages = message.pinnedAt
+        ? mergeMessages(current, [message])
+        : current.filter((item) => item.id !== message.id);
+
+      return nextMessages.sort(
+        (first, second) =>
+          new Date(second.pinnedAt ?? second.createdAt).getTime() -
+          new Date(first.pinnedAt ?? first.createdAt).getTime(),
+      );
+    });
+  }
+
+  async function loadPinnedMessages() {
+    setPinnedOpen(true);
+    setPinnedLoading(true);
+
+    try {
+      const response = await fetch(`/api/channels/${channelId}/pinned-messages`, {
+        headers: {
+          accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Pinned messages failed.");
+      }
+
+      const data = (await response.json()) as { messages?: ChatMessage[] };
+      const messages = await Promise.all((data.messages ?? []).map(decryptChatMessage));
+      setPinnedMessages(messages);
+    } catch {
+      setPinnedMessages([]);
+    } finally {
+      setPinnedLoading(false);
+    }
+  }
+
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const content = draft.trim();
@@ -140,11 +197,19 @@ export function RealtimeMessagePanel({
       createdAt: new Date().toISOString(),
       id: `pending:${crypto.randomUUID()}`,
       pending: true,
+      replyTo: replyTarget
+        ? {
+            content: replyTarget.content,
+            id: replyTarget.id,
+            sender: replyTarget.sender,
+          }
+        : null,
       sender: currentUser,
     };
 
     setDraft("");
     setSendError(null);
+    setReplyTarget(null);
     setPendingMessages((current) => [...current, pendingMessage]);
 
     try {
@@ -154,6 +219,7 @@ export function RealtimeMessagePanel({
         body: JSON.stringify({
           encryptedContent,
           notificationPreview: content,
+          replyToMessageId: replyTarget?.id,
         }),
         headers: {
           "content-type": "application/json",
@@ -175,7 +241,56 @@ export function RealtimeMessagePanel({
         current.filter((pending) => pending.id !== pendingMessage.id),
       );
       setDraft(content);
+      setReplyTarget(replyTarget);
       setSendError("Could not send. Your message is back in the composer.");
+    }
+  }
+
+  async function sendPoll() {
+    const question = pollQuestion.replace(/\s+/g, " ").trim();
+    const options = pollOptions
+      .map((option) => option.replace(/\s+/g, " ").trim())
+      .filter(Boolean)
+      .slice(0, 5);
+
+    if (!question || options.length < 2 || !encryptionReady || !currentUser) {
+      return;
+    }
+
+    setSendError(null);
+
+    try {
+      const { devices } = await fetchChannelDeviceKeys(channelId);
+      const content = `Poll: ${question}`;
+      const encryptedContent = await encryptMessageContent(content, devices);
+      const response = await fetch(`/api/channels/${channelId}/messages`, {
+        body: JSON.stringify({
+          encryptedContent,
+          notificationPreview: content,
+          poll: {
+            options,
+            question,
+          },
+          replyToMessageId: replyTarget?.id,
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Poll send failed.");
+      }
+
+      const message = (await response.json()) as ChatMessage;
+      setEncryptedMessages((current) => mergeMessages(current, [message]));
+      setPollOpen(false);
+      setPollQuestion("");
+      setPollOptions(["", ""]);
+      setReplyTarget(null);
+    } catch {
+      setSendError("Could not create poll. Try again in a moment.");
     }
   }
 
@@ -189,7 +304,7 @@ export function RealtimeMessagePanel({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden sm:min-h-[28rem]" data-tour-target="chat-panel">
+    <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden sm:min-h-[28rem]" data-tour-target="chat-panel">
       <div className="shrink-0 space-y-2">
         {!encryptionReady ? (
           <p className="app-card p-3 text-xs leading-5 text-slate-400">
@@ -204,12 +319,99 @@ export function RealtimeMessagePanel({
         ) : null}
       </div>
 
+      <div className="mt-2 flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <button
+            className="app-icon-button h-10 w-10"
+            onClick={() => setSearchOpen(true)}
+            title="Search channel"
+            type="button"
+          >
+            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+          </button>
+          <button
+            className="inline-flex h-10 items-center rounded-lg border border-white/10 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25]/60 hover:text-white"
+            onClick={() => void loadPinnedMessages()}
+            type="button"
+          >
+            Pinned
+          </button>
+          <button
+            className="inline-flex h-10 items-center rounded-lg border border-white/10 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25]/60 hover:text-white"
+            onClick={() => setPollOpen(true)}
+            type="button"
+          >
+            Poll
+          </button>
+        </div>
+        <span className="text-[11px] text-slate-500">
+          {displayedMessages.length} loaded
+        </span>
+      </div>
+
+      {searchOpen ? (
+        <SearchPanel
+          onClose={() => setSearchOpen(false)}
+          query={searchQuery}
+          results={searchResults}
+          setQuery={setSearchQuery}
+        />
+      ) : null}
+
+      {pinnedOpen ? (
+        <PinnedPanel
+          loading={pinnedLoading}
+          messages={pinnedMessages}
+          onClose={() => setPinnedOpen(false)}
+        />
+      ) : null}
+
+      {pollOpen ? (
+        <PollDialog
+          onClose={() => setPollOpen(false)}
+          onCreate={() => void sendPoll()}
+          options={pollOptions}
+          question={pollQuestion}
+          setOptions={setPollOptions}
+          setQuestion={setPollQuestion}
+        />
+      ) : null}
+
       <div className="message-feed min-h-0 flex-1 scroll-pb-24 overflow-y-auto overscroll-contain py-2 pr-1 sm:max-h-none sm:py-3">
-        <MessageList messages={displayedMessages} />
+        <MessageList
+          canPinMessages={canPinMessages}
+          currentUserId={currentUser?.id}
+          messages={displayedMessages}
+          onMessageUpdate={handleMessageUpdate}
+          onReply={setReplyTarget}
+        />
         <div ref={messagesEndRef} />
       </div>
 
       <div className="shrink-0 border-t border-white/10 bg-[#070907]/95 pb-[max(env(safe-area-inset-bottom),0.25rem)] pt-3 backdrop-blur">
+        {replyTarget ? (
+          <div className="mb-2 flex items-start justify-between gap-3 rounded-lg border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-3 py-2">
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold text-[#FFB199]">
+                Replying to {replyTarget.sender.name || replyTarget.sender.email}
+              </p>
+              <p className="mt-1 line-clamp-1 text-xs text-slate-300">
+                {replyTarget.content}
+              </p>
+            </div>
+            <button
+              aria-label="Cancel reply"
+              className="app-icon-button h-8 w-8 shrink-0"
+              onClick={() => setReplyTarget(null)}
+              type="button"
+            >
+              <span aria-hidden="true">x</span>
+            </button>
+          </div>
+        ) : null}
         <form className="flex items-end gap-2 sm:gap-3" data-tour-target="message-composer" onSubmit={sendMessage}>
           <textarea
             className="max-h-28 min-h-12 flex-1 resize-none overflow-y-auto rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-11 sm:max-h-36 sm:text-sm"
@@ -271,4 +473,252 @@ function newestCreatedAt(messages: ChatMessage[]) {
   }, 0);
 
   return new Date(newest).toISOString();
+}
+
+async function decryptChatMessage<T extends ChatMessage>(message: T): Promise<T> {
+  const [content, replyContent] = await Promise.all([
+    decryptMessageContent(message.content),
+    message.replyTo ? decryptMessageContent(message.replyTo.content) : null,
+  ]);
+
+  return {
+    ...message,
+    content: content.text,
+    replyTo: message.replyTo
+      ? {
+          ...message.replyTo,
+          content: replyContent?.text ?? "Original message unavailable.",
+        }
+      : null,
+  };
+}
+
+function SearchPanel({
+  onClose,
+  query,
+  results,
+  setQuery,
+}: {
+  onClose: () => void;
+  query: string;
+  results: ChatMessage[];
+  setQuery: (value: string) => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[70] flex items-end bg-black/45 sm:absolute sm:inset-0 sm:items-start sm:justify-end sm:bg-black/20">
+      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:m-3 sm:max-w-md sm:rounded-lg">
+        <PanelHeader onClose={onClose} overline="Search" title="Channel search" />
+        <input
+          autoFocus
+          className="mt-4 h-11 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none focus:border-[#FF5F25] sm:text-sm"
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search loaded messages"
+          value={query}
+        />
+        <div className="mt-4 grid gap-2">
+          {query.trim() && results.length ? (
+            results.map((message) => (
+              <button
+                className="app-row min-h-14 p-3 text-left"
+                key={message.id}
+                onClick={() => {
+                  scrollToMessage(message.id);
+                  onClose();
+                }}
+                type="button"
+              >
+                <span className="block truncate text-sm font-semibold text-white">
+                  {message.sender.name || message.sender.email}
+                </span>
+                <span className="mt-1 block line-clamp-2 text-xs leading-5 text-slate-400">
+                  {message.content}
+                </span>
+              </button>
+            ))
+          ) : (
+            <p className="rounded-lg border border-dashed border-white/10 p-4 text-sm text-slate-400">
+              {query.trim() ? "No messages found." : "Search uses messages loaded on this device."}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PinnedPanel({
+  loading,
+  messages,
+  onClose,
+}: {
+  loading: boolean;
+  messages: ChatMessage[];
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[70] flex items-end bg-black/45 sm:absolute sm:inset-0 sm:items-start sm:justify-end sm:bg-black/20">
+      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:m-3 sm:max-w-md sm:rounded-lg">
+        <PanelHeader onClose={onClose} overline="Pinned" title="Pinned messages" />
+        <div className="mt-4 grid gap-2">
+          {loading ? (
+            <div className="app-skeleton h-20 rounded-lg" />
+          ) : messages.length ? (
+            messages.map((message) => (
+              <button
+                className="app-row min-h-16 p-3 text-left"
+                key={message.id}
+                onClick={() => {
+                  scrollToMessage(message.id);
+                  onClose();
+                }}
+                type="button"
+              >
+                <span className="flex items-center justify-between gap-3">
+                  <span className="truncate text-sm font-semibold text-white">
+                    {message.sender.name || message.sender.email}
+                  </span>
+                  <span className="shrink-0 text-[11px] text-slate-500">
+                    {formatMessageDate(message.pinnedAt ?? message.createdAt)}
+                  </span>
+                </span>
+                <span className="mt-1 block line-clamp-2 text-xs leading-5 text-slate-400">
+                  {message.content}
+                </span>
+              </button>
+            ))
+          ) : (
+            <p className="rounded-lg border border-dashed border-white/10 p-4 text-sm text-slate-400">
+              No pinned messages yet.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PollDialog({
+  onClose,
+  onCreate,
+  options,
+  question,
+  setOptions,
+  setQuestion,
+}: {
+  onClose: () => void;
+  onCreate: () => void;
+  options: string[];
+  question: string;
+  setOptions: (options: string[]) => void;
+  setQuestion: (question: string) => void;
+}) {
+  const validOptionCount = options.filter((option) => option.trim()).length;
+
+  return (
+    <div className="fixed inset-0 z-[75] flex items-end bg-black/50 sm:items-center sm:justify-center">
+      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:max-w-lg sm:rounded-lg">
+        <PanelHeader onClose={onClose} overline="Poll" title="Create poll" />
+        <label className="mt-4 block">
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+            Question
+          </span>
+          <input
+            className="mt-2 h-11 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none focus:border-[#FF5F25] sm:text-sm"
+            maxLength={180}
+            onChange={(event) => setQuestion(event.target.value)}
+            value={question}
+          />
+        </label>
+        <div className="mt-4 grid gap-2">
+          {options.map((option, index) => (
+            <input
+              className="h-11 rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none focus:border-[#FF5F25] sm:text-sm"
+              key={index}
+              maxLength={80}
+              onChange={(event) => {
+                const nextOptions = [...options];
+                nextOptions[index] = event.target.value;
+                setOptions(nextOptions);
+              }}
+              placeholder={`Option ${index + 1}`}
+              value={option}
+            />
+          ))}
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {options.length < 5 ? (
+            <button
+              className="app-button-secondary h-10 rounded-lg px-3 text-xs font-semibold"
+              onClick={() => setOptions([...options, ""])}
+              type="button"
+            >
+              Add option
+            </button>
+          ) : null}
+          {options.length > 2 ? (
+            <button
+              className="app-button-secondary h-10 rounded-lg px-3 text-xs font-semibold"
+              onClick={() => setOptions(options.slice(0, -1))}
+              type="button"
+            >
+              Remove option
+            </button>
+          ) : null}
+        </div>
+        <button
+          className="app-button-primary mt-4 h-11 w-full rounded-lg text-sm font-bold disabled:opacity-60"
+          disabled={!question.trim() || validOptionCount < 2}
+          onClick={onCreate}
+          type="button"
+        >
+          Create poll
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PanelHeader({
+  onClose,
+  overline,
+  title,
+}: {
+  onClose: () => void;
+  overline: string;
+  title: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div>
+        <p className="app-section-title">{overline}</p>
+        <h2 className="mt-2 text-lg font-semibold text-white">{title}</h2>
+      </div>
+      <button
+        aria-label={`Close ${title}`}
+        className="app-icon-button h-10 w-10"
+        onClick={onClose}
+        type="button"
+      >
+        <span aria-hidden="true">x</span>
+      </button>
+    </div>
+  );
+}
+
+function scrollToMessage(messageId: string) {
+  document.getElementById(`message-${messageId}`)?.scrollIntoView({
+    block: "center",
+    behavior: "smooth",
+  });
+}
+
+function formatMessageDate(value: Date | string | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
 }

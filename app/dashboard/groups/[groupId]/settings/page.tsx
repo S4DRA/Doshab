@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { ChannelList } from "@/components/groups/channel-list";
 import { CreateChannelForm } from "@/components/groups/create-channel-form";
 import { InviteFriendForm } from "@/components/groups/invite-friend-form";
+import { ModerationReportsPanel } from "@/components/groups/moderation-reports-panel";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { Alert } from "@/components/ui/alert";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
@@ -290,6 +291,8 @@ function GroupSettingsPanel({
               </p>
             </section>
           )}
+
+          {canManage ? <ModerationReportsPanel groupId={group.id} /> : null}
 
           <section className="app-card p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">

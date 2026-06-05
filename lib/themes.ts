@@ -8,6 +8,7 @@ export type DoshabThemeId =
   | "araz-credit-empire"
   | "threez-street-hero"
   | "hamp-root-forge"
+  | "bios-core"
   | "mehran-blue-corner";
 
 export type DoshabThemeIconId =
@@ -440,6 +441,52 @@ export const DOSHAB_THEMES: DoshabThemeConfig[] = [
       "AI Agent Network: Ready",
       "Command Core Stable",
       "Powered by Rootonset",
+    ],
+  },
+  {
+    id: "bios-core",
+    name: "BIOS Core",
+    shortName: "BIOS",
+    description:
+      "A premium retro BIOS setup screen with original blue panels, gray menu chrome, and yellow selected states.",
+    personality:
+      "Retro, technical, sharp, mysterious, minimal, nostalgic, and system-level without becoming noisy.",
+    colors: {
+      background: "#000080",
+      surface: "#0000AA",
+      card: "#404040",
+      accent: "#FFFF00",
+      accentSecondary: "#C0C0C0",
+      border: "rgba(192, 192, 192, 0.72)",
+      text: "#FFFFFF",
+    },
+    backgroundStyle:
+      "linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px), linear-gradient(180deg, #0000AA, #000080)",
+    cardStyle:
+      "linear-gradient(180deg, #5A5A5A, #303030), linear-gradient(90deg, rgba(255, 255, 255, 0.14), transparent 42%)",
+    buttonStyle: "linear-gradient(180deg, #FFFF00, #D6C900)",
+    accentStyle:
+      "0 0 0 1px rgba(192, 192, 192, 0.74), inset 0 0 0 1px rgba(255, 255, 255, 0.16), 0 18px 52px -38px rgba(255, 255, 0, 0.48)",
+    decorativeClassName: "theme-preview-bios-core",
+    themeIcons: [
+      { id: "terminal", label: "Boot terminal" },
+      { id: "system-core", label: "System core" },
+      { id: "server-rack", label: "Server rack" },
+      { id: "database", label: "Database" },
+      { id: "power-core", label: "Power core" },
+      { id: "protocol-network", label: "Network node" },
+      { id: "protocol-lock", label: "Protocol lock" },
+      { id: "shield-security", label: "Shield" },
+      { id: "command-node", label: "Command node" },
+      { id: "alert-triangle", label: "Warning" },
+    ],
+    previewDetails: [
+      "SYSTEM READY",
+      "BOOT MODE: DOSHAB",
+      "VOICE MODULE: ONLINE",
+      "CHAT BUS: ACTIVE",
+      "NOTIFICATIONS: ENABLED",
+      "MEMORY CHECK: PASSED",
     ],
   },
   {

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getAuthState } from "@/lib/auth";
+import { chatMessageBaseSelect, formatChatMessages } from "@/lib/chat-messages";
 import {
   getDashboardMessageThreads,
 } from "@/lib/dashboard-data";
@@ -67,6 +68,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
         id: true,
         name: true,
         email: true,
+        image: true,
         status: true,
       },
     }),
@@ -84,19 +86,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
             createdAt: "desc",
           },
           take: 50,
-          select: {
-            id: true,
-            content: true,
-            createdAt: true,
-            sender: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                status: true,
-              },
-            },
-          },
+          select: chatMessageBaseSelect,
         },
       },
     }),
@@ -112,7 +102,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
 
   const channelWithChronologicalMessages = {
     ...selectedChannel,
-    messages: [...selectedChannel.messages].reverse(),
+    messages: await formatChatMessages([...selectedChannel.messages].reverse(), userId),
   };
   const messageThreads = membership.group.isDirectMessage
     ? await getDashboardMessageThreads(userId)

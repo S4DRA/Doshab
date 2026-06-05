@@ -30,6 +30,10 @@ export type ChatMessage = {
   id: string;
   content: string;
   createdAt: Date | string;
+  pinnedAt?: Date | string | null;
+  poll?: ChatPoll | null;
+  reactions?: ChatMessageReaction[];
+  replyTo?: ChatMessageReference | null;
   sender: {
     id?: string;
     name: string;
@@ -37,6 +41,38 @@ export type ChatMessage = {
     image?: string | null;
     status?: UserStatus;
   };
+};
+
+export type ChatMessageReference = {
+  id: string;
+  content: string;
+  sender: {
+    id?: string;
+    name: string;
+    email: string;
+    image?: string | null;
+    status?: UserStatus;
+  };
+};
+
+export type ChatMessageReaction = {
+  emoji: string;
+  count: number;
+  reacted: boolean;
+};
+
+export type ChatPoll = {
+  id: string;
+  question: string;
+  options: ChatPollOption[];
+  totalVotes: number;
+  userVoteOptionId?: string | null;
+};
+
+export type ChatPollOption = {
+  id: string;
+  text: string;
+  voteCount: number;
 };
 
 export type FriendPerson = {

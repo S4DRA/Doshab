@@ -8,6 +8,16 @@ type GroupMembersListProps = {
 };
 
 export function GroupMembersList({ currentUserId, members }: GroupMembersListProps) {
+  const earlyMemberIds = new Set(
+    [...members]
+      .sort(
+        (first, second) =>
+          new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime(),
+      )
+      .slice(0, 3)
+      .map((member) => member.id),
+  );
+
   return (
     <section className="app-panel min-w-0 p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
@@ -45,11 +55,21 @@ export function GroupMembersList({ currentUserId, members }: GroupMembersListPro
                   <p className="mt-1 break-words text-xs text-slate-600 sm:truncate">
                     Joined {formatReadableTimestamp(member.createdAt)}
                   </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {getMemberBadges(member, earlyMemberIds.has(member.id)).map((badge) => (
+                      <span
+                        className="rounded-md border border-[#FF5F25]/25 bg-[#FF5F25]/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#FFB199]"
+                        key={badge}
+                      >
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <span className="app-badge px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] sm:text-[11px] sm:tracking-[0.14em]">
-                  {member.role.toLowerCase()}
+                  {formatRoleLabel(member.role)}
                 </span>
                 {currentUserId && member.user.id !== currentUserId ? (
                   <>
@@ -92,4 +112,31 @@ export function GroupMembersList({ currentUserId, members }: GroupMembersListPro
       )}
     </section>
   );
+}
+
+function formatRoleLabel(role: GroupMemberItem["role"]) {
+  switch (role) {
+    case "OWNER":
+      return "Owner";
+    case "ADMIN":
+      return "Admin";
+    default:
+      return "Member";
+  }
+}
+
+function getMemberBadges(member: GroupMemberItem, earlyMember: boolean) {
+  const badges: string[] = [];
+
+  if (member.role === "OWNER") {
+    badges.push("Founder");
+  } else if (member.role === "ADMIN") {
+    badges.push("Steward");
+  }
+
+  if (earlyMember) {
+    badges.push("Early member");
+  }
+
+  return badges;
 }

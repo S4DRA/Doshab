@@ -8,29 +8,34 @@ datasource db {
 }
 
 model User {
-  id                     String          @id @default(cuid())
+  id                     String             @id @default(cuid())
   name                   String
-  email                  String          @unique
+  email                  String             @unique
   passwordHash           String?
   image                  String?
-  status                 UserStatus      @default(OFFLINE)
-  createdAt              DateTime        @default(now())
-  updatedAt              DateTime        @updatedAt
-  receivedFriendRequests FriendRequest[] @relation("FriendRequestReceiver")
-  sentFriendRequests     FriendRequest[] @relation("FriendRequestSender")
-  friendshipsAsUserOne   Friendship[]    @relation("FriendshipUserOne")
-  friendshipsAsUserTwo   Friendship[]    @relation("FriendshipUserTwo")
+  status                 UserStatus         @default(OFFLINE)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  receivedFriendRequests FriendRequest[]    @relation("FriendRequestReceiver")
+  sentFriendRequests     FriendRequest[]    @relation("FriendRequestSender")
+  friendshipsAsUserOne   Friendship[]       @relation("FriendshipUserOne")
+  friendshipsAsUserTwo   Friendship[]       @relation("FriendshipUserTwo")
   groupMemberships       GroupMember[]
-  ownedGroups            Group[]         @relation("GroupOwner")
-  receivedGroupInvites   GroupInvite[]   @relation("GroupInviteReceiver")
-  sentGroupInvites       GroupInvite[]   @relation("GroupInviteInviter")
+  ownedGroups            Group[]            @relation("GroupOwner")
+  receivedGroupInvites   GroupInvite[]      @relation("GroupInviteReceiver")
+  sentGroupInvites       GroupInvite[]      @relation("GroupInviteInviter")
   messages               Message[]
-  notifications          Notification[]  @relation("NotificationRecipient")
+  notifications          Notification[]     @relation("NotificationRecipient")
   pushSubscriptions      PushSubscription[]
-  sentNotifications      Notification[]  @relation("NotificationActor")
+  sentNotifications      Notification[]     @relation("NotificationActor")
   deviceKeys             UserDeviceKey[]
-  startedCalls           FriendCall[]     @relation("FriendCallCaller")
-  receivedCalls          FriendCall[]     @relation("FriendCallReceiver")
+  startedCalls           FriendCall[]       @relation("FriendCallCaller")
+  receivedCalls          FriendCall[]       @relation("FriendCallReceiver")
+  messageReactions       MessageReaction[]
+  pinnedMessages         Message[]          @relation("MessagePinnedBy")
+  reportedMessages       MessageReport[]    @relation("MessageReportReporter")
+  reviewedMessageReports MessageReport[]    @relation("MessageReportReviewer")
+  pollVotes              PollVote[]
 
   @@index([status])
   @@map("users")
@@ -68,20 +73,21 @@ model Friendship {
 }
 
 model Group {
-  id               String         @id @default(cuid())
+  id               String          @id @default(cuid())
   name             String
   description      String?
   image            String?
   ownerId          String
-  isDirectMessage  Boolean        @default(false) @map("is_direct_message")
-  directMessageKey String?        @unique @map("direct_message_key")
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  isDirectMessage  Boolean         @default(false) @map("is_direct_message")
+  directMessageKey String?         @unique @map("direct_message_key")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
   channels         Channel[]
   invites          GroupInvite[]
   members          GroupMember[]
   notifications    Notification[]
-  owner            User           @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  messageReports   MessageReport[]
+  owner            User            @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@index([ownerId])
   @@map("groups")
@@ -124,15 +130,16 @@ model GroupInvite {
 }
 
 model Channel {
-  id            String         @id @default(cuid())
-  groupId       String
-  name          String
-  type          ChannelType    @default(TEXT)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  group         Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  messages      Message[]
-  notifications Notification[]
+  id             String          @id @default(cuid())
+  groupId        String
+  name           String
+  type           ChannelType     @default(TEXT)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  group          Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  messages       Message[]
+  notifications  Notification[]
+  messageReports MessageReport[]
 
   @@unique([groupId, name])
   @@index([groupId])
@@ -141,21 +148,114 @@ model Channel {
 }
 
 model Message {
-  id            String         @id @default(cuid())
-  channelId     String
-  senderId      String
-  content       String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  channel       Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  sender        User           @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  notifications Notification[]
+  id               String            @id @default(cuid())
+  channelId        String
+  senderId         String
+  content          String
+  replyToMessageId String?           @map("reply_to_message_id")
+  pinnedAt         DateTime?         @map("pinned_at")
+  pinnedById       String?           @map("pinned_by_id")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  channel          Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  sender           User              @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo          Message?          @relation("MessageReplies", fields: [replyToMessageId], references: [id], onDelete: SetNull)
+  replies          Message[]         @relation("MessageReplies")
+  pinnedBy         User?             @relation("MessagePinnedBy", fields: [pinnedById], references: [id], onDelete: SetNull)
+  notifications    Notification[]
+  reactions        MessageReaction[]
+  reports          MessageReport[]
+  poll             Poll?
 
   @@index([channelId])
   @@index([channelId, createdAt])
   @@index([senderId])
+  @@index([replyToMessageId])
+  @@index([pinnedAt])
+  @@index([pinnedById])
   @@index([createdAt])
   @@map("messages")
+}
+
+model MessageReaction {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_reactions")
+}
+
+model Poll {
+  id        String       @id @default(cuid())
+  messageId String       @unique
+  question  String
+  createdAt DateTime     @default(now())
+  message   Message      @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  options   PollOption[]
+  votes     PollVote[]
+
+  @@map("polls")
+}
+
+model PollOption {
+  id       String     @id @default(cuid())
+  pollId   String
+  text     String
+  position Int
+  poll     Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes    PollVote[]
+
+  @@index([pollId, position])
+  @@map("poll_options")
+}
+
+model PollVote {
+  id        String     @id @default(cuid())
+  pollId    String
+  optionId  String
+  userId    String
+  createdAt DateTime   @default(now())
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId])
+  @@index([optionId])
+  @@index([userId])
+  @@map("poll_votes")
+}
+
+model MessageReport {
+  id           String              @id @default(cuid())
+  messageId    String
+  reporterId   String
+  groupId      String
+  channelId    String
+  reason       MessageReportReason
+  details      String?
+  status       MessageReportStatus @default(OPEN)
+  createdAt    DateTime            @default(now())
+  reviewedAt   DateTime?
+  reviewedById String?
+  message      Message             @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  reporter     User                @relation("MessageReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewer     User?               @relation("MessageReportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  group        Group               @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  channel      Channel             @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, status, createdAt])
+  @@index([channelId])
+  @@index([messageId])
+  @@index([reporterId])
+  @@index([reviewedById])
+  @@map("message_reports")
 }
 
 model Notification {
@@ -282,4 +382,18 @@ enum FriendCallStatus {
   DECLINED
   MISSED
   ENDED
+}
+
+enum MessageReportReason {
+  SPAM
+  HARASSMENT
+  HATE_OR_ABUSE
+  NSFW
+  OTHER
+}
+
+enum MessageReportStatus {
+  OPEN
+  REVIEWED
+  DISMISSED
 }

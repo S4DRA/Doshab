@@ -183,6 +183,11 @@ export function DashboardShell({
           <ChannelMain
             channel={selectedChannel}
             currentUser={currentUser}
+            canPinMessages={
+              !selectedGroup?.isDirectMessage &&
+              (selectedGroup?.currentUserRole === "OWNER" ||
+                selectedGroup?.currentUserRole === "ADMIN")
+            }
             groupId={selectedGroup?.id}
             groupName={selectedGroup?.name}
             messages={selectedChannel.messages ?? []}
@@ -518,12 +523,14 @@ function ChannelsHome({
 }
 
 function ChannelMain({
+  canPinMessages = false,
   channel,
   currentUser,
   groupId,
   groupName,
   messages,
 }: {
+  canPinMessages?: boolean;
   channel: GroupChannel;
   currentUser?: ChatMessage["sender"];
   groupId?: string;
@@ -586,6 +593,7 @@ function ChannelMain({
       </section>
       <div className="mt-3 min-h-0 flex-1 sm:mt-4 sm:min-h-[28rem] min-[1180px]:min-h-0">
         <RealtimeMessagePanel
+          canPinMessages={canPinMessages}
           channelId={channel.id}
           channelName={channel.name}
           currentUser={currentUser}

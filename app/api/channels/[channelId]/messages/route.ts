@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth";
+import {
+  chatMessageBaseSelect,
+  formatChatMessage,
+  formatChatMessages,
+} from "@/lib/chat-messages";
 import { isValidEncryptedMessageContent } from "@/lib/e2ee-message";
 import {
   publishChannelMessage,
@@ -67,22 +72,6 @@ async function getTextChannelForUser(channelId: string, userId: string) {
   });
 }
 
-function messageSelect() {
-  return {
-    id: true,
-    content: true,
-    createdAt: true,
-    sender: {
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        status: true,
-      },
-    },
-  } as const;
-}
-
 function createNotificationPreview(content: string, encrypted: boolean) {
   const preview = content.replace(/\s+/g, " ").trim();
 
@@ -99,6 +88,49 @@ function sanitizeNotificationPreview(value: unknown) {
   }
 
   return value.replace(/\s+/g, " ").trim().slice(0, 120);
+}
+
+function sanitizeReplyToMessageId(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  return trimmed ? trimmed.slice(0, 128) : null;
+}
+
+function sanitizePoll(value: unknown) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const input = value as {
+    options?: unknown;
+    question?: unknown;
+  };
+  const question = typeof input.question === "string"
+    ? input.question.replace(/\s+/g, " ").trim().slice(0, 180)
+    : "";
+  const options = Array.isArray(input.options)
+    ? input.options
+        .map((option) =>
+          typeof option === "string"
+            ? option.replace(/\s+/g, " ").trim().slice(0, 80)
+            : "",
+        )
+        .filter(Boolean)
+        .slice(0, 5)
+    : [];
+
+  if (!question || options.length < 2) {
+    return null;
+  }
+
+  return {
+    options,
+    question,
+  };
 }
 
 export async function POST(request: NextRequest, { params }: MessagesRouteProps) {
@@ -140,6 +172,8 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
     ? ((await request.json().catch(() => null)) as {
         encryptedContent?: unknown;
         notificationPreview?: unknown;
+        poll?: unknown;
+        replyToMessageId?: unknown;
       } | null)
     : null;
   const content = isJsonRequest
@@ -150,6 +184,8 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
   const notificationPreview = sanitizeNotificationPreview(
     jsonBody?.notificationPreview,
   );
+  const replyToMessageId = sanitizeReplyToMessageId(jsonBody?.replyToMessageId);
+  const poll = sanitizePoll(jsonBody?.poll);
 
   if (
     !content ||
@@ -164,13 +200,49 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
   }
 
   const result = await prisma.$transaction(async (tx) => {
+    const replyToMessage = replyToMessageId
+      ? await tx.message.findFirst({
+          where: {
+            channelId: channel.id,
+            id: replyToMessageId,
+          },
+          select: {
+            id: true,
+          },
+        })
+      : null;
     const message = await tx.message.create({
       data: {
         channelId: channel.id,
         senderId: user.id,
         content,
+        replyToMessageId: replyToMessage?.id,
       },
-      select: messageSelect(),
+      select: {
+        id: true,
+      },
+    });
+
+    if (poll) {
+      await tx.poll.create({
+        data: {
+          messageId: message.id,
+          options: {
+            create: poll.options.map((option, index) => ({
+              position: index,
+              text: option,
+            })),
+          },
+          question: poll.question,
+        },
+      });
+    }
+
+    const createdMessage = await tx.message.findUniqueOrThrow({
+      where: {
+        id: message.id,
+      },
+      select: chatMessageBaseSelect,
     });
 
     const recipients = channel.group.members
@@ -180,7 +252,7 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
     if (!recipients.length) {
       return {
         href: "",
-        message,
+        message: createdMessage,
         notificationBody: "",
         notificationTitle: "",
         recipients,
@@ -216,7 +288,7 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
 
     return {
       href,
-      message,
+      message: createdMessage,
       notificationBody: body,
       notificationTitle: title,
       recipients,
@@ -237,10 +309,12 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
     });
   }
 
-  publishChannelMessage(channel.id, result.message);
+  const formattedMessage = await formatChatMessage(result.message, user.id);
+
+  publishChannelMessage(channel.id, formattedMessage);
 
   if (isJsonRequest) {
-    return NextResponse.json(result.message, { status: 201 });
+    return NextResponse.json(formattedMessage, { status: 201 });
   }
 
   return redirectBack(request, channel.groupId, channel.id);
@@ -293,10 +367,10 @@ export async function GET(request: NextRequest, { params }: MessagesRouteProps) 
         createdAt: "asc",
       },
       take: messageBatchSize,
-      select: messageSelect(),
+      select: chatMessageBaseSelect,
     });
 
-    return NextResponse.json(messages);
+    return NextResponse.json(await formatChatMessages(messages, user.id));
   }
 
   const requestedMessageId = messageId;
@@ -320,14 +394,14 @@ export async function GET(request: NextRequest, { params }: MessagesRouteProps) 
         },
       },
     },
-    select: messageSelect(),
+    select: chatMessageBaseSelect,
   });
 
   if (!message) {
     return NextResponse.json({ error: "Message not found" }, { status: 404 });
   }
 
-  return NextResponse.json(message);
+  return NextResponse.json(await formatChatMessage(message, user.id));
 }
 
 async function streamMessages(
@@ -375,7 +449,7 @@ async function streamMessages(
             createdAt: "asc",
           },
           take: messageBatchSize,
-          select: messageSelect(),
+          select: chatMessageBaseSelect,
         });
 
         if (!messages.length) {
@@ -385,7 +459,9 @@ async function streamMessages(
 
         cursor = new Date(messages[messages.length - 1].createdAt);
         controller.enqueue(
-          encoder.encode(`event: messages\ndata: ${JSON.stringify(messages)}\n\n`),
+          encoder.encode(
+            `event: messages\ndata: ${JSON.stringify(await formatChatMessages(messages, userId))}\n\n`,
+          ),
         );
       };
 
