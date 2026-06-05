@@ -8381,6 +8381,74 @@ html[data-theme="bios-core"] body::after {
     doshab-bios-crt-flicker 5.4s steps(1, end) infinite !important;
 }
 
+/* Organized theme settings gallery: compact cards without overlap. */
+.theme-selector-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: stretch;
+}
+
+.theme-selector-grid .theme-choice-card {
+  display: flex;
+  min-width: 0;
+}
+
+.theme-selector-grid .theme-choice-card-layout {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: auto 1fr;
+  align-items: stretch;
+}
+
+.theme-selector-grid .theme-preview {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: clamp(12rem, 35vw, 16rem);
+  aspect-ratio: 16 / 10;
+}
+
+.theme-selector-grid .theme-choice-card-body {
+  overflow: hidden;
+  padding-block: 0.15rem;
+}
+
+.theme-selector-grid .theme-icon-strip {
+  max-height: 5rem;
+}
+
+.theme-selector-grid .theme-detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1180px) {
+  .theme-selector-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .theme-selector-grid .theme-preview {
+    min-height: clamp(13rem, 18vw, 16.5rem);
+  }
+}
+
+@media (max-width: 620px) {
+  .theme-selector-grid .theme-choice-card {
+    padding: 0.75rem;
+  }
+
+  .theme-selector-grid .theme-choice-card-layout {
+    gap: 0.875rem;
+  }
+
+  .theme-selector-grid .theme-preview {
+    height: clamp(8.75rem, 47vw, 10.5rem);
+    min-height: 0;
+  }
+
+  .theme-selector-grid .theme-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 html[data-theme="bios-core"] .theme-choice-card {
   border-color: rgba(255, 255, 0, 0.78);
   border-radius: 6px;
