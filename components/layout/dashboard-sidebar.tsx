@@ -405,7 +405,7 @@ export function DashboardSidebar({
   const friendsMenu = friendsOpen ? (
     <div
       aria-label="Friends sidebar"
-      className="app-surface fixed inset-x-0 bottom-[var(--dashboard-bottom-nav-height)] top-0 z-40 flex flex-col overflow-hidden rounded-none border-l-0 border-r-0 p-3 sm:bottom-0 sm:left-24 sm:right-auto sm:w-80 sm:border-l sm:border-r min-[1180px]:left-[6.5rem] min-[1180px]:w-96"
+      className="app-surface fixed inset-x-0 bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] top-0 z-40 flex flex-col overflow-hidden rounded-none border-l-0 border-r-0 p-3 sm:bottom-0 sm:left-24 sm:right-auto sm:w-80 sm:border-l sm:border-r min-[1180px]:left-[6.5rem] min-[1180px]:w-96"
       role="dialog"
     >
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 pb-3">

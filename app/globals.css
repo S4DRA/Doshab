@@ -249,6 +249,154 @@ main.app-page-scroll {
   color: var(--accent);
 }
 
+.landing-page {
+  background:
+    linear-gradient(90deg, rgba(121, 216, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(rgba(216, 181, 106, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, #05030b 0%, #0b0715 42%, #05030b 100%);
+  background-size: 4.5rem 4.5rem, 4.5rem 4.5rem, auto;
+}
+
+.landing-hero {
+  background:
+    linear-gradient(115deg, rgba(121, 216, 255, 0.12), transparent 32%),
+    linear-gradient(245deg, rgba(216, 181, 106, 0.1), transparent 34%),
+    linear-gradient(180deg, rgba(20, 13, 38, 0.86), rgba(5, 3, 11, 0.98));
+}
+
+.landing-hero-scene {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(120deg, transparent 0 48%, rgba(121, 216, 255, 0.08) 48.5% 49.2%, transparent 50%),
+    linear-gradient(180deg, transparent 0%, rgba(5, 3, 11, 0.72) 78%, #05030b 100%);
+  pointer-events: none;
+}
+
+.landing-card,
+.landing-dashboard-mockup {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(135deg, rgba(121, 216, 255, 0.06), transparent 34%),
+    linear-gradient(180deg, rgba(16, 18, 36, 0.9), rgba(7, 9, 18, 0.96));
+  box-shadow:
+    0 28px 76px -54px rgba(0, 0, 0, 0.94),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.landing-dashboard-mockup {
+  overflow: hidden;
+}
+
+.landing-eyebrow {
+  color: #aeeaff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.landing-message-bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.045);
+  padding: 0.75rem;
+  animation: doshab-landing-message-in 4.8s ease-in-out infinite;
+}
+
+.landing-message-bubble-delay {
+  animation-delay: 1.4s;
+}
+
+.landing-float {
+  animation: doshab-landing-float 7s ease-in-out infinite;
+}
+
+.landing-voice-dot {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: #79d8ff;
+  box-shadow: 0 0 0 0 rgba(121, 216, 255, 0.42);
+  animation: doshab-landing-voice-pulse 2.4s ease-in-out infinite;
+}
+
+.landing-theme-card {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.landing-theme-card:hover {
+  border-color: rgba(121, 216, 255, 0.32);
+  box-shadow:
+    0 30px 82px -54px rgba(121, 216, 255, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-3px);
+}
+
+.landing-theme-row {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(121, 216, 255, 0.5) transparent;
+}
+
+.landing-theme-row::-webkit-scrollbar {
+  height: 0.45rem;
+}
+
+.landing-theme-row::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(121, 216, 255, 0.42);
+}
+
+.landing-cta {
+  background:
+    linear-gradient(135deg, rgba(121, 216, 255, 0.12), transparent 36%),
+    linear-gradient(245deg, rgba(216, 181, 106, 0.12), transparent 38%),
+    linear-gradient(180deg, rgba(22, 14, 42, 0.94), rgba(5, 3, 11, 0.98));
+  box-shadow: 0 36px 90px -62px rgba(121, 216, 255, 0.48);
+}
+
+@keyframes doshab-landing-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.8rem);
+  }
+}
+
+@keyframes doshab-landing-voice-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(121, 216, 255, 0.42);
+  }
+  50% {
+    box-shadow: 0 0 0 0.55rem rgba(121, 216, 255, 0);
+  }
+}
+
+@keyframes doshab-landing-message-in {
+  0%,
+  100% {
+    opacity: 0.82;
+    transform: translateY(0);
+  }
+  38%,
+  72% {
+    opacity: 1;
+    transform: translateY(-0.18rem);
+  }
+}
+
 @media (max-width: 639px) {
   :root {
     --dashboard-bottom-nav-height: calc(4.5rem + env(safe-area-inset-bottom));
@@ -369,7 +517,53 @@ main.app-page-scroll {
   height: calc(100dvh - var(--dashboard-bottom-nav-height));
 }
 
+.dashboard-main-sidebar {
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--border-soft)) !important;
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 68%),
+    color-mix(in srgb, var(--surface-sidebar) 94%, transparent) !important;
+  color: var(--text-high);
+  box-shadow:
+    0 22px 64px -44px rgba(0, 0, 0, 0.94),
+    inset 0 1px 0 color-mix(in srgb, var(--text-high) 8%, transparent);
+}
+
+@media (max-width: 639px) {
+  .dashboard-main-sidebar {
+    left: max(0.75rem, env(safe-area-inset-left)) !important;
+    right: max(0.75rem, env(safe-area-inset-right)) !important;
+    bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
+    height: 4.35rem !important;
+    overflow: visible;
+    border-width: 1px !important;
+    border-radius: 1.35rem;
+    padding: 0.35rem;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--surface-panel) 88%, transparent), color-mix(in srgb, var(--surface-sidebar) 92%, transparent)),
+      radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%) !important;
+    box-shadow:
+      0 20px 52px -34px rgba(0, 0, 0, 0.9),
+      0 0 0 1px color-mix(in srgb, var(--text-high) 5%, transparent),
+      inset 0 1px 0 color-mix(in srgb, var(--text-high) 9%, transparent);
+  }
+
+  .dashboard-main-sidebar > nav[aria-label="Mobile dashboard"] {
+    height: 100%;
+    border-radius: 1rem;
+    padding: 0.18rem;
+    background: color-mix(in srgb, var(--surface-raised) 24%, transparent);
+  }
+
+  .dashboard-main-sidebar > nav[aria-label="Mobile dashboard"] :is(a, button) {
+    min-height: 2.75rem;
+  }
+}
+
 @media (min-width: 640px) {
+  .dashboard-main-sidebar {
+    border-radius: 0 1.1rem 1.1rem 0;
+  }
+
   .dashboard-main-sidebar > nav[aria-label="Dashboard"] {
     gap: 0.6rem;
   }

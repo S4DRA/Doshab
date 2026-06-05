@@ -1,0 +1,2 @@
+-- This migration is intentionally empty.
+-- The target database schema already matches the Prisma schema for this step.
