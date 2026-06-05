@@ -9252,3 +9252,1027 @@ html[data-theme="bios-core"] body::after {
     doshab-bios-scanline 9s linear infinite,
     doshab-bios-crt-flicker 5.4s steps(1, end) infinite !important;
 }
+
+/* BIOS calm pass: keep the tactile control-panel feel, reduce concept-screen intensity. */
+html[data-theme="bios-core"] {
+  --background: #18191a;
+  --foreground: #f2f4f5;
+  --surface-canvas: #1d1e20;
+  --surface-sidebar: #2f3032;
+  --surface-panel: #343638;
+  --surface-raised: #3b3d40;
+  --surface-hover: #44474a;
+  --surface-floating: #36383a;
+  --surface-inset: #202225;
+  --surface-border: rgba(170, 176, 178, 0.56);
+  --surface-highlight: rgba(255, 255, 255, 0.12);
+  --border-strong: #9da3a5;
+  --border-soft: rgba(174, 180, 182, 0.42);
+  --text-high: #f4f6f7;
+  --text-body: #e3e6e8;
+  --text-muted: #b6bcc0;
+  --text-faint: #858b90;
+  --accent: #d7f35a;
+  --accent-hover: #e4f77a;
+  --accent-muted: #475020;
+  --success: #24d6b7;
+  --warning: #d7f35a;
+  --control: #d7f35a;
+  --control-hover: #e4f77a;
+  --control-text: #111313;
+  --control-subtle: #2a2d30;
+  --control-subtle-hover: #363a3d;
+  --control-subtle-text: #eef2f3;
+  --shadow:
+    0 20px 48px -42px rgba(0, 0, 0, 0.74),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-soft:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.16),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.34);
+  --shadow-raised:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.16),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.36),
+    0 14px 34px -30px rgba(0, 0, 0, 0.68);
+  --shadow-floating:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.16),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.38),
+    0 18px 42px -34px rgba(0, 0, 0, 0.72);
+  --shadow-inset:
+    inset 2px 2px 3px rgba(0, 0, 0, 0.34),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.1);
+  --background-aura:
+    radial-gradient(circle at 18% 8%, rgba(215, 243, 90, 0.07), transparent 28rem),
+    radial-gradient(circle at 86% 78%, rgba(36, 214, 183, 0.055), transparent 26rem);
+  --background-texture:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  --background-texture-size: 4.5rem 4.5rem, 4.5rem 4.5rem;
+  --background-detail-opacity: 0.18;
+}
+
+html[data-theme="bios-core"] body {
+  background:
+    var(--background-aura),
+    linear-gradient(180deg, #242527 0%, #191a1c 58%, #131416 100%);
+  text-shadow: none;
+}
+
+html[data-theme="bios-core"] body::before {
+  opacity: 0.14;
+  mask-image: linear-gradient(180deg, black, transparent 78%);
+}
+
+html[data-theme="bios-core"] body::after {
+  display: block !important;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.026) 0 1px,
+    transparent 1px 5px
+  );
+  opacity: 0.08;
+  mix-blend-mode: normal;
+  animation: none !important;
+}
+
+html[data-theme="bios-core"] :is(.app-card, .app-panel, .app-row, .app-page-header, .app-surface) {
+  border-color: rgba(165, 171, 173, 0.34);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 38%),
+    linear-gradient(180deg, rgba(62, 64, 67, 0.94), rgba(43, 45, 48, 0.94));
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.13),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.32),
+    0 16px 38px -32px rgba(0, 0, 0, 0.64);
+}
+
+html[data-theme="bios-core"] :is(.app-card, .app-panel, .app-page-header, .app-surface)::before {
+  content: "";
+}
+
+html[data-theme="bios-core"] :is(.app-card, .app-panel, .app-row, .app-page-header, .app-surface):hover {
+  border-color: rgba(215, 243, 90, 0.44);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.15),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.34),
+    0 16px 36px -32px rgba(0, 0, 0, 0.66);
+}
+
+html[data-theme="bios-core"] .app-section-title {
+  color: #dce889;
+  letter-spacing: 0.14em;
+  text-shadow: none;
+}
+
+html[data-theme="bios-core"] :is(.app-button-primary, .app-icon-button-primary) {
+  border-color: rgba(18, 20, 20, 0.82);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 48%),
+    linear-gradient(180deg, #d7f35a, #b9ca42);
+  color: #111313;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+    0 10px 22px -18px rgba(0, 0, 0, 0.72);
+}
+
+html[data-theme="bios-core"] :is(.app-button-primary, .app-icon-button-primary):hover {
+  border-color: rgba(242, 247, 190, 0.7);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.25), transparent 48%),
+    linear-gradient(180deg, #e0f36f, #c5d850);
+}
+
+html[data-theme="bios-core"] .app-button-secondary,
+html[data-theme="bios-core"] .app-icon-button {
+  border-color: rgba(171, 177, 179, 0.44);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 46%),
+    linear-gradient(180deg, #34373a, #272a2d);
+  color: #eef2f3;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.13),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.3),
+    0 10px 24px -22px rgba(0, 0, 0, 0.62);
+}
+
+html[data-theme="bios-core"] .app-button-secondary:hover,
+html[data-theme="bios-core"] .app-icon-button:hover {
+  border-color: rgba(215, 243, 90, 0.48);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 46%),
+    linear-gradient(180deg, #3b3f42, #2c3033);
+  color: #f4f6f7;
+}
+
+html[data-theme="bios-core"] :is(.app-button-primary, .app-button-secondary, .app-button-danger, .app-icon-button):active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 1px 2px 3px rgba(0, 0, 0, 0.38),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="bios-core"] :is(input, textarea, select) {
+  border-color: rgba(159, 166, 168, 0.5) !important;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.16), transparent 58%),
+    #222427 !important;
+  background-size: auto !important;
+  color: #f3f6f7 !important;
+  caret-color: #d7f35a;
+  box-shadow:
+    inset 2px 2px 4px rgba(0, 0, 0, 0.32),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="bios-core"] :is(input, textarea)::placeholder {
+  color: rgba(194, 200, 202, 0.58) !important;
+}
+
+html[data-theme="bios-core"] :is(input, textarea, select):focus {
+  border-color: rgba(215, 243, 90, 0.72) !important;
+  box-shadow:
+    0 0 0 2px rgba(215, 243, 90, 0.12),
+    inset 2px 2px 4px rgba(0, 0, 0, 0.3),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-theme="bios-core"] :is(.dashboard-secondary-sidebar, header) {
+  border-color: rgba(162, 168, 170, 0.34) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 42%),
+    linear-gradient(180deg, rgba(49, 52, 55, 0.97), rgba(34, 36, 39, 0.97)) !important;
+  background-size: auto !important;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar {
+  border-color: rgba(162, 168, 170, 0.38) !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.075), transparent 42%),
+    linear-gradient(180deg, #434548 0%, #303235 54%, #242629 100%) !important;
+  color: #f4f6f7;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.13),
+    inset -1px 0 0 rgba(0, 0, 0, 0.34),
+    10px 0 26px -24px rgba(0, 0, 0, 0.74) !important;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar::before {
+  background:
+    linear-gradient(90deg, transparent 0 86%, rgba(255, 255, 255, 0.04) 86% 87%, transparent 87%),
+    radial-gradient(circle at 50% 0%, rgba(215, 243, 90, 0.055), transparent 58%);
+  opacity: 0.42;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar::after {
+  color: rgba(244, 246, 247, 0.12);
+}
+
+html[data-theme="bios-core"] .dashboard-sidebar-popover {
+  border-color: rgba(173, 179, 181, 0.42) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 38%),
+    linear-gradient(180deg, rgba(61, 64, 67, 0.98), rgba(39, 42, 45, 0.98)) !important;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.14),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.36),
+    0 20px 42px -30px rgba(0, 0, 0, 0.78) !important;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon-active,
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"],
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"] {
+  border-color: rgba(215, 243, 90, 0.74) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 46%),
+    linear-gradient(180deg, #d7f35a, #bacd45) !important;
+  color: #111313 !important;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.28),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.22);
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon:hover {
+  border-color: rgba(215, 243, 90, 0.48) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 44%),
+    #363a3d !important;
+  color: #f2f5bd !important;
+}
+
+html[data-theme="bios-core"] :is(.app-badge, .theme-preview-chip, [class*="rounded-full"][class*="border"]) {
+  border-color: rgba(174, 180, 182, 0.44);
+  background: rgba(39, 42, 45, 0.84);
+  color: #eef2f3;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="bios-core"] :is(.app-status-dot[data-status="ONLINE"], .theme-toggle-dot) {
+  background: #24d6b7;
+  color: #24d6b7;
+  box-shadow: 0 0 0 3px rgba(36, 214, 183, 0.08);
+}
+
+html[data-theme="bios-core"] .app-status-dot[data-status="IDLE"] {
+  background: #d7f35a;
+  color: #d7f35a;
+  box-shadow: 0 0 0 3px rgba(215, 243, 90, 0.08);
+}
+
+html[data-theme="bios-core"] .app-status-dot[data-status="DO_NOT_DISTURB"] {
+  background: #b82020;
+  color: #b82020;
+  box-shadow: 0 0 0 3px rgba(184, 32, 32, 0.08);
+}
+
+html[data-theme="bios-core"] .theme-choice-card {
+  border-color: rgba(171, 177, 179, 0.42);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 38%),
+    linear-gradient(180deg, #44474a, #303235);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.14),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.34),
+    0 16px 36px -32px rgba(0, 0, 0, 0.68);
+}
+
+html[data-theme="bios-core"] .theme-choice-card-active {
+  border-color: rgba(215, 243, 90, 0.62);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.16),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(215, 243, 90, 0.18),
+    0 16px 36px -32px rgba(0, 0, 0, 0.68);
+}
+
+html[data-theme="bios-core"] .theme-detail-pill {
+  border-color: rgba(174, 180, 182, 0.44);
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.12), transparent 64%),
+    #25282b;
+  color: #eef2f3;
+  box-shadow:
+    inset 1px 1px 2px rgba(0, 0, 0, 0.24),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.07);
+}
+
+html[data-theme="bios-core"] .auth-feature-panel {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.075), transparent 38%),
+    linear-gradient(180deg, #4a4c4f, #333538) !important;
+  border-color: rgba(174, 180, 182, 0.42) !important;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.14),
+    inset -1px 0 0 rgba(0, 0, 0, 0.34);
+}
+
+.bios-preview-rich {
+  border-color: rgba(174, 180, 182, 0.64);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.026) 1px, transparent 1px),
+    linear-gradient(180deg, #3f4245, #25282b);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.12),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.34);
+}
+
+.bios-preview-rich::before {
+  opacity: 0.08;
+}
+
+.bios-preview-scanline {
+  opacity: 0.34;
+  background: linear-gradient(180deg, transparent, rgba(215, 243, 90, 0.08), transparent);
+  animation: none;
+}
+
+.bios-preview-panel {
+  border-color: rgba(174, 180, 182, 0.58);
+  background: #34373a;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.13),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.34);
+}
+
+.bios-preview-title-row,
+.bios-preview-footer {
+  border-color: rgba(174, 180, 182, 0.5);
+}
+
+.bios-preview-chip {
+  border-color: rgba(215, 243, 90, 0.58);
+  background: #272a2d;
+  color: #d7f35a;
+}
+
+.bios-preview-title-row p,
+.bios-preview-footer {
+  color: #dce889;
+}
+
+.bios-preview-menu div {
+  border-color: rgba(174, 180, 182, 0.36);
+  background: rgba(37, 40, 43, 0.74);
+}
+
+.bios-preview-menu .bios-preview-selected-row {
+  border-color: rgba(215, 243, 90, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 48%),
+    #d7f35a;
+}
+
+.bios-preview-footer button {
+  border-color: rgba(18, 20, 20, 0.82);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 48%),
+    #d7f35a;
+}
+
+html[data-theme="bios-core"] .app-skeleton {
+  border-color: rgba(174, 180, 182, 0.36);
+  background:
+    linear-gradient(90deg, rgba(215, 243, 90, 0.06), transparent 36%),
+    #34373a;
+}
+
+html[data-theme="bios-core"] .app-skeleton::before {
+  color: rgba(238, 242, 243, 0.58);
+}
+
+html[data-theme="bios-core"] .app-skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(215, 243, 90, 0.12), transparent);
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon-active,
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"],
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"] {
+  position: relative;
+  border-color: rgba(215, 243, 90, 0.58) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 46%),
+    linear-gradient(180deg, #3d4043, #292c2f) !important;
+  color: #d7f35a !important;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.16),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.34),
+    0 10px 24px -22px rgba(0, 0, 0, 0.72);
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon-active::after,
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"]::after,
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"]::after {
+  content: "";
+  position: absolute;
+  right: 0.32rem;
+  top: 0.32rem;
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 999px;
+  background: #24d6b7;
+  box-shadow: 0 0 0 3px rgba(36, 214, 183, 0.08);
+  pointer-events: none;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon-active:hover {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 46%),
+    linear-gradient(180deg, #42464a, #2f3336) !important;
+  color: #e2f57a !important;
+}
+
+/* BIOS terminal correction: keep the blue canvas and use a Windows Terminal-like text voice. */
+html[data-theme="bios-core"] {
+  --background: #000080;
+  --surface-canvas: #000080;
+  --surface-inset: #00005f;
+  --accent: #d7f35a;
+  --accent-hover: #e4f77a;
+  --terminal-font: "Cascadia Mono", "Cascadia Code", Consolas, "Lucida Console", "Courier New", monospace;
+}
+
+html[data-theme="bios-core"],
+html[data-theme="bios-core"] body,
+html[data-theme="bios-core"] :is(button, input, textarea, select) {
+  font-family: var(--terminal-font);
+  font-variant-ligatures: none;
+}
+
+html[data-theme="bios-core"] body,
+html[data-theme="bios-core"] .dashboard-content-frame,
+html[data-theme="bios-core"] .app-page-scroll,
+html[data-theme="bios-core"] .loading-canvas {
+  background:
+    radial-gradient(circle at 18% 8%, rgba(215, 243, 90, 0.09), transparent 28rem),
+    radial-gradient(circle at 86% 78%, rgba(36, 214, 183, 0.07), transparent 28rem),
+    linear-gradient(180deg, #0000aa 0%, #000080 54%, #000064 100%) !important;
+}
+
+html[data-theme="bios-core"] :is(h1, h2, h3, h4, h5, h6, .app-section-title, .app-badge) {
+  font-family: var(--terminal-font);
+  font-variant-ligatures: none;
+}
+
+html[data-theme="bios-core"] :is(h1, h2, h3) {
+  letter-spacing: 0;
+}
+
+html[data-theme="bios-core"] :is(p, span, a, button, input, textarea, label) {
+  text-rendering: geometricPrecision;
+}
+
+html[data-theme="bios-core"] .dashboard-secondary-sidebar {
+  border-color: rgba(128, 166, 214, 0.42) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(215, 243, 90, 0.07), transparent 18rem),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.055), transparent 42%),
+    linear-gradient(180deg, #00006e 0%, #00005a 56%, #000044 100%) !important;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.12),
+    inset -1px 0 0 rgba(0, 0, 0, 0.36),
+    10px 0 28px -24px rgba(0, 0, 0, 0.74);
+}
+
+html[data-theme="bios-core"] .dashboard-secondary-sidebar :is(.app-card, .app-row) {
+  border-color: rgba(154, 177, 210, 0.38);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 40%),
+    linear-gradient(180deg, rgba(0, 0, 126, 0.92), rgba(0, 0, 74, 0.92));
+}
+
+html[data-theme="bios-core"] .dashboard-secondary-sidebar :is(.app-card, .app-row):hover {
+  border-color: rgba(215, 243, 90, 0.48);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), transparent 40%),
+    linear-gradient(180deg, rgba(0, 0, 146, 0.94), rgba(0, 0, 86, 0.94));
+}
+
+/* BIOS communication pass: tighter rail, cleaner loading, and chat bubbles that fit content. */
+html[data-theme="bios-core"] .dashboard-main-sidebar {
+  border-radius: 0 !important;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar::before {
+  border-radius: 0 !important;
+}
+
+html[data-theme="bios-core"] .app-skeleton {
+  border-color: rgba(154, 177, 210, 0.3);
+  background:
+    linear-gradient(90deg, rgba(215, 243, 90, 0.045), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 46%),
+    rgba(50, 54, 58, 0.9);
+}
+
+html[data-theme="bios-core"] .app-skeleton::before {
+  content: none !important;
+}
+
+html[data-theme="bios-core"] .app-skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(215, 243, 90, 0.1), transparent);
+}
+
+.message-row {
+  align-items: flex-start;
+}
+
+.message-row-own {
+  flex-direction: row-reverse;
+}
+
+.message-shell {
+  display: flex;
+  max-width: min(42rem, 78%);
+}
+
+.message-row-own .message-shell {
+  justify-content: flex-end;
+}
+
+.message-bubble {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0.62rem 0.78rem;
+}
+
+.message-row-own .message-bubble {
+  text-align: left;
+}
+
+.message-row-own .message-meta,
+.message-row-own .message-actions {
+  justify-content: flex-end;
+}
+
+html[data-theme="bios-core"] .message-feed .message-row {
+  border-color: transparent !important;
+  border-radius: 0;
+  background: transparent !important;
+  padding-block: 0.38rem;
+  box-shadow: none !important;
+}
+
+html[data-theme="bios-core"] .message-feed .message-row:hover {
+  border-color: transparent !important;
+  background: transparent !important;
+}
+
+html[data-theme="bios-core"] .message-feed .message-bubble {
+  border-color: rgba(154, 177, 210, 0.32);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 44%),
+    linear-gradient(180deg, rgba(49, 53, 59, 0.96), rgba(35, 38, 43, 0.96));
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.11),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.28);
+}
+
+html[data-theme="bios-core"] .message-feed .message-row-own .message-bubble {
+  border-color: rgba(215, 243, 90, 0.42);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), transparent 44%),
+    linear-gradient(180deg, rgba(0, 0, 112, 0.98), rgba(0, 0, 82, 0.98));
+}
+
+@media (min-width: 640px) {
+  html[data-theme="bios-core"] {
+    --dashboard-primary-sidebar-width: 4.75rem;
+  }
+
+  html[data-theme="bios-core"] .dashboard-main-sidebar {
+    width: var(--dashboard-primary-sidebar-width) !important;
+    padding: 0.85rem 0.45rem !important;
+  }
+
+  html[data-theme="bios-core"] .dashboard-content-frame {
+    padding-left: var(--dashboard-primary-sidebar-width) !important;
+  }
+
+  html[data-theme="bios-core"] .dashboard-main-sidebar > nav[aria-label="Dashboard"] {
+    gap: 0.48rem;
+  }
+
+  html[data-theme="bios-core"] .dashboard-main-sidebar > nav[aria-label="Dashboard"] :is(a, button),
+  html[data-theme="bios-core"] .dashboard-main-sidebar > div.hidden > div > button {
+    width: 3.6rem !important;
+    height: 3.6rem !important;
+  }
+
+  html[data-theme="bios-core"] .dashboard-main-sidebar > nav[aria-label="Dashboard"] svg,
+  html[data-theme="bios-core"] .dashboard-main-sidebar > div.hidden > div > button svg {
+    width: 1.85rem !important;
+    height: 1.85rem !important;
+  }
+
+  html[data-theme="bios-core"] .dashboard-main-sidebar > nav[aria-label="Dashboard"] .theme-avatar,
+  html[data-theme="bios-core"] .dashboard-main-sidebar > div.hidden > div > button .theme-avatar {
+    width: 2.75rem !important;
+    height: 2.75rem !important;
+    font-size: 0.82rem !important;
+  }
+}
+
+@media (max-width: 639px) {
+  .message-shell {
+    max-width: min(34rem, 84%);
+  }
+}
+
+/* Theme gallery structure pass: one card system, theme-specific color identities. */
+.theme-choice-card-bios-core {
+  --theme-card-accent: #ffff00;
+  --theme-card-secondary: #c0c0c0;
+  --theme-card-surface: #000080;
+}
+
+.theme-choice-card-agent-amir {
+  --theme-card-accent: #d4af37;
+  --theme-card-secondary: #00ff7f;
+  --theme-card-surface: #0b0d0e;
+}
+
+.theme-choice-card-nima-last-light {
+  --theme-card-accent: #8b9f62;
+  --theme-card-secondary: #c4633a;
+  --theme-card-surface: #101410;
+}
+
+.theme-choice-card-araz-credit-empire {
+  --theme-card-accent: #ffc84d;
+  --theme-card-secondary: #27c8ff;
+  --theme-card-surface: #061126;
+}
+
+.theme-choice-card-threez-street-hero {
+  --theme-card-accent: #ff3131;
+  --theme-card-secondary: #246bff;
+  --theme-card-surface: #101014;
+}
+
+.theme-choice-card-hamp-root-forge {
+  --theme-card-accent: #d8b56a;
+  --theme-card-secondary: #86d79a;
+  --theme-card-surface: #070808;
+}
+
+.theme-choice-card-mehran-blue-corner {
+  --theme-card-accent: #7fd7ff;
+  --theme-card-secondary: #d7f5ff;
+  --theme-card-surface: #06111d;
+}
+
+.theme-selector-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr));
+}
+
+.theme-choice-card {
+  min-height: 100%;
+  border-color: color-mix(in srgb, var(--theme-card-accent, var(--accent)) 34%, var(--border-soft));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 9%, transparent), transparent 42%),
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--theme-card-accent, var(--accent)) 18%, transparent), transparent 18rem),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--theme-card-secondary, var(--accent-hover)) 12%, transparent), transparent 15rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-card-surface, var(--surface-floating)) 88%, var(--surface-raised)), color-mix(in srgb, var(--theme-card-surface, var(--surface-panel)) 72%, black)) !important;
+}
+
+.theme-choice-card .theme-detail-pill,
+.theme-choice-card .theme-icon-token {
+  border-color: color-mix(in srgb, var(--theme-card-accent, var(--accent)) 32%, var(--border-soft));
+}
+
+.theme-choice-card-active {
+  border-color: color-mix(in srgb, var(--theme-card-accent, var(--accent)) 72%, white 6%) !important;
+}
+
+/* BIOS maximum skeuomorphism: hardware-grade sidebar controls. */
+html[data-theme="bios-core"] .dashboard-main-sidebar {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.16), transparent 38%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 8px),
+    linear-gradient(180deg, #5e625f 0%, #3e423f 48%, #252826 100%) !important;
+  box-shadow:
+    inset 2px 0 0 rgba(255, 255, 255, 0.24),
+    inset -2px 0 0 rgba(0, 0, 0, 0.58),
+    12px 0 28px -24px rgba(0, 0, 0, 0.78) !important;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(218, 222, 204, 0.42) !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 34% 22%, rgba(255, 255, 255, 0.34), transparent 0.82rem),
+    radial-gradient(circle at 50% 58%, rgba(0, 0, 0, 0.38), transparent 2.15rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.2), transparent 42%),
+    linear-gradient(180deg, #626661 0%, #3a3e3b 52%, #1d201e 100%) !important;
+  color: #f5f6e8 !important;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.74);
+  box-shadow:
+    inset 2px 2px 2px rgba(255, 255, 255, 0.24),
+    inset -3px -4px 5px rgba(0, 0, 0, 0.58),
+    inset 0 0 0 5px rgba(255, 255, 255, 0.035),
+    0 2px 0 rgba(255, 255, 255, 0.09),
+    0 10px 18px -12px rgba(0, 0, 0, 0.9) !important;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon::before {
+  content: "";
+  position: absolute;
+  inset: 0.42rem 0.52rem auto 0.52rem;
+  height: 36%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.06));
+  pointer-events: none;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon:hover {
+  border-color: rgba(238, 246, 150, 0.72) !important;
+  background:
+    radial-gradient(circle at 34% 22%, rgba(255, 255, 255, 0.42), transparent 0.9rem),
+    radial-gradient(circle at 50% 58%, rgba(0, 0, 0, 0.34), transparent 2.15rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.24), transparent 42%),
+    linear-gradient(180deg, #737971 0%, #464c47 52%, #242825 100%) !important;
+  color: #ffffbf !important;
+  transform: translateY(-1px);
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 4px 5px 7px rgba(0, 0, 0, 0.62),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.14),
+    0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon-active,
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"],
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"] {
+  border-color: rgba(255, 255, 0, 0.96) !important;
+  background:
+    radial-gradient(circle at 34% 22%, rgba(255, 255, 255, 0.58), transparent 0.95rem),
+    radial-gradient(circle at 50% 64%, rgba(95, 95, 0, 0.45), transparent 2.05rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.32), transparent 42%),
+    linear-gradient(180deg, #ffff00 0%, #d8d200 50%, #827b00 100%) !important;
+  color: #111300 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.48);
+  box-shadow:
+    inset 2px 2px 2px rgba(255, 255, 255, 0.5),
+    inset -3px -4px 5px rgba(70, 70, 0, 0.55),
+    inset 0 0 0 5px rgba(255, 255, 255, 0.08),
+    0 0 0 2px rgba(255, 255, 0, 0.24),
+    0 14px 26px -16px rgba(255, 255, 0, 0.46) !important;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon-active::after,
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"]::after,
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"]::after {
+  right: 0.42rem;
+  top: 0.42rem;
+  width: 0.42rem;
+  height: 0.42rem;
+  background: #24f4d0;
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.28),
+    0 0 8px rgba(36, 244, 208, 0.62);
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon .theme-avatar {
+  border-radius: 999px !important;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.22),
+    inset -2px -2px 3px rgba(0, 0, 0, 0.44);
+}
+
+/* Sidebar normalization: every theme gets the same rail structure, only the palette changes. */
+html[data-theme="agent-amir"] {
+  --theme-sidebar-bg-top: #161512;
+  --theme-sidebar-bg-mid: #0b0d0e;
+  --theme-sidebar-bg-bottom: #050506;
+  --theme-sidebar-panel: #11100d;
+  --theme-sidebar-button: #1d1b16;
+  --theme-sidebar-button-dark: #090a0a;
+  --theme-sidebar-accent: #d4af37;
+  --theme-sidebar-secondary: #00ff7f;
+  --theme-sidebar-text: #f0ead8;
+}
+
+html[data-theme="nima-last-light"] {
+  --theme-sidebar-bg-top: #20261f;
+  --theme-sidebar-bg-mid: #101410;
+  --theme-sidebar-bg-bottom: #070908;
+  --theme-sidebar-panel: #151a15;
+  --theme-sidebar-button: #242a23;
+  --theme-sidebar-button-dark: #0c100d;
+  --theme-sidebar-accent: #8b9f62;
+  --theme-sidebar-secondary: #c4633a;
+  --theme-sidebar-text: #ebe6d6;
+}
+
+html[data-theme="araz-credit-empire"] {
+  --theme-sidebar-bg-top: #10294d;
+  --theme-sidebar-bg-mid: #061126;
+  --theme-sidebar-bg-bottom: #01040d;
+  --theme-sidebar-panel: #0b1d37;
+  --theme-sidebar-button: #13305a;
+  --theme-sidebar-button-dark: #031022;
+  --theme-sidebar-accent: #ffc84d;
+  --theme-sidebar-secondary: #27c8ff;
+  --theme-sidebar-text: #edf7ff;
+}
+
+html[data-theme="threez-street-hero"] {
+  --theme-sidebar-bg-top: #232531;
+  --theme-sidebar-bg-mid: #101014;
+  --theme-sidebar-bg-bottom: #050506;
+  --theme-sidebar-panel: #181922;
+  --theme-sidebar-button: #282a36;
+  --theme-sidebar-button-dark: #0c0c11;
+  --theme-sidebar-accent: #ff3131;
+  --theme-sidebar-secondary: #246bff;
+  --theme-sidebar-text: #fffaf0;
+}
+
+html[data-theme="hamp-root-forge"] {
+  --theme-sidebar-bg-top: #1d201f;
+  --theme-sidebar-bg-mid: #0b0c0b;
+  --theme-sidebar-bg-bottom: #010202;
+  --theme-sidebar-panel: #121312;
+  --theme-sidebar-button: #22211d;
+  --theme-sidebar-button-dark: #060606;
+  --theme-sidebar-accent: #d8b56a;
+  --theme-sidebar-secondary: #86d79a;
+  --theme-sidebar-text: #f4ead7;
+}
+
+html[data-theme="mehran-blue-corner"] {
+  --theme-sidebar-bg-top: #102034;
+  --theme-sidebar-bg-mid: #06111d;
+  --theme-sidebar-bg-bottom: #010713;
+  --theme-sidebar-panel: #0a1928;
+  --theme-sidebar-button: #102a42;
+  --theme-sidebar-button-dark: #02101d;
+  --theme-sidebar-accent: #7fd7ff;
+  --theme-sidebar-secondary: #d7f5ff;
+  --theme-sidebar-text: #ecfbff;
+}
+
+html[data-theme="agent-amir"] :is(.dashboard-main-sidebar, .dashboard-secondary-sidebar),
+html[data-theme="nima-last-light"] :is(.dashboard-main-sidebar, .dashboard-secondary-sidebar),
+html[data-theme="araz-credit-empire"] :is(.dashboard-main-sidebar, .dashboard-secondary-sidebar),
+html[data-theme="threez-street-hero"] :is(.dashboard-main-sidebar, .dashboard-secondary-sidebar),
+html[data-theme="hamp-root-forge"] :is(.dashboard-main-sidebar, .dashboard-secondary-sidebar),
+html[data-theme="mehran-blue-corner"] :is(.dashboard-main-sidebar, .dashboard-secondary-sidebar) {
+  border-color: color-mix(in srgb, var(--theme-sidebar-accent) 30%, transparent) !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 5%, transparent), transparent 40%),
+    linear-gradient(180deg, var(--theme-sidebar-bg-top), var(--theme-sidebar-bg-mid) 48%, var(--theme-sidebar-bg-bottom)) !important;
+  color: var(--theme-sidebar-text) !important;
+  box-shadow:
+    inset 1px 0 0 color-mix(in srgb, white 10%, transparent),
+    inset -1px 0 0 rgba(0, 0, 0, 0.42),
+    10px 0 28px -25px rgba(0, 0, 0, 0.86) !important;
+}
+
+html[data-theme="agent-amir"] .dashboard-secondary-sidebar :is(.app-card, .app-row),
+html[data-theme="nima-last-light"] .dashboard-secondary-sidebar :is(.app-card, .app-row),
+html[data-theme="araz-credit-empire"] .dashboard-secondary-sidebar :is(.app-card, .app-row),
+html[data-theme="threez-street-hero"] .dashboard-secondary-sidebar :is(.app-card, .app-row),
+html[data-theme="hamp-root-forge"] .dashboard-secondary-sidebar :is(.app-card, .app-row),
+html[data-theme="mehran-blue-corner"] .dashboard-secondary-sidebar :is(.app-card, .app-row) {
+  border-color: color-mix(in srgb, var(--theme-sidebar-accent) 28%, transparent) !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 6%, transparent), transparent 42%),
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-sidebar-panel) 86%, transparent), color-mix(in srgb, var(--theme-sidebar-bg-bottom) 82%, transparent)) !important;
+}
+
+html[data-theme="agent-amir"] .dashboard-main-sidebar .dashboard-nav-icon,
+html[data-theme="nima-last-light"] .dashboard-main-sidebar .dashboard-nav-icon,
+html[data-theme="araz-credit-empire"] .dashboard-main-sidebar .dashboard-nav-icon,
+html[data-theme="threez-street-hero"] .dashboard-main-sidebar .dashboard-nav-icon,
+html[data-theme="hamp-root-forge"] .dashboard-main-sidebar .dashboard-nav-icon,
+html[data-theme="mehran-blue-corner"] .dashboard-main-sidebar .dashboard-nav-icon {
+  border-color: color-mix(in srgb, var(--theme-sidebar-accent) 22%, transparent) !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 8%, transparent), transparent 46%),
+    linear-gradient(180deg, var(--theme-sidebar-button), var(--theme-sidebar-button-dark)) !important;
+  color: color-mix(in srgb, var(--theme-sidebar-text) 86%, transparent) !important;
+  box-shadow:
+    inset 1px 1px 0 color-mix(in srgb, white 12%, transparent),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.42),
+    0 9px 18px -16px rgba(0, 0, 0, 0.86) !important;
+  animation: none !important;
+  filter: none !important;
+}
+
+html[data-theme="agent-amir"] .dashboard-main-sidebar .dashboard-nav-icon:is(:hover, .dashboard-nav-icon-active),
+html[data-theme="nima-last-light"] .dashboard-main-sidebar .dashboard-nav-icon:is(:hover, .dashboard-nav-icon-active),
+html[data-theme="araz-credit-empire"] .dashboard-main-sidebar .dashboard-nav-icon:is(:hover, .dashboard-nav-icon-active),
+html[data-theme="threez-street-hero"] .dashboard-main-sidebar .dashboard-nav-icon:is(:hover, .dashboard-nav-icon-active),
+html[data-theme="hamp-root-forge"] .dashboard-main-sidebar .dashboard-nav-icon:is(:hover, .dashboard-nav-icon-active),
+html[data-theme="mehran-blue-corner"] .dashboard-main-sidebar .dashboard-nav-icon:is(:hover, .dashboard-nav-icon-active),
+html[data-theme="agent-amir"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"],
+html[data-theme="nima-last-light"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"],
+html[data-theme="araz-credit-empire"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"],
+html[data-theme="threez-street-hero"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"],
+html[data-theme="hamp-root-forge"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"],
+html[data-theme="mehran-blue-corner"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"],
+html[data-theme="agent-amir"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"],
+html[data-theme="nima-last-light"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"],
+html[data-theme="araz-credit-empire"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"],
+html[data-theme="threez-street-hero"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"],
+html[data-theme="hamp-root-forge"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"],
+html[data-theme="mehran-blue-corner"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"] {
+  border-color: color-mix(in srgb, var(--theme-sidebar-accent) 70%, white 4%) !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-sidebar-secondary) 12%, transparent), transparent 48%),
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-sidebar-accent) 34%, var(--theme-sidebar-button)), color-mix(in srgb, var(--theme-sidebar-accent) 16%, var(--theme-sidebar-button-dark))) !important;
+  color: var(--theme-sidebar-text) !important;
+  text-shadow: none !important;
+  box-shadow:
+    inset 1px 1px 0 color-mix(in srgb, white 15%, transparent),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.44),
+    0 0 0 1px color-mix(in srgb, var(--theme-sidebar-accent) 14%, transparent),
+    0 10px 20px -16px rgba(0, 0, 0, 0.9) !important;
+}
+
+html[data-theme="agent-amir"] .dashboard-main-sidebar .dashboard-nav-icon::after,
+html[data-theme="nima-last-light"] .dashboard-main-sidebar .dashboard-nav-icon::after,
+html[data-theme="araz-credit-empire"] .dashboard-main-sidebar .dashboard-nav-icon::after,
+html[data-theme="threez-street-hero"] .dashboard-main-sidebar .dashboard-nav-icon::after,
+html[data-theme="hamp-root-forge"] .dashboard-main-sidebar .dashboard-nav-icon::after,
+html[data-theme="mehran-blue-corner"] .dashboard-main-sidebar .dashboard-nav-icon::after {
+  box-shadow: none !important;
+}
+
+html[data-theme="agent-amir"] .dashboard-main-sidebar [class*="bg-[#FF5F25]"],
+html[data-theme="nima-last-light"] .dashboard-main-sidebar [class*="bg-[#FF5F25]"],
+html[data-theme="araz-credit-empire"] .dashboard-main-sidebar [class*="bg-[#FF5F25]"],
+html[data-theme="threez-street-hero"] .dashboard-main-sidebar [class*="bg-[#FF5F25]"],
+html[data-theme="hamp-root-forge"] .dashboard-main-sidebar [class*="bg-[#FF5F25]"],
+html[data-theme="mehran-blue-corner"] .dashboard-main-sidebar [class*="bg-[#FF5F25]"] {
+  background-color: var(--theme-sidebar-accent) !important;
+  color: var(--theme-sidebar-bg-bottom) !important;
+}
+
+/* Matte BIOS hardware: keep depth, remove glossy/glassy highlights. */
+html[data-theme="bios-core"] .dashboard-main-sidebar {
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 8px),
+    linear-gradient(180deg, #565953 0%, #3b3f3a 48%, #272a27 100%) !important;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.13),
+    inset -2px 0 0 rgba(0, 0, 0, 0.48),
+    10px 0 24px -22px rgba(0, 0, 0, 0.74) !important;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon {
+  border-color: rgba(206, 211, 190, 0.38) !important;
+  background:
+    linear-gradient(180deg, #575c55 0%, #41463f 48%, #272b28 100%) !important;
+  color: #ecefd9 !important;
+  text-shadow: none;
+  box-shadow:
+    inset 2px 2px 3px rgba(255, 255, 255, 0.11),
+    inset -3px -4px 5px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.05),
+    0 9px 16px -13px rgba(0, 0, 0, 0.88) !important;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon::before {
+  display: none !important;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon:hover {
+  border-color: rgba(218, 229, 116, 0.62) !important;
+  background:
+    linear-gradient(180deg, #61665f 0%, #484e47 50%, #2d322e 100%) !important;
+  color: #f3f4c7 !important;
+  transform: translateY(-1px);
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon-active,
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"],
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"] {
+  border-color: rgba(224, 226, 68, 0.88) !important;
+  background:
+    linear-gradient(180deg, #d8d846 0%, #b6b43b 52%, #777328 100%) !important;
+  color: #101204 !important;
+  text-shadow: none;
+  box-shadow:
+    inset 2px 2px 3px rgba(255, 255, 190, 0.24),
+    inset -3px -4px 5px rgba(74, 70, 0, 0.44),
+    0 0 0 1px rgba(224, 226, 68, 0.18),
+    0 11px 20px -17px rgba(0, 0, 0, 0.86) !important;
+}
+
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon-active::after,
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="text-[#FF5F25]"]::after,
+html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF5F25]"]::after {
+  background: #24d6b7;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.28);
+}

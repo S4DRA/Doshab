@@ -1,8 +1,6 @@
 export const DOSHAB_THEME_STORAGE_KEY = "doshab-theme";
 
 export type DoshabThemeId =
-  | "dark"
-  | "light"
   | "agent-amir"
   | "nima-last-light"
   | "araz-credit-empire"
@@ -131,64 +129,50 @@ export const DEFAULT_DOSHAB_THEME_ID: DoshabThemeId = "bios-core";
 
 export const DOSHAB_THEMES: DoshabThemeConfig[] = [
   {
-    id: "dark",
-    name: "Doshab Dark",
-    shortName: "Dark",
-    description: "The calm default dark interface with deep red surfaces and hot pink accents.",
-    personality: "Private, focused, and familiar.",
+    id: "bios-core",
+    name: "BIOS Core",
+    shortName: "BIOS",
+    description:
+      "A premium retro BIOS setup screen with original blue panels, gray menu chrome, and yellow selected states.",
+    personality:
+      "Retro, technical, sharp, mysterious, minimal, nostalgic, and system-level without becoming noisy.",
     colors: {
-      background: "#2B0000",
-      surface: "#180004",
-      card: "#32000b",
-      accent: "#ff0037",
-      accentSecondary: "#ff8ab0",
-      border: "rgba(255, 0, 84, 0.26)",
-      text: "#ffffff",
+      background: "#000080",
+      surface: "#0000AA",
+      card: "#404040",
+      accent: "#FFFF00",
+      accentSecondary: "#C0C0C0",
+      border: "rgba(192, 192, 192, 0.72)",
+      text: "#FFFFFF",
     },
     backgroundStyle:
-      "radial-gradient(circle at 18% 0%, rgba(255, 0, 84, 0.18), transparent 52%), linear-gradient(180deg, #3a0009, #2B0000)",
-    cardStyle: "linear-gradient(180deg, #32000b, #1d0005)",
-    buttonStyle: "linear-gradient(135deg, #ff0015, #ff4f6c)",
-    accentStyle: "0 0 0 1px rgba(255, 0, 84, 0.42), 0 18px 48px -34px rgba(255, 0, 84, 0.82)",
+      "linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px), linear-gradient(180deg, #0000AA, #000080)",
+    cardStyle:
+      "linear-gradient(180deg, #5A5A5A, #303030), linear-gradient(90deg, rgba(255, 255, 255, 0.14), transparent 42%)",
+    buttonStyle: "linear-gradient(180deg, #FFFF00, #D6C900)",
+    accentStyle:
+      "0 0 0 1px rgba(192, 192, 192, 0.74), inset 0 0 0 1px rgba(255, 255, 255, 0.16), 0 18px 52px -38px rgba(255, 255, 0, 0.48)",
+    decorativeClassName: "theme-preview-bios-core",
     themeIcons: [
-      { id: "surveillance-eye", label: "Private watch" },
-      { id: "lock", label: "Locked room" },
-      { id: "encrypted-channel", label: "Encrypted channel" },
-      { id: "shield", label: "Protected space" },
-      { id: "fingerprint", label: "Trusted identity" },
-      { id: "mission-target", label: "Focused target" },
+      { id: "terminal", label: "Boot terminal" },
+      { id: "system-core", label: "System core" },
+      { id: "server-rack", label: "Server rack" },
+      { id: "database", label: "Database" },
+      { id: "power-core", label: "Power core" },
+      { id: "protocol-network", label: "Network node" },
+      { id: "protocol-lock", label: "Protocol lock" },
+      { id: "shield-security", label: "Shield" },
+      { id: "command-node", label: "Command node" },
+      { id: "alert-triangle", label: "Warning" },
     ],
-    previewDetails: ["Private workspace", "Warm focus", "Default signal"],
-  },
-  {
-    id: "light",
-    name: "Doshab Light",
-    shortName: "Light",
-    description: "A bright, clean version of Doshab with hot pink accents and deep red text.",
-    personality: "Clear, lightweight, and readable.",
-    colors: {
-      background: "#fff5f8",
-      surface: "#ffe8ef",
-      card: "#ffffff",
-      accent: "#ff0037",
-      accentSecondary: "#2B0000",
-      border: "rgba(43, 0, 0, 0.14)",
-      text: "#2B0000",
-    },
-    backgroundStyle:
-      "radial-gradient(circle at 18% 0%, rgba(255, 0, 84, 0.16), transparent 48%), linear-gradient(180deg, #ffffff, #fff5f8)",
-    cardStyle: "linear-gradient(180deg, #ffffff, #ffe8ef)",
-    buttonStyle: "linear-gradient(135deg, #ff0040, #cc002c)",
-    accentStyle: "0 0 0 1px rgba(255, 0, 84, 0.3), 0 18px 42px -34px rgba(43, 0, 0, 0.42)",
-    themeIcons: [
-      { id: "trust-level", label: "Trust level" },
-      { id: "id-badge", label: "Readable identity" },
-      { id: "shield", label: "Protected space" },
-      { id: "emotion-filter", label: "Clean mood" },
-      { id: "protocol-network", label: "Clear network" },
-      { id: "command-node", label: "Quick command" },
+    previewDetails: [
+      "SYSTEM READY",
+      "BOOT MODE: DOSHAB",
+      "VOICE MODULE: ONLINE",
+      "CHAT BUS: ACTIVE",
+      "NOTIFICATIONS: ENABLED",
+      "MEMORY CHECK: PASSED",
     ],
-    previewDetails: ["Day mode", "Clean panels", "Readable mission"],
   },
   {
     id: "agent-amir",
@@ -441,52 +425,6 @@ export const DOSHAB_THEMES: DoshabThemeConfig[] = [
       "AI Agent Network: Ready",
       "Command Core Stable",
       "Powered by Rootonset",
-    ],
-  },
-  {
-    id: "bios-core",
-    name: "BIOS Core",
-    shortName: "BIOS",
-    description:
-      "A premium retro BIOS setup screen with original blue panels, gray menu chrome, and yellow selected states.",
-    personality:
-      "Retro, technical, sharp, mysterious, minimal, nostalgic, and system-level without becoming noisy.",
-    colors: {
-      background: "#000080",
-      surface: "#0000AA",
-      card: "#404040",
-      accent: "#FFFF00",
-      accentSecondary: "#C0C0C0",
-      border: "rgba(192, 192, 192, 0.72)",
-      text: "#FFFFFF",
-    },
-    backgroundStyle:
-      "linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px), linear-gradient(180deg, #0000AA, #000080)",
-    cardStyle:
-      "linear-gradient(180deg, #5A5A5A, #303030), linear-gradient(90deg, rgba(255, 255, 255, 0.14), transparent 42%)",
-    buttonStyle: "linear-gradient(180deg, #FFFF00, #D6C900)",
-    accentStyle:
-      "0 0 0 1px rgba(192, 192, 192, 0.74), inset 0 0 0 1px rgba(255, 255, 255, 0.16), 0 18px 52px -38px rgba(255, 255, 0, 0.48)",
-    decorativeClassName: "theme-preview-bios-core",
-    themeIcons: [
-      { id: "terminal", label: "Boot terminal" },
-      { id: "system-core", label: "System core" },
-      { id: "server-rack", label: "Server rack" },
-      { id: "database", label: "Database" },
-      { id: "power-core", label: "Power core" },
-      { id: "protocol-network", label: "Network node" },
-      { id: "protocol-lock", label: "Protocol lock" },
-      { id: "shield-security", label: "Shield" },
-      { id: "command-node", label: "Command node" },
-      { id: "alert-triangle", label: "Warning" },
-    ],
-    previewDetails: [
-      "SYSTEM READY",
-      "BOOT MODE: DOSHAB",
-      "VOICE MODULE: ONLINE",
-      "CHAT BUS: ACTIVE",
-      "NOTIFICATIONS: ENABLED",
-      "MEMORY CHECK: PASSED",
     ],
   },
   {

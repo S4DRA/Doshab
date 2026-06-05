@@ -144,12 +144,14 @@ export function RealtimeMessagePanel({
     return () => eventSource.close();
   }, [channelId]);
 
-  function handleMessageUpdate(message: ChatMessage) {
-    setDecryptedMessages((current) => mergeMessages(current, [message]));
+  async function handleMessageUpdate(message: ChatMessage) {
+    const decryptedMessage = await decryptChatMessage(message);
+
+    setDecryptedMessages((current) => mergeMessages(current, [decryptedMessage]));
     setPinnedMessages((current) => {
-      const nextMessages = message.pinnedAt
-        ? mergeMessages(current, [message])
-        : current.filter((item) => item.id !== message.id);
+      const nextMessages = decryptedMessage.pinnedAt
+        ? mergeMessages(current, [decryptedMessage])
+        : current.filter((item) => item.id !== decryptedMessage.id);
 
       return nextMessages.sort(
         (first, second) =>

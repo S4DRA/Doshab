@@ -85,6 +85,7 @@ function MessageRow({
 }) {
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const senderLabel = message.sender.name || message.sender.email;
+  const isOwnMessage = Boolean(currentUserId && message.sender.id === currentUserId);
 
   async function updateFromResponse(response: Response) {
     if (!response.ok) {
@@ -165,15 +166,18 @@ function MessageRow({
 
   return (
     <article
-      className="group/message flex scroll-mt-28 gap-2.5 border border-transparent px-1.5 py-2.5 transition hover:border-white/10 hover:bg-white/[0.02] sm:gap-3 sm:px-2"
+      className={`message-row group/message flex scroll-mt-28 gap-2.5 border border-transparent px-1.5 py-2.5 transition hover:border-white/10 hover:bg-white/[0.02] sm:gap-3 sm:px-2 ${
+        isOwnMessage ? "message-row-own" : "message-row-friend"
+      }`}
       id={`message-${message.id}`}
     >
       <AvatarInitials
         imageUrl={message.sender.image}
         value={senderLabel}
       />
-      <div className="min-w-0 flex-1">
-        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
+      <div className="message-shell min-w-0">
+        <div className="message-bubble">
+        <div className="message-meta flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
           <p className="min-w-0 max-w-full truncate text-sm font-semibold text-white">
             {senderLabel}
           </p>
@@ -208,7 +212,7 @@ function MessageRow({
 
         {message.poll ? <PollCard message={message} onVote={vote} /> : null}
 
-        <div className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5">
+        <div className="message-actions mt-2 flex min-w-0 flex-wrap items-center gap-1.5">
           {reactionEmojis.map((emoji) => {
             const reaction = message.reactions?.find((item) => item.emoji === emoji);
             const reacted = Boolean(reaction?.reacted);
@@ -256,6 +260,7 @@ function MessageRow({
           >
             Report
           </button>
+        </div>
         </div>
       </div>
     </article>
