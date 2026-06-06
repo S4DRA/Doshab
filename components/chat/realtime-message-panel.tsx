@@ -382,7 +382,7 @@ export function RealtimeMessagePanel({
         />
       ) : null}
 
-      <div className="message-feed min-h-0 flex-1 scroll-pb-24 overflow-y-auto overscroll-contain py-2 pr-1 sm:max-h-none sm:py-3">
+      <div className="message-feed min-h-0 flex-1 scroll-pb-24 overflow-y-auto overscroll-contain py-2 pr-1 sm:py-3">
         <MessageList
           canPinMessages={canPinMessages}
           currentUserId={currentUser?.id}
@@ -393,7 +393,7 @@ export function RealtimeMessagePanel({
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="shrink-0 border-t border-white/10 bg-[#070907]/95 pb-[max(env(safe-area-inset-bottom),0.25rem)] pt-3 backdrop-blur">
+      <div className="shrink-0 border-t border-white/10 bg-[#070907]/95 pb-[max(calc(var(--dashboard-bottom-nav-height,4rem)+0.25rem),0.25rem)] pt-3 backdrop-blur md:pb-[max(env(safe-area-inset-bottom),0.25rem)]">
         {replyTarget ? (
           <div className="mb-2 flex items-start justify-between gap-3 rounded-lg border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-3 py-2">
             <div className="min-w-0">

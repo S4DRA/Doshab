@@ -76,7 +76,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-screen antialiased overflow-hidden`}
       data-scroll-behavior="smooth"
       data-theme={DEFAULT_DOSHAB_THEME_ID}
       suppressHydrationWarning
@@ -88,9 +88,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full bg-background text-foreground">
-        <div className="min-h-full">
-          <main>{children}</main>
+      <body className="h-screen overflow-hidden bg-background text-foreground">
+        <div className="h-screen overflow-hidden">
+          <main className="h-screen overflow-hidden">{children}</main>
         </div>
       </body>
     </html>

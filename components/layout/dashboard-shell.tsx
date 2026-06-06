@@ -61,8 +61,8 @@ export function DashboardShell({
     : null;
 
   return (
-    <main className="flex h-full min-h-0 w-full max-w-full overflow-hidden bg-[#070907]/95 text-slate-100 sm:h-auto sm:min-h-[100dvh] sm:overflow-visible min-[1180px]:h-[100dvh] min-[1180px]:min-h-0 min-[1180px]:overflow-hidden">
-      <aside className="dashboard-secondary-sidebar hidden w-[292px] shrink-0 flex-col gap-3 border-r border-white/10 bg-[#0d100e] p-3 min-[1180px]:flex min-[1500px]:w-[312px]">
+    <main className="flex h-screen w-screen overflow-hidden bg-[#070907]/95 text-slate-100">
+      <aside className="dashboard-secondary-sidebar hidden w-[292px] shrink-0 flex-col gap-3 border-r border-white/10 bg-[#0d100e] overflow-y-auto p-3 min-[1180px]:flex min-[1500px]:w-[312px]">
         {activeSection === "messages" || selectedGroup?.isDirectMessage ? (
           <MessageThreadSidebar
             selectedGroupId={selectedGroup?.id}
@@ -138,8 +138,8 @@ export function DashboardShell({
         )}
       </aside>
 
-      <section className="flex min-w-0 flex-1 flex-col overflow-hidden sm:overflow-visible min-[1180px]:overflow-hidden">
-        <header className="flex min-h-14 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 backdrop-blur sm:px-6 min-[1180px]:min-h-16 min-[1180px]:px-7">
+      <section className="flex min-w-0 flex-1 flex-col overflow-hidden md:pb-[calc(var(--dashboard-bottom-nav-height)_+_0.5rem)] md:overflow-y-auto min-[1180px]:pb-0 min-[1180px]:overflow-y-auto">
+        <header className="sticky top-0 z-10 flex min-h-14 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 backdrop-blur sm:px-6 min-[1180px]:min-h-16 min-[1180px]:px-7">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#FF5F25] min-[1180px]:text-[11px]">
               {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : activeSection === "messages" ? "Messages" : "Dashboard"}
@@ -570,8 +570,8 @@ function ChannelMain({
   }
 
   return (
-      <div className="flex min-h-0 flex-1 flex-col px-2.5 py-2.5 sm:px-4 sm:py-4 min-[1180px]:h-full min-[1180px]:px-7 min-[1180px]:py-5">
-      <section className="app-surface shrink-0 rounded-xl p-3 sm:p-4 min-[1180px]:rounded-lg min-[1180px]:p-4">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2.5 py-2.5 sm:px-4 sm:py-4 min-[1180px]:overflow-hidden min-[1180px]:px-7 min-[1180px]:py-5">
+      <section className="shrink-0 app-surface rounded-xl p-3 sm:p-4 min-[1180px]:rounded-lg min-[1180px]:p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
@@ -591,7 +591,7 @@ function ChannelMain({
           ) : null}
         </div>
       </section>
-      <div className="mt-3 min-h-0 flex-1 sm:mt-4 sm:min-h-[28rem] min-[1180px]:min-h-0">
+      <div className="mt-3 min-h-0 flex-1 sm:mt-4 min-[1180px]:min-h-0 flex flex-col">
         <RealtimeMessagePanel
           canPinMessages={canPinMessages}
           channelId={channel.id}
