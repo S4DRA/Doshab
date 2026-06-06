@@ -22,37 +22,40 @@ const metadataBase = new URL(
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000",
 );
 
+const valDescription =
+  "VAL is a Virtual Architecture Layer for private communities, real-time voice rooms, and structured digital spaces.";
+
 export const metadata: Metadata = {
   metadataBase,
-  title: "Doshab",
-  description: "A private meeting app foundation for spaces, chat, voice, and video.",
+  title: "VAL",
+  description: valDescription,
   openGraph: {
-    title: "Doshab",
-    description: "A private meeting app foundation for spaces, chat, voice, and video.",
+    title: "VAL",
+    description: valDescription,
     images: [
       {
-        url: "/doshab-logo-social.png",
-        width: 1254,
-        height: 1254,
-        alt: "Doshab logo",
+        url: "/val-logo-social.png",
+        width: 1600,
+        height: 1600,
+        alt: "VAL whale logo",
       },
     ],
   },
   twitter: {
     card: "summary",
-    title: "Doshab",
-    description: "A private meeting app foundation for spaces, chat, voice, and video.",
-    images: ["/doshab-logo-social.png"],
+    title: "VAL",
+    description: valDescription,
+    images: ["/val-logo-social.png"],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Doshab",
+    title: "VAL",
   },
-  applicationName: "Doshab",
+  applicationName: "VAL",
   icons: {
-    icon: "/doshab-icon-512.png",
-    apple: "/doshab-apple-icon.png",
+    icon: "/val-icon-512.png",
+    apple: "/val-icon-512.png",
   },
   manifest: "/manifest.webmanifest",
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PushNotificationToggle } from "@/components/notifications/push-notification-toggle";
@@ -32,6 +32,7 @@ const navItems = [
 ];
 
 type SidebarGroup = {
+  firstTextChannelId?: string | null;
   id: string;
   image?: string | null;
   isDirectMessage?: boolean;
@@ -74,6 +75,8 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sidebarRefreshKey = searchParams.toString();
   const [currentUser, setCurrentUser] = useState<SidebarUser | null>(initialCurrentUser);
   const [friends, setFriends] = useState<SidebarFriend[]>(initialFriends);
   const [groups, setGroups] = useState<SidebarGroup[]>(initialGroups);
@@ -87,6 +90,7 @@ export function DashboardSidebar({
   const [friendsOpen, setFriendsOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const sidebarRef = useRef<HTMLElement | null>(null);
   const [pinnedGroupId, setPinnedGroupId] = useState<string | null>(() => {
     if (typeof window === "undefined") {
       return null;
@@ -112,7 +116,7 @@ export function DashboardSidebar({
     ) {
       const browserNotification = new Notification(notification.title, {
         body: settings.showMessagePreview === false && notification.type === "MESSAGE"
-          ? "Open Doshab to read this message."
+          ? "Open VAL to read this message."
           : notification.body,
         data: {
           href: notification.href,
@@ -229,7 +233,7 @@ export function DashboardSidebar({
       isMounted = false;
       window.clearInterval(refreshTimer);
     };
-  }, [initialCurrentUser, initialGroups]);
+  }, [initialCurrentUser, initialGroups, sidebarRefreshKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -333,6 +337,35 @@ export function DashboardSidebar({
   }, []);
 
   useEffect(() => {
+    const anyMenuOpen =
+      channelsOpen || createOpen || friendsOpen || notificationsOpen || profileOpen;
+
+    if (!anyMenuOpen) {
+      return;
+    }
+
+    function closeOnOutsidePointer(event: PointerEvent) {
+      const target = event.target;
+
+      if (!(target instanceof Node) || sidebarRef.current?.contains(target)) {
+        return;
+      }
+
+      setChannelsOpen(false);
+      setCreateOpen(false);
+      setFriendsOpen(false);
+      setNotificationsOpen(false);
+      setProfileOpen(false);
+    }
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+    };
+  }, [channelsOpen, createOpen, friendsOpen, notificationsOpen, profileOpen]);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       const dashboardRoutes = [
         "/dashboard",
@@ -341,7 +374,7 @@ export function DashboardSidebar({
         "/dashboard/messages",
         "/dashboard/profile",
         "/dashboard/profile/themes",
-        ...groups.slice(0, 8).map((group) => `/dashboard/groups/${group.id}`),
+        ...groups.slice(0, 8).map((group) => getGroupHref(group)),
       ];
 
       Array.from(new Set(dashboardRoutes)).forEach((href) => {
@@ -358,7 +391,9 @@ export function DashboardSidebar({
 
   const profileActive = pathname.startsWith("/dashboard/profile");
   const pinnedGroup = groups.find((group) => group.id === pinnedGroupId) ?? groups[0] ?? null;
-  const pinnedGroupHref = pinnedGroup ? `/dashboard/groups/${pinnedGroup.id}` : "/dashboard/channels";
+  const pinnedGroupHref = pinnedGroup
+    ? getGroupHref(pinnedGroup)
+    : "/dashboard/channels";
 
   async function markNotificationsRead() {
     setUnreadCount(0);
@@ -507,7 +542,7 @@ export function DashboardSidebar({
   ) : null;
 
   const createMenu = createOpen ? (
-    <div className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-auto sm:left-[calc(100%+0.75rem)] sm:right-auto sm:top-32 sm:w-[calc(100vw-8rem)] sm:max-w-72">
+    <div className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:bottom-auto sm:left-[calc(var(--dashboard-primary-sidebar-width)+0.75rem)] sm:right-auto sm:top-32 sm:w-[calc(100vw-8rem)] sm:max-w-72">
       <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
         Create
       </p>
@@ -658,7 +693,7 @@ export function DashboardSidebar({
   const notificationMenu = notificationsOpen ? (
     <div
       aria-label="Notifications"
-      className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:absolute sm:bottom-3 sm:left-[calc(100%+0.75rem)] sm:right-auto sm:top-auto sm:w-[calc(100vw-8rem)] sm:max-w-96"
+      className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:bottom-3 sm:left-[calc(var(--dashboard-primary-sidebar-width)+0.75rem)] sm:right-auto sm:top-auto sm:w-[calc(100vw-8rem)] sm:max-w-96"
       role="dialog"
     >
       <div className="flex items-center justify-between gap-3">
@@ -758,7 +793,7 @@ export function DashboardSidebar({
   ) : null;
 
   const profileMenu = profileOpen ? (
-    <div className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] w-[calc(100vw-1.5rem)] max-w-44 origin-bottom-right overflow-y-auto rounded-lg p-2 sm:absolute sm:bottom-3 sm:left-[calc(100%+0.75rem)] sm:right-auto sm:top-auto sm:w-[calc(100vw-8rem)] sm:origin-bottom-left">
+    <div className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] w-[calc(100vw-1.5rem)] max-w-44 origin-bottom-right overflow-y-auto rounded-lg p-2 sm:bottom-3 sm:left-[calc(var(--dashboard-primary-sidebar-width)+0.75rem)] sm:right-auto sm:top-auto sm:w-[calc(100vw-8rem)] sm:origin-bottom-left">
       <Link
         className="block min-h-10 rounded-lg px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
         href="/dashboard/profile"
@@ -820,7 +855,7 @@ export function DashboardSidebar({
         </button>
       </div>
     ) : null}
-    <aside className="dashboard-main-sidebar fixed inset-x-0 bottom-0 z-50 flex h-[var(--dashboard-bottom-nav-height)] items-center border-t border-white/10 bg-[#0d100e]/95 px-2 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] backdrop-blur sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-24 sm:flex-col sm:border-r sm:border-t-0 sm:px-3 sm:py-4 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] min-[1180px]:w-[6.5rem]" data-tour-target="groups-sidebar">
+    <aside className="dashboard-main-sidebar fixed inset-x-0 bottom-0 z-50 flex h-[var(--dashboard-bottom-nav-height)] items-center border-t border-white/10 bg-[#0d100e]/95 px-2 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] backdrop-blur sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-24 sm:flex-col sm:border-r sm:border-t-0 sm:px-3 sm:py-4 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] min-[1180px]:w-[6.5rem]" data-tour-target="groups-sidebar" ref={sidebarRef}>
       {createMenu}
       {friendsMenu}
       {channelMenu}
@@ -1075,8 +1110,9 @@ export function DashboardSidebar({
           <div className="mx-1 h-8 w-px shrink-0 bg-white/50 sm:mx-0 sm:my-2 sm:h-px sm:w-8" />
         ) : null}
         {groups.map((group) => {
-          const href = `/dashboard/groups/${group.id}`;
-          const active = pathname === href || pathname.startsWith(`${href}/`);
+          const href = getGroupHref(group);
+          const groupBaseHref = `/dashboard/groups/${group.id}`;
+          const active = pathname === groupBaseHref || pathname.startsWith(`${groupBaseHref}/`);
 
           return (
             <Link
@@ -1247,6 +1283,12 @@ function getNotificationIcon(type: DashboardNotification["type"]) {
     default:
       return "MSG";
   }
+}
+
+function getGroupHref(group: SidebarGroup) {
+  return group.firstTextChannelId
+    ? `/dashboard/groups/${group.id}/channels/${group.firstTextChannelId}`
+    : `/dashboard/groups/${group.id}`;
 }
 
 function getNotificationActionLabel(type: DashboardNotification["type"]) {

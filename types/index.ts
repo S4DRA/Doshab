@@ -10,6 +10,7 @@ export type DashboardGroup = {
   id: string;
   name: string;
   description: string | null;
+  firstTextChannelId?: string | null;
   image?: string | null;
   isDirectMessage?: boolean;
   channels?: GroupChannel[];

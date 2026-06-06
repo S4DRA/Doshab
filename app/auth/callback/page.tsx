@@ -122,7 +122,7 @@ export default function AuthCallbackPage() {
   return (
     <AuthCard
       title="Verifying email"
-      subtitle="Hang tight while Doshab finishes your secure sign-in."
+      subtitle="Hang tight while VAL finishes your secure sign-in."
       footerText="Already verified?"
       footerHref="/login"
       footerLinkText="Log in"

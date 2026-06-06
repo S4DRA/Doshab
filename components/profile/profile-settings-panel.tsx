@@ -221,7 +221,7 @@ export function ProfileSettingsPanel() {
                 Enable notifications so you do not miss messages, invites, or incoming calls.
               </span>
               <span className="mt-2 block max-w-2xl text-xs leading-5 text-slate-500">
-                Call notifications appear as phone notifications when Doshab is installed and notification permission is enabled. Some phones/browsers may not support full-screen call screens from a PWA.
+                Call notifications appear as phone notifications when VAL is installed and notification permission is enabled. Some phones/browsers may not support full-screen call screens from a PWA.
               </span>
             </span>
             <label className="flex shrink-0 items-center gap-3">
@@ -345,7 +345,7 @@ export function ProfileSettingsPanel() {
           <span className="min-w-0">
             <span className="block text-sm font-semibold text-white">Themes</span>
             <span className="block text-sm leading-5 text-slate-400">
-              Open the full theme gallery and choose a global Doshab style.
+              Open the full theme gallery and choose a global VAL style.
             </span>
           </span>
           <Link
@@ -360,7 +360,7 @@ export function ProfileSettingsPanel() {
           <span className="min-w-0">
             <span className="block text-sm font-semibold text-white">Platform tour</span>
             <span className="block text-sm leading-5 text-slate-400">
-              Replay the guided Doshab tour from the beginning.
+              Replay the guided VAL tour from the beginning.
             </span>
           </span>
           <button
@@ -479,13 +479,13 @@ function NotificationSetupGuide({ installedPwa }: { installedPwa: boolean }) {
     ? [
         "Open Settings.",
         "Tap Notifications.",
-        "Find Doshab if it is installed.",
+        "Find VAL if it is installed.",
         "Allow Notifications.",
         "Enable Lock Screen, Notification Center, and Banners.",
       ]
     : installedPwa
       ? [
-          "Long press the Doshab app icon.",
+          "Long press the VAL app icon.",
           "Tap App info.",
           "Tap Notifications.",
           "Turn on notifications.",
@@ -496,7 +496,7 @@ function NotificationSetupGuide({ installedPwa }: { installedPwa: boolean }) {
           "Open Chrome settings.",
           "Open Site settings.",
           "Tap Notifications.",
-          "Find Doshab.",
+          "Find VAL.",
           "Allow notifications.",
         ];
 

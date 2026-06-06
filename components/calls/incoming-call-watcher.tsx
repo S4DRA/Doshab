@@ -277,7 +277,7 @@ export function IncomingCallWatcher() {
           {callerLabel}
         </h2>
         <p className="mt-2 text-sm text-slate-300">
-          Private call on Doshab. Answer to join now.
+          Private call on VAL. Answer to join now.
         </p>
         {error ? (
           <p className="mt-5 rounded-lg border border-amber-300/20 bg-amber-400/10 px-4 py-3 text-sm leading-5 text-amber-100">

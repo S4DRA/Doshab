@@ -9,7 +9,7 @@ self.addEventListener("push", (event) => {
     href: "/dashboard",
     requireInteraction: false,
     tag: "doshab-message",
-    title: "Doshab",
+    title: "VAL",
   };
 
   if (event.data) {
@@ -33,13 +33,13 @@ self.addEventListener("push", (event) => {
     ? `Incoming call from ${callerLabel}`
     : payload.title;
   const body = isIncomingCall && callerLabel
-    ? `${callerLabel} is calling you on Doshab`
+    ? `${callerLabel} is calling you on VAL`
     : payload.body;
 
   const notificationOptions = {
     body,
     actions: isIncomingCall ? getIncomingCallActions(payload.actions) : safeActions(payload.actions),
-    badge: "/doshab-icon-192.png",
+    badge: "/val-icon-192.png",
     data: {
       ...(payload.data || {}),
       callId,
@@ -47,7 +47,7 @@ self.addEventListener("push", (event) => {
       type: isIncomingCall ? incomingCallType : payload.data?.type,
       url: callUrl,
     },
-    icon: "/doshab-icon-512.png",
+    icon: "/val-icon-512.png",
     requireInteraction: Boolean(payload.requireInteraction || isIncomingCall),
     renotify: isIncomingCall,
     silent: false,

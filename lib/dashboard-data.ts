@@ -54,8 +54,8 @@ export const getDashboardGroups = cache(async (userId: string) =>
   }),
 );
 
-export const getDashboardSidebarGroups = cache(async (userId: string) =>
-  prisma.group.findMany({
+export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  const groups = await prisma.group.findMany({
     where: {
       isDirectMessage: false,
       members: {
@@ -72,9 +72,29 @@ export const getDashboardSidebarGroups = cache(async (userId: string) =>
       name: true,
       image: true,
       isDirectMessage: true,
+      channels: {
+        where: {
+          type: "TEXT",
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+        take: 1,
+        select: {
+          id: true,
+        },
+      },
     },
-  }),
-);
+  });
+
+  return groups.map((group) => ({
+    firstTextChannelId: group.channels[0]?.id ?? null,
+    id: group.id,
+    image: group.image,
+    isDirectMessage: group.isDirectMessage,
+    name: group.name,
+  }));
+});
 
 export const getDashboardMessageThreads = cache(async (userId: string) => {
   const groups = await prisma.group.findMany({
@@ -120,6 +140,7 @@ export const getDashboardMessageThreads = cache(async (userId: string) => {
               name: true,
               email: true,
               status: true,
+              image: true,
             },
           },
         },

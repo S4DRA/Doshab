@@ -237,7 +237,7 @@ export function FriendCallRoom({
           {roomState.kind === "joining" ? "Joining call" : "Checking call"}
         </p>
         <h1 className="mt-3 text-2xl font-semibold text-white">
-          {roomState.kind === "joining" ? "Connecting to Doshab voice" : "Opening call"}
+          {roomState.kind === "joining" ? "Connecting to VAL voice" : "Opening call"}
         </h1>
         <p className="mt-3 text-sm leading-6 text-slate-300">
           {roomState.kind === "joining"
@@ -286,7 +286,7 @@ function CallScreenPanel({
         <h1 id="incoming-call-screen-title" className="mt-3 truncate text-3xl font-bold text-white">
           {friendLabel}
         </h1>
-        <p className="mt-2 text-sm text-slate-300">Private call on Doshab</p>
+        <p className="mt-2 text-sm text-slate-300">Private call on VAL</p>
         <div className="mt-7 grid grid-cols-2 gap-3">
           <button
             className="app-button-danger h-14 rounded-lg px-4 text-base font-bold transition disabled:opacity-60"

@@ -19,7 +19,7 @@ export function ThemeSelector() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="app-section-title">Themes</p>
-          <h3 className="mt-2 text-lg font-bold text-white">Choose your Doshab style</h3>
+          <h3 className="mt-2 text-lg font-bold text-white">Choose your VAL style</h3>
         </div>
         <span className="app-badge w-fit px-3 py-1 text-xs font-semibold">
           Active: {activeTheme.name}
@@ -31,78 +31,108 @@ export function ThemeSelector() {
           const active = theme.id === themeId;
 
           return (
-            <article
-              className={`theme-choice-card app-card flex min-w-0 flex-col gap-4 p-4 transition ${
-                active ? "theme-choice-card-active" : ""
-              } ${theme.id === "agent-amir" ? "theme-choice-card-agent-amir" : ""} ${
-                theme.id === "nima-last-light" ? "theme-choice-card-nima-last-light" : ""
-              } ${theme.id === "araz-credit-empire" ? "theme-choice-card-araz-credit-empire" : ""
-              } ${
-                theme.id === "threez-street-hero" ? "theme-choice-card-threez-street-hero" : ""
-              } ${
-                theme.id === "hamp-root-forge" ? "theme-choice-card-hamp-root-forge" : ""
-              } ${
-                theme.id === "bios-core" ? "theme-choice-card-bios-core" : ""
-              } ${
-                theme.id === "mehran-blue-corner" ? "theme-choice-card-mehran-blue-corner" : ""
-              }`}
+            <ThemeCard
+              active={active}
               key={theme.id}
-            >
-              <div className="theme-choice-card-layout grid min-w-0 gap-4">
-                <ThemePreview theme={theme} />
-                <div className="theme-choice-card-body flex min-w-0 flex-1 flex-col gap-4">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h4 className="text-lg font-bold text-white">{theme.name}</h4>
-                    <span className="app-badge px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]">
-                      {theme.shortName}
-                    </span>
-                    {active ? (
-                      <span className="app-badge px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]">
-                        Current
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-                {theme.themeIcons ? (
-                  <div className="theme-icon-strip flex flex-wrap gap-1.5">
-                    {theme.themeIcons.map((icon) => (
-                      <span className="theme-icon-token" key={icon.id} title={icon.label}>
-                        <ThemeIcon className="h-5 w-5" id={icon.id} />
-                        <span className="sr-only">{icon.label}</span>
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-                <div className="theme-detail-grid grid gap-2">
-                  {theme.previewDetails.slice(0, 4).map((detail) => (
-                    <span className="theme-detail-pill" key={detail}>
-                      {detail}
-                    </span>
-                  ))}
-                </div>
-                <button
-                  aria-label={
-                    active ? `${theme.name} is the current theme` : `Use ${theme.name} theme`
-                  }
-                  aria-pressed={active}
-                  className={`theme-select-button mt-auto h-11 w-full rounded-lg px-3 text-xs font-bold transition ${
-                    active ? "app-button-primary" : "app-button-secondary"
-                  }`}
-                  onClick={() => setThemeId(theme.id)}
-                  title={active ? "Current theme" : `Use ${theme.name}`}
-                  type="button"
-                >
-                  {active ? "Selected" : "Use theme"}
-                </button>
-                </div>
-              </div>
-            </article>
+              onSelect={() => setThemeId(theme.id)}
+              theme={theme}
+            />
           );
         })}
       </div>
     </section>
   );
+}
+
+function ThemeCard({
+  active,
+  onSelect,
+  theme,
+}: {
+  active: boolean;
+  onSelect: () => void;
+  theme: DoshabThemeConfig;
+}) {
+  return (
+    <article
+      className={`theme-choice-card app-card flex min-w-0 flex-col gap-4 p-4 transition ${
+        active ? "theme-choice-card-active" : ""
+      } ${getThemeChoiceClassName(theme.id)}`}
+    >
+      <ThemePreviewViewport theme={theme} />
+      <div className="theme-choice-card-body flex min-w-0 flex-1 flex-col gap-4">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h4 className="text-lg font-bold text-white">{theme.name}</h4>
+            <span className="app-badge px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]">
+              {theme.shortName}
+            </span>
+            {active ? (
+              <span className="app-badge px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]">
+                Current
+              </span>
+            ) : null}
+          </div>
+        </div>
+        {theme.themeIcons ? (
+          <div className="theme-icon-strip flex flex-wrap gap-1.5">
+            {theme.themeIcons.map((icon) => (
+              <span className="theme-icon-token" key={icon.id} title={icon.label}>
+                <ThemeIcon className="h-5 w-5" id={icon.id} />
+                <span className="sr-only">{icon.label}</span>
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <div className="theme-detail-grid grid gap-2">
+          {theme.previewDetails.slice(0, 4).map((detail) => (
+            <span className="theme-detail-pill" key={detail}>
+              {detail}
+            </span>
+          ))}
+        </div>
+        <button
+          aria-label={active ? `${theme.name} is the current theme` : `Use ${theme.name} theme`}
+          aria-pressed={active}
+          className={`theme-select-button mt-auto h-11 w-full rounded-lg px-3 text-xs font-bold transition ${
+            active ? "app-button-primary" : "app-button-secondary"
+          }`}
+          onClick={onSelect}
+          title={active ? "Current theme" : `Use ${theme.name}`}
+          type="button"
+        >
+          {active ? "Selected" : "Use theme"}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function ThemePreviewViewport({ theme }: { theme: DoshabThemeConfig }) {
+  return (
+    <div className="theme-preview-viewport">
+      <ThemePreview theme={theme} />
+    </div>
+  );
+}
+
+function getThemeChoiceClassName(themeId: DoshabThemeConfig["id"]) {
+  switch (themeId) {
+    case "agent-amir":
+      return "theme-choice-card-agent-amir";
+    case "nima-last-light":
+      return "theme-choice-card-nima-last-light";
+    case "araz-credit-empire":
+      return "theme-choice-card-araz-credit-empire";
+    case "threez-street-hero":
+      return "theme-choice-card-threez-street-hero";
+    case "hamp-root-forge":
+      return "theme-choice-card-hamp-root-forge";
+    case "bios-core":
+      return "theme-choice-card-bios-core";
+    case "mehran-blue-corner":
+      return "theme-choice-card-mehran-blue-corner";
+  }
 }
 
 function ThemePreview({ theme }: { theme: DoshabThemeConfig }) {
@@ -645,7 +675,7 @@ function BiosCorePreview({ theme }: { theme: DoshabThemeConfig }) {
         </div>
         <div className="bios-preview-menu" aria-label="BIOS Core preview status">
           {[
-            ["BOOT MODE", "DOSHAB"],
+            ["BOOT MODE", "VAL"],
             ["VOICE MODULE", "ONLINE"],
             ["CHAT BUS", "ACTIVE"],
             ["NOTIFICATIONS", "ENABLED"],

@@ -26,14 +26,14 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
   return (
     <AuthCard
       title="Verify your email"
-      subtitle="Doshab requires email verification before you can use your workspace."
+      subtitle="VAL requires email verification before you can use your workspace."
       footerText="Already verified?"
       footerHref="/login"
       footerLinkText="Log in"
       error={params?.error}
       notice={
         params?.message ??
-        "Account created. Please check your email to verify your Doshab account."
+        "Account created. Please check your email to verify your VAL account."
       }
     >
       <div className="space-y-4 text-sm leading-6 text-slate-300">
@@ -42,7 +42,7 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
           verification email.
         </p>
         <p>
-          After verifying, Doshab will finish signing you in automatically.
+          After verifying, VAL will finish signing you in automatically.
         </p>
         <form action="/api/auth/resend-confirmation" className="space-y-4" method="post">
           {params?.email ? (

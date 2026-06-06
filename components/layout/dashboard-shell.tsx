@@ -292,7 +292,7 @@ function MessageThreadSidebar({
           <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.03] p-4">
             <p className="text-sm font-semibold text-white">No private chats yet</p>
             <p className="mt-2 text-xs leading-5 text-slate-400">
-              Use Create, choose a friend, and Doshab will open a private chat.
+              Use Create, choose a friend, and VAL will open a private chat.
             </p>
           </div>
         )}

@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.redirect(
           new URL(
             `/verify-email?error=${encodeURIComponent(
-              "Please verify your email before using Doshab.",
+              "Please verify your email before using VAL.",
             )}&email=${encodeURIComponent(email)}`,
             request.url,
           ),
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.redirect(
             new URL(
               `/verify-email?message=${encodeURIComponent(
-                "Account found. Please check your email to verify your Doshab account.",
+                "Account found. Please check your email to verify your VAL account.",
               )}&email=${encodeURIComponent(email)}`,
               request.url,
             ),
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(
         new URL(
           `/verify-email?error=${encodeURIComponent(
-            "Please verify your email before using Doshab.",
+            "Please verify your email before using VAL.",
           )}&email=${encodeURIComponent(email)}`,
           request.url,
         ),

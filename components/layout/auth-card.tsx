@@ -30,16 +30,16 @@ export function AuthCard({
         <div className="auth-feature-panel hidden min-h-[560px] flex-col justify-between border-r border-white/10 bg-[#263324] p-8 text-white lg:flex">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/70">
-              Doshab
+              VAL
             </p>
             <h2 className="mt-4 max-w-sm text-4xl font-semibold leading-tight">
-              Private rooms with the pace of a real app.
+              Virtual Architecture Layer for private communities.
             </h2>
           </div>
           <div className="rounded-lg border border-white/15 bg-black/20 p-5">
             <p className="text-sm font-semibold text-white">Secure by default</p>
             <p className="mt-2 text-sm leading-6 text-white/75">
-              Encrypted messages, private spaces, and fast navigation keep the workspace focused.
+              Structured digital spaces, private messages, and real-time voice rooms keep the workspace focused.
             </p>
           </div>
         </div>
@@ -47,7 +47,7 @@ export function AuthCard({
         <div className="p-5 sm:p-8">
           <div className="mb-6 sm:mb-7">
             <Link href="/" className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
-              Doshab
+              VAL
             </Link>
             <h1 className="mt-5 text-2xl font-semibold tracking-tight text-white sm:text-3xl">{title}</h1>
             <p className="mt-2 text-sm leading-6 text-slate-300">{subtitle}</p>

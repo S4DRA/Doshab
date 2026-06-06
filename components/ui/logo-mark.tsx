@@ -26,7 +26,7 @@ export function LogoMark({
         fetchPriority={preload ? "high" : "auto"}
         loading={preload ? "eager" : "lazy"}
         sizes={sizes}
-        src="/doshab-logo-transparent.png"
+        src="/val_png.png"
       />
     </span>
   );

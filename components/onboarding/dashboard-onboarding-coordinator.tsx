@@ -42,8 +42,8 @@ const desktopTourSteps: TourStep[] = [
   {
     icon: <SparkIcon />,
     primaryLabel: "Start tour",
-    text: "Doshab is your private space for groups, voice channels, messages, friends, and custom themes.",
-    title: "Welcome to Doshab",
+    text: "VAL is your private space for groups, voice channels, messages, friends, and custom themes.",
+    title: "Welcome to VAL",
   },
   {
     icon: <GroupIcon />,
@@ -79,18 +79,18 @@ const desktopTourSteps: TourStep[] = [
     icon: <BellIcon />,
     primaryLabel: "Set up notifications",
     target: "notifications-nav",
-    text: "Doshab can notify you about messages, invites, missed calls, and incoming calls.",
+    text: "VAL can notify you about messages, invites, missed calls, and incoming calls.",
     title: "Never miss calls or messages",
   },
   {
     icon: <PaletteIcon />,
     target: "themes-settings",
     text: "Choose custom themes like Agent Amir, Nima: Last Light, 3z: Street Hero, Blue Corner, and Root Forge.",
-    title: "Make Doshab feel personal",
+    title: "Make VAL feel personal",
   },
   {
     icon: <CheckIcon />,
-    text: "Create a group, join a voice channel, or invite your friends to start using Doshab.",
+    text: "Create a group, join a voice channel, or invite your friends to start using VAL.",
     title: "You're ready",
   },
 ];
@@ -99,8 +99,8 @@ const mobileTourSteps: TourStep[] = [
   {
     icon: <SparkIcon />,
     primaryLabel: "Start tour",
-    text: "Doshab keeps your groups, calls, friends, and themes close while leaving room for the conversation.",
-    title: "Welcome to Doshab",
+    text: "VAL keeps your groups, calls, friends, and themes close while leaving room for the conversation.",
+    title: "Welcome to VAL",
   },
   {
     icon: <ChannelIcon />,
@@ -117,7 +117,7 @@ const mobileTourSteps: TourStep[] = [
   {
     icon: <MicIcon />,
     target: "voice-channels",
-    text: "Voice rooms open with one tap, and Doshab shows who is inside before you join.",
+    text: "Voice rooms open with one tap, and VAL shows who is inside before you join.",
     title: "Tap voice to join",
   },
   {
@@ -135,13 +135,13 @@ const mobileTourSteps: TourStep[] = [
   {
     icon: <BellIcon />,
     target: "notifications-nav",
-    text: "Mobile alerts help Doshab reach you for incoming calls, missed calls, messages, and invites.",
+    text: "Mobile alerts help VAL reach you for incoming calls, missed calls, messages, and invites.",
     title: "Mobile notifications and calls",
   },
   {
     icon: <PaletteIcon />,
     target: "themes-settings",
-    text: "Themes carry across mobile and desktop, so Doshab can keep the same personality everywhere.",
+    text: "Themes carry across mobile and desktop, so VAL can keep the same personality everywhere.",
     title: "Themes",
   },
   {
@@ -396,7 +396,7 @@ export function DashboardOnboardingCoordinator() {
         removeStorage(notificationDismissedAtKey);
         removeStorage(notificationRemindLaterAtKey);
         setNotificationMessage(
-          "Notifications are on. You'll receive Doshab alerts for calls, messages, and invites.",
+          "Notifications are on. You'll receive VAL alerts for calls, messages, and invites.",
         );
         setNotificationStatus("success");
         return;
@@ -515,7 +515,7 @@ function TourOverlay({
         />
       ) : null}
       <section
-        aria-label="Doshab platform tour"
+        aria-label="VAL platform tour"
         aria-modal="true"
         className={`app-panel fixed max-h-[calc(100dvh-1.5rem)] overflow-y-auto p-4 shadow-2xl sm:p-5 ${
           isMobile
@@ -644,7 +644,7 @@ function NotificationOnboarding({
           </span>
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
-              Doshab alerts
+              VAL alerts
             </p>
             <h2 className="mt-2 text-2xl font-bold text-white">
               {isBlocked
@@ -653,19 +653,19 @@ function NotificationOnboarding({
                   ? "Push is not supported here"
                   : isEnabled
                     ? "Notifications are already enabled"
-                    : "Turn on Doshab notifications"}
+                    : "Turn on VAL notifications"}
             </h2>
           </div>
         </div>
 
         <p className="mt-4 text-sm leading-6 text-slate-300">
           {isBlocked
-            ? "Enable notifications from your browser or phone settings, then return to Doshab."
+            ? "Enable notifications from your browser or phone settings, then return to VAL."
             : isUnsupported
-              ? "Your browser does not fully support background push notifications. Try installing Doshab from Chrome or using a supported browser."
+              ? "Your browser does not fully support background push notifications. Try installing VAL from Chrome or using a supported browser."
               : isEnabled
                 ? "Notifications are already enabled on this device."
-                : "Get message alerts, group invites, and incoming call notifications even when Doshab is closed."}
+                : "Get message alerts, group invites, and incoming call notifications even when VAL is closed."}
         </p>
 
         {diagnostics?.installedPwa === "yes" ? (
@@ -712,7 +712,7 @@ function NotificationOnboarding({
         {showPhoneSteps ? <PhoneSetupSteps diagnostics={diagnostics} /> : null}
 
         <p className="mt-4 text-xs leading-5 text-slate-500">
-          Call alerts need notification permission, push subscription, and phone notification settings enabled. Some phones may not show full-screen call screens for PWAs, but tapping the notification will open Doshab and join the call.
+          Call alerts need notification permission, push subscription, and phone notification settings enabled. Some phones may not show full-screen call screens for PWAs, but tapping the notification will open VAL and join the call.
         </p>
 
         <div className="mt-5 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
@@ -752,13 +752,13 @@ function PhoneSetupSteps({ diagnostics }: { diagnostics: BrowserPushDiagnostics 
       ? [
           "Open Settings.",
           "Tap Notifications.",
-          "Find Doshab if it is installed.",
+          "Find VAL if it is installed.",
           "Allow Notifications.",
           "Enable Lock Screen, Notification Center, and Banners.",
         ]
       : installed
         ? [
-            "Long press the Doshab app icon.",
+            "Long press the VAL app icon.",
             "Tap App info.",
             "Tap Notifications.",
             "Turn on notifications.",
@@ -768,7 +768,7 @@ function PhoneSetupSteps({ diagnostics }: { diagnostics: BrowserPushDiagnostics 
             "Open Chrome settings.",
             "Open Site settings.",
             "Tap Notifications.",
-            "Find Doshab.",
+            "Find VAL.",
             "Allow notifications.",
           ];
 

@@ -10,7 +10,7 @@ import { dashboardNotificationSelect } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const auth = await getAuthState();
+  const auth = await getAuthState({ includeImage: true });
 
   if (auth.status === "unverified") {
     return NextResponse.json({ groups: [] }, { status: 403 });
@@ -27,6 +27,7 @@ export async function GET() {
       id: auth.user.id,
       name: auth.user.name,
       email: auth.user.email,
+      image: auth.user.image,
     }),
     getDashboardSidebarGroups(userId),
     getDashboardMessageThreads(userId),
@@ -48,6 +49,7 @@ export async function GET() {
             id: true,
             name: true,
             email: true,
+            image: true,
             status: true,
           },
         },
@@ -56,6 +58,7 @@ export async function GET() {
             id: true,
             name: true,
             email: true,
+            image: true,
             status: true,
           },
         },

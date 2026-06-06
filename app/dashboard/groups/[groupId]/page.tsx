@@ -44,9 +44,10 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
       },
       select: {
         id: true,
-        name: true,
-        description: true,
-        isDirectMessage: true,
+          name: true,
+          description: true,
+          image: true,
+          isDirectMessage: true,
         channels: {
           orderBy: {
             createdAt: "asc",
@@ -96,6 +97,12 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
 
   if (!selectedGroup || !currentMember) {
     redirect("/dashboard");
+  }
+
+  const firstTextChannel = selectedGroup.channels.find((channel) => channel.type === "TEXT");
+
+  if (firstTextChannel) {
+    redirect(`/dashboard/groups/${selectedGroup.id}/channels/${firstTextChannel.id}`);
   }
 
   const canInvite =

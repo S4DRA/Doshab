@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
 
   await createNotification({
     actorId: user.id,
-    body: `${callerName} is calling you on Doshab`,
+    body: `${callerName} is calling you on VAL`,
     callId: call.id,
     data: {
       callId: call.id,

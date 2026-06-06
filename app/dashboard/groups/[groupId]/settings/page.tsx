@@ -176,6 +176,7 @@ function GroupSettingsPanel({
           <form
             action={`/api/groups/${group.id}/settings`}
             className="mt-6 grid gap-4"
+            encType="multipart/form-data"
             method="post"
           >
             <label className="block">
@@ -203,9 +204,25 @@ function GroupSettingsPanel({
                 defaultValue={group.image ?? ""}
                 disabled={!canManage}
                 name="image"
-                placeholder="https://..."
-                type="url"
+                placeholder="https://... or /uploads/groups/..."
+                type="text"
               />
+            </label>
+
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                Upload picture
+              </span>
+              <input
+                accept="image/gif,image/jpeg,image/png,image/svg+xml,image/webp"
+                className="mt-2 block w-full rounded-xl border border-white/10 bg-[#050505] px-3 py-3 text-sm text-slate-200 outline-none transition file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-white/15 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={!canManage}
+                name="imageUpload"
+                type="file"
+              />
+              <span className="mt-2 block text-xs leading-5 text-slate-500">
+                PNG, JPG, WebP, GIF, or SVG. Max 2 MB.
+              </span>
             </label>
 
             <label className="block">

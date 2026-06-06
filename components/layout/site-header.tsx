@@ -7,9 +7,9 @@ export function SiteHeader() {
         <LogoMark className="h-14 w-14" />
         <div className="leading-tight">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#FF5F25]">
-            Doshab
+            VAL
           </p>
-          <p className="sr-only">Doshab calm communities</p>
+          <p className="sr-only">VAL private communities</p>
         </div>
       </div>
     </header>

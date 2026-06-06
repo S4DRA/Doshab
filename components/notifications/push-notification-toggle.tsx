@@ -56,7 +56,7 @@ export function PushNotificationToggle() {
   return (
     <div className="mt-3 grid gap-2">
       <button
-        className="w-full rounded-lg border border-white/20 px-3 py-2 text-left text-xs font-semibold text-white transition hover:border-[#FF5F25] hover:text-[#FF5F25]"
+        className="val-panel-control w-full rounded-lg border px-3 py-2 text-left text-xs font-semibold transition"
         onClick={enablePush}
         type="button"
       >
@@ -73,7 +73,7 @@ export function PushNotificationToggle() {
       ) : null}
       {status === "done" || status === "testing" || status === "tested" ? (
         <button
-          className="w-full rounded-lg border border-white/10 px-3 py-2 text-left text-xs font-semibold text-slate-300 transition hover:border-[#FF5F25] hover:text-white"
+          className="val-panel-control w-full rounded-lg border px-3 py-2 text-left text-xs font-semibold transition"
           onClick={sendTestPush}
           type="button"
         >

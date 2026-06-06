@@ -26,7 +26,7 @@ export default async function ForgotPasswordPage({
   return (
     <AuthCard
       title="Reset your password"
-      subtitle="Enter your email and Doshab will send you a secure reset link."
+      subtitle="Enter your email and VAL will send you a secure reset link."
       footerText="Remembered it?"
       footerHref="/login"
       footerLinkText="Back to login"

@@ -27,7 +27,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AuthCard
       title="Welcome back"
-      subtitle="Log in to return to your private Doshab workspace."
+      subtitle="Log in to return to your private VAL workspace."
       footerText="No account yet?"
       footerHref="/register"
       footerLinkText="Create one"

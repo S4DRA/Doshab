@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.redirect(
       new URL(
         `/verify-email?message=${encodeURIComponent(
-          "Account created. Please check your email to verify your Doshab account.",
+          "Account created. Please check your email to verify your VAL account.",
         )}&email=${encodeURIComponent(email)}`,
         request.url,
       ),

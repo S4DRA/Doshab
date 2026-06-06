@@ -50,7 +50,7 @@ const features = [
   },
   {
     title: "Custom Themes",
-    description: "Choose unique visual themes that make Doshab feel personal.",
+    description: "Choose unique visual themes that make VAL feel personal.",
   },
 ];
 
@@ -95,7 +95,7 @@ export default function Home() {
         <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between gap-4">
           <Link className="flex items-center gap-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#79d8ff]" href="/">
             <LogoMark className="h-12 w-12" preload sizes="48px" />
-            <span className="text-lg font-black tracking-[0.04em] text-white">Doshab</span>
+            <span className="text-lg font-black tracking-[0.04em] text-white">VAL</span>
           </Link>
           <nav className="flex items-center gap-2" aria-label="Landing navigation">
             <Link
@@ -122,7 +122,7 @@ export default function Home() {
               Your private world for voice, chat, and groups.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
-              Doshab is a modern communication platform for friends, communities, and
+              VAL is a modern communication platform for friends, communities, and
               teams - with instant voice rooms, organized text channels, friend invites,
               notifications, and custom themes.
             </p>
@@ -137,7 +137,7 @@ export default function Home() {
           </div>
 
           <div
-            aria-label="Doshab dashboard mockup showing groups, channels, chat, voice, notifications, and themes"
+            aria-label="VAL dashboard mockup showing groups, channels, chat, voice, notifications, and themes"
             className="landing-float relative"
             role="img"
           >
@@ -150,8 +150,8 @@ export default function Home() {
         <SectionIntro
           eyebrow="Platform image showcase"
           id="showcase-title"
-          title="See Doshab in action"
-          text="Polished mockups show the current Doshab experience across desktop, mobile, voice, and themes."
+          title="See VAL in action"
+          text="Polished mockups show the current VAL experience across desktop, mobile, voice, and themes."
         />
         <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {showcaseCards.map((card) => (
@@ -175,7 +175,7 @@ export default function Home() {
           eyebrow="Everything your space needs"
           id="features-title"
           title="A communication platform that feels personal"
-          text="Doshab keeps the core group workflow simple: create a space, organize channels, talk live, invite friends, and make the interface yours."
+          text="VAL keeps the core group workflow simple: create a space, organize channels, talk live, invite friends, and make the interface yours."
         />
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => (
@@ -196,7 +196,7 @@ export default function Home() {
             eyebrow="Custom themes"
             id="themes-title"
             title="Every group has a different energy."
-            text="Doshab themes turn your platform into a world - from spy dashboards to survival mode, street hero energy, blue corner calm, and founder mode."
+            text="VAL themes turn your platform into a world - from spy dashboards to survival mode, street hero energy, blue corner calm, and founder mode."
           />
           <div className="landing-theme-row grid auto-cols-[minmax(16rem,1fr)] grid-flow-col gap-4 overflow-x-auto pb-3 lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible lg:pb-0">
             {themeCards.map((theme) => (
@@ -227,12 +227,12 @@ export default function Home() {
             Don&apos;t miss messages or calls.
           </h2>
           <p className="mt-5 text-base leading-8 text-slate-300">
-            Doshab can notify you about messages, invites, missed calls, and incoming
-            calls. On mobile, install Doshab from your browser for a more app-like
+            VAL can notify you about messages, invites, missed calls, and incoming
+            calls. On mobile, install VAL from your browser for a more app-like
             experience.
           </p>
           <p className="mt-4 rounded-lg border border-[#d8b56a]/24 bg-[#d8b56a]/10 p-4 text-sm leading-6 text-[#f5dfab]">
-            Supported browsers can show phone notifications when Doshab is installed
+            Supported browsers can show phone notifications when VAL is installed
             and notifications are enabled.
           </p>
         </div>
@@ -244,7 +244,7 @@ export default function Home() {
           eyebrow="Desktop and mobile"
           id="responsive-title"
           title="Made for desktop and mobile."
-          text="Use Doshab on your computer for full control, or install it on your phone for a smoother app-like experience."
+          text="Use VAL on your computer for full control, or install it on your phone for a smoother app-like experience."
         />
         <div className="mt-8 grid items-center gap-6 lg:grid-cols-[1.35fr_0.65fr]">
           <DashboardMockup size="wide" />
@@ -256,7 +256,7 @@ export default function Home() {
         <div className="landing-cta mx-auto max-w-5xl overflow-hidden rounded-[2rem] border border-white/10 p-6 text-center sm:p-10">
           <LogoMark className="mx-auto h-16 w-16" sizes="64px" />
           <h2 className="mt-6 text-4xl font-black tracking-tight text-white sm:text-6xl">
-            Create your Doshab space.
+            Create your VAL space.
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-300">
             Start a group, invite your friends, and build a communication space
@@ -516,7 +516,7 @@ function VoiceMockup({ compact = false }: { compact?: boolean }) {
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#f5dfab]">Incoming call</p>
-            <p className="mt-1 text-sm font-bold text-white">Private call on Doshab</p>
+            <p className="mt-1 text-sm font-bold text-white">Private call on VAL</p>
           </div>
           <div className="flex gap-2">
             <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#79d8ff] text-xs font-black text-[#04111d]">Join</span>
@@ -534,7 +534,7 @@ function NotificationMockup() {
       {[
         ["Message", "Araz sent a message in #main-chat"],
         ["Invite", "Agent Amir invited you to Mission Room"],
-        ["Missed call", "You missed a private Doshab call"],
+        ["Missed call", "You missed a private VAL call"],
       ].map(([label, text]) => (
         <div className="rounded-xl border border-white/10 bg-white/[0.05] p-4" key={label}>
           <div className="flex items-start gap-3">

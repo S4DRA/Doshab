@@ -167,7 +167,7 @@ export const DOSHAB_THEMES: DoshabThemeConfig[] = [
     ],
     previewDetails: [
       "SYSTEM READY",
-      "BOOT MODE: DOSHAB",
+      "BOOT MODE: VAL",
       "VOICE MODULE: ONLINE",
       "CHAT BUS: ACTIVE",
       "NOTIFICATIONS: ENABLED",

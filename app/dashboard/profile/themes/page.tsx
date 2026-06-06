@@ -11,7 +11,7 @@ export default function ProfileThemesPage() {
             <div>
               <p className="app-section-title">Theme settings</p>
               <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
-                Choose your Doshab theme
+                Choose your VAL theme
               </h1>
             </div>
             <Link

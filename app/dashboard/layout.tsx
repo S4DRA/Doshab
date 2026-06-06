@@ -15,7 +15,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const auth = await getAuthState();
+  const auth = await getAuthState({ includeImage: true });
 
   if (auth.status === "unverified") {
     redirect("/verify-email");
@@ -64,6 +64,7 @@ async function getInitialSidebarData(userId: string) {
         id: true,
         name: true,
         email: true,
+        image: true,
       },
     }),
     getDashboardSidebarGroups(userId),
@@ -82,6 +83,7 @@ async function getInitialSidebarData(userId: string) {
             id: true,
             name: true,
             email: true,
+            image: true,
             status: true,
           },
         },
@@ -90,6 +92,7 @@ async function getInitialSidebarData(userId: string) {
             id: true,
             name: true,
             email: true,
+            image: true,
             status: true,
           },
         },

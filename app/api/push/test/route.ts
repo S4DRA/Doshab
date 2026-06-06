@@ -50,7 +50,7 @@ export async function POST() {
     body: "Phone alerts are working.",
     href: "/dashboard",
     recipientIds: [auth.user.id],
-    title: "Doshab test notification",
+    title: "VAL test notification",
   });
 
   return NextResponse.json({ config, ok: true, subscriptions });

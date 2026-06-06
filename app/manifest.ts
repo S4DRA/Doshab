@@ -2,32 +2,33 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    background_color: "#2B0000",
-    description: "Private encrypted chat, spaces, and live rooms.",
+    background_color: "#111413",
+    description:
+      "VAL is a Virtual Architecture Layer for private communities, real-time voice rooms, and structured digital spaces.",
     display: "standalone",
     icons: [
       {
-        src: "/doshab-icon-192.png",
+        src: "/val-icon-192.png",
         sizes: "192x192",
         type: "image/png",
       },
       {
-        src: "/doshab-icon-512.png",
+        src: "/val-icon-512.png",
         sizes: "512x512",
         type: "image/png",
       },
       {
-        src: "/doshab-icon-512.png",
+        src: "/val-icon-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
       },
     ],
     id: "/",
-    name: "Doshab",
+    name: "VAL",
     scope: "/",
-    short_name: "Doshab",
+    short_name: "VAL",
     start_url: "/dashboard",
-    theme_color: "#2B0000",
+    theme_color: "#111413",
   };
 }

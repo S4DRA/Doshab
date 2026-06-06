@@ -45,6 +45,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
             id: true,
             name: true,
             description: true,
+            image: true,
             isDirectMessage: true,
             channels: {
               orderBy: {
