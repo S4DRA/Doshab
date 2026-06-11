@@ -63,7 +63,7 @@ export function DashboardShell({
     : null;
 
   return (
-    <main className="flex h-full min-h-0 w-full min-w-0 overflow-hidden bg-[#070907]/95 text-slate-100">
+    <main className="dashboard-shell-root flex h-full min-h-0 w-full min-w-0 overflow-hidden bg-[#070907]/95 text-slate-100">
       <aside className="dashboard-secondary-sidebar hidden min-h-0 w-[292px] shrink-0 flex-col gap-3 overflow-hidden border-r border-white/10 bg-[#0d100e] p-3 min-[1180px]:flex min-[1500px]:w-[312px]">
         {activeSection === "messages" || selectedGroup?.isDirectMessage ? (
           <MessageThreadSidebar
@@ -143,7 +143,7 @@ export function DashboardShell({
       </aside>
 
       <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="sticky top-0 z-10 flex min-h-14 shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 backdrop-blur sm:px-6 min-[1180px]:min-h-16 min-[1180px]:px-7">
+        <header className="dashboard-shell-header sticky top-0 z-10 flex min-h-14 shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 backdrop-blur sm:px-6 min-[1180px]:min-h-16 min-[1180px]:px-7">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#FF5F25] min-[1180px]:text-[11px]">
               {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : activeSection === "messages" ? "Messages" : "Dashboard"}
@@ -574,7 +574,7 @@ function ChannelMain({
   }
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-2.5 py-2.5 sm:px-4 sm:py-4 min-[1180px]:px-7 min-[1180px]:py-5">
+    <div className="dashboard-shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-2.5 py-2.5 sm:px-4 sm:py-4 min-[1180px]:px-7 min-[1180px]:py-5">
       <section className="shrink-0 app-surface rounded-xl p-3 sm:p-4 min-[1180px]:rounded-lg min-[1180px]:p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">

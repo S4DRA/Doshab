@@ -45,7 +45,35 @@
   --page-live-pattern-size: auto, 4.25rem 4.25rem;
   --page-live-opacity: 0.82;
   --page-live-pattern-opacity: 0.32;
-  --dashboard-primary-sidebar-width: 6rem;
+  --dashboard-primary-sidebar-width: 4.75rem;
+  --theme-ui-scale: 0.92;
+  --theme-page-max-width: 76rem;
+  --theme-page-padding: 0.85rem;
+  --theme-page-padding-desktop: 1rem;
+  --theme-page-grid-gap: 1rem;
+  --theme-shell-gap: 0.85rem;
+  --theme-shell-padding: 0.85rem;
+  --theme-shell-padding-desktop: 1rem;
+  --theme-panel-padding: 1rem;
+  --theme-panel-padding-compact: 0.9rem;
+  --theme-header-min-height: 3.5rem;
+  --theme-header-min-height-desktop: 3.75rem;
+  --theme-header-padding-inline: 0.9rem;
+  --theme-header-padding-inline-desktop: 1.1rem;
+  --theme-header-padding-block: 0.65rem;
+  --theme-secondary-sidebar-width: 17.75rem;
+  --theme-secondary-sidebar-width-wide: 18.5rem;
+  --theme-sidebar-gap: 0.48rem;
+  --theme-sidebar-padding-inline: 0.45rem;
+  --theme-sidebar-padding-block: 0.85rem;
+  --theme-sidebar-button-size: 3.6rem;
+  --theme-sidebar-icon-size: 1.85rem;
+  --theme-sidebar-avatar-size: 2.75rem;
+  --theme-chat-row-padding-inline: 0.5rem;
+  --theme-chat-row-padding-block: 0.6rem;
+  --theme-chat-bubble-padding-block: 0.56rem;
+  --theme-chat-bubble-padding-inline: 0.72rem;
+  --theme-chat-bubble-max-width: min(40rem, 76%);
   --surface-base: var(--surface-canvas);
   --surface-inset: color-mix(in srgb, var(--surface-sidebar) 82%, black);
   --surface-floating: color-mix(in srgb, var(--surface-raised) 88%, var(--surface-panel));
@@ -275,8 +303,8 @@ html {
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 1rem;
-  scroll-padding-bottom: 1rem;
+  padding: var(--theme-page-padding);
+  scroll-padding-bottom: var(--theme-page-padding);
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--accent) 56%, transparent) transparent;
 }
@@ -363,7 +391,7 @@ main.app-page-scroll {
 
 .app-page-container {
   width: 100%;
-  max-width: 76rem;
+  max-width: var(--theme-page-max-width);
   margin-inline: auto;
 }
 
@@ -373,7 +401,7 @@ main.app-page-scroll {
   border: 1px solid var(--surface-border);
   border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--surface-panel) 92%, transparent);
-  padding: 1.25rem;
+  padding: var(--theme-panel-padding);
   box-shadow: var(--shadow-floating);
 }
 
@@ -549,6 +577,9 @@ main.app-page-scroll {
 @media (max-width: 639px) {
   :root {
     --dashboard-bottom-nav-height: calc(4.5rem + env(safe-area-inset-bottom));
+    --theme-page-padding: 0.75rem;
+    --theme-shell-padding: 0.75rem;
+    --theme-panel-padding: 0.9rem;
   }
 
   body {
@@ -556,7 +587,7 @@ main.app-page-scroll {
   }
 
   .app-page-scroll {
-    padding: 0.75rem;
+    padding: var(--theme-page-padding);
     padding-bottom: calc(var(--dashboard-bottom-nav-height) + 0.9rem);
     scroll-padding-bottom: calc(var(--dashboard-bottom-nav-height) + 1rem);
   }
@@ -567,7 +598,7 @@ main.app-page-scroll {
 
   .app-page-header,
   .app-panel {
-    padding: 1rem;
+    padding: var(--theme-panel-padding);
   }
 
   .app-card,
@@ -663,12 +694,14 @@ main.app-page-scroll {
 
 @media (min-width: 640px) {
   .app-page-scroll {
-    padding: 1.5rem;
+    padding: var(--theme-page-padding-desktop);
   }
 }
 
 .dashboard-content-frame {
   height: calc(100dvh - var(--dashboard-bottom-nav-height));
+  min-height: 0;
+  overflow: hidden;
 }
 
 .dashboard-main-sidebar {
@@ -762,6 +795,12 @@ main.app-page-scroll {
 }
 
 @media (min-width: 640px) {
+  .dashboard-content-frame {
+    height: 100dvh;
+    min-height: 0;
+    padding-left: var(--dashboard-primary-sidebar-width) !important;
+  }
+
   .dashboard-sidebar-popover {
     max-height: calc(100dvh - 1.5rem);
   }
@@ -809,69 +848,35 @@ main.app-page-scroll {
 @media (min-width: 640px) {
   .dashboard-main-sidebar {
     border-radius: 0 1.1rem 1.1rem 0;
+    width: var(--dashboard-primary-sidebar-width) !important;
+    padding: var(--theme-sidebar-padding-block) var(--theme-sidebar-padding-inline) !important;
   }
 
   .dashboard-main-sidebar > nav[aria-label="Dashboard"] {
-    gap: 0.6rem;
+    gap: var(--theme-sidebar-gap);
   }
 
   .dashboard-main-sidebar > nav[aria-label="Dashboard"] :is(a, button),
   .dashboard-main-sidebar > div.hidden > div > button {
-    width: 4.5rem;
-    height: 4.5rem;
+    width: var(--theme-sidebar-button-size);
+    height: var(--theme-sidebar-button-size);
   }
 
   .dashboard-main-sidebar > nav[aria-label="Dashboard"] svg,
   .dashboard-main-sidebar > div.hidden > div > button svg {
-    width: 2.25rem;
-    height: 2.25rem;
+    width: var(--theme-sidebar-icon-size);
+    height: var(--theme-sidebar-icon-size);
   }
 
   .dashboard-main-sidebar > nav[aria-label="Dashboard"] .theme-avatar,
   .dashboard-main-sidebar > div.hidden > div > button .theme-avatar {
-    width: 3.45rem;
-    height: 3.45rem;
-    font-size: 0.95rem;
+    width: var(--theme-sidebar-avatar-size);
+    height: var(--theme-sidebar-avatar-size);
+    font-size: 0.82rem;
   }
 }
 
 @media (min-width: 1180px) {
-  .dashboard-main-sidebar > nav[aria-label="Dashboard"] {
-    gap: 0.7rem;
-  }
-
-  .dashboard-main-sidebar > nav[aria-label="Dashboard"] :is(a, button),
-  .dashboard-main-sidebar > div.hidden > div > button {
-    width: 4.9rem;
-    height: 4.9rem;
-  }
-
-  .dashboard-main-sidebar > nav[aria-label="Dashboard"] svg,
-  .dashboard-main-sidebar > div.hidden > div > button svg {
-    width: 2.45rem;
-    height: 2.45rem;
-  }
-
-  .dashboard-main-sidebar > nav[aria-label="Dashboard"] .theme-avatar,
-  .dashboard-main-sidebar > div.hidden > div > button .theme-avatar {
-    width: 3.85rem;
-    height: 3.85rem;
-    font-size: 1rem;
-  }
-}
-
-@media (min-width: 640px) {
-  .dashboard-content-frame {
-    height: 100dvh;
-    min-height: 0;
-  }
-}
-
-@media (min-width: 1180px) {
-  :root {
-    --dashboard-primary-sidebar-width: 6.5rem;
-  }
-
   .app-page-scroll {
     height: 100%;
     min-height: 0;
@@ -881,6 +886,115 @@ main.app-page-scroll {
     height: 100dvh;
     min-height: 0;
   }
+}
+
+.dashboard-secondary-sidebar {
+  width: var(--theme-secondary-sidebar-width) !important;
+  gap: var(--theme-shell-gap) !important;
+  padding: var(--theme-shell-padding) !important;
+}
+
+.dashboard-secondary-sidebar > * {
+  min-width: 0;
+}
+
+@media (min-width: 1500px) {
+  .dashboard-secondary-sidebar {
+    width: var(--theme-secondary-sidebar-width-wide) !important;
+  }
+}
+
+.dashboard-shell-header {
+  min-height: var(--theme-header-min-height) !important;
+  padding: var(--theme-header-padding-block) var(--theme-header-padding-inline) !important;
+}
+
+@media (min-width: 640px) {
+  .dashboard-shell-header {
+    padding-inline: var(--theme-header-padding-inline-desktop) !important;
+  }
+}
+
+@media (min-width: 1180px) {
+  .dashboard-shell-header {
+    min-height: var(--theme-header-min-height-desktop) !important;
+  }
+}
+
+.dashboard-shell-main {
+  padding: var(--theme-shell-padding) !important;
+}
+
+.dashboard-shell-main > .app-surface {
+  border-radius: var(--radius-card) !important;
+  padding: var(--theme-panel-padding-compact) !important;
+}
+
+.dashboard-shell-main > :last-child {
+  min-height: 0;
+}
+
+@media (min-width: 640px) {
+  .dashboard-shell-main {
+    padding: var(--theme-shell-padding-desktop) !important;
+  }
+}
+
+.dashboard-density .app-page-container {
+  min-width: 0;
+}
+
+.dashboard-density .app-page-container > * {
+  min-width: 0;
+}
+
+.dashboard-density .app-page-container.grid {
+  gap: var(--theme-page-grid-gap) !important;
+}
+
+.dashboard-density .app-page-container.space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: var(--theme-page-grid-gap) !important;
+}
+
+.dashboard-density :is(main.app-page-scroll, .dashboard-shell-root)
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, select) {
+  font-size: 0.875rem !important;
+  padding-inline: 0.75rem !important;
+}
+
+.dashboard-density :is(main.app-page-scroll, .dashboard-shell-root) textarea {
+  padding-block: 0.7rem !important;
+}
+
+.dashboard-sidebar-popover
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, select) {
+  font-size: 0.875rem !important;
+  padding-inline: 0.75rem !important;
+}
+
+.dashboard-sidebar-popover textarea {
+  padding-block: 0.7rem !important;
+}
+
+.dashboard-shell-root .message-row {
+  gap: 0.65rem !important;
+  padding: var(--theme-chat-row-padding-block) var(--theme-chat-row-padding-inline) !important;
+}
+
+.dashboard-shell-root .message-shell {
+  max-width: var(--theme-chat-bubble-max-width);
+}
+
+.dashboard-shell-root .message-bubble {
+  padding: var(--theme-chat-bubble-padding-block) var(--theme-chat-bubble-padding-inline);
+}
+
+.dashboard-shell-root .chat-toolbar {
+  padding: 0.5rem 0.65rem !important;
+}
+
+.dashboard-shell-root .chat-composer {
+  padding-top: 0.8rem !important;
 }
 
 .app-icon-button {
@@ -10015,9 +10129,9 @@ html[data-theme="bios-core"] .dashboard-main-sidebar .dashboard-nav-icon-active:
 
 /* BIOS terminal correction: keep the blue canvas and use a Windows Terminal-like text voice. */
 html[data-theme="bios-core"] {
-  --background: #000080;
-  --surface-canvas: #000080;
-  --surface-inset: #00005f;
+  --background: #000016;
+  --surface-canvas: #000034;
+  --surface-inset: #00000f;
   --accent: #d7f35a;
   --accent-hover: #e4f77a;
   --terminal-font: "Cascadia Mono", "Cascadia Code", Consolas, "Lucida Console", "Courier New", monospace;
@@ -10035,9 +10149,9 @@ html[data-theme="bios-core"] .dashboard-content-frame,
 html[data-theme="bios-core"] .app-page-scroll,
 html[data-theme="bios-core"] .loading-canvas {
   background:
-    radial-gradient(circle at 18% 8%, rgba(215, 243, 90, 0.09), transparent 28rem),
-    radial-gradient(circle at 86% 78%, rgba(36, 214, 183, 0.07), transparent 28rem),
-    linear-gradient(180deg, #0000aa 0%, #000080 54%, #000064 100%) !important;
+    radial-gradient(circle at 18% 8%, rgba(215, 243, 90, 0.075), transparent 28rem),
+    radial-gradient(circle at 86% 78%, rgba(36, 214, 183, 0.055), transparent 28rem),
+    linear-gradient(180deg, #000058 0%, #000034 54%, #000016 100%) !important;
 }
 
 html[data-theme="bios-core"] :is(h1, h2, h3, h4, h5, h6, .app-section-title, .app-badge) {
@@ -10056,9 +10170,9 @@ html[data-theme="bios-core"] :is(p, span, a, button, input, textarea, label) {
 html[data-theme="bios-core"] .dashboard-secondary-sidebar {
   border-color: rgba(128, 166, 214, 0.42) !important;
   background:
-    radial-gradient(circle at 18% 0%, rgba(215, 243, 90, 0.07), transparent 18rem),
+    radial-gradient(circle at 18% 0%, rgba(215, 243, 90, 0.055), transparent 18rem),
     linear-gradient(90deg, rgba(255, 255, 255, 0.055), transparent 42%),
-    linear-gradient(180deg, #00006e 0%, #00005a 56%, #000044 100%) !important;
+    linear-gradient(180deg, #000042 0%, #000028 56%, #000014 100%) !important;
   box-shadow:
     inset 1px 0 0 rgba(255, 255, 255, 0.12),
     inset -1px 0 0 rgba(0, 0, 0, 0.36),
@@ -10069,14 +10183,14 @@ html[data-theme="bios-core"] .dashboard-secondary-sidebar :is(.app-card, .app-ro
   border-color: rgba(154, 177, 210, 0.38);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 40%),
-    linear-gradient(180deg, rgba(0, 0, 126, 0.92), rgba(0, 0, 74, 0.92));
+    linear-gradient(180deg, rgba(0, 0, 84, 0.92), rgba(0, 0, 34, 0.92));
 }
 
 html[data-theme="bios-core"] .dashboard-secondary-sidebar :is(.app-card, .app-row):hover {
   border-color: rgba(215, 243, 90, 0.48);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.075), transparent 40%),
-    linear-gradient(180deg, rgba(0, 0, 146, 0.94), rgba(0, 0, 86, 0.94));
+    linear-gradient(180deg, rgba(0, 0, 100, 0.94), rgba(0, 0, 44, 0.94));
 }
 
 /* BIOS communication pass: tighter rail, cleaner loading, and chat bubbles that fit content. */
@@ -10219,7 +10333,7 @@ html[data-theme="bios-core"] .message-feed .message-row-own .message-bubble {
 .theme-choice-card-bios-core {
   --theme-card-accent: #ffff00;
   --theme-card-secondary: #c0c0c0;
-  --theme-card-surface: #000080;
+  --theme-card-surface: #000034;
 }
 
 .theme-choice-card-agent-amir {
