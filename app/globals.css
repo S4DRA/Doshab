@@ -3903,85 +3903,220 @@ a[aria-current="page"] {
 }
 
 .doshab-loader {
-  width: min(90vw, 320px);
+  width: min(92vw, 34rem);
   position: relative;
   z-index: 1;
+  gap: 0.6rem;
 }
 
 .doshab-loader-orbit {
   position: relative;
   display: grid;
-  width: 9.5rem;
-  height: 9.5rem;
+  width: min(78vw, 19rem);
+  height: min(78vw, 19rem);
   place-items: center;
   isolation: isolate;
 }
 
 .doshab-loader-orbit-sm {
-  width: 6.5rem;
-  height: 6.5rem;
+  width: min(60vw, 13.5rem);
+  height: min(60vw, 13.5rem);
 }
 
-.doshab-loader-logo {
-  width: 5.75rem;
-  height: 5.75rem;
-  filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.16));
-  animation: doshab-loader-breathe 1600ms ease-in-out infinite;
-  z-index: 2;
+.doshab-loader-orbit::before,
+.doshab-loader-orbit::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
 }
 
-.doshab-loader-orbit-sm .doshab-loader-logo {
-  width: 4.25rem;
-  height: 4.25rem;
+.doshab-loader-orbit::before {
+  inset: 13%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  opacity: 0.6;
 }
 
+.doshab-loader-orbit::after {
+  inset: 27%;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  opacity: 0.7;
+}
+
+.doshab-loader-halo,
+.doshab-loader-pulse,
 .doshab-loader-ring,
-.doshab-loader-pulse {
+.doshab-loader-ripple,
+.doshab-loader-particle-track {
   position: absolute;
   inset: 0;
   border-radius: 999px;
+  pointer-events: none;
+}
+
+.doshab-loader-halo {
+  inset: 18%;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04) 32%, transparent 72%);
+  filter: blur(20px);
+  opacity: 0.72;
+  animation: doshab-loader-halo-breathe 3200ms ease-in-out infinite;
+}
+
+.doshab-loader-logo {
+  width: 10rem;
+  height: 10rem;
+  filter:
+    drop-shadow(0 12px 24px rgba(0, 0, 0, 0.44))
+    drop-shadow(0 0 26px rgba(255, 255, 255, 0.1));
+  animation: doshab-loader-breathe 2600ms ease-in-out infinite;
+  opacity: 0.98;
+  z-index: 3;
+}
+
+.doshab-loader .brand-logo-image {
+  filter: grayscale(1) contrast(1.18) brightness(0) invert(1);
+  mix-blend-mode: normal;
+  opacity: 0.96;
+}
+
+.doshab-loader-orbit-sm .doshab-loader-logo {
+  width: 7.2rem;
+  height: 7.2rem;
 }
 
 .doshab-loader-ring {
-  border: 1px solid color-mix(in srgb, var(--accent) 52%, transparent);
-  border-top-color: color-mix(in srgb, var(--text-high) 86%, transparent);
-  border-right-color: transparent;
-  animation: doshab-loader-spin 1400ms linear infinite;
+  inset: 6%;
+  background:
+    conic-gradient(
+      from 0deg,
+      rgba(255, 255, 255, 0) 0deg 34deg,
+      rgba(255, 255, 255, 0.24) 52deg 104deg,
+      rgba(255, 255, 255, 0) 128deg 230deg,
+      color-mix(in srgb, var(--accent) 52%, rgba(255, 255, 255, 0.22)) 248deg 292deg,
+      rgba(255, 255, 255, 0) 314deg 360deg
+    );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1px));
+  opacity: 0.86;
+  animation: doshab-loader-spin 13s linear infinite;
 }
 
 .doshab-loader-ring-delay {
-  inset: 0.8rem;
-  border-color: color-mix(in srgb, var(--text-high) 24%, transparent);
-  border-bottom-color: var(--accent);
-  border-left-color: transparent;
-  animation-duration: 2100ms;
+  inset: 21%;
+  background:
+    conic-gradient(
+      from 180deg,
+      rgba(255, 255, 255, 0) 0deg 96deg,
+      rgba(255, 255, 255, 0.16) 118deg 154deg,
+      rgba(255, 255, 255, 0) 172deg 286deg,
+      color-mix(in srgb, var(--accent) 36%, rgba(255, 255, 255, 0.14)) 306deg 336deg,
+      rgba(255, 255, 255, 0) 348deg 360deg
+    );
+  opacity: 0.72;
+  animation-duration: 17s;
   animation-direction: reverse;
 }
 
 .doshab-loader-pulse {
-  inset: 1.4rem;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 20%, transparent), transparent 68%);
-  animation: doshab-loader-pulse 1600ms ease-in-out infinite;
-  z-index: 0;
+  inset: 24%;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--accent) 20%, rgba(255, 255, 255, 0.12)), transparent 70%);
+  filter: blur(8px);
+  animation: doshab-loader-pulse 2600ms ease-in-out infinite;
+  opacity: 0.58;
+  z-index: 1;
+}
+
+.doshab-loader-ripple {
+  inset: 24%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 0;
+}
+
+.doshab-loader-ripple-one {
+  animation: doshab-loader-ripple-wave 2600ms cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.doshab-loader-ripple-two {
+  animation: doshab-loader-ripple-wave 2600ms cubic-bezier(0.22, 1, 0.36, 1) infinite 1300ms;
+}
+
+.doshab-loader-particle-track-one {
+  inset: 11%;
+  animation: doshab-loader-orbit 12s linear infinite;
+}
+
+.doshab-loader-particle-track-two {
+  inset: 19%;
+  animation: doshab-loader-orbit 16s linear infinite reverse;
+}
+
+.doshab-loader-particle-track-three {
+  inset: 30%;
+  animation: doshab-loader-orbit 9.5s linear infinite;
 }
 
 .doshab-loader-dot {
-  width: 0.36rem;
-  height: 0.36rem;
+  position: absolute;
+  top: -0.16rem;
+  left: calc(50% - 0.16rem);
+  width: 0.32rem;
+  height: 0.32rem;
   border-radius: 999px;
-  background: var(--accent);
-  animation: doshab-loader-dot 1100ms ease-in-out infinite;
+  background: color-mix(in srgb, white 86%, var(--accent) 14%);
+  box-shadow:
+    0 0 0.75rem rgba(255, 255, 255, 0.34),
+    0 0 1.4rem color-mix(in srgb, var(--accent) 24%, transparent);
+  animation: doshab-loader-dot 2300ms ease-in-out infinite;
 }
 
-.doshab-loader-dot:nth-child(2) {
-  animation-delay: 120ms;
+.doshab-loader-dot-secondary {
+  top: auto;
+  bottom: -0.12rem;
+  left: auto;
+  right: 18%;
+  width: 0.26rem;
+  height: 0.26rem;
+  animation-delay: 520ms;
+  opacity: 0.75;
 }
 
-.doshab-loader-dot:nth-child(3) {
-  animation-delay: 240ms;
+.doshab-loader-dot-tertiary {
+  top: 18%;
+  left: auto;
+  right: -0.12rem;
+  width: 0.22rem;
+  height: 0.22rem;
+  animation-delay: 980ms;
+  opacity: 0.68;
+}
+
+.doshab-loader-eyebrow {
+  color: #ff8a5f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.doshab-loader p {
+  margin-top: 0.25rem;
+  color: rgba(244, 246, 245, 0.82);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  white-space: normal;
 }
 
 @keyframes doshab-loader-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
   to {
     transform: rotate(360deg);
   }
@@ -3990,12 +4125,12 @@ a[aria-current="page"] {
 @keyframes doshab-loader-breathe {
   0%,
   100% {
-    transform: scale(0.95);
-    opacity: 0.76;
+    transform: scale(0.982);
+    opacity: 0.92;
   }
 
   50% {
-    transform: scale(1);
+    transform: scale(1.028);
     opacity: 1;
   }
 }
@@ -4003,26 +4138,82 @@ a[aria-current="page"] {
 @keyframes doshab-loader-pulse {
   0%,
   100% {
-    opacity: 0.45;
-    transform: scale(0.82);
+    opacity: 0.32;
+    transform: scale(0.9);
   }
 
   50% {
-    opacity: 1;
-    transform: scale(1);
+    opacity: 0.58;
+    transform: scale(1.08);
   }
 }
 
 @keyframes doshab-loader-dot {
   0%,
   100% {
-    opacity: 0.3;
-    transform: translateY(0);
+    opacity: 0.38;
+    transform: scale(0.8);
   }
 
-  40% {
+  50% {
     opacity: 1;
-    transform: translateY(-0.28rem);
+    transform: scale(1.15);
+  }
+}
+
+@keyframes doshab-loader-halo-breathe {
+  0%,
+  100% {
+    opacity: 0.54;
+    transform: scale(0.96);
+  }
+
+  50% {
+    opacity: 0.78;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes doshab-loader-ripple-wave {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+
+  20% {
+    opacity: 0.18;
+  }
+
+  68% {
+    opacity: 0.08;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.16);
+  }
+}
+
+@keyframes doshab-loader-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doshab-loader-halo,
+  .doshab-loader-pulse,
+  .doshab-loader-ring,
+  .doshab-loader-ripple,
+  .doshab-loader-particle-track,
+  .doshab-loader-dot,
+  .doshab-loader-logo {
+    animation: none !important;
+    transform: none !important;
   }
 }
 

@@ -1,4 +1,4 @@
-import { LogoMark } from "@/components/ui/logo-mark";
+import { ValLoadingScreen } from "@/components/brand/ValLoadingScreen";
 
 type BrandLoaderProps = {
   label?: string;
@@ -6,27 +6,7 @@ type BrandLoaderProps = {
 };
 
 export function BrandLoader({ label = "Loading", size = "lg" }: BrandLoaderProps) {
-  const shellClass =
-    size === "sm" ? "rounded-[1.5rem] px-5 py-4" : "rounded-[1.8rem] px-6 py-5";
-  const logoClass = size === "sm" ? "h-20 w-20" : "h-24 w-24";
-  const logoSizes = size === "sm" ? "80px" : "96px";
-
-  return (
-    <section
-      aria-busy="true"
-      aria-label={label}
-      className="grid justify-items-center text-center"
-    >
-      <div
-        className={`app-surface grid justify-items-center border border-white/10 bg-[#0b0e0c]/88 ${shellClass}`}
-      >
-        <LogoMark className={logoClass} preload={size === "lg"} sizes={logoSizes} />
-      </div>
-      <p className="mt-4 text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
-        {label}
-      </p>
-    </section>
-  );
+  return <ValLoadingScreen label={label} size={size} />;
 }
 
 export function AppLoadingScreen({ label = "Loading" }: { label?: string }) {

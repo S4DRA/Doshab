@@ -1,4 +1,4 @@
-import { LogoMark } from "@/components/ui/logo-mark";
+import { BrandLoader } from "@/components/ui/loading-states";
 
 export default function ChannelLoading() {
   return (
@@ -35,10 +35,7 @@ export default function ChannelLoading() {
           <section className="app-panel mt-3 flex min-h-0 flex-1 flex-col overflow-hidden p-3 sm:mt-4 sm:p-4">
             <div className="grid min-h-0 flex-1 place-items-center gap-5 overflow-hidden">
               <div className="grid justify-items-center gap-3 text-center">
-                <LogoMark className="h-24 w-24" preload sizes="96px" />
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#FF5F25]">
-                  Loading channel
-                </p>
+                <BrandLoader label="Loading channel" size="sm" />
               </div>
               <div className="grid w-full max-w-xl gap-3">
                 {Array.from({ length: 4 }).map((_, index) => (
