@@ -18,7 +18,7 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
       },
       {
-        src: "/val-icon-512.png",
+        src: "/val-icon-maskable-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

@@ -30,7 +30,7 @@ export function ChannelList({
   );
 
   return (
-    <div className="min-h-0 space-y-5 overflow-y-auto px-0 py-2 pr-1 min-[1180px]:space-y-4" data-tour-target="channels-list">
+    <div className="flex h-full min-h-0 min-w-0 flex-col gap-5 overflow-y-auto px-0 py-2 pr-1 min-[1180px]:gap-4" data-tour-target="channels-list">
       <ChannelRoutePrefetcher hrefs={channelHrefs} />
       <ChannelSection
         channels={textChannels}
@@ -85,13 +85,13 @@ function ChannelSection({
           {channels.map((channel) => (
             <div
               className={cn(
-                "app-row flex w-full min-w-0 gap-2 px-3 py-3 text-left text-sm font-medium text-slate-300 transition hover:border-white/20 min-[1180px]:px-2.5 min-[1180px]:py-2.5",
+                "app-row flex w-full min-w-0 gap-2.5 px-3 py-3 text-left text-sm font-medium text-slate-300 transition hover:border-white/20 min-[1180px]:px-2.5 min-[1180px]:py-2.5",
                 channel.type === "VOICE" ? "flex-col items-stretch" : "items-center justify-between",
                 selectedChannelId === channel.id && "border-[#FF5F25]/60 bg-[#FF5F25]/12 text-white shadow-[inset_3px_0_0_#FF5F25]",
               )}
               key={channel.id}
             >
-              <div className="flex w-full min-w-0 items-center justify-between gap-2">
+              <div className="flex w-full min-w-0 items-center justify-between gap-2.5">
                 {channel.type === "VOICE" ? (
                   <VoiceChannelJoinButton
                     channelId={channel.id}

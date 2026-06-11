@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 import { getInitials } from "@/lib/utils";
 import { LogoMark } from "@/components/ui/logo-mark";
 
@@ -21,15 +25,18 @@ export function AvatarInitials({
   value,
 }: AvatarInitialsProps) {
   const className = `${sizeClasses[size]} theme-avatar grid shrink-0 place-items-center overflow-hidden rounded-lg font-bold`;
-  const normalizedImageUrl = imageUrl?.trim();
+  const normalizedImageUrl = normalizeImageUrl(imageUrl);
+  const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
+  const showImage = Boolean(normalizedImageUrl && normalizedImageUrl !== failedImageUrl);
 
-  if (normalizedImageUrl) {
+  if (normalizedImageUrl && showImage) {
     return (
       <span className={className}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           alt=""
           className="size-full object-cover"
+          onError={() => setFailedImageUrl(normalizedImageUrl)}
           referrerPolicy="no-referrer"
           src={normalizedImageUrl}
         />
@@ -63,6 +70,26 @@ export function AvatarInitials({
       {getInitials(value)}
     </span>
   );
+}
+
+function normalizeImageUrl(imageUrl?: string | null) {
+  const value = imageUrl?.trim();
+
+  if (!value) {
+    return null;
+  }
+
+  if (value.startsWith("data:image/") || value.startsWith("blob:")) {
+    return value;
+  }
+
+  try {
+    const url = new URL(value, "https://val.local");
+
+    return url.protocol === "http:" || url.protocol === "https:" ? value : null;
+  } catch {
+    return null;
+  }
 }
 
 function PersonIcon({ className }: { className: string }) {

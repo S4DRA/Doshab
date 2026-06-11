@@ -9,12 +9,21 @@ import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { LogoMark } from "@/components/ui/logo-mark";
 import type { DashboardNotification } from "@/types";
 
+type RequestCounts = {
+  incomingCount: number;
+  outgoingCount: number;
+  totalCount: number;
+};
+
 const navItems = [
   {
     href: "/dashboard",
     label: "Home",
     icon: (
-      <LogoMark className="h-8 w-8 sm:h-11 sm:w-11 min-[1180px]:h-12 min-[1180px]:w-12" sizes="80px" />
+      <LogoMark
+        className="h-11 w-11 sm:h-12 sm:w-12 min-[1180px]:h-[3.25rem] min-[1180px]:w-[3.25rem]"
+        sizes="84px"
+      />
     ),
   },
   {
@@ -66,6 +75,8 @@ type DashboardSidebarProps = {
   initialUnreadCount?: number;
 };
 
+const requestCountsPollIntervalMs = 15000;
+
 export function DashboardSidebar({
   initialCurrentUser = null,
   initialFriends = [],
@@ -85,6 +96,12 @@ export function DashboardSidebar({
   );
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
   const [toastNotification, setToastNotification] = useState<DashboardNotification | null>(null);
+  const [requestCounts, setRequestCounts] = useState<RequestCounts>({
+    incomingCount: 0,
+    outgoingCount: 0,
+    totalCount: 0,
+  });
+
   const [channelsOpen, setChannelsOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
@@ -146,7 +163,64 @@ export function DashboardSidebar({
   }, []);
 
   useEffect(() => {
+    const cancelled = false;
+
+
+    async function loadRequestCounts() {
+
+      try {
+        const response = await fetch("/api/requests/count", {
+          cache: "no-store",
+          headers: {
+            accept: "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as Partial<RequestCounts>;
+
+        if (!cancelled) {
+          setRequestCounts({
+            incomingCount: data.incomingCount ?? 0,
+            outgoingCount: data.outgoingCount ?? 0,
+            totalCount:
+              data.totalCount ??
+              (data.incomingCount ?? 0) + (data.outgoingCount ?? 0),
+          });
+        }
+        return;
+
+
+        setRequestCounts({
+          incomingCount: data.incomingCount ?? 0,
+          outgoingCount: data.outgoingCount ?? 0,
+          totalCount: data.totalCount ?? (data.incomingCount ?? 0) + (data.outgoingCount ?? 0),
+        });
+      } catch {
+        // badge is progressive enhancement
+      }
+    }
+
+    void loadRequestCounts();
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+      void loadRequestCounts();
+    }, requestCountsPollIntervalMs);
+
+    return () => {
+      // no-op: requests badge is best-effort
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  useEffect(() => {
     let isMounted = true;
+
 
     async function loadGroups() {
       const cachedSidebar = window.sessionStorage.getItem(sidebarCacheKey);
@@ -236,7 +310,7 @@ export function DashboardSidebar({
   }, [initialCurrentUser, initialGroups, sidebarRefreshKey]);
 
   useEffect(() => {
-    let cancelled = false;
+    const cancelled = false;
 
     async function loadNotifications({ announce }: { announce: boolean }) {
       const response = await fetch("/api/notifications", {
@@ -290,7 +364,6 @@ export function DashboardSidebar({
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      cancelled = true;
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
@@ -970,7 +1043,7 @@ export function DashboardSidebar({
           aria-current={pathname === "/dashboard" ? "page" : undefined}
           title="Home"
         >
-          <LogoMark className="h-9 w-9 min-[390px]:h-10 min-[390px]:w-10" sizes="48px" />
+          <LogoMark className="h-11 w-11 min-[390px]:h-12 min-[390px]:w-12" sizes="56px" />
         </Link>
 
         <div className="flex min-w-0 items-center justify-end gap-0.5">

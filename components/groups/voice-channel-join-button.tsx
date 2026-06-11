@@ -95,7 +95,7 @@ export function VoiceChannelJoinButton({
         aria-label={`${activeHere ? "Connected to" : "Join"} ${channelName}`}
         aria-pressed={activeHere}
         className={cn(
-          "flex w-full min-w-0 items-center justify-between gap-2 rounded-lg text-left outline-none transition focus-visible:ring-2 focus-visible:ring-[#FF5F25]/60",
+          "flex w-full min-w-0 items-center justify-between gap-3 rounded-lg text-left outline-none transition focus-visible:ring-2 focus-visible:ring-[#FF5F25]/60",
           activeHere && "text-white",
           isJoining && "opacity-80",
         )}
@@ -104,7 +104,7 @@ export function VoiceChannelJoinButton({
         title={error ?? (activeHere ? "Open voice room" : "Join voice room")}
         type="button"
       >
-        <span className="flex min-w-0 items-center gap-2">
+        <span className="flex min-w-0 flex-1 items-center gap-2.5">
           <span
             className={cn(
               "grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/7 text-xs font-bold text-slate-200 min-[1180px]:h-7 min-[1180px]:w-7 min-[1180px]:rounded-md min-[1180px]:text-[11px]",
@@ -113,14 +113,14 @@ export function VoiceChannelJoinButton({
           >
             V
           </span>
-          <span className="truncate text-[13px] min-[1180px]:text-xs">
+          <span className="min-w-0 flex-1 truncate text-[13px] min-[1180px]:text-xs">
             {prefix} {channelName}
           </span>
         </span>
         <span
           className={cn(
-            "h-7 min-w-7 shrink-0 items-center justify-center rounded-md px-1.5 text-[10px] font-semibold text-slate-400",
-            isJoining ? "inline-flex bg-[#FF5F25] text-black shadow-[0_0_18px_rgba(255,95,37,0.28)]" : "hidden bg-white/7 min-[1180px]:inline-flex",
+            "inline-flex h-7 min-w-[4.75rem] shrink-0 items-center justify-center rounded-md px-2 text-[10px] font-semibold text-slate-400",
+            isJoining ? "bg-[#FF5F25] text-black shadow-[0_0_18px_rgba(255,95,37,0.28)]" : "bg-white/7",
             activeHere && "bg-[#FF5F25]/15 text-[#FFB199]",
             error && "bg-red-500/10 text-red-200",
           )}
@@ -136,7 +136,7 @@ export function VoiceChannelJoinButton({
         </span>
       </button>
       {error ? (
-        <p className="mt-1 pl-10 text-[11px] text-red-200">
+        <p className="mt-1 pl-[2.75rem] text-[11px] text-red-200">
           {error}
         </p>
       ) : null}

@@ -6,28 +6,25 @@ type BrandLoaderProps = {
 };
 
 export function BrandLoader({ label = "Loading", size = "lg" }: BrandLoaderProps) {
+  const shellClass =
+    size === "sm" ? "rounded-[1.5rem] px-5 py-4" : "rounded-[1.8rem] px-6 py-5";
+  const logoClass = size === "sm" ? "h-20 w-20" : "h-24 w-24";
+  const logoSizes = size === "sm" ? "80px" : "96px";
+
   return (
     <section
       aria-busy="true"
       aria-label={label}
-      className="doshab-loader grid justify-items-center text-center"
+      className="grid justify-items-center text-center"
     >
       <div
-        className={`doshab-loader-orbit ${size === "sm" ? "doshab-loader-orbit-sm" : ""}`}
+        className={`app-surface grid justify-items-center border border-white/10 bg-[#0b0e0c]/88 ${shellClass}`}
       >
-        <span className="doshab-loader-ring" />
-        <span className="doshab-loader-ring doshab-loader-ring-delay" />
-        <span className="doshab-loader-pulse" />
-        <LogoMark className="doshab-loader-logo" />
+        <LogoMark className={logoClass} preload={size === "lg"} sizes={logoSizes} />
       </div>
-      <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
+      <p className="mt-4 text-xs font-semibold uppercase tracking-[0.24em] text-[#FF5F25]">
         {label}
       </p>
-      <div className="mt-3 flex items-center gap-1.5" aria-hidden="true">
-        <span className="doshab-loader-dot" />
-        <span className="doshab-loader-dot" />
-        <span className="doshab-loader-dot" />
-      </div>
     </section>
   );
 }
@@ -42,8 +39,12 @@ export function AppLoadingScreen({ label = "Loading" }: { label?: string }) {
 
 export function DashboardLoadingShell() {
   return (
-    <main className="app-page-scroll bg-[#050705] text-white" aria-busy="true">
-      <div className="app-page-container grid gap-4">
+    <main className="loading-canvas app-page-scroll text-white" aria-busy="true">
+      <div className="app-page-container grid gap-5 py-4">
+        <section className="grid justify-items-center py-2">
+          <BrandLoader label="Loading dashboard" size="sm" />
+        </section>
+
         <section className="app-page-header">
           <div className="app-skeleton h-3 w-20 rounded-full" />
           <div className="app-skeleton mt-3 h-8 w-48 rounded-full" />

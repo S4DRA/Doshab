@@ -26,7 +26,7 @@ function ActiveVoiceChannelPresence() {
 
   if (!participants.length) {
     return (
-      <p className="pl-10 text-[11px] text-slate-500">
+      <p className="min-w-0 pl-[2.75rem] text-[11px] text-slate-500">
         Connecting voices...
       </p>
     );
@@ -35,9 +35,9 @@ function ActiveVoiceChannelPresence() {
   return (
     <div
       aria-label={`${participants.length} ${participants.length === 1 ? "person" : "people"} connected`}
-      className="flex items-center gap-2 pl-10"
+      className="flex min-w-0 flex-wrap items-center gap-2.5 pl-[2.75rem]"
     >
-      <div className="flex -space-x-2">
+      <div className="flex shrink-0 -space-x-2">
         {visibleParticipants.map((participant) => {
           const label = participant.name || participant.identity || "Voice participant";
 
@@ -57,7 +57,7 @@ function ActiveVoiceChannelPresence() {
           </span>
         ) : null}
       </div>
-      <span className="text-[11px] font-medium text-slate-400">
+      <span className="min-w-0 truncate text-[11px] font-medium text-slate-400">
         {participants.length} connected
       </span>
     </div>

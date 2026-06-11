@@ -663,8 +663,6 @@ main.app-page-scroll {
 
 @media (min-width: 640px) {
   .app-page-scroll {
-    height: auto;
-    min-height: 100dvh;
     padding: 1.5rem;
   }
 }
@@ -864,8 +862,8 @@ main.app-page-scroll {
 
 @media (min-width: 640px) {
   .dashboard-content-frame {
-    min-height: 100dvh;
-    height: auto;
+    height: 100dvh;
+    min-height: 0;
   }
 }
 
@@ -975,6 +973,10 @@ main.app-page-scroll {
 
 .theme-avatar-initials {
   color: var(--accent);
+}
+
+.theme-avatar img {
+  display: block;
 }
 
 .app-button-primary {
@@ -9921,6 +9923,8 @@ html[data-theme="bios-core"] .app-skeleton::after {
 
 .message-shell {
   display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
   max-width: min(42rem, 78%);
 }
 
