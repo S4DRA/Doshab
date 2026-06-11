@@ -25,6 +25,9 @@ type FriendCallTokenResponse = {
   token: string;
 };
 
+const VISIBLE_POLL_INTERVAL_MS = 3000;
+const BACKGROUND_POLL_INTERVAL_MS = 9000;
+
 export function IncomingCallWatcher() {
   const router = useRouter();
   const { startCall } = usePersistentCall();
@@ -35,6 +38,10 @@ export function IncomingCallWatcher() {
   const [error, setError] = useState("");
   const acceptButtonRef = useRef<HTMLButtonElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const pollAbortControllerRef = useRef<AbortController | null>(null);
+  const pollInFlightRef = useRef(false);
+  const pollOnCompleteRef = useRef(false);
+  const pollTimerRef = useRef<number | null>(null);
   const toneTimerRef = useRef<number | null>(null);
 
   const stopRingtone = useCallback(() => {
@@ -79,41 +86,143 @@ export function IncomingCallWatcher() {
   }, [stopRingtone]);
 
   useEffect(() => {
-    let cancelled = false;
+    let active = true;
 
-    async function loadIncomingCall() {
-      const response = await fetch("/api/friend-calls/incoming", {
-        cache: "no-store",
-        headers: {
-          accept: "application/json",
-        },
-      }).catch(() => null);
+    const clearPollTimer = () => {
+      if (pollTimerRef.current) {
+        window.clearTimeout(pollTimerRef.current);
+        pollTimerRef.current = null;
+      }
+    };
 
-      if (!response?.ok || cancelled) {
+    const getPollDelay = () =>
+      document.visibilityState === "visible" && document.hasFocus()
+        ? VISIBLE_POLL_INTERVAL_MS
+        : BACKGROUND_POLL_INTERVAL_MS;
+
+    const scheduleNextPoll = (delay = getPollDelay()) => {
+      clearPollTimer();
+
+      if (!active) {
         return;
       }
 
-      const data = (await response.json().catch(() => null)) as {
-        call?: IncomingCall | null;
-      } | null;
+      pollTimerRef.current = window.setTimeout(() => {
+        void loadIncomingCall();
+      }, delay);
+    };
 
-      if (!cancelled) {
+    async function loadIncomingCall() {
+      if (!active || pollInFlightRef.current) {
+        return;
+      }
+
+      pollInFlightRef.current = true;
+      const controller = new AbortController();
+      pollAbortControllerRef.current = controller;
+
+      try {
+        const response = await fetch("/api/friend-calls/incoming", {
+          cache: "no-store",
+          headers: {
+            accept: "application/json",
+          },
+          signal: controller.signal,
+        }).catch((fetchError: unknown) => {
+          if (isAbortError(fetchError)) {
+            return null;
+          }
+
+          throw fetchError;
+        });
+
+        if (!response?.ok || !active || controller.signal.aborted) {
+          return;
+        }
+
+        const data = (await response.json().catch(() => null)) as {
+          call?: IncomingCall | null;
+        } | null;
+
+        if (!active || controller.signal.aborted) {
+          return;
+        }
+
         setCall((current) => {
           const nextCall = data?.call ?? null;
 
           return current?.id === nextCall?.id ? current : nextCall;
         });
+      } catch {
+        // Keep the current call UI stable and retry on the next scheduled poll.
+      } finally {
+        if (pollAbortControllerRef.current === controller) {
+          pollAbortControllerRef.current = null;
+        }
+
+        pollInFlightRef.current = false;
+
+        if (!active) {
+          return;
+        }
+
+        const nextDelay = pollOnCompleteRef.current ? 0 : getPollDelay();
+        pollOnCompleteRef.current = false;
+        scheduleNextPoll(nextDelay);
       }
     }
 
-    void loadIncomingCall();
-    const timer = window.setInterval(() => {
+    const triggerImmediatePoll = () => {
+      clearPollTimer();
+
+      if (!active) {
+        return;
+      }
+
+      if (pollInFlightRef.current) {
+        // Queue a single follow-up poll if focus/visibility changes mid-request.
+        pollOnCompleteRef.current = true;
+        return;
+      }
+
       void loadIncomingCall();
-    }, 1200);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        triggerImmediatePoll();
+        return;
+      }
+
+      pollOnCompleteRef.current = false;
+      scheduleNextPoll();
+    };
+
+    const handleWindowFocus = () => {
+      triggerImmediatePoll();
+    };
+
+    const handleWindowBlur = () => {
+      pollOnCompleteRef.current = false;
+      scheduleNextPoll();
+    };
+
+    void loadIncomingCall();
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleWindowFocus);
+    window.addEventListener("blur", handleWindowBlur);
 
     return () => {
-      cancelled = true;
-      window.clearInterval(timer);
+      active = false;
+      pollOnCompleteRef.current = false;
+      clearPollTimer();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleWindowFocus);
+      window.removeEventListener("blur", handleWindowBlur);
+      pollAbortControllerRef.current?.abort();
+      pollAbortControllerRef.current = null;
+      pollInFlightRef.current = false;
     };
   }, []);
 
@@ -332,6 +441,10 @@ function getNotificationSettings(): NotificationSettings {
   } catch {
     return {};
   }
+}
+
+function isAbortError(error: unknown) {
+  return error instanceof DOMException && error.name === "AbortError";
 }
 
 declare global {

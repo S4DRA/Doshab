@@ -9,8 +9,10 @@ type LogoMarkProps = {
   sizes?: string;
 };
 
-const primaryLogoSrc = "/val-logo-dark.png";
-const fallbackLogoSrc = "/val-logo-dark-roomy.png";
+const primaryLogoSrc = "/val-icon-192.png";
+const primaryLogoSrcSet = "/val-icon-192.png 192w, /val-icon-512.png 512w";
+const fallbackLogoSrc = "/val-icon-512.png";
+const legacyFallbackLogoSrc = "/val-logo-dark-roomy.png";
 
 export function LogoMark({
   className,
@@ -21,8 +23,13 @@ export function LogoMark({
   const [showFallbackBadge, setShowFallbackBadge] = useState(false);
 
   const handleError = () => {
-    if (source !== fallbackLogoSrc) {
+    if (source === primaryLogoSrc) {
       setSource(fallbackLogoSrc);
+      return;
+    }
+
+    if (source === fallbackLogoSrc) {
+      setSource(legacyFallbackLogoSrc);
       return;
     }
 
@@ -51,10 +58,13 @@ export function LogoMark({
             decoding="async"
             draggable={false}
             fetchPriority={preload ? "high" : "auto"}
+            height={512}
             loading={preload ? "eager" : "lazy"}
             onError={handleError}
             sizes={sizes}
             src={source}
+            srcSet={source === primaryLogoSrc ? primaryLogoSrcSet : undefined}
+            width={512}
           />
         </>
       )}

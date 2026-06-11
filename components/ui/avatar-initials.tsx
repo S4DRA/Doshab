@@ -18,6 +18,12 @@ const sizeClasses = {
   lg: "size-20 text-xl",
 };
 
+const sizePixels = {
+  sm: 36,
+  md: 40,
+  lg: 80,
+} as const;
+
 export function AvatarInitials({
   fallback = "person",
   imageUrl,
@@ -25,6 +31,7 @@ export function AvatarInitials({
   value,
 }: AvatarInitialsProps) {
   const className = `${sizeClasses[size]} theme-avatar grid shrink-0 place-items-center overflow-hidden rounded-lg font-bold`;
+  const imageSize = sizePixels[size];
   const normalizedImageUrl = normalizeImageUrl(imageUrl);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
   const showImage = Boolean(normalizedImageUrl && normalizedImageUrl !== failedImageUrl);
@@ -36,9 +43,14 @@ export function AvatarInitials({
         <img
           alt=""
           className="size-full object-cover"
+          decoding="async"
+          draggable={false}
+          height={imageSize}
+          loading={size === "lg" ? "eager" : "lazy"}
           onError={() => setFailedImageUrl(normalizedImageUrl)}
           referrerPolicy="no-referrer"
           src={normalizedImageUrl}
+          width={imageSize}
         />
       </span>
     );

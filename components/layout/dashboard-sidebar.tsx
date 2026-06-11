@@ -1,19 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PushNotificationToggle } from "@/components/notifications/push-notification-toggle";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { LogoMark } from "@/components/ui/logo-mark";
 import type { DashboardNotification } from "@/types";
-
-type RequestCounts = {
-  incomingCount: number;
-  outgoingCount: number;
-  totalCount: number;
-};
 
 const navItems = [
   {
@@ -62,10 +56,17 @@ type SidebarUser = {
   name: string;
 };
 
+type SidebarSnapshot = {
+  currentUser: SidebarUser | null;
+  friends: SidebarFriend[];
+  groups: SidebarGroup[];
+  notifications: DashboardNotification[];
+  unreadCount: number;
+};
+
 const mobileChannelPinCacheKey = "doshab-mobile-channel-pin-v1";
 const sidebarCacheKey = "doshab-sidebar-v6";
 const notificationSettingsKey = "doshabProfileSettings";
-const notificationPollIntervalMs = 15000;
 
 type DashboardSidebarProps = {
   initialCurrentUser?: SidebarUser | null;
@@ -75,7 +76,54 @@ type DashboardSidebarProps = {
   initialUnreadCount?: number;
 };
 
-const requestCountsPollIntervalMs = 15000;
+function normalizeSidebarSnapshot(
+  snapshot?: Partial<SidebarSnapshot> | null,
+): SidebarSnapshot {
+  return {
+    currentUser: snapshot?.currentUser ?? null,
+    friends: snapshot?.friends ?? [],
+    groups: snapshot?.groups ?? [],
+    notifications: snapshot?.notifications ?? [],
+    unreadCount: snapshot?.unreadCount ?? 0,
+  };
+}
+
+function hasSidebarSnapshotData(snapshot: SidebarSnapshot) {
+  return (
+    Boolean(snapshot.currentUser) ||
+    snapshot.friends.length > 0 ||
+    snapshot.groups.length > 0 ||
+    snapshot.notifications.length > 0 ||
+    snapshot.unreadCount > 0
+  );
+}
+
+function readStoredSidebarSnapshot(): SidebarSnapshot | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const cachedSidebar = window.sessionStorage.getItem(sidebarCacheKey);
+
+  if (!cachedSidebar) {
+    return null;
+  }
+
+  try {
+    return normalizeSidebarSnapshot(JSON.parse(cachedSidebar) as Partial<SidebarSnapshot>);
+  } catch {
+    window.sessionStorage.removeItem(sidebarCacheKey);
+    return null;
+  }
+}
+
+function writeStoredSidebarSnapshot(snapshot: SidebarSnapshot) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.sessionStorage.setItem(sidebarCacheKey, JSON.stringify(snapshot));
+}
 
 export function DashboardSidebar({
   initialCurrentUser = null,
@@ -86,22 +134,28 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const sidebarRefreshKey = searchParams.toString();
-  const [currentUser, setCurrentUser] = useState<SidebarUser | null>(initialCurrentUser);
-  const [friends, setFriends] = useState<SidebarFriend[]>(initialFriends);
-  const [groups, setGroups] = useState<SidebarGroup[]>(initialGroups);
-  const [notifications, setNotifications] = useState<DashboardNotification[]>(
-    initialNotifications,
+  const [initialServerSnapshot] = useState<SidebarSnapshot>(() =>
+    normalizeSidebarSnapshot({
+      currentUser: initialCurrentUser,
+      friends: initialFriends,
+      groups: initialGroups,
+      notifications: initialNotifications,
+      unreadCount: initialUnreadCount,
+    }),
   );
-  const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
+  const [initialSidebarSnapshot] = useState<SidebarSnapshot>(() =>
+    hasSidebarSnapshotData(initialServerSnapshot)
+      ? initialServerSnapshot
+      : readStoredSidebarSnapshot() ?? initialServerSnapshot,
+  );
+  const [currentUser, setCurrentUser] = useState<SidebarUser | null>(initialSidebarSnapshot.currentUser);
+  const [friends, setFriends] = useState<SidebarFriend[]>(initialSidebarSnapshot.friends);
+  const [groups, setGroups] = useState<SidebarGroup[]>(initialSidebarSnapshot.groups);
+  const [notifications, setNotifications] = useState<DashboardNotification[]>(
+    initialSidebarSnapshot.notifications,
+  );
+  const [unreadCount, setUnreadCount] = useState(initialSidebarSnapshot.unreadCount);
   const [toastNotification, setToastNotification] = useState<DashboardNotification | null>(null);
-  const [requestCounts, setRequestCounts] = useState<RequestCounts>({
-    incomingCount: 0,
-    outgoingCount: 0,
-    totalCount: 0,
-  });
-
   const [channelsOpen, setChannelsOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
@@ -115,8 +169,27 @@ export function DashboardSidebar({
 
     return window.localStorage.getItem(mobileChannelPinCacheKey);
   });
-  const seenNotificationIdsRef = useRef(new Set(initialNotifications.map((item) => item.id)));
+  const seenNotificationIdsRef = useRef(
+    new Set(initialSidebarSnapshot.notifications.map((item) => item.id)),
+  );
   const toastTimerRef = useRef<number | null>(null);
+  const didBootstrapSidebarRef = useRef(false);
+  const hasInitialSidebarData = hasSidebarSnapshotData(initialServerSnapshot);
+
+  const applySidebarSnapshot = useCallback((snapshot: SidebarSnapshot) => {
+    setCurrentUser(snapshot.currentUser);
+    setFriends(snapshot.friends);
+    setGroups(snapshot.groups);
+    setNotifications(snapshot.notifications);
+    setUnreadCount(snapshot.unreadCount);
+    snapshot.notifications.forEach((notification) => {
+      seenNotificationIdsRef.current.add(notification.id);
+    });
+  }, [setCurrentUser, setFriends, setGroups, setNotifications, setUnreadCount]);
+
+  const persistSidebarSnapshot = useCallback((snapshot: SidebarSnapshot) => {
+    writeStoredSidebarSnapshot(snapshot);
+  }, []);
 
   const announceNotification = useCallback((notification: DashboardNotification) => {
     const settings = getNotificationSettings();
@@ -160,187 +233,40 @@ export function DashboardSidebar({
       setToastNotification(null);
       toastTimerRef.current = null;
     }, notification.type === "INCOMING_CALL" ? 9000 : 5200);
-  }, []);
+  }, [setToastNotification]);
 
-  useEffect(() => {
-    const cancelled = false;
-
-
-    async function loadRequestCounts() {
-
-      try {
-        const response = await fetch("/api/requests/count", {
-          cache: "no-store",
-          headers: {
-            accept: "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const data = (await response.json()) as Partial<RequestCounts>;
-
-        if (!cancelled) {
-          setRequestCounts({
-            incomingCount: data.incomingCount ?? 0,
-            outgoingCount: data.outgoingCount ?? 0,
-            totalCount:
-              data.totalCount ??
-              (data.incomingCount ?? 0) + (data.outgoingCount ?? 0),
-          });
-        }
-        return;
-
-
-        setRequestCounts({
-          incomingCount: data.incomingCount ?? 0,
-          outgoingCount: data.outgoingCount ?? 0,
-          totalCount: data.totalCount ?? (data.incomingCount ?? 0) + (data.outgoingCount ?? 0),
-        });
-      } catch {
-        // badge is progressive enhancement
-      }
-    }
-
-    void loadRequestCounts();
-    const timer = window.setInterval(() => {
-      if (document.visibilityState !== "visible") {
-        return;
-      }
-      void loadRequestCounts();
-    }, requestCountsPollIntervalMs);
-
-    return () => {
-      // no-op: requests badge is best-effort
-      window.clearInterval(timer);
-    };
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-
-
-    async function loadGroups() {
-      const cachedSidebar = window.sessionStorage.getItem(sidebarCacheKey);
-
-      if (cachedSidebar) {
-        try {
-          const parsedSidebar = JSON.parse(cachedSidebar) as {
-            currentUser?: SidebarUser | null;
-            friends?: SidebarFriend[];
-            groups?: SidebarGroup[];
-            notifications?: DashboardNotification[];
-            unreadCount?: number;
-          };
-
-          if (isMounted) {
-            setCurrentUser(parsedSidebar.currentUser ?? initialCurrentUser);
-            setFriends(parsedSidebar.friends ?? []);
-            setGroups(parsedSidebar.groups?.length ? parsedSidebar.groups : initialGroups);
-            setNotifications(parsedSidebar.notifications ?? []);
-            setUnreadCount(parsedSidebar.unreadCount ?? 0);
-          }
-        } catch {
-          window.sessionStorage.removeItem(sidebarCacheKey);
-        }
-      }
-
-      try {
-        const response = await fetch("/api/dashboard/sidebar", {
-          headers: {
-            accept: "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const data = (await response.json()) as {
-          currentUser?: SidebarUser | null;
-          friends?: SidebarFriend[];
-          groups?: SidebarGroup[];
-          notifications?: DashboardNotification[];
-          unreadCount?: number;
-        };
-
-        if (isMounted) {
-          const nextCurrentUser = data.currentUser ?? initialCurrentUser;
-          const nextFriends = data.friends ?? [];
-          const nextGroups = data.groups ?? [];
-          const nextNotifications = data.notifications ?? [];
-          const nextUnreadCount = data.unreadCount ?? 0;
-          setCurrentUser(nextCurrentUser);
-          setFriends(nextFriends);
-          setGroups(nextGroups);
-          setNotifications(nextNotifications);
-          setUnreadCount(nextUnreadCount);
-          window.sessionStorage.setItem(
-            sidebarCacheKey,
-            JSON.stringify({
-              currentUser: nextCurrentUser,
-              friends: nextFriends,
-              groups: nextGroups,
-              notifications: nextNotifications,
-              unreadCount: nextUnreadCount,
-            }),
-          );
-        }
-      } catch {
-        // Sidebar shortcuts are progressive enhancement; page navigation still works.
-      }
-    }
-
-    void loadGroups();
-    const refreshIntervalMs = 120000;
-    const refreshTimer = window.setInterval(() => {
-      if (document.visibilityState !== "visible") {
-        return;
-      }
-
-      void loadGroups();
-    }, refreshIntervalMs);
-
-    return () => {
-      isMounted = false;
-      window.clearInterval(refreshTimer);
-    };
-  }, [initialCurrentUser, initialGroups, sidebarRefreshKey]);
-
-  useEffect(() => {
-    const cancelled = false;
-
-    async function loadNotifications({ announce }: { announce: boolean }) {
-      const response = await fetch("/api/notifications", {
+  const refreshSidebar = useCallback(
+    async ({ announce }: { announce: boolean }) => {
+      const response = await fetch("/api/dashboard/sidebar", {
         cache: "no-store",
         headers: {
           accept: "application/json",
         },
       }).catch(() => null);
 
-      if (!response?.ok || cancelled) {
+      if (!response?.ok) {
         return;
       }
 
-      const data = (await response.json().catch(() => null)) as {
-        notifications?: DashboardNotification[];
-        unreadCount?: number;
-      } | null;
-      const nextNotifications = data?.notifications ?? [];
-      const nextUnreadCount = data?.unreadCount ?? 0;
-      const freshNotifications = nextNotifications.filter(
+      const data = (await response.json().catch(() => null)) as Partial<SidebarSnapshot> | null;
+
+      if (!data) {
+        return;
+      }
+
+      const nextSnapshot: SidebarSnapshot = {
+        currentUser: data.currentUser ?? currentUser,
+        friends: data.friends ?? friends,
+        groups: data.groups ?? groups,
+        notifications: data.notifications ?? notifications,
+        unreadCount: data.unreadCount ?? unreadCount,
+      };
+      const freshNotifications = nextSnapshot.notifications.filter(
         (notification) => !seenNotificationIdsRef.current.has(notification.id),
       );
 
-      freshNotifications.forEach((notification) => {
-        seenNotificationIdsRef.current.add(notification.id);
-      });
-
-      setNotifications(nextNotifications);
-      setUnreadCount(nextUnreadCount);
-      window.sessionStorage.removeItem(sidebarCacheKey);
+      applySidebarSnapshot(nextSnapshot);
+      persistSidebarSnapshot(nextSnapshot);
 
       if (!announce) {
         return;
@@ -349,25 +275,80 @@ export function DashboardSidebar({
       freshNotifications
         .filter((notification) => !notification.readAt && notification.href !== pathname)
         .forEach((notification) => announceNotification(notification));
+    },
+    [
+      announceNotification,
+      applySidebarSnapshot,
+      currentUser,
+      friends,
+      groups,
+      notifications,
+      pathname,
+      persistSidebarSnapshot,
+      unreadCount,
+    ],
+  );
+
+  useEffect(() => {
+    if (didBootstrapSidebarRef.current) {
+      return;
     }
 
-    void loadNotifications({ announce: false });
+    didBootstrapSidebarRef.current = true;
 
-    const timer = window.setInterval(() => {
-      void loadNotifications({ announce: true });
-    }, notificationPollIntervalMs);
+    if (hasInitialSidebarData) {
+      persistSidebarSnapshot(initialServerSnapshot);
+      return;
+    }
 
+    if (hasSidebarSnapshotData(initialSidebarSnapshot)) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void refreshSidebar({ announce: false });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [
+    hasInitialSidebarData,
+    initialServerSnapshot,
+    initialSidebarSnapshot,
+    persistSidebarSnapshot,
+    refreshSidebar,
+  ]);
+
+  useEffect(() => {
     const handleVisibilityChange = () => {
-      void loadNotifications({ announce: false });
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      void refreshSidebar({ announce: false });
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.clearInterval(timer);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [announceNotification, pathname]);
+  }, [refreshSidebar]);
+
+  useEffect(() => {
+    if (!notificationsOpen) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void refreshSidebar({ announce: false });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [notificationsOpen, refreshSidebar]);
 
   useEffect(() => {
     const matchingUnreadIds = notifications
@@ -379,17 +360,26 @@ export function DashboardSidebar({
     }
 
     const timer = window.setTimeout(() => {
-      setUnreadCount((count) => Math.max(0, count - matchingUnreadIds.length));
-      setNotifications((items) =>
-        items.map((item) =>
-          matchingUnreadIds.includes(item.id)
-            ? {
-                ...item,
-                readAt: item.readAt ?? new Date().toISOString(),
-              }
-            : item,
-        ),
+      const readAt = new Date().toISOString();
+      const nextUnreadCount = Math.max(0, unreadCount - matchingUnreadIds.length);
+      const nextNotifications = notifications.map((item) =>
+        matchingUnreadIds.includes(item.id)
+          ? {
+              ...item,
+              readAt: item.readAt ?? readAt,
+            }
+          : item,
       );
+
+      setUnreadCount(nextUnreadCount);
+      setNotifications(nextNotifications);
+      persistSidebarSnapshot({
+        currentUser,
+        friends,
+        groups,
+        notifications: nextNotifications,
+        unreadCount: nextUnreadCount,
+      });
 
       void fetch("/api/notifications/read", {
         body: JSON.stringify({ ids: matchingUnreadIds }),
@@ -401,7 +391,7 @@ export function DashboardSidebar({
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, [notifications, pathname]);
+  }, [currentUser, friends, groups, notifications, pathname, persistSidebarSnapshot, unreadCount]);
 
   useEffect(() => () => {
     if (toastTimerRef.current) {
@@ -469,19 +459,26 @@ export function DashboardSidebar({
     : "/dashboard/channels";
 
   async function markNotificationsRead() {
+    const readAt = new Date().toISOString();
+    const nextNotifications = notifications.map((item) => ({
+      ...item,
+      readAt: item.readAt ?? readAt,
+    }));
+
     setUnreadCount(0);
-    setNotifications((items) =>
-      items.map((item) => ({
-        ...item,
-        readAt: item.readAt ?? new Date().toISOString(),
-      })),
-    );
+    setNotifications(nextNotifications);
+    persistSidebarSnapshot({
+      currentUser,
+      friends,
+      groups,
+      notifications: nextNotifications,
+      unreadCount: 0,
+    });
 
     try {
       await fetch("/api/notifications/read", {
         method: "POST",
       });
-      window.sessionStorage.removeItem(sidebarCacheKey);
     } catch {
       // Read state will refresh on the next sidebar fetch.
     }
@@ -493,6 +490,13 @@ export function DashboardSidebar({
 
     setNotifications([]);
     setUnreadCount(0);
+    persistSidebarSnapshot({
+      currentUser,
+      friends,
+      groups,
+      notifications: [],
+      unreadCount: 0,
+    });
 
     try {
       const response = await fetch("/api/notifications/clear", {
@@ -502,11 +506,16 @@ export function DashboardSidebar({
       if (!response.ok) {
         throw new Error("Could not clear notifications.");
       }
-
-      window.sessionStorage.removeItem(sidebarCacheKey);
     } catch {
       setNotifications(previousNotifications);
       setUnreadCount(previousUnreadCount);
+      persistSidebarSnapshot({
+        currentUser,
+        friends,
+        groups,
+        notifications: previousNotifications,
+        unreadCount: previousUnreadCount,
+      });
     }
   }
 
