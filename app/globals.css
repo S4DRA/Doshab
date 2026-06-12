@@ -727,7 +727,7 @@ main.app-page-scroll {
     bottom: max(0.7rem, env(safe-area-inset-bottom)) !important;
     height: 5.05rem !important;
     overflow: visible;
-    border-width: 1px !important;
+    /* border-width: 1px !important; */
     border-radius: 1.72rem;
     padding: 0.48rem;
     background:
