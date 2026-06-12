@@ -741,7 +741,7 @@ main.app-page-scroll {
 
   .dashboard-main-sidebar > nav[aria-label="Mobile dashboard"] {
     height: 100%;
-    gap: 0.1rem;
+    gap: 0.5rem;
     border-radius: 1rem;
     padding: 0.1rem;
     background:
@@ -10259,9 +10259,9 @@ html[data-theme="bios-core"] .dashboard-secondary-sidebar :is(.app-card, .app-ro
 }
 
 /* BIOS communication pass: tighter rail, cleaner loading, and chat bubbles that fit content. */
-html[data-theme="bios-core"] .dashboard-main-sidebar {
+/* html[data-theme="bios-core"] .dashboard-main-sidebar {
   border-radius: 0 !important;
-}
+} */
 
 html[data-theme="bios-core"] .dashboard-main-sidebar::before {
   border-radius: 0 !important;
