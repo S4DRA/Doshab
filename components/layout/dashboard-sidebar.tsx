@@ -306,7 +306,11 @@ export function DashboardSidebar({
       }
 
       freshNotifications
-        .filter((notification) => !notification.readAt && notification.href !== pathname)
+        .filter(
+          (notification) =>
+            !notification.readAt &&
+            getNotificationPathname(notification.href) !== pathname,
+        )
         .forEach((notification) => announceNotification(notification));
     },
     [
@@ -385,7 +389,11 @@ export function DashboardSidebar({
 
   useEffect(() => {
     const matchingUnreadIds = notifications
-      .filter((notification) => !notification.readAt && notification.href === pathname)
+      .filter(
+        (notification) =>
+          !notification.readAt &&
+          getNotificationPathname(notification.href) === pathname,
+      )
       .map((notification) => notification.id);
 
     if (!matchingUnreadIds.length) {
@@ -1605,6 +1613,10 @@ function getGroupHref(group: SidebarGroup) {
   return group.firstTextChannelId
     ? `/dashboard/groups/${group.id}/channels/${group.firstTextChannelId}`
     : `/dashboard/groups/${group.id}`;
+}
+
+function getNotificationPathname(href: string) {
+  return href.split(/[?#]/, 1)[0] || href;
 }
 
 function getNotificationActionLabel(type: DashboardNotification["type"]) {

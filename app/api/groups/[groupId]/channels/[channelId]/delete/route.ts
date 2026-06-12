@@ -10,28 +10,22 @@ type DeleteChannelRouteProps = {
   }>;
 };
 
-function redirectToGroup(request: NextRequest, groupId: string, message: string) {
-  return NextResponse.redirect(
-    new URL(
-      `/dashboard/groups/${groupId}?message=${encodeURIComponent(message)}`,
-      request.url,
-    ),
-    { status: 303 },
-  );
-}
-
 function redirectAfterChannelDelete(
   request: NextRequest,
   groupId: string,
+  type: "error" | "message",
   message: string,
   returnTo: string,
 ) {
   const pathname =
     returnTo === "settings"
-      ? `/dashboard/groups/${groupId}/settings?message=${encodeURIComponent(message)}`
-      : `/dashboard/groups/${groupId}?message=${encodeURIComponent(message)}`;
+      ? `/dashboard/groups/${groupId}/settings`
+      : `/dashboard/groups/${groupId}`;
+  const url = new URL(pathname, request.url);
 
-  return NextResponse.redirect(new URL(pathname, request.url), { status: 303 });
+  url.searchParams.set(type, message);
+
+  return NextResponse.redirect(url, { status: 303 });
 }
 
 export async function POST(
@@ -67,7 +61,13 @@ export async function POST(
   }
 
   if (membership.role !== "OWNER" && membership.role !== "ADMIN") {
-    return redirectToGroup(request, groupId, "Only owners and admins can delete channels.");
+    return redirectAfterChannelDelete(
+      request,
+      groupId,
+      "error",
+      "Only owners and admins can delete channels.",
+      returnTo,
+    );
   }
 
   const channel = await prisma.channel.findFirst({
@@ -81,7 +81,13 @@ export async function POST(
   });
 
   if (!channel) {
-    return redirectToGroup(request, groupId, "That channel could not be found.");
+    return redirectAfterChannelDelete(
+      request,
+      groupId,
+      "error",
+      "That channel could not be found.",
+      returnTo,
+    );
   }
 
   await prisma.channel.delete({
@@ -90,5 +96,11 @@ export async function POST(
     },
   });
 
-  return redirectAfterChannelDelete(request, groupId, "Channel deleted.", returnTo);
+  return redirectAfterChannelDelete(
+    request,
+    groupId,
+    "message",
+    "Channel deleted.",
+    returnTo,
+  );
 }

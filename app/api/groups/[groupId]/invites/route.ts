@@ -11,14 +11,17 @@ type InviteRouteContext = {
   }>;
 };
 
-function redirectToGroup(request: NextRequest, groupId: string, message: string) {
-  return NextResponse.redirect(
-    new URL(
-      `/dashboard/groups/${groupId}?message=${encodeURIComponent(message)}`,
-      request.url,
-    ),
-    { status: 303 },
-  );
+function redirectToInviteSettings(
+  request: NextRequest,
+  groupId: string,
+  type: "error" | "message",
+  message: string,
+) {
+  const url = new URL(`/dashboard/groups/${groupId}/settings`, request.url);
+  url.searchParams.set(type, message);
+  url.hash = "invite-friends";
+
+  return NextResponse.redirect(url, { status: 303 });
 }
 
 export async function POST(request: NextRequest, context: InviteRouteContext) {
@@ -33,7 +36,12 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
   const receiverId = String(formData.get("receiverId") ?? "");
 
   if (!receiverId || receiverId === user.id) {
-    return redirectToGroup(request, groupId, "Choose a valid friend to invite.");
+    return redirectToInviteSettings(
+      request,
+      groupId,
+      "error",
+      "Choose a valid friend to invite.",
+    );
   }
 
   const membership = await prisma.groupMember.findUnique({
@@ -54,7 +62,12 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
   });
 
   if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
-    return redirectToGroup(request, groupId, "Only owners and admins can invite friends.");
+    return redirectToInviteSettings(
+      request,
+      groupId,
+      "error",
+      "Only owners and admins can invite friends.",
+    );
   }
 
   const currentUser = user;
@@ -70,7 +83,12 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
   });
 
   if (!receiver) {
-    return redirectToGroup(request, groupId, "That user could not be found.");
+    return redirectToInviteSettings(
+      request,
+      groupId,
+      "error",
+      "That user could not be found.",
+    );
   }
 
   const [userOneId, userTwoId] = orderedFriendshipPair(user.id, receiverId);
@@ -112,19 +130,39 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
   ]);
 
   if (!friendship) {
-    return redirectToGroup(request, groupId, "You can only invite accepted friends.");
+    return redirectToInviteSettings(
+      request,
+      groupId,
+      "error",
+      "You can only invite accepted friends.",
+    );
   }
 
   if (existingMembership) {
-    return redirectToGroup(request, groupId, "That friend is already in this space.");
+    return redirectToInviteSettings(
+      request,
+      groupId,
+      "error",
+      "That friend is already in this space.",
+    );
   }
 
   if (existingInvite?.status === "PENDING") {
-    return redirectToGroup(request, groupId, "A pending invite already exists.");
+    return redirectToInviteSettings(
+      request,
+      groupId,
+      "error",
+      "A pending invite already exists.",
+    );
   }
 
   if (existingInvite?.status === "ACCEPTED") {
-    return redirectToGroup(request, groupId, "That invite has already been accepted.");
+    return redirectToInviteSettings(
+      request,
+      groupId,
+      "error",
+      "That invite has already been accepted.",
+    );
   }
 
   if (existingInvite?.status === "REJECTED") {
@@ -158,7 +196,7 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
     await createGroupInviteNotification(invite.id);
   }
 
-  return redirectToGroup(request, groupId, "Space invite sent.");
+  return redirectToInviteSettings(request, groupId, "message", "Space invite sent.");
 
   async function createGroupInviteNotification(inviteId: string) {
     await createNotification({
@@ -168,7 +206,7 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
         groupInviteId: inviteId,
       },
       groupId,
-      href: "/dashboard/friends",
+      href: "/dashboard#requests-and-invites",
       title: "New space invite",
       type: "GROUP_INVITE",
       userId: receiverId,

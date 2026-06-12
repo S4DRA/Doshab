@@ -9,11 +9,12 @@ type RequestActionProps = {
   }>;
 };
 
-function redirectFriends(request: NextRequest, message: string) {
-  return NextResponse.redirect(
-    new URL(`/dashboard/friends?message=${encodeURIComponent(message)}`, request.url),
-    { status: 303 },
-  );
+function redirectToRequestsPanel(request: NextRequest, message: string) {
+  const url = new URL("/dashboard", request.url);
+  url.searchParams.set("message", message);
+  url.hash = "requests-and-invites";
+
+  return NextResponse.redirect(url, { status: 303 });
 }
 
 export async function POST(request: NextRequest, { params }: RequestActionProps) {
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest, { params }: RequestActionProps)
   });
 
   if (!friendRequest) {
-    return redirectFriends(request, "Friend request not found.");
+    return redirectToRequestsPanel(request, "Friend request not found.");
   }
 
   await prisma.friendRequest.update({
@@ -44,5 +45,5 @@ export async function POST(request: NextRequest, { params }: RequestActionProps)
     data: { status: "REJECTED" },
   });
 
-  return redirectFriends(request, "Friend request rejected.");
+  return redirectToRequestsPanel(request, "Friend request rejected.");
 }

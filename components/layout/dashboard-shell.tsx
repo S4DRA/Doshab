@@ -22,6 +22,7 @@ import type {
 type DashboardHomeData = {
   friends: FriendPerson[];
   message?: string;
+  messageTone?: "neutral" | "success" | "error" | "warning";
   requestsPanel?: ReactNode;
 };
 
@@ -696,7 +697,9 @@ function DashboardHome({
           </div>
         </section>
 
-        {data?.message ? <Alert>{data.message}</Alert> : null}
+        {data?.message ? (
+          <Alert tone={data.messageTone ?? "neutral"}>{data.message}</Alert>
+        ) : null}
 
         {data?.requestsPanel ? data.requestsPanel : null}
 
@@ -881,7 +884,7 @@ function HomeGroupCard({
           <>
             <Link
               className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
-              href={`/dashboard/groups/${group.id}#invite-friends`}
+              href={`/dashboard/groups/${group.id}/settings#invite-friends`}
             >
               Invite
             </Link>
@@ -1001,6 +1004,7 @@ function GroupMain({
   const onlineMemberCount = (group.members ?? []).filter(
     (member) => member.user.status === "ONLINE",
   ).length;
+  const firstTextChannel = group.channels.find((channel) => channel.type === "TEXT");
 
   return (
     <div className="app-page-scroll">
@@ -1082,10 +1086,10 @@ function GroupMain({
                   >
                     Space settings
                   </Link>
-                  {group.channels[0] ? (
+                  {firstTextChannel ? (
                     <Link
                       className="app-button-primary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
-                      href={`/dashboard/groups/${group.id}/channels/${group.channels[0].id}`}
+                      href={`/dashboard/groups/${group.id}/channels/${firstTextChannel.id}`}
                     >
                       Open first channel
                     </Link>

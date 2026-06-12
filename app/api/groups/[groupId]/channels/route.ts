@@ -13,14 +13,22 @@ function normalizeChannelName(name: string) {
   return name.trim().toLowerCase().replace(/\s+/g, "-");
 }
 
-function redirectWithError(request: NextRequest, groupId: string, error: string) {
-  return NextResponse.redirect(
-    new URL(
-      `/dashboard/groups/${groupId}?error=${encodeURIComponent(error)}`,
-      request.url,
-    ),
-    { status: 303 },
-  );
+function redirectAfterChannelSubmit(
+  request: NextRequest,
+  groupId: string,
+  returnTo: string,
+  type: "error" | "message",
+  message: string,
+) {
+  const pathname =
+    returnTo === "settings"
+      ? `/dashboard/groups/${groupId}/settings`
+      : `/dashboard/groups/${groupId}`;
+  const url = new URL(pathname, request.url);
+
+  url.searchParams.set(type, message);
+
+  return NextResponse.redirect(url, { status: 303 });
 }
 
 function redirectAfterChannelChange(
@@ -45,6 +53,11 @@ export async function POST(request: NextRequest, { params }: ChannelRouteProps) 
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
   }
 
+  const formData = await request.formData();
+  const name = normalizeChannelName(String(formData.get("name") ?? ""));
+  const returnTo = String(formData.get("returnTo") ?? "");
+  const type = String(formData.get("type") ?? "TEXT");
+
   const membership = await prisma.groupMember.findUnique({
     where: {
       groupId_userId: {
@@ -64,20 +77,33 @@ export async function POST(request: NextRequest, { params }: ChannelRouteProps) 
   }
 
   if (membership.role !== "OWNER" && membership.role !== "ADMIN") {
-    return redirectWithError(request, groupId, "Only owners and admins can create channels.");
+    return redirectAfterChannelSubmit(
+      request,
+      groupId,
+      returnTo,
+      "error",
+      "Only owners and admins can create channels.",
+    );
   }
 
-  const formData = await request.formData();
-  const name = normalizeChannelName(String(formData.get("name") ?? ""));
-  const returnTo = String(formData.get("returnTo") ?? "");
-  const type = String(formData.get("type") ?? "TEXT");
-
   if (!name) {
-    return redirectWithError(request, groupId, "Channel name is required.");
+    return redirectAfterChannelSubmit(
+      request,
+      groupId,
+      returnTo,
+      "error",
+      "Channel name is required.",
+    );
   }
 
   if (type !== "TEXT" && type !== "VOICE") {
-    return redirectWithError(request, groupId, "Channel type is invalid.");
+    return redirectAfterChannelSubmit(
+      request,
+      groupId,
+      returnTo,
+      "error",
+      "Channel type is invalid.",
+    );
   }
 
   const existingChannel = await prisma.channel.findUnique({
@@ -93,7 +119,13 @@ export async function POST(request: NextRequest, { params }: ChannelRouteProps) 
   });
 
   if (existingChannel) {
-    return redirectWithError(request, groupId, "A channel with that name already exists.");
+    return redirectAfterChannelSubmit(
+      request,
+      groupId,
+      returnTo,
+      "error",
+      "A channel with that name already exists.",
+    );
   }
 
   const channel = await prisma.channel.create({

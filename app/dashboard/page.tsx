@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 
 type DashboardPageProps = {
   searchParams?: Promise<{
+    error?: string;
     message?: string;
   }>;
 };
@@ -164,12 +165,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   return (
     <DashboardShell
+      currentUser={auth.user}
       groups={groups}
       homeData={{
-        message: params?.message,
+        message: params?.error ?? params?.message,
+        messageTone: params?.error ? "error" : undefined,
         friends,
         requestsPanel: (
-          <section className="grid gap-4">
+          <section className="grid gap-4" id="requests-and-invites">
             <FriendRequestList
               title="Incoming friend requests"
               emptyText="No incoming friend requests."

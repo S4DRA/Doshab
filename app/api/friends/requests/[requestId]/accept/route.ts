@@ -10,11 +10,12 @@ type RequestActionProps = {
   }>;
 };
 
-function redirectFriends(request: NextRequest, message: string) {
-  return NextResponse.redirect(
-    new URL(`/dashboard/friends?message=${encodeURIComponent(message)}`, request.url),
-    { status: 303 },
-  );
+function redirectToRequestsPanel(request: NextRequest, message: string) {
+  const url = new URL("/dashboard", request.url);
+  url.searchParams.set("message", message);
+  url.hash = "requests-and-invites";
+
+  return NextResponse.redirect(url, { status: 303 });
 }
 
 export async function POST(request: NextRequest, { params }: RequestActionProps) {
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest, { params }: RequestActionProps)
   });
 
   if (!friendRequest) {
-    return redirectFriends(request, "Friend request not found.");
+    return redirectToRequestsPanel(request, "Friend request not found.");
   }
 
   const [userOneId, userTwoId] = orderedFriendshipPair(
@@ -67,5 +68,5 @@ export async function POST(request: NextRequest, { params }: RequestActionProps)
     }),
   ]);
 
-  return redirectFriends(request, "Friend request accepted.");
+  return redirectToRequestsPanel(request, "Friend request accepted.");
 }

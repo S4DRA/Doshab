@@ -9,11 +9,12 @@ type AcceptInviteContext = {
   }>;
 };
 
-function redirectWithMessage(request: NextRequest, message: string) {
-  return NextResponse.redirect(
-    new URL(`/dashboard/friends?message=${encodeURIComponent(message)}`, request.url),
-    { status: 303 },
-  );
+function redirectToRequestsPanel(request: NextRequest, message: string) {
+  const url = new URL("/dashboard", request.url);
+  url.searchParams.set("message", message);
+  url.hash = "requests-and-invites";
+
+  return NextResponse.redirect(url, { status: 303 });
 }
 
 export async function POST(request: NextRequest, context: AcceptInviteContext) {
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest, context: AcceptInviteContext) {
   });
 
   if (!invite) {
-    return redirectWithMessage(request, "That space invite is no longer available.");
+    return redirectToRequestsPanel(request, "That space invite is no longer available.");
   }
 
   const existingMembership = await prisma.groupMember.findUnique({
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest, context: AcceptInviteContext) {
       },
     });
 
-    return redirectWithMessage(request, "You are already a member of that space.");
+    return redirectToRequestsPanel(request, "You are already a member of that space.");
   }
 
   await prisma.$transaction([

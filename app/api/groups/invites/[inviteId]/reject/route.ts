@@ -9,11 +9,12 @@ type RejectInviteContext = {
   }>;
 };
 
-function redirectWithMessage(request: NextRequest, message: string) {
-  return NextResponse.redirect(
-    new URL(`/dashboard/friends?message=${encodeURIComponent(message)}`, request.url),
-    { status: 303 },
-  );
+function redirectToRequestsPanel(request: NextRequest, message: string) {
+  const url = new URL("/dashboard", request.url);
+  url.searchParams.set("message", message);
+  url.hash = "requests-and-invites";
+
+  return NextResponse.redirect(url, { status: 303 });
 }
 
 export async function POST(request: NextRequest, context: RejectInviteContext) {
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest, context: RejectInviteContext) {
   });
 
   if (!invite) {
-    return redirectWithMessage(request, "That space invite is no longer available.");
+    return redirectToRequestsPanel(request, "That space invite is no longer available.");
   }
 
   await prisma.groupInvite.update({
@@ -48,5 +49,5 @@ export async function POST(request: NextRequest, context: RejectInviteContext) {
     },
   });
 
-  return redirectWithMessage(request, "Space invite rejected.");
+  return redirectToRequestsPanel(request, "Space invite rejected.");
 }

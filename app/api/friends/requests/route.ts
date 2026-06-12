@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     data: {
       friendRequestId: requestRecord.id,
     },
-    href: "/dashboard/friends",
+    href: "/dashboard#requests-and-invites",
     title: "New friend request",
     type: "FRIEND_REQUEST",
     userId: receiverId,
