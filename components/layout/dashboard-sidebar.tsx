@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 
 import { PushNotificationToggle } from "@/components/notifications/push-notification-toggle";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
@@ -18,6 +18,15 @@ const navItems = [
         className="h-11 w-11 sm:h-12 sm:w-12 min-[1180px]:h-[3.25rem] min-[1180px]:w-[3.25rem]"
         sizes="84px"
       />
+    ),
+  },
+  {
+    href: "/dashboard/messages",
+    label: "Messages",
+    icon: (
+      <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
+      </svg>
     ),
   },
   {
@@ -134,6 +143,7 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [initialServerSnapshot] = useState<SidebarSnapshot>(() =>
     normalizeSidebarSnapshot({
       currentUser: initialCurrentUser,
@@ -159,6 +169,7 @@ export function DashboardSidebar({
   const [channelsOpen, setChannelsOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
+  const [friendsQuery, setFriendsQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement | null>(null);
@@ -175,6 +186,28 @@ export function DashboardSidebar({
   const toastTimerRef = useRef<number | null>(null);
   const didBootstrapSidebarRef = useRef(false);
   const hasInitialSidebarData = hasSidebarSnapshotData(initialServerSnapshot);
+  const deferredFriendsQuery = useDeferredValue(friendsQuery);
+  const normalizedFriendsQuery = deferredFriendsQuery.trim().toLowerCase();
+  const visibleFriends = normalizedFriendsQuery
+    ? friends.filter((friend) => {
+        const friendLabel = `${friend.name} ${friend.email}`.toLowerCase();
+
+        return friendLabel.includes(normalizedFriendsQuery);
+      })
+    : friends;
+  const closeFriendsMenu = useCallback(() => {
+    setFriendsOpen(false);
+    setFriendsQuery("");
+  }, []);
+  const toggleFriendsMenu = useCallback(() => {
+    const nextOpen = !friendsOpen;
+
+    setFriendsOpen(nextOpen);
+
+    if (!nextOpen) {
+      setFriendsQuery("");
+    }
+  }, [friendsOpen]);
 
   const applySidebarSnapshot = useCallback((snapshot: SidebarSnapshot) => {
     setCurrentUser(snapshot.currentUser);
@@ -416,17 +449,31 @@ export function DashboardSidebar({
 
       setChannelsOpen(false);
       setCreateOpen(false);
-      setFriendsOpen(false);
+      closeFriendsMenu();
+      setNotificationsOpen(false);
+      setProfileOpen(false);
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setChannelsOpen(false);
+      setCreateOpen(false);
+      closeFriendsMenu();
       setNotificationsOpen(false);
       setProfileOpen(false);
     }
 
     document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
 
     return () => {
       document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
     };
-  }, [channelsOpen, createOpen, friendsOpen, notificationsOpen, profileOpen]);
+  }, [channelsOpen, closeFriendsMenu, createOpen, friendsOpen, notificationsOpen, profileOpen]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -453,10 +500,15 @@ export function DashboardSidebar({
   }
 
   const profileActive = pathname.startsWith("/dashboard/profile");
+  const isPrivateChatRoute =
+    pathname.startsWith("/dashboard/groups/") &&
+    searchParams.get("view") === "messages";
+  const messagesActive = pathname.startsWith("/dashboard/messages") || isPrivateChatRoute;
+  const channelsActive =
+    channelsOpen ||
+    ((pathname.startsWith("/dashboard/groups") || pathname.startsWith("/dashboard/channels")) &&
+      !isPrivateChatRoute);
   const pinnedGroup = groups.find((group) => group.id === pinnedGroupId) ?? groups[0] ?? null;
-  const pinnedGroupHref = pinnedGroup
-    ? getGroupHref(pinnedGroup)
-    : "/dashboard/channels";
 
   async function markNotificationsRead() {
     const readAt = new Date().toISOString();
@@ -522,101 +574,171 @@ export function DashboardSidebar({
   const friendsMenu = friendsOpen ? (
     <div
       aria-label="Friends sidebar"
-      className="dashboard-sidebar-popover app-surface fixed inset-x-0 bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] top-0 z-[60] flex flex-col overflow-hidden rounded-none border-l-0 border-r-0 p-3 sm:bottom-3 sm:left-[calc(var(--dashboard-primary-sidebar-width)+0.75rem)] sm:right-auto sm:top-3 sm:w-80 sm:border-l sm:border-r min-[1180px]:w-96"
+      className="dashboard-sidebar-popover app-surface fixed inset-x-3 bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.5rem)] z-[60] flex max-h-[72dvh] flex-col overflow-hidden rounded-[1.6rem] p-4 sm:bottom-3 sm:left-[calc(var(--dashboard-primary-sidebar-width)+0.75rem)] sm:right-auto sm:top-3 sm:max-h-[calc(100dvh_-_1.5rem)] sm:w-80 sm:rounded-lg min-[1180px]:w-96"
       role="dialog"
     >
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 pb-3">
-        <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
-          Friends
-        </p>
-        <div className="flex items-center gap-2">
-          <Link
-            aria-label="Add friend"
-            className="app-button-primary grid h-10 w-10 shrink-0 place-items-center rounded-lg text-lg font-bold transition"
-            href="/dashboard/friends?add=1"
-            onClick={() => setFriendsOpen(false)}
-            title="Add friend"
-          >
-            +
-          </Link>
-          <button
-            aria-label="Close friends sidebar"
-            className="app-icon-button h-10 w-10"
-            onClick={() => setFriendsOpen(false)}
-            title="Close"
-            type="button"
-          >
-            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M18 6 6 18" />
-              <path d="m6 6 12 12" />
-            </svg>
-          </button>
+      <div className="shrink-0 border-b border-white/10 pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="app-section-title px-1">
+              Friends
+            </p>
+            <p className="mt-1 px-1 text-sm leading-5 text-slate-400">
+              Search your circle, then jump straight into a message or call.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              aria-label="Add friend"
+              className="app-button-primary grid h-10 w-10 shrink-0 place-items-center rounded-lg text-lg font-bold transition"
+              href="/dashboard/friends?add=1"
+              onClick={() => {
+                closeFriendsMenu();
+              }}
+              title="Add friend"
+            >
+              +
+            </Link>
+            <button
+              aria-label="Close friends sidebar"
+              className="app-icon-button h-10 w-10"
+              onClick={closeFriendsMenu}
+              title="Close"
+              type="button"
+            >
+              <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
+        <input
+          className="mt-3 h-11 w-full rounded-xl border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:text-sm"
+          onChange={(event) => setFriendsQuery(event.target.value)}
+          placeholder="Search friends"
+          value={friendsQuery}
+        />
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto py-3">
         <div className="grid gap-2">
-          {friends.length ? (
-            friends.map((friend) => {
+          {visibleFriends.length ? (
+            visibleFriends.map((friend) => {
               const friendLabel = friend.name || friend.email;
 
               return (
                 <div
-                  className="app-row flex min-w-0 items-center gap-3 px-3 py-3"
+                  className="app-row flex min-w-0 flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center"
                   key={friend.id}
                 >
-                  <AvatarInitials imageUrl={friend.image} value={friendLabel} />
-                  <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">
-                    {friendLabel}
-                  </span>
-                  <form
-                    action="/api/private-messages"
-                    method="post"
-                    onSubmit={() => {
-                      setFriendsOpen(false);
-                      window.sessionStorage.removeItem(sidebarCacheKey);
-                    }}
-                  >
-                    <input name="friendId" type="hidden" value={friend.id} />
-                    <button
-                      aria-label={`Message ${friendLabel}`}
-                      className="app-icon-button h-10 w-10"
-                      title={`Message ${friendLabel}`}
-                      type="submit"
+                  <div className="flex min-w-0 items-center gap-3">
+                    <AvatarInitials imageUrl={friend.image} value={friendLabel} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-white">
+                        {friendLabel}
+                      </span>
+                      <span className="block truncate text-xs text-slate-400">
+                        {friend.email}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex w-full gap-2 sm:w-auto sm:items-center">
+                    <form
+                      action="/api/private-messages"
+                      className="min-w-0 flex-1 sm:hidden"
+                      method="post"
+                      onSubmit={() => {
+                        closeFriendsMenu();
+                        window.sessionStorage.removeItem(sidebarCacheKey);
+                      }}
                     >
-                      <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
-                      </svg>
-                    </button>
-                  </form>
-                  <form
-                    action="/api/friend-calls/start"
-                    method="post"
-                    onSubmit={() => setFriendsOpen(false)}
-                  >
-                    <input name="friendId" type="hidden" value={friend.id} />
-                    <button
-                      aria-label={`Call ${friendLabel}`}
-                      className="app-icon-button app-icon-button-primary h-10 w-10"
-                      title={`Call ${friendLabel}`}
-                      type="submit"
+                      <input name="friendId" type="hidden" value={friend.id} />
+                      <button
+                        className="app-button-secondary h-10 w-full rounded-lg px-3 text-sm font-semibold transition"
+                        type="submit"
+                      >
+                        Message
+                      </button>
+                    </form>
+                    <form
+                      action="/api/friend-calls/start"
+                      className="min-w-0 flex-1 sm:hidden"
+                      method="post"
+                      onSubmit={() => {
+                        closeFriendsMenu();
+                      }}
                     >
-                      <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.89.66 2.78a2 2 0 0 1-.45 2.11L8.05 9.88a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45c.89.31 1.82.53 2.78.66A2 2 0 0 1 22 16.92Z" />
-                      </svg>
-                    </button>
-                  </form>
+                      <input name="friendId" type="hidden" value={friend.id} />
+                      <button
+                        className="app-button-primary h-10 w-full rounded-lg px-3 text-sm font-semibold transition"
+                        type="submit"
+                      >
+                        Call
+                      </button>
+                    </form>
+                    <form
+                      action="/api/private-messages"
+                      className="hidden sm:block"
+                      method="post"
+                      onSubmit={() => {
+                        closeFriendsMenu();
+                        window.sessionStorage.removeItem(sidebarCacheKey);
+                      }}
+                    >
+                      <input name="friendId" type="hidden" value={friend.id} />
+                      <button
+                        aria-label={`Message ${friendLabel}`}
+                        className="app-icon-button h-10 w-10"
+                        title={`Message ${friendLabel}`}
+                        type="submit"
+                      >
+                        <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
+                        </svg>
+                      </button>
+                    </form>
+                    <form
+                      action="/api/friend-calls/start"
+                      className="hidden sm:block"
+                      method="post"
+                      onSubmit={() => {
+                        closeFriendsMenu();
+                      }}
+                    >
+                      <input name="friendId" type="hidden" value={friend.id} />
+                      <button
+                        aria-label={`Call ${friendLabel}`}
+                        className="app-icon-button app-icon-button-primary h-10 w-10"
+                        title={`Call ${friendLabel}`}
+                        type="submit"
+                      >
+                        <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.89.66 2.78a2 2 0 0 1-.45 2.11L8.05 9.88a16 16 0 0 0 6.07 6.07l1.27-1.27a2 2 0 0 1 2.11-.45c.89.31 1.82.53 2.78.66A2 2 0 0 1 22 16.92Z" />
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
                 </div>
               );
             })
+          ) : friends.length ? (
+            <div className="rounded-xl border border-dashed border-white/10 px-4 py-5 text-sm leading-6 text-slate-400">
+              No friends matched <span className="font-semibold text-slate-200">{friendsQuery.trim()}</span>. Try a name or email instead.
+            </div>
           ) : (
-            <Link
-              aria-label="Add friend"
-              className="app-row grid min-h-24 place-items-center text-2xl font-bold text-slate-300 transition hover:border-[#FF5F25]/50 hover:text-white"
-              href="/dashboard/friends?add=1"
-              onClick={() => setFriendsOpen(false)}
-            >
-              +
-            </Link>
+            <div className="rounded-xl border border-dashed border-white/10 px-4 py-5 text-sm leading-6 text-slate-400">
+              No friends yet. Add someone to start a message or call.
+              <Link
+                aria-label="Add friend"
+                className="app-button-secondary mt-4 inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
+                href="/dashboard/friends?add=1"
+                onClick={() => {
+                  closeFriendsMenu();
+                }}
+              >
+                Add friend
+              </Link>
+            </div>
           )}
         </div>
       </div>
@@ -625,14 +747,33 @@ export function DashboardSidebar({
 
   const createMenu = createOpen ? (
     <div className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] max-w-sm overflow-y-auto rounded-lg p-3 sm:bottom-auto sm:left-[calc(var(--dashboard-primary-sidebar-width)+0.75rem)] sm:right-auto sm:top-32 sm:w-[calc(100vw-8rem)] sm:max-w-72">
-      <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
-        Create
-      </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="app-section-title px-1">
+            Create
+          </p>
+          <p className="mt-1 px-1 text-sm leading-5 text-slate-400">
+            Start a space, open a private message, or jump to a common action.
+          </p>
+        </div>
+        <button
+          aria-label="Close create menu"
+          className="app-icon-button h-10 w-10 shrink-0"
+          onClick={() => setCreateOpen(false)}
+          type="button"
+        >
+          <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+      </div>
       <form
         action="/api/groups"
         className="mt-3 space-y-2"
         method="post"
         onSubmit={() => {
+          setCreateOpen(false);
           window.sessionStorage.removeItem(sidebarCacheKey);
         }}
       >
@@ -654,12 +795,12 @@ export function DashboardSidebar({
 
       <div className="my-3 h-px bg-white/20" />
 
-      <p className="px-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+      <p className="app-section-title px-1">
         Friends
       </p>
       <div className="mt-2 max-h-56 space-y-1 overflow-y-auto pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {friends.length ? (
-          friends.map((friend) => (
+          friends.slice(0, 5).map((friend) => (
             <div
               className="flex items-center gap-2 rounded-lg px-2 py-2 transition hover:bg-white/10"
               key={friend.id}
@@ -679,14 +820,14 @@ export function DashboardSidebar({
               >
                 <input name="friendId" type="hidden" value={friend.id} />
                 <button className="w-full min-w-0 text-left" type="submit">
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-white">
-                    {friend.name || friend.email}
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-white">
+                      {friend.name || friend.email}
+                    </span>
+                    <span className="block truncate text-xs text-slate-400">
+                      Private message
+                    </span>
                   </span>
-                  <span className="block truncate text-xs text-slate-400">
-                    Private message
-                  </span>
-                </span>
                 </button>
               </form>
               <form action="/api/friend-calls/start" method="post">
@@ -707,12 +848,51 @@ export function DashboardSidebar({
         ) : (
           <Link
             className="block rounded-xl px-2 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
-            href="/dashboard/friends"
+            href="/dashboard/friends?add=1"
             onClick={() => setCreateOpen(false)}
           >
             Add friends first
           </Link>
         )}
+      </div>
+
+      <div className="my-3 h-px bg-white/20" />
+
+      <p className="app-section-title px-1">
+        Quick actions
+      </p>
+      <div className="mt-2 grid gap-2">
+        <Link
+          className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-sm font-semibold transition"
+          href="/dashboard"
+          onClick={() => setCreateOpen(false)}
+        >
+          Open home
+        </Link>
+        <Link
+          className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-sm font-semibold transition"
+          href="/dashboard/friends?add=1"
+          onClick={() => setCreateOpen(false)}
+        >
+          Find friends
+        </Link>
+        <Link
+          className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-sm font-semibold transition"
+          href="/dashboard/messages"
+          onClick={() => setCreateOpen(false)}
+        >
+          Open messages
+        </Link>
+        <button
+          className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-sm font-semibold transition"
+          onClick={() => {
+            setCreateOpen(false);
+            setNotificationsOpen(true);
+          }}
+          type="button"
+        >
+          Open notifications
+        </button>
       </div>
     </div>
   ) : null;
@@ -721,20 +901,33 @@ export function DashboardSidebar({
     <div className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] left-3 right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] overflow-y-auto rounded-lg p-3 sm:hidden">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+          <p className="app-section-title">
             Channels
           </p>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-sm leading-5 text-slate-400">
             Pick the shortcut shown in the bar.
           </p>
         </div>
-        <Link
-          className="inline-flex min-h-10 items-center rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-slate-200"
-          href="/dashboard/channels"
-          onClick={() => setChannelsOpen(false)}
-        >
-          All
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
+            href="/dashboard/channels"
+            onClick={() => setChannelsOpen(false)}
+          >
+            All
+          </Link>
+          <button
+            aria-label="Close channels menu"
+            className="app-icon-button h-10 w-10"
+            onClick={() => setChannelsOpen(false)}
+            type="button"
+          >
+            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div className="mt-3 grid gap-2">
@@ -744,7 +937,7 @@ export function DashboardSidebar({
               className={`app-row flex items-center gap-3 p-3 ${
                 pinnedGroup?.id === group.id ? "border-[#FF5F25]/60 bg-[#FF5F25]/12" : ""
               }`}
-              href={`/dashboard/groups/${group.id}`}
+              href={getGroupHref(group)}
               key={group.id}
               onClick={() => {
                 setPinnedGroupId(group.id);
@@ -780,32 +973,43 @@ export function DashboardSidebar({
     >
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+          <p className="app-section-title">
             Notifications
           </p>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-sm leading-5 text-slate-400">
             Messages, invites, and calls
           </p>
         </div>
         <div className="flex items-center gap-2">
           {unreadCount ? (
             <button
-              className="min-h-9 rounded-lg border border-white/20 px-3 py-1 text-xs font-semibold text-white transition hover:border-[#FF5F25] hover:text-[#FF5F25]"
+              className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
               onClick={markNotificationsRead}
               type="button"
             >
-              Mark read
+              Mark all read
             </button>
           ) : null}
           {notifications.length ? (
             <button
-              className="min-h-9 rounded-lg border border-white/20 px-3 py-1 text-xs font-semibold text-white transition hover:border-[#FF5F25] hover:text-[#FF5F25]"
+              className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
               onClick={clearNotifications}
               type="button"
             >
               Clear
             </button>
           ) : null}
+          <button
+            aria-label="Close notifications"
+            className="app-icon-button h-10 w-10"
+            onClick={() => setNotificationsOpen(false)}
+            type="button"
+          >
+            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -875,22 +1079,53 @@ export function DashboardSidebar({
   ) : null;
 
   const profileMenu = profileOpen ? (
-    <div className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] w-[calc(100vw-1.5rem)] max-w-44 origin-bottom-right overflow-y-auto rounded-lg p-2 sm:bottom-3 sm:left-[calc(var(--dashboard-primary-sidebar-width)+0.75rem)] sm:right-auto sm:top-auto sm:w-[calc(100vw-8rem)] sm:origin-bottom-left">
-      <Link
-        className="block min-h-10 rounded-lg px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-        href="/dashboard/profile"
-        onClick={() => setProfileOpen(false)}
-      >
-        Settings
-      </Link>
-      <form action="/api/auth/logout" method="post">
+    <div className="dashboard-sidebar-popover app-surface fixed bottom-[calc(var(--dashboard-bottom-nav-height)_+_0.75rem)] right-3 z-[60] max-h-[calc(100dvh_-_var(--dashboard-bottom-nav-height)_-_1.5rem)] w-[calc(100vw-1.5rem)] max-w-72 origin-bottom-right overflow-y-auto rounded-lg p-3 sm:bottom-3 sm:left-[calc(var(--dashboard-primary-sidebar-width)+0.75rem)] sm:right-auto sm:top-auto sm:w-[calc(100vw-8rem)] sm:origin-bottom-left" role="dialog">
+      <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+        <div className="flex min-w-0 items-center gap-3">
+          {currentUser ? (
+            <AvatarInitials imageUrl={currentUser.image} value={currentUser.name || currentUser.email} />
+          ) : null}
+          <div className="min-w-0">
+            <p className="app-section-title">Profile</p>
+            {currentUser ? (
+              <>
+                <p className="mt-1 truncate text-sm font-semibold text-white">
+                  {currentUser.name || currentUser.email}
+                </p>
+                <p className="truncate text-xs text-slate-400">{currentUser.email}</p>
+              </>
+            ) : null}
+          </div>
+        </div>
         <button
-          className="mt-1 min-h-10 w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-[#FF5F25] transition hover:bg-[#FF5F25] hover:text-black"
-          type="submit"
+          aria-label="Close profile menu"
+          className="app-icon-button h-10 w-10 shrink-0"
+          onClick={() => setProfileOpen(false)}
+          type="button"
         >
-          Log out
+          <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
         </button>
-      </form>
+      </div>
+      <div className="mt-3 grid gap-2">
+        <Link
+          className="app-row block min-h-12 rounded-lg px-3 py-3 text-sm font-semibold text-white transition"
+          href="/dashboard/profile"
+          onClick={() => setProfileOpen(false)}
+        >
+          Settings
+        </Link>
+        <form action="/api/auth/logout" method="post">
+          <button
+            className="app-row min-h-12 w-full rounded-lg px-3 py-3 text-left text-sm font-semibold text-[#FFB199] transition hover:text-white"
+            type="submit"
+          >
+            Log out
+          </button>
+        </form>
+      </div>
     </div>
   ) : null;
   return (
@@ -943,107 +1178,75 @@ export function DashboardSidebar({
       {channelMenu}
       {notificationMenu}
       {profileMenu}
-      <nav className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-0.5 sm:hidden" aria-label="Mobile dashboard" data-tour-target="mobile-bottom-nav">
-        <div className="flex min-w-0 items-center justify-start gap-0.5">
-          <button
-            aria-label="Friends"
-            className={`dashboard-nav-icon grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
-              pathname.startsWith("/dashboard/friends") || friendsOpen
-                ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
-                : "border-transparent text-slate-300"
-            }`}
-            aria-expanded={friendsOpen}
-            data-tour-target="friends-nav"
-            onClick={() => {
-              setFriendsOpen((open) => !open);
-              setChannelsOpen(false);
-              setCreateOpen(false);
-              setNotificationsOpen(false);
-              setProfileOpen(false);
-            }}
-            title="Friends"
-            type="button"
-          >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-          </button>
-          <button
-            aria-expanded={createOpen}
-            aria-label="Create menu"
-            className={`dashboard-nav-icon grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
-              createOpen ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
-            }`}
-            onClick={() => {
-              setCreateOpen((open) => !open);
-              setChannelsOpen(false);
-              setFriendsOpen(false);
-              setNotificationsOpen(false);
-              setProfileOpen(false);
-            }}
-            title="Create"
-            type="button"
-          >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M12 5v14" />
-              <path d="M5 12h14" />
-            </svg>
-          </button>
-          <div className="flex items-center rounded-lg border border-transparent" data-tour-target="mobile-channel-drawer">
-            <Link
-              aria-label={pinnedGroup ? `${pinnedGroup.name} channel shortcut` : "Channels"}
-              className={`dashboard-nav-icon grid size-10 place-items-center rounded-lg transition min-[390px]:size-11 ${
-                pathname.startsWith("/dashboard/groups") || pathname.startsWith("/dashboard/channels")
-                  ? "dashboard-nav-icon-active text-[#FF5F25]"
-                  : "text-slate-300"
-              }`}
-              href={pinnedGroupHref}
-              aria-current={
-                pathname.startsWith("/dashboard/groups") || pathname.startsWith("/dashboard/channels")
-                  ? "page"
-                  : undefined
-              }
-              title={pinnedGroup ? `${pinnedGroup.name} channels` : "Channels"}
-            >
-              {pinnedGroup ? (
-                <AvatarInitials fallback="group" imageUrl={pinnedGroup.image} size="sm" value={pinnedGroup.name} />
-              ) : (
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M4 6h16" />
-                  <path d="M4 12h16" />
-                  <path d="M4 18h16" />
-                </svg>
-              )}
-            </Link>
-            <button
-              aria-expanded={channelsOpen}
-              aria-label="Choose channel shortcut"
-              className={`grid h-10 w-6 place-items-center rounded-lg transition min-[390px]:h-11 ${
-                channelsOpen ? "text-[#FF5F25]" : "text-slate-400"
-              }`}
-              onClick={() => {
-              setChannelsOpen((open) => !open);
-              setCreateOpen(false);
-              setFriendsOpen(false);
-              setNotificationsOpen(false);
-              setProfileOpen(false);
-            }}
-              title="Choose channel shortcut"
-              type="button"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-          </div>
-        </div>
+      <nav className="grid w-full min-w-0 grid-cols-[repeat(3,minmax(0,1fr))_auto_repeat(3,minmax(0,1fr))] items-center gap-1 sm:hidden" aria-label="Mobile dashboard" data-tour-target="mobile-bottom-nav">
+        <button
+          aria-label="Friends"
+          className={`dashboard-nav-icon mobile-dashboard-dock-button grid h-11 min-w-11 place-items-center rounded-xl border transition ${
+            pathname.startsWith("/dashboard/friends") || friendsOpen
+              ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
+              : "border-transparent text-slate-300"
+          }`}
+          aria-expanded={friendsOpen}
+          data-tour-target="friends-nav"
+          onClick={() => {
+            toggleFriendsMenu();
+            setChannelsOpen(false);
+            setCreateOpen(false);
+            setNotificationsOpen(false);
+            setProfileOpen(false);
+          }}
+          title="Friends"
+          type="button"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </button>
+
+        <Link
+          aria-label="Messages"
+          className={`dashboard-nav-icon mobile-dashboard-dock-button grid h-11 min-w-11 place-items-center rounded-xl border transition ${
+            messagesActive
+              ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
+              : "border-transparent text-slate-300"
+          }`}
+          href="/dashboard/messages"
+          aria-current={messagesActive ? "page" : undefined}
+          title="Messages"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
+          </svg>
+        </Link>
+
+        <button
+          aria-expanded={createOpen}
+          aria-label="Create menu"
+          className={`dashboard-nav-icon mobile-dashboard-dock-button grid h-11 min-w-11 place-items-center rounded-xl border transition ${
+            createOpen ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
+          }`}
+          onClick={() => {
+            setCreateOpen((open) => !open);
+            setChannelsOpen(false);
+            closeFriendsMenu();
+            setNotificationsOpen(false);
+            setProfileOpen(false);
+          }}
+          title="Create"
+          type="button"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M12 5v14" />
+            <path d="M5 12h14" />
+          </svg>
+        </button>
 
         <Link
           aria-label="Home"
-          className={`dashboard-nav-icon grid size-11 place-items-center rounded-lg border transition min-[390px]:size-12 ${
+          className={`dashboard-nav-icon mobile-dashboard-dock-button mobile-dashboard-dock-home grid h-12 min-w-12 place-items-center rounded-[1rem] border transition ${
             pathname === "/dashboard"
               ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
               : "border-transparent text-slate-300"
@@ -1052,66 +1255,95 @@ export function DashboardSidebar({
           aria-current={pathname === "/dashboard" ? "page" : undefined}
           title="Home"
         >
-          <LogoMark className="h-11 w-11 min-[390px]:h-12 min-[390px]:w-12" sizes="56px" />
+          <LogoMark className="h-11 w-11" sizes="56px" />
         </Link>
 
-        <div className="flex min-w-0 items-center justify-end gap-0.5">
-          <button
-            aria-expanded={notificationsOpen}
-            aria-label="Notifications"
-            className={`dashboard-nav-icon relative grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
-              notificationsOpen ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
-            }`}
-            data-tour-target="notifications-nav"
-            onClick={() => {
-              setNotificationsOpen((open) => !open);
-              setChannelsOpen(false);
-              setCreateOpen(false);
-              setFriendsOpen(false);
-              setProfileOpen(false);
-            }}
-            title="Notifications"
-            type="button"
-          >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        <button
+          aria-expanded={channelsOpen}
+          aria-label={pinnedGroup ? `${pinnedGroup.name} channels` : "Channels"}
+          className={`dashboard-nav-icon mobile-dashboard-dock-button grid h-11 min-w-11 place-items-center rounded-xl border transition ${
+            channelsActive
+              ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
+              : "border-transparent text-slate-300"
+          }`}
+          data-tour-target="mobile-channel-drawer"
+          onClick={() => {
+            setChannelsOpen((open) => !open);
+            setCreateOpen(false);
+            closeFriendsMenu();
+            setNotificationsOpen(false);
+            setProfileOpen(false);
+          }}
+          title={pinnedGroup ? `${pinnedGroup.name} channels` : "Channels"}
+          type="button"
+        >
+          {pinnedGroup ? (
+            <AvatarInitials fallback="group" imageUrl={pinnedGroup.image} size="sm" value={pinnedGroup.name} />
+          ) : (
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M4 6h16" />
+              <path d="M4 12h16" />
+              <path d="M4 18h16" />
             </svg>
-            {unreadCount ? (
-              <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-[#FF5F25] px-1 text-[10px] font-black leading-5 text-black">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            ) : null}
-          </button>
-          <button
-            aria-expanded={profileOpen}
-            aria-label="Profile menu"
-            className={`dashboard-nav-icon grid size-10 place-items-center rounded-lg border transition min-[390px]:size-11 ${
-              profileActive || profileOpen ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
-            }`}
-            onClick={() => {
-              setProfileOpen((open) => !open);
-              setChannelsOpen(false);
-              setCreateOpen(false);
-              setFriendsOpen(false);
-              setNotificationsOpen(false);
-            }}
-            title="Profile menu"
-            type="button"
-          >
-            {currentUser ? (
-              <AvatarInitials
-                imageUrl={currentUser.image}
-                value={currentUser.name || currentUser.email}
-              />
-            ) : (
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="8" r="4" />
-                <path d="M4 21a8 8 0 0 1 16 0" />
-              </svg>
-            )}
-          </button>
-        </div>
+          )}
+        </button>
+
+        <button
+          aria-expanded={notificationsOpen}
+          aria-label="Notifications"
+          className={`dashboard-nav-icon mobile-dashboard-dock-button relative grid h-11 min-w-11 place-items-center rounded-xl border transition ${
+            notificationsOpen ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
+          }`}
+          data-tour-target="notifications-nav"
+          onClick={() => {
+            setNotificationsOpen((open) => !open);
+            setChannelsOpen(false);
+            setCreateOpen(false);
+            closeFriendsMenu();
+            setProfileOpen(false);
+          }}
+          title="Notifications"
+          type="button"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          {unreadCount ? (
+            <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-[#FF5F25] px-1 text-[10px] font-black leading-5 text-black">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          ) : null}
+        </button>
+
+        <button
+          aria-expanded={profileOpen}
+          aria-label="Profile menu"
+          className={`dashboard-nav-icon mobile-dashboard-dock-button grid h-11 min-w-11 place-items-center rounded-xl border transition ${
+            profileActive || profileOpen ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
+          }`}
+          onClick={() => {
+            setProfileOpen((open) => !open);
+            setChannelsOpen(false);
+            setCreateOpen(false);
+            closeFriendsMenu();
+            setNotificationsOpen(false);
+          }}
+          title="Profile menu"
+          type="button"
+        >
+          {currentUser ? (
+            <AvatarInitials
+              imageUrl={currentUser.image}
+              value={currentUser.name || currentUser.email}
+            />
+          ) : (
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21a8 8 0 0 1 16 0" />
+            </svg>
+          )}
+        </button>
       </nav>
       <nav
         className="hidden min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overscroll-contain px-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:flex sm:min-h-0 sm:flex-col sm:items-center sm:gap-2 sm:overflow-x-hidden sm:overflow-y-auto sm:px-0 sm:pb-2 [&::-webkit-scrollbar]:hidden"
@@ -1119,8 +1351,10 @@ export function DashboardSidebar({
       >
         {navItems.map((item) => {
           const active =
-            pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
+            item.label === "Messages"
+              ? messagesActive
+              : pathname === item.href ||
+                (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
 
           if (item.label === "Friends") {
             return (
@@ -1135,7 +1369,7 @@ export function DashboardSidebar({
                 key={item.href}
                 data-tour-target="friends-nav"
                 onClick={() => {
-                  setFriendsOpen((open) => !open);
+                  toggleFriendsMenu();
                   setCreateOpen(false);
                   setNotificationsOpen(false);
                   setProfileOpen(false);
@@ -1176,7 +1410,7 @@ export function DashboardSidebar({
             }`}
             onClick={() => {
               setCreateOpen((open) => !open);
-              setFriendsOpen(false);
+              closeFriendsMenu();
               setNotificationsOpen(false);
               setProfileOpen(false);
             }}
@@ -1229,7 +1463,7 @@ export function DashboardSidebar({
             onClick={() => {
               setNotificationsOpen((open) => !open);
               setCreateOpen(false);
-              setFriendsOpen(false);
+              closeFriendsMenu();
               setProfileOpen(false);
             }}
             type="button"
@@ -1258,7 +1492,7 @@ export function DashboardSidebar({
             onClick={() => {
               setProfileOpen((open) => !open);
               setCreateOpen(false);
-              setFriendsOpen(false);
+              closeFriendsMenu();
               setNotificationsOpen(false);
             }}
             type="button"

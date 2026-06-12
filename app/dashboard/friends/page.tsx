@@ -47,6 +47,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
           userOne: {
             select: {
               id: true,
+              image: true,
               name: true,
               email: true,
               status: true,
@@ -55,6 +56,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
           userTwo: {
             select: {
               id: true,
+              image: true,
               name: true,
               email: true,
               status: true,
@@ -67,6 +69,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
             where: { id: params.found },
             select: {
               id: true,
+              image: true,
               name: true,
               email: true,
               status: true,

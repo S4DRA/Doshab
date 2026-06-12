@@ -112,6 +112,7 @@ export const getDashboardMessageThreads = cache(async (userId: string) => {
     select: {
       id: true,
       name: true,
+      updatedAt: true,
       channels: {
         where: {
           type: "TEXT",
@@ -124,6 +125,22 @@ export const getDashboardMessageThreads = cache(async (userId: string) => {
           id: true,
           name: true,
           type: true,
+          messages: {
+            orderBy: {
+              createdAt: "desc",
+            },
+            take: 1,
+            select: {
+              content: true,
+              createdAt: true,
+              sender: {
+                select: {
+                  email: true,
+                  name: true,
+                },
+              },
+            },
+          },
         },
       },
       members: {
@@ -157,13 +174,23 @@ export const getDashboardMessageThreads = cache(async (userId: string) => {
       }
 
       const friend = group.members[0]?.user ?? null;
+      const lastMessage = channel.messages[0] ?? null;
 
       return {
         channelId: channel.id,
         friend,
         id: group.id,
+        lastActivityAt: lastMessage?.createdAt ?? group.updatedAt,
+        lastMessageEncryptedContent: lastMessage?.content ?? null,
+        lastMessageSenderName:
+          lastMessage?.sender.name || lastMessage?.sender.email || null,
         name: friend?.name || friend?.email || group.name,
       };
     })
-    .filter((thread): thread is NonNullable<typeof thread> => Boolean(thread));
+    .filter((thread): thread is NonNullable<typeof thread> => Boolean(thread))
+    .sort(
+      (first, second) =>
+        new Date(second.lastActivityAt ?? 0).getTime() -
+        new Date(first.lastActivityAt ?? 0).getTime(),
+    );
 });

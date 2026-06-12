@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 
-import {
-  getDashboardMessageThreads,
-  getDashboardSidebarGroups,
-} from "@/lib/dashboard-data";
+import { getDashboardSidebarGroups } from "@/lib/dashboard-data";
 import { getAuthState } from "@/lib/auth";
 import { friendFromPair } from "@/lib/friends";
 import { dashboardNotificationSelect } from "@/lib/notifications";
@@ -22,7 +19,7 @@ export async function GET() {
 
   const userId = auth.user.id;
 
-  const [currentUser, groups, messageThreads, friendships] = await Promise.all([
+  const [currentUser, groups, friendships] = await Promise.all([
     Promise.resolve({
       id: auth.user.id,
       name: auth.user.name,
@@ -30,7 +27,6 @@ export async function GET() {
       image: auth.user.image,
     }),
     getDashboardSidebarGroups(userId),
-    getDashboardMessageThreads(userId),
     prisma.friendship.findMany({
       where: {
         OR: [
@@ -91,7 +87,6 @@ export async function GET() {
     currentUser,
     friends,
     groups,
-    messageThreads,
     notifications,
     unreadCount,
   });

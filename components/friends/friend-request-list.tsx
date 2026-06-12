@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { formatReadableTimestamp } from "@/lib/utils";
@@ -8,6 +10,11 @@ type FriendRequestListProps = {
   emptyText: string;
   requests: FriendRequestItem[];
   kind: "incoming" | "outgoing";
+  emptyAction?: {
+    href: string;
+    label: string;
+    variant?: "primary" | "secondary";
+  };
 };
 
 export function FriendRequestList({
@@ -15,6 +22,7 @@ export function FriendRequestList({
   emptyText,
   requests,
   kind,
+  emptyAction,
 }: FriendRequestListProps) {
   return (
     <section className="app-panel p-5">
@@ -69,7 +77,21 @@ export function FriendRequestList({
           })}
         </div>
       ) : (
-        <p className="mt-5 text-sm leading-6 text-slate-400">{emptyText}</p>
+        <div className="mt-5">
+          <p className="text-sm leading-6 text-slate-400">{emptyText}</p>
+          {emptyAction ? (
+            <Link
+              className={`mt-4 inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition ${
+                emptyAction.variant === "primary"
+                  ? "app-button-primary"
+                  : "app-button-secondary"
+              }`}
+              href={emptyAction.href}
+            >
+              {emptyAction.label}
+            </Link>
+          ) : null}
+        </div>
       )}
     </section>
   );

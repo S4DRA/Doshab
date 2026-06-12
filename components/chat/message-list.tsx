@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { reactionEmojis } from "@/lib/chat-constants";
@@ -15,6 +15,15 @@ type MessageListProps = {
   onReply?: (message: ChatMessage) => void;
 };
 
+type MessageRowProps = {
+  canPinMessages: boolean;
+  currentUserId?: string;
+  message: ChatMessage;
+  onMessageUpdate?: (message: ChatMessage) => void;
+  onReport: () => void;
+  onReply?: (message: ChatMessage) => void;
+};
+
 const reportReasons = [
   { label: "Spam", value: "SPAM" },
   { label: "Harassment", value: "HARASSMENT" },
@@ -23,7 +32,7 @@ const reportReasons = [
   { label: "Other", value: "OTHER" },
 ];
 
-export function MessageList({
+function MessageListComponent({
   canPinMessages = false,
   currentUserId,
   messages,
@@ -45,9 +54,9 @@ export function MessageList({
 
   return (
     <>
-      <div className="space-y-1">
+      <div className="message-stack mx-auto flex min-h-full w-full max-w-[min(100%,70rem)] flex-col justify-end gap-2 px-1 sm:px-2">
         {messages.map((message) => (
-          <MessageRow
+          <MemoMessageRow
             canPinMessages={canPinMessages}
             currentUserId={currentUserId}
             key={message.id}
@@ -68,24 +77,65 @@ export function MessageList({
   );
 }
 
-function MessageRow({
+export const MessageList = memo(
+  MessageListComponent,
+  (previousProps, nextProps) =>
+    previousProps.canPinMessages === nextProps.canPinMessages &&
+    previousProps.currentUserId === nextProps.currentUserId &&
+    previousProps.messages === nextProps.messages &&
+    previousProps.onMessageUpdate === nextProps.onMessageUpdate &&
+    previousProps.onReply === nextProps.onReply,
+);
+
+const MemoMessageRow = memo(function MessageRow({
   canPinMessages,
   currentUserId,
   message,
   onMessageUpdate,
   onReport,
   onReply,
-}: {
-  canPinMessages: boolean;
-  currentUserId?: string;
-  message: ChatMessage;
-  onMessageUpdate?: (message: ChatMessage) => void;
-  onReport: () => void;
-  onReply?: (message: ChatMessage) => void;
-}) {
+}: MessageRowProps) {
   const [busyAction, setBusyAction] = useState<string | null>(null);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const actionsPanelRef = useRef<HTMLDivElement | null>(null);
+  const actionsToggleRef = useRef<HTMLButtonElement | null>(null);
   const senderLabel = message.sender.name || message.sender.email;
   const isOwnMessage = Boolean(currentUserId && message.sender.id === currentUserId);
+  const visibleReactions = (message.reactions ?? []).filter((item) => item.count > 0);
+
+  useEffect(() => {
+    if (!actionsOpen) {
+      return;
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setActionsOpen(false);
+      }
+    }
+
+    function closeOnOutsidePointer(event: PointerEvent) {
+      const target = event.target;
+
+      if (
+        !(target instanceof Node) ||
+        actionsPanelRef.current?.contains(target) ||
+        actionsToggleRef.current?.contains(target)
+      ) {
+        return;
+      }
+
+      setActionsOpen(false);
+    }
+
+    document.addEventListener("keydown", closeOnEscape);
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+    };
+  }, [actionsOpen]);
 
   async function updateFromResponse(response: Response) {
     if (!response.ok) {
@@ -176,96 +226,149 @@ function MessageRow({
         value={senderLabel}
       />
       <div className="message-shell min-w-0">
-        <div className="message-bubble">
-        <div className="message-meta flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
-          <p className="min-w-0 max-w-full truncate text-sm font-semibold text-white">
-            {senderLabel}
-          </p>
-          <time className="text-[11px] text-slate-500 sm:text-xs">
-            {formatReadableTimestamp(message.createdAt)}
-          </time>
-          {message.pinnedAt ? (
-            <span className="rounded-md border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#FFB199]">
-              Pinned
-            </span>
-          ) : null}
-        </div>
-
-        {message.replyTo ? (
+        <div className="message-bubble relative pr-12 sm:pr-14">
           <button
-            className="mt-2 block max-w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-left transition hover:border-[#FF5F25]/50"
-            onClick={() => scrollToMessage(message.replyTo?.id)}
+            aria-expanded={actionsOpen}
+            aria-label={`More actions for ${senderLabel}`}
+            className={`message-action-toggle app-icon-button absolute right-3 top-3 z-10 h-8 w-8 rounded-full border border-white/10 bg-black/15 text-slate-400 shadow-[0_10px_18px_-16px_rgba(0,0,0,0.95)] transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white focus-visible:border-[#FF5F25]/60 focus-visible:text-white ${
+              actionsOpen
+                ? "opacity-100"
+                : "opacity-100 sm:pointer-events-none sm:opacity-0 sm:group-hover/message:pointer-events-auto sm:group-hover/message:opacity-100 sm:group-focus-within/message:pointer-events-auto sm:group-focus-within/message:opacity-100"
+            }`}
+            onClick={() => setActionsOpen((open) => !open)}
+            ref={actionsToggleRef}
             type="button"
           >
-            <span className="block truncate text-xs font-semibold text-slate-200">
-              Replying to {message.replyTo.sender.name || message.replyTo.sender.email}
-            </span>
-            <span className="mt-1 block line-clamp-2 text-xs leading-5 text-slate-400">
-              {message.replyTo.content || "Original message unavailable."}
-            </span>
+            <span aria-hidden="true" className="text-sm leading-none">...</span>
           </button>
-        ) : null}
 
-        <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-slate-300 [overflow-wrap:anywhere]">
-          {message.content}
-        </p>
+          <div className="message-meta flex min-w-0 items-start gap-2">
+            <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
+              <p className="min-w-0 max-w-full truncate text-sm font-semibold text-white">
+                {senderLabel}
+              </p>
+              <time className="text-[11px] text-slate-500 sm:text-xs">
+                {formatReadableTimestamp(message.createdAt)}
+              </time>
+              {message.pinnedAt ? (
+                <span className="rounded-md border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#FFB199]">
+                  Pinned
+                </span>
+              ) : null}
+            </div>
+          </div>
 
-        {message.poll ? <PollCard message={message} onVote={vote} /> : null}
-
-        <div className="message-actions mt-2 flex min-w-0 flex-wrap items-center gap-1.5">
-          {reactionEmojis.map((emoji) => {
-            const reaction = message.reactions?.find((item) => item.emoji === emoji);
-            const reacted = Boolean(reaction?.reacted);
-            const count = reaction?.count ?? 0;
-
-            return (
-              <button
-                aria-label={`${reacted ? "Remove" : "Add"} ${emoji} reaction`}
-                className={`inline-flex min-h-9 min-w-9 items-center justify-center gap-1 rounded-lg border px-2 text-sm transition sm:min-h-8 sm:min-w-8 ${
-                  reacted
-                    ? "border-[#FF5F25]/70 bg-[#FF5F25]/15 text-white"
-                    : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/25 hover:text-white"
-                }`}
-                disabled={!currentUserId || busyAction === `reaction:${emoji}`}
-                key={emoji}
-                onClick={() => void toggleReaction(emoji)}
-                type="button"
-              >
-                <span>{emoji}</span>
-                {count ? <span className="text-[11px] font-bold">{count}</span> : null}
-              </button>
-            );
-          })}
-          <button
-            className="ml-0 inline-flex min-h-9 items-center rounded-lg border border-white/10 px-2.5 text-xs font-semibold text-slate-300 transition hover:border-white/25 hover:text-white sm:min-h-8"
-            onClick={() => onReply?.(message)}
-            type="button"
-          >
-            Reply
-          </button>
-          {canPinMessages ? (
+          {message.replyTo ? (
             <button
-              className="inline-flex min-h-9 items-center rounded-lg border border-white/10 px-2.5 text-xs font-semibold text-slate-300 transition hover:border-[#FF5F25]/60 hover:text-white sm:min-h-8"
-              disabled={busyAction === "pin"}
-              onClick={() => void togglePin()}
+              className="mt-2 block max-w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-left transition hover:border-[#FF5F25]/50"
+              onClick={() => scrollToMessage(message.replyTo?.id)}
               type="button"
             >
-              {message.pinnedAt ? "Unpin" : "Pin"}
+              <span className="block truncate text-xs font-semibold text-slate-200">
+                Replying to {message.replyTo.sender.name || message.replyTo.sender.email}
+              </span>
+              <span className="mt-1 block line-clamp-2 text-xs leading-5 text-slate-400">
+                {message.replyTo.content || "Original message unavailable."}
+              </span>
             </button>
           ) : null}
-          <button
-            className="inline-flex min-h-9 items-center rounded-lg border border-white/10 px-2.5 text-xs font-semibold text-slate-400 transition hover:border-white/25 hover:text-white sm:min-h-8"
-            onClick={onReport}
-            type="button"
-          >
-            Report
-          </button>
-        </div>
+
+          <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-slate-300 [overflow-wrap:anywhere]">
+            {message.content}
+          </p>
+
+          {message.poll ? <PollCard message={message} onVote={vote} /> : null}
+
+          {visibleReactions.length ? (
+            <div className="mt-3 flex min-w-0 flex-wrap items-center gap-1.5">
+              {visibleReactions.map((reaction) => (
+                <button
+                  aria-label={`${reaction.reacted ? "Remove" : "Repeat"} ${reaction.emoji} reaction`}
+                  className={`inline-flex min-h-8 items-center gap-1 rounded-full border px-2.5 text-xs font-semibold transition ${
+                    reaction.reacted
+                      ? "border-[#FF5F25]/70 bg-[#FF5F25]/15 text-white"
+                      : "border-white/10 bg-white/[0.04] text-slate-300 hover:border-white/25 hover:text-white"
+                  }`}
+                  disabled={!currentUserId || busyAction === `reaction:${reaction.emoji}`}
+                  key={reaction.emoji}
+                  onClick={() => void toggleReaction(reaction.emoji)}
+                  type="button"
+                >
+                  <span>{reaction.emoji}</span>
+                  <span>{reaction.count}</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          {actionsOpen ? (
+            <div
+              className="message-actions mt-3 flex min-w-0 flex-wrap items-center justify-end gap-1.5 rounded-xl border border-white/10 bg-black/15 p-2 shadow-[0_14px_28px_-24px_rgba(0,0,0,0.9)]"
+              ref={actionsPanelRef}
+            >
+              {reactionEmojis.map((emoji) => {
+                const reaction = message.reactions?.find((item) => item.emoji === emoji);
+                const reacted = Boolean(reaction?.reacted);
+                const count = reaction?.count ?? 0;
+
+                return (
+                  <button
+                    aria-label={`${reacted ? "Remove" : "Add"} ${emoji} reaction`}
+                    className={`inline-flex min-h-9 min-w-9 items-center justify-center gap-1 rounded-lg border px-2 text-sm transition sm:min-h-8 sm:min-w-8 ${
+                      reacted
+                        ? "border-[#FF5F25]/70 bg-[#FF5F25]/15 text-white"
+                        : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/25 hover:text-white"
+                    }`}
+                    disabled={!currentUserId || busyAction === `reaction:${emoji}`}
+                    key={emoji}
+                    onClick={() => void toggleReaction(emoji)}
+                    type="button"
+                  >
+                    <span>{emoji}</span>
+                    {count ? <span className="text-[11px] font-bold">{count}</span> : null}
+                  </button>
+                );
+              })}
+              <button
+                className="inline-flex min-h-9 items-center rounded-lg border border-white/10 px-2.5 text-xs font-semibold text-slate-300 transition hover:border-white/25 hover:text-white sm:min-h-8"
+                onClick={() => {
+                  setActionsOpen(false);
+                  onReply?.(message);
+                }}
+                type="button"
+              >
+                Reply
+              </button>
+              {canPinMessages ? (
+                <button
+                  className="inline-flex min-h-9 items-center rounded-lg border border-white/10 px-2.5 text-xs font-semibold text-slate-300 transition hover:border-[#FF5F25]/60 hover:text-white sm:min-h-8"
+                  disabled={busyAction === "pin"}
+                  onClick={() => {
+                    setActionsOpen(false);
+                    void togglePin();
+                  }}
+                  type="button"
+                >
+                  {message.pinnedAt ? "Unpin" : "Pin"}
+                </button>
+              ) : null}
+              <button
+                className="inline-flex min-h-9 items-center rounded-lg border border-white/10 px-2.5 text-xs font-semibold text-slate-400 transition hover:border-white/25 hover:text-white sm:min-h-8"
+                onClick={() => {
+                  setActionsOpen(false);
+                  onReport();
+                }}
+                type="button"
+              >
+                Report
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </article>
   );
-}
+}, areMessageRowPropsEqual);
 
 function PollCard({
   message,
@@ -336,6 +439,27 @@ function ReportDialog({
   const [details, setDetails] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  useCloseOnEscape(onClose);
+
+  useEffect(() => {
+    function closeOnOutsidePointer(event: PointerEvent) {
+      const target = event.target;
+
+      if (!(target instanceof Node) || panelRef.current?.contains(target)) {
+        return;
+      }
+
+      onClose();
+    }
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+    };
+  }, [onClose]);
 
   async function submitReport() {
     setSubmitting(true);
@@ -368,7 +492,7 @@ function ReportDialog({
 
   return (
     <div className="fixed inset-0 z-[80] grid place-items-end bg-black/50 p-0 sm:place-items-center sm:p-4">
-      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:max-w-md sm:rounded-lg sm:p-5">
+      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:max-w-md sm:rounded-lg sm:p-5" ref={panelRef}>
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="app-section-title">Report</p>
@@ -380,7 +504,10 @@ function ReportDialog({
             onClick={onClose}
             type="button"
           >
-            <span aria-hidden="true">x</span>
+            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
           </button>
         </div>
         <div className="mt-4 grid gap-2">
@@ -428,4 +555,33 @@ function scrollToMessage(messageId?: string) {
     block: "center",
     behavior: "smooth",
   });
+}
+
+function useCloseOnEscape(onClose: () => void) {
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [onClose]);
+}
+
+function areMessageRowPropsEqual(
+  previousProps: Readonly<MessageRowProps>,
+  nextProps: Readonly<MessageRowProps>,
+) {
+  return (
+    previousProps.canPinMessages === nextProps.canPinMessages &&
+    previousProps.currentUserId === nextProps.currentUserId &&
+    previousProps.message === nextProps.message &&
+    previousProps.onMessageUpdate === nextProps.onMessageUpdate &&
+    previousProps.onReply === nextProps.onReply
+  );
 }

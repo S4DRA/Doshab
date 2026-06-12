@@ -69,6 +69,7 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
             user: {
               select: {
                 id: true,
+                image: true,
                 name: true,
                 email: true,
                 status: true,
@@ -153,22 +154,24 @@ async function InviteCandidatesPanel({
     select: {
       userOneId: true,
       userTwoId: true,
-      userOne: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          status: true,
+        userOne: {
+          select: {
+            id: true,
+            image: true,
+            name: true,
+            email: true,
+            status: true,
+          },
         },
-      },
-      userTwo: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          status: true,
+        userTwo: {
+          select: {
+            id: true,
+            image: true,
+            name: true,
+            email: true,
+            status: true,
+          },
         },
-      },
     },
   });
 

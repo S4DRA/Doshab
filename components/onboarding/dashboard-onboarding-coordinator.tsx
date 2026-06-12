@@ -42,14 +42,14 @@ const desktopTourSteps: TourStep[] = [
   {
     icon: <SparkIcon />,
     primaryLabel: "Start tour",
-    text: "VAL is your private space for groups, voice channels, messages, friends, and custom themes.",
+    text: "VAL is your private space for spaces, voice channels, messages, friends, and custom themes.",
     title: "Welcome to VAL",
   },
   {
     icon: <GroupIcon />,
     target: "groups-sidebar",
-    text: "Create or join groups to organize your friends, communities, or teams.",
-    title: "Your groups live here",
+    text: "Create or join spaces to organize your friends, communities, or teams.",
+    title: "Your spaces live here",
   },
   {
     icon: <ChannelIcon />,
@@ -72,7 +72,7 @@ const desktopTourSteps: TourStep[] = [
   {
     icon: <FriendsIcon />,
     target: "friends-nav",
-    text: "Add friends, accept requests, and invite people into your groups.",
+    text: "Add friends, accept requests, and invite people into your spaces.",
     title: "Bring your friends",
   },
   {
@@ -90,7 +90,7 @@ const desktopTourSteps: TourStep[] = [
   },
   {
     icon: <CheckIcon />,
-    text: "Create a group, join a voice channel, or invite your friends to start using VAL.",
+    text: "Create a space, join a voice channel, or invite your friends to start using VAL.",
     title: "You're ready",
   },
 ];
@@ -99,7 +99,7 @@ const mobileTourSteps: TourStep[] = [
   {
     icon: <SparkIcon />,
     primaryLabel: "Start tour",
-    text: "VAL keeps your groups, calls, friends, and themes close while leaving room for the conversation.",
+    text: "VAL keeps your spaces, calls, friends, and themes close while leaving room for the conversation.",
     title: "Welcome to VAL",
   },
   {
@@ -146,7 +146,7 @@ const mobileTourSteps: TourStep[] = [
   },
   {
     icon: <CheckIcon />,
-    text: "You are ready to create a group, join a voice room, or invite friends from your phone.",
+    text: "You are ready to create a space, join a voice room, or invite friends from your phone.",
     title: "You're ready",
   },
 ];
@@ -594,7 +594,7 @@ function TourOverlay({
               href="/dashboard"
               onClick={onFinish}
             >
-              Create group
+              Create space
             </Link>
           </div>
         ) : null}
@@ -665,7 +665,7 @@ function NotificationOnboarding({
               ? "Your browser does not fully support background push notifications. Try installing VAL from Chrome or using a supported browser."
               : isEnabled
                 ? "Notifications are already enabled on this device."
-                : "Get message alerts, group invites, and incoming call notifications even when VAL is closed."}
+                : "Get message alerts, space invites, and incoming call notifications even when VAL is closed."}
         </p>
 
         {diagnostics?.installedPwa === "yes" ? (
@@ -675,7 +675,7 @@ function NotificationOnboarding({
         ) : null}
 
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          {["Incoming call alerts", "Message notifications", "Friend and group invites", "Missed call alerts"].map(
+          {["Incoming call alerts", "Message notifications", "Friend and space invites", "Missed call alerts"].map(
             (benefit) => (
               <span
                 className="flex min-h-11 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm text-slate-200"

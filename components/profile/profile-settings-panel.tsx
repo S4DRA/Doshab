@@ -30,8 +30,16 @@ const defaultSettings: ProfileSettings = {
   soundEnabled: true,
 };
 
+type SettingsSectionId =
+  | "profile"
+  | "notifications"
+  | "appearance"
+  | "security"
+  | "account";
+
 export function ProfileSettingsPanel() {
   const [settings, setSettings] = useState(defaultSettings);
+  const [activeSection, setActiveSection] = useState<SettingsSectionId>("notifications");
   const [saved, setSaved] = useState(false);
   const [notificationStatus, setNotificationStatus] = useState<
     "idle" | "saving" | "enabled" | "testing" | "tested" | "error"
@@ -39,6 +47,9 @@ export function ProfileSettingsPanel() {
   const [notificationMessage, setNotificationMessage] = useState("");
   const [permissionStatus, setPermissionStatus] = useState("Not enabled");
   const [pushDiagnostics, setPushDiagnostics] = useState<BrowserPushDiagnostics | null>(null);
+  const [showAdvancedStatus, setShowAdvancedStatus] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [showPhoneSteps, setShowPhoneSteps] = useState(false);
   const loadedSettingsRef = useRef(false);
 
@@ -199,7 +210,7 @@ export function ProfileSettingsPanel() {
     <section className="app-panel p-4 sm:p-6">
       <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+          <p className="app-section-title">
             Preferences
           </p>
           <h2 className="mt-2 text-2xl font-bold text-white">Settings panel</h2>
@@ -212,172 +223,233 @@ export function ProfileSettingsPanel() {
         </span>
       </div>
 
-      <div className="grid gap-3">
-        <div className="app-row p-4" data-tour-target="notifications-settings">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <span className="min-w-0">
-              <span className="block text-sm font-semibold text-white">Notifications</span>
-              <span className="block text-sm leading-5 text-slate-400">
-                Enable notifications so you do not miss messages, invites, or incoming calls.
-              </span>
-              <span className="mt-2 block max-w-2xl text-xs leading-5 text-slate-500">
-                Call notifications appear as phone notifications when VAL is installed and notification permission is enabled. Some phones/browsers may not support full-screen call screens from a PWA.
-              </span>
-            </span>
-            <label className="flex shrink-0 items-center gap-3">
-              <span className="text-sm font-semibold text-white">Enable</span>
-              <input
-                aria-label="Enable browser notifications"
-                checked={settings.enableNotifications}
-                className="app-switch"
-                onChange={(event) => void updateNotifications(event.target.checked)}
-                type="checkbox"
-              />
-            </label>
-          </div>
-          <div className="mt-4 grid gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-3 sm:grid-cols-2">
-            <StatusLine label="Browser permission" value={permissionStatus} />
-            <StatusLine
-              label="Push subscription"
-              value={formatDiagnosticsValue(pushDiagnostics?.pushSubscription)}
-            />
-            <StatusLine
-              label="Service worker"
-              value={formatDiagnosticsValue(pushDiagnostics?.serviceWorker)}
-            />
-            <StatusLine
-              label="Installed PWA mode"
-              value={formatDiagnosticsValue(pushDiagnostics?.installedPwa)}
-            />
-            <StatusLine label="Message notifications" value={settings.messageNotifications ? "On" : "Off"} />
-            <StatusLine label="Call notifications" value={settings.callNotifications ? "On" : "Off"} />
-            <StatusLine label="Invite notifications" value={settings.friendInviteNotifications ? "On" : "Off"} />
-            <StatusLine label="Sound" value={settings.soundEnabled ? "On" : "Off"} />
-            <StatusLine label="Message previews" value={settings.showMessagePreview ? "On" : "Off"} />
-          </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <NotificationToggle
-              checked={settings.messageNotifications}
-              description="Alerts for direct messages and channel notifications."
-              label="Message notifications"
-              onChange={(checked) => updateSetting("messageNotifications", checked)}
-            />
-            <NotificationToggle
-              checked={settings.callNotifications}
-              description="Incoming and missed call alerts."
-              label="Call notifications"
-              onChange={(checked) => updateSetting("callNotifications", checked)}
-            />
-            <NotificationToggle
-              checked={settings.friendInviteNotifications}
-              description="Friend requests and space invites."
-              label="Friend/invite notifications"
-              onChange={(checked) => updateSetting("friendInviteNotifications", checked)}
-            />
-            <NotificationToggle
-              checked={settings.soundEnabled}
-              description="Short sound for incoming calls when allowed."
-              label="Sound"
-              onChange={(checked) => updateSetting("soundEnabled", checked)}
-            />
-            <NotificationToggle
-              checked={settings.showMessagePreview}
-              description="Show message previews in local alerts."
-              label="Message previews"
-              onChange={(checked) => updateSetting("showMessagePreview", checked)}
-            />
-            <button
-              className="app-button-secondary min-h-12 rounded-lg px-4 text-sm font-semibold transition"
-              disabled={!settings.enableNotifications || notificationStatus === "testing"}
-              onClick={sendTestNotification}
-              type="button"
-            >
-              {notificationStatus === "testing" ? "Sending test..." : "Test notification"}
-            </button>
-            <button
-              className="app-button-secondary min-h-12 rounded-lg px-4 text-sm font-semibold transition"
-              onClick={() => void refreshPushDiagnostics()}
-              type="button"
-            >
-              Refresh status
-            </button>
-            <button
-              className="min-h-12 rounded-lg border border-white/15 px-4 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/60 hover:text-white"
-              onClick={() => setShowPhoneSteps((current) => !current)}
-              type="button"
-            >
-              {pushDiagnostics?.status === "blocked" ? "Fix blocked notifications" : "Show phone setup steps"}
-            </button>
-          </div>
-          {showPhoneSteps || pushDiagnostics?.status === "blocked" ? (
-            <NotificationSetupGuide installedPwa={pushDiagnostics?.installedPwa === "yes"} />
-          ) : null}
-        </div>
-        {notificationStatus === "saving" ? (
-          <p className="-mt-1 px-4 text-xs text-slate-400">Opening browser permission prompt...</p>
-        ) : null}
-        {notificationStatus === "enabled" || notificationStatus === "tested" ? (
-          <p className="-mt-1 px-4 text-xs text-emerald-300">{notificationMessage}</p>
-        ) : null}
-        {notificationStatus === "error" ? (
-          <p className="-mt-1 rounded-lg border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-xs leading-5 text-amber-300">
-            {notificationMessage}
-          </p>
-        ) : null}
-
-        <label className="app-row flex items-center justify-between gap-4 px-4 py-4">
-          <span className="min-w-0">
-            <span className="block text-sm font-semibold text-white">Share online status</span>
-            <span className="block text-sm leading-5 text-slate-400">
-              Allow friends to see when you are active.
-            </span>
-          </span>
-          <input
-            aria-label="Share online status"
-            checked={settings.shareOnlineStatus}
-            className="app-switch"
-            onChange={(event) => updateSetting("shareOnlineStatus", event.target.checked)}
-            type="checkbox"
-          />
-        </label>
-
-        <div className="settings-shortcut-row app-row flex flex-col items-stretch gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between" data-tour-target="themes-settings">
-          <span className="min-w-0">
-            <span className="block text-sm font-semibold text-white">Themes</span>
-            <span className="block text-sm leading-5 text-slate-400">
-              Open the full theme gallery and choose a global VAL style.
-            </span>
-          </span>
-          <Link
-            className="settings-shortcut-button app-button-primary inline-flex h-11 shrink-0 items-center justify-center rounded-lg px-4 text-sm font-bold transition sm:h-10"
-            href="/dashboard/profile/themes"
-          >
-            Theme settings
-          </Link>
-        </div>
-
-        <div className="app-row flex flex-col items-stretch gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <span className="min-w-0">
-            <span className="block text-sm font-semibold text-white">Platform tour</span>
-            <span className="block text-sm leading-5 text-slate-400">
-              Replay the guided VAL tour from the beginning.
-            </span>
-          </span>
+      <div className="mb-4 flex flex-wrap gap-2">
+        {[
+          { id: "profile", label: "Profile" },
+          { id: "notifications", label: "Notifications" },
+          { id: "appearance", label: "Appearance" },
+          { id: "security", label: "Security" },
+          { id: "account", label: "Account" },
+        ].map((section) => (
           <button
-            className="app-button-secondary h-12 shrink-0 rounded-lg px-4 text-sm font-bold transition sm:h-11"
-            onClick={restartPlatformTour}
+            className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${
+              activeSection === section.id
+                ? "border-[#FF5F25]/70 bg-[#FF5F25]/14 text-white"
+                : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/20 hover:text-white"
+            }`}
+            key={section.id}
+            onClick={() => setActiveSection(section.id as SettingsSectionId)}
             type="button"
           >
-            Restart platform tour
+            {section.label}
           </button>
-        </div>
+        ))}
+      </div>
 
+      {saved ? (
+        <p className="mb-4 text-sm text-emerald-300">Local settings saved on this device.</p>
+      ) : null}
+
+      {activeSection === "notifications" ? (
+        <div className="grid gap-3">
+          <div className="app-row p-4" data-tour-target="notifications-settings">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-white">Notifications</span>
+                <span className="block text-sm leading-5 text-slate-400">
+                  Enable notifications so you do not miss messages, invites, or incoming calls.
+                </span>
+                <span className="mt-2 block max-w-2xl text-xs leading-5 text-slate-500">
+                  Call notifications appear as phone notifications when VAL is installed and notification permission is enabled. Some phones and browsers still limit full-screen call surfaces.
+                </span>
+              </span>
+              <label className="flex shrink-0 items-center gap-3">
+                <span className="text-sm font-semibold text-white">Enable</span>
+                <input
+                  aria-label="Enable browser notifications"
+                  checked={settings.enableNotifications}
+                  className="app-switch"
+                  onChange={(event) => void updateNotifications(event.target.checked)}
+                  type="checkbox"
+                />
+              </label>
+            </div>
+
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <StatusLine label="Permission" value={permissionStatus} />
+              <StatusLine label="Alerts" value={settings.enableNotifications ? "Enabled" : "Off"} />
+              <StatusLine label="PWA mode" value={formatDiagnosticsValue(pushDiagnostics?.installedPwa)} />
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                className="app-button-secondary inline-flex min-h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
+                onClick={() => setShowAdvancedStatus((current) => !current)}
+                type="button"
+              >
+                {showAdvancedStatus ? "Hide advanced status" : "Advanced status"}
+              </button>
+              <button
+                className="app-button-secondary inline-flex min-h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
+                onClick={() => void refreshPushDiagnostics()}
+                type="button"
+              >
+                Refresh status
+              </button>
+              <button
+                className="inline-flex min-h-10 items-center rounded-lg border border-white/15 px-4 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/60 hover:text-white"
+                onClick={() => setShowPhoneSteps((current) => !current)}
+                type="button"
+              >
+                {pushDiagnostics?.status === "blocked" ? "Fix blocked notifications" : "Phone setup steps"}
+              </button>
+            </div>
+
+            {showAdvancedStatus ? (
+              <div className="mt-4 grid gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-3 sm:grid-cols-2">
+                <StatusLine
+                  label="Push subscription"
+                  value={formatDiagnosticsValue(pushDiagnostics?.pushSubscription)}
+                />
+                <StatusLine
+                  label="Service worker"
+                  value={formatDiagnosticsValue(pushDiagnostics?.serviceWorker)}
+                />
+                <StatusLine label="Message notifications" value={settings.messageNotifications ? "On" : "Off"} />
+                <StatusLine label="Call notifications" value={settings.callNotifications ? "On" : "Off"} />
+                <StatusLine label="Invite notifications" value={settings.friendInviteNotifications ? "On" : "Off"} />
+                <StatusLine label="Sound" value={settings.soundEnabled ? "On" : "Off"} />
+                <StatusLine label="Message previews" value={settings.showMessagePreview ? "On" : "Off"} />
+              </div>
+            ) : null}
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <NotificationToggle
+                checked={settings.messageNotifications}
+                description="Alerts for direct messages and channel notifications."
+                label="Message notifications"
+                onChange={(checked) => updateSetting("messageNotifications", checked)}
+              />
+              <NotificationToggle
+                checked={settings.callNotifications}
+                description="Incoming and missed call alerts."
+                label="Call notifications"
+                onChange={(checked) => updateSetting("callNotifications", checked)}
+              />
+              <NotificationToggle
+                checked={settings.friendInviteNotifications}
+                description="Friend requests and space invites."
+                label="Friend and invite notifications"
+                onChange={(checked) => updateSetting("friendInviteNotifications", checked)}
+              />
+              <NotificationToggle
+                checked={settings.soundEnabled}
+                description="Short sound for incoming calls when allowed."
+                label="Sound"
+                onChange={(checked) => updateSetting("soundEnabled", checked)}
+              />
+              <NotificationToggle
+                checked={settings.showMessagePreview}
+                description="Show message previews in local alerts."
+                label="Message previews"
+                onChange={(checked) => updateSetting("showMessagePreview", checked)}
+              />
+              <button
+                className="app-button-secondary min-h-12 rounded-lg px-4 text-sm font-semibold transition"
+                disabled={!settings.enableNotifications || notificationStatus === "testing"}
+                onClick={sendTestNotification}
+                type="button"
+              >
+                {notificationStatus === "testing" ? "Sending test..." : "Test notification"}
+              </button>
+            </div>
+
+            {showPhoneSteps || pushDiagnostics?.status === "blocked" ? (
+              <NotificationSetupGuide installedPwa={pushDiagnostics?.installedPwa === "yes"} />
+            ) : null}
+          </div>
+
+          {notificationStatus === "saving" ? (
+            <p className="-mt-1 px-4 text-xs text-slate-400">Opening browser permission prompt...</p>
+          ) : null}
+          {notificationStatus === "enabled" || notificationStatus === "tested" ? (
+            <p className="-mt-1 px-4 text-xs text-emerald-300">{notificationMessage}</p>
+          ) : null}
+          {notificationStatus === "error" ? (
+            <p className="-mt-1 rounded-lg border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-xs leading-5 text-amber-300">
+              {notificationMessage}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {activeSection === "profile" ? (
+        <div className="grid gap-3">
+          <label className="app-row flex items-center justify-between gap-4 px-4 py-4">
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-white">Share online status</span>
+              <span className="block text-sm leading-5 text-slate-400">
+                Allow friends to see when you are active.
+              </span>
+            </span>
+            <input
+              aria-label="Share online status"
+              checked={settings.shareOnlineStatus}
+              className="app-switch"
+              onChange={(event) => updateSetting("shareOnlineStatus", event.target.checked)}
+              type="checkbox"
+            />
+          </label>
+
+          <div className="app-row flex flex-col items-stretch gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-white">Platform tour</span>
+              <span className="block text-sm leading-5 text-slate-400">
+                Replay the guided VAL tour from the beginning.
+              </span>
+            </span>
+            <button
+              className="app-button-secondary h-12 shrink-0 rounded-lg px-4 text-sm font-bold transition sm:h-11"
+              onClick={restartPlatformTour}
+              type="button"
+            >
+              Restart platform tour
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {activeSection === "appearance" ? (
+        <div className="grid gap-3">
+          <div className="settings-shortcut-row app-row flex flex-col items-stretch gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between" data-tour-target="themes-settings">
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-white">Themes</span>
+              <span className="block text-sm leading-5 text-slate-400">
+                Open the full theme gallery and choose a global VAL style.
+              </span>
+            </span>
+            <Link
+              className="settings-shortcut-button app-button-primary inline-flex h-11 shrink-0 items-center justify-center rounded-lg px-4 text-sm font-bold transition sm:h-10"
+              href="/dashboard/profile/themes"
+            >
+              Theme settings
+            </Link>
+          </div>
+          <div className="app-row p-4">
+            <p className="text-sm leading-6 text-slate-400">
+              Theme changes apply across VAL. The stronger visual diagnostics and icon collections live inside the theme gallery instead of crowding this page.
+            </p>
+          </div>
+        </div>
+      ) : null}
+
+      {activeSection === "security" ? (
         <div className="app-row p-4 text-sm text-slate-400">
-          <div className="grid gap-5">
+          <div className="grid w-full gap-5">
             <div>
-              <p className="text-sm font-semibold text-white">Account</p>
+              <p className="text-sm font-semibold text-white">Password</p>
               <p className="mt-1 text-sm leading-5 text-slate-400">
-                Change your password or end this session on the current device.
+                Change your password on this account without leaving VAL.
               </p>
             </div>
             <form action="/api/auth/update-password" className="grid gap-3" method="post">
@@ -386,27 +458,45 @@ export function ProfileSettingsPanel() {
                 <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                   New password
                 </span>
-                <input
-                  autoComplete="new-password"
-                  className="mt-2 h-12 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
-                  minLength={8}
-                  name="password"
-                  required
-                  type="password"
-                />
+                <div className="mt-2 flex gap-2">
+                  <input
+                    autoComplete="new-password"
+                    className="h-12 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
+                    minLength={8}
+                    name="password"
+                    required
+                    type={showNewPassword ? "text" : "password"}
+                  />
+                  <button
+                    className="app-button-secondary h-12 shrink-0 rounded-lg px-4 text-sm font-semibold transition sm:h-11"
+                    onClick={() => setShowNewPassword((current) => !current)}
+                    type="button"
+                  >
+                    {showNewPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </label>
               <label className="block">
                 <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                   Confirm password
                 </span>
-                <input
-                  autoComplete="new-password"
-                  className="mt-2 h-12 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
-                  minLength={8}
-                  name="confirmPassword"
-                  required
-                  type="password"
-                />
+                <div className="mt-2 flex gap-2">
+                  <input
+                    autoComplete="new-password"
+                    className="h-12 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-600 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
+                    minLength={8}
+                    name="confirmPassword"
+                    required
+                    type={showConfirmPassword ? "text" : "password"}
+                  />
+                  <button
+                    className="app-button-secondary h-12 shrink-0 rounded-lg px-4 text-sm font-semibold transition sm:h-11"
+                    onClick={() => setShowConfirmPassword((current) => !current)}
+                    type="button"
+                  >
+                    {showConfirmPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </label>
               <button
                 className="app-button-primary h-12 w-full rounded-lg px-4 text-sm font-bold transition sm:h-11 sm:w-auto"
@@ -415,20 +505,25 @@ export function ProfileSettingsPanel() {
                 Change password
               </button>
             </form>
-            <form action="/api/auth/logout" method="post">
-              <button
-                className="app-button-secondary h-12 w-full rounded-lg px-4 text-sm font-bold transition sm:h-11 sm:w-auto"
-                type="submit"
-              >
-                Log out
-              </button>
-            </form>
           </div>
-          {saved ? (
-            <p className="mt-3 text-sm text-emerald-300">Settings saved.</p>
-          ) : null}
         </div>
-      </div>
+      ) : null}
+
+      {activeSection === "account" ? (
+        <div className="grid gap-3">
+          <div className="app-row p-4 text-sm leading-6 text-slate-400">
+            Local notification and presence choices stay on this device. Account actions below affect your current VAL session.
+          </div>
+          <form action="/api/auth/logout" method="post">
+            <button
+              className="app-button-secondary h-12 w-full rounded-lg px-4 text-sm font-bold transition sm:h-11 sm:w-auto"
+              type="submit"
+            >
+              Log out
+            </button>
+          </form>
+        </div>
+      ) : null}
     </section>
   );
 }

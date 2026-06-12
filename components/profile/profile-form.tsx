@@ -60,6 +60,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
     reader.readAsDataURL(file);
   };
 
+  const handleReset = () => {
+    setPreviewUrl(user.image);
+    setRemoveImage(false);
+    setUploadError(null);
+  };
+
   return (
     <section className="app-panel p-5">
       <div className="grid gap-6">
@@ -77,7 +83,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             </div>
           </div>
 
-          <form action="/api/profile" className="mt-8 grid gap-4" method="post" encType="multipart/form-data">
+          <form action="/api/profile" className="mt-8 grid gap-4" encType="multipart/form-data" method="post" onReset={handleReset}>
             <label className="block">
               <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
                 Display name
@@ -166,12 +172,20 @@ export function ProfileForm({ user }: ProfileFormProps) {
               </div>
             </div>
 
-            <SubmitButton
-              className="app-button-primary mt-2 h-12 w-full rounded-lg px-5 text-sm font-semibold transition sm:h-11 sm:w-max"
-              pendingText="Saving..."
-            >
-              Save profile
-            </SubmitButton>
+            <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row">
+              <button
+                className="app-button-secondary h-12 w-full rounded-lg px-5 text-sm font-semibold transition sm:h-11 sm:w-auto"
+                type="reset"
+              >
+                Cancel changes
+              </button>
+              <SubmitButton
+                className="app-button-primary h-12 w-full rounded-lg px-5 text-sm font-bold shadow-[0_22px_42px_-28px_rgba(255,95,37,0.92)] transition sm:h-11 sm:flex-1"
+                pendingText="Saving profile..."
+              >
+                Save profile
+              </SubmitButton>
+            </div>
           </form>
         </div>
       </div>

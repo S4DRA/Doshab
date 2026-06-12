@@ -4,14 +4,34 @@ import { getAuthState } from "@/lib/auth";
 import { orderedFriendshipPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
 
-function redirectWithError(request: NextRequest, error: string) {
+function redirectWithError(request: NextRequest, error: string, returnTo = "/dashboard") {
   return NextResponse.redirect(
-    new URL(`/dashboard?error=${encodeURIComponent(error)}`, request.url),
+    new URL(`${returnTo}?error=${encodeURIComponent(error)}`, request.url),
     { status: 303 },
   );
 }
 
+function getSafeDashboardReturnTo(value: unknown) {
+  if (typeof value !== "string") {
+    return "/dashboard";
+  }
+
+  const returnTo = value.trim();
+
+  if (
+    returnTo === "/dashboard" ||
+    returnTo.startsWith("/dashboard/") ||
+    returnTo.startsWith("/dashboard?")
+  ) {
+    return returnTo;
+  }
+
+  return "/dashboard";
+}
+
 export async function POST(request: NextRequest) {
+  let returnTo = "/dashboard";
+
   try {
     const auth = await getAuthState();
 
@@ -26,9 +46,10 @@ export async function POST(request: NextRequest) {
     const userId = auth.user.id;
     const formData = await request.formData();
     const friendId = String(formData.get("friendId") ?? "");
+    returnTo = getSafeDashboardReturnTo(formData.get("returnTo"));
 
     if (!friendId || friendId === userId) {
-      return redirectWithError(request, "Choose a valid friend.");
+      return redirectWithError(request, "Choose a valid friend.", returnTo);
     }
 
     const [userOneId, userTwoId] = orderedFriendshipPair(userId, friendId);
@@ -58,7 +79,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (!friendship) {
-      return redirectWithError(request, "You can only message accepted friends.");
+      return redirectWithError(
+        request,
+        "You can only message accepted friends.",
+        returnTo,
+      );
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -148,7 +173,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.redirect(
       new URL(
-        `/dashboard/groups/${result.groupId}/channels/${result.channelId}`,
+        `/dashboard/groups/${result.groupId}/channels/${result.channelId}?view=messages`,
         request.url,
       ),
       { status: 303 },
@@ -159,6 +184,7 @@ export async function POST(request: NextRequest) {
     return redirectWithError(
       request,
       "Could not open that private message. Please try again.",
+      returnTo,
     );
   }
 }

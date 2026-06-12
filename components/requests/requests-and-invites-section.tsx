@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 
 import { FriendRequestList } from "@/components/friends/friend-request-list";
@@ -206,6 +207,10 @@ async function RequestsAndInvitesBody() {
       <div className="mt-5 grid gap-4">
         <FriendRequestList
           emptyText="No incoming friend requests."
+          emptyAction={{
+            href: "/dashboard/friends?add=1",
+            label: "Find friends",
+          }}
           kind="incoming"
           requests={incomingItems}
           title="Incoming friend requests"
@@ -218,7 +223,20 @@ async function RequestsAndInvitesBody() {
           title="Outgoing friend requests"
         />
 
-        <GroupInvitesList invites={inviteItems} />
+        <GroupInvitesList
+          emptyActions={[
+            {
+              href: "/dashboard#create-space",
+              label: "Create space",
+              variant: "primary",
+            },
+            {
+              href: "/dashboard/friends?add=1",
+              label: "Invite friends",
+            },
+          ]}
+          invites={inviteItems}
+        />
       </div>
     );
 }
@@ -231,22 +249,26 @@ function RequestsAndInvitesLoading() {
   );
 }
 
-function RequestsAndInvitesError() {
-  return (
-    <div className="mt-5">
-      <p className="text-sm leading-6 text-red-300">
-        Could not load requests and invites.
-      </p>
-    </div>
-  );
-}
-
 function RequestsAndInvitesEmpty() {
   return (
     <div className="mt-5">
       <p className="text-sm leading-6 text-slate-400">
         No pending requests or invites.
       </p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Link
+          className="app-button-primary inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
+          href="/dashboard#create-space"
+        >
+          Create space
+        </Link>
+        <Link
+          className="app-button-secondary inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
+          href="/dashboard/friends?add=1"
+        >
+          Find friends
+        </Link>
+      </div>
     </div>
   );
 }

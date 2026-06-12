@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 
 import {
   DOSHAB_THEMES,
@@ -53,6 +53,15 @@ function ThemeCard({
   onSelect: () => void;
   theme: DoshabThemeConfig;
 }) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const visibleIcons = detailsOpen
+    ? (theme.themeIcons ?? [])
+    : (theme.themeIcons ?? []).slice(0, 4);
+  const hiddenIconCount = Math.max(0, (theme.themeIcons?.length ?? 0) - visibleIcons.length);
+  const visibleDetails = detailsOpen
+    ? theme.previewDetails.slice(0, 4)
+    : theme.previewDetails.slice(0, 2);
+
   return (
     <article
       className={`theme-choice-card app-card flex min-w-0 flex-col gap-4 p-4 transition ${
@@ -76,33 +85,53 @@ function ThemeCard({
         </div>
         {theme.themeIcons ? (
           <div className="theme-icon-strip flex flex-wrap gap-1.5">
-            {theme.themeIcons.map((icon) => (
+            {visibleIcons.map((icon) => (
               <span className="theme-icon-token" key={icon.id} title={icon.label}>
                 <ThemeIcon className="h-5 w-5" id={icon.id} />
                 <span className="sr-only">{icon.label}</span>
               </span>
             ))}
+            {hiddenIconCount ? (
+              <span className="theme-detail-pill">+{hiddenIconCount} more</span>
+            ) : null}
           </div>
         ) : null}
         <div className="theme-detail-grid grid gap-2">
-          {theme.previewDetails.slice(0, 4).map((detail) => (
+          {visibleDetails.map((detail) => (
             <span className="theme-detail-pill" key={detail}>
               {detail}
             </span>
           ))}
         </div>
-        <button
-          aria-label={active ? `${theme.name} is the current theme` : `Use ${theme.name} theme`}
-          aria-pressed={active}
-          className={`theme-select-button mt-auto h-11 w-full rounded-lg px-3 text-xs font-bold transition ${
-            active ? "app-button-primary" : "app-button-secondary"
-          }`}
-          onClick={onSelect}
-          title={active ? "Current theme" : `Use ${theme.name}`}
-          type="button"
-        >
-          {active ? "Selected" : "Use theme"}
-        </button>
+        <div className="mt-auto grid gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
+          <button
+            className="app-button-secondary h-11 rounded-lg px-3 text-xs font-semibold transition"
+            onClick={() => setDetailsOpen((current) => !current)}
+            type="button"
+          >
+            {detailsOpen ? "Hide preview" : "Preview"}
+          </button>
+          <button
+            aria-label={active ? `${theme.name} is the current theme` : `Use ${theme.name} theme`}
+            aria-pressed={active}
+            className={`theme-select-button h-11 w-full rounded-lg px-3 text-xs font-bold transition ${
+              active ? "app-button-primary" : "app-button-secondary"
+            }`}
+            onClick={onSelect}
+            title={active ? "Current theme" : `Use ${theme.name}`}
+            type="button"
+          >
+            {active ? "Selected" : "Use theme"}
+          </button>
+          <button
+            className="app-button-secondary h-11 rounded-lg px-3 text-xs font-semibold transition"
+            disabled
+            title="More theme controls are coming soon."
+            type="button"
+          >
+            Customize
+          </button>
+        </div>
       </div>
     </article>
   );

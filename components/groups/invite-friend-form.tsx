@@ -8,7 +8,7 @@ type InviteFriendFormProps = {
 
 export function InviteFriendForm({ groupId, friends }: InviteFriendFormProps) {
   return (
-    <section className="app-panel min-w-0 overflow-hidden p-4 sm:p-5">
+    <section className="app-panel min-w-0 overflow-hidden p-4 sm:p-5" id="invite-friends">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">

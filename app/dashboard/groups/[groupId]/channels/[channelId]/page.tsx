@@ -57,6 +57,25 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
                 type: true,
               },
             },
+            members: {
+              orderBy: {
+                createdAt: "asc",
+              },
+              select: {
+                id: true,
+                role: true,
+                createdAt: true,
+                user: {
+                  select: {
+                    email: true,
+                    id: true,
+                    image: true,
+                    name: true,
+                    status: true,
+                  },
+                },
+              },
+            },
           },
         },
       },

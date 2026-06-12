@@ -173,6 +173,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             <FriendRequestList
               title="Incoming friend requests"
               emptyText="No incoming friend requests."
+              emptyAction={{
+                href: "/dashboard/friends?add=1",
+                label: "Find friends",
+              }}
               requests={incomingRequests}
               kind="incoming"
             />
@@ -184,7 +188,20 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               kind="outgoing"
             />
 
-            <GroupInvitesList invites={groupInvites} />
+            <GroupInvitesList
+              emptyActions={[
+                {
+                  href: "/dashboard#create-space",
+                  label: "Create space",
+                  variant: "primary",
+                },
+                {
+                  href: "/dashboard/friends?add=1",
+                  label: "Invite friends",
+                },
+              ]}
+              invites={groupInvites}
+            />
           </section>
         ),
       }}

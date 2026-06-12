@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { formatReadableTimestamp } from "@/lib/utils";
@@ -5,9 +7,14 @@ import type { GroupInviteItem } from "@/types";
 
 type GroupInvitesListProps = {
   invites: GroupInviteItem[];
+  emptyActions?: Array<{
+    href: string;
+    label: string;
+    variant?: "primary" | "secondary";
+  }>;
 };
 
-export function GroupInvitesList({ invites }: GroupInvitesListProps) {
+export function GroupInvitesList({ invites, emptyActions }: GroupInvitesListProps) {
   return (
     <section className="app-panel p-5">
       <p className="app-section-title">Invites</p>
@@ -59,9 +66,28 @@ export function GroupInvitesList({ invites }: GroupInvitesListProps) {
           ))}
         </div>
       ) : (
-        <p className="mt-3 text-sm leading-6 text-slate-500">
-          No pending invites. New space invitations will appear here with accept and reject actions.
-        </p>
+        <div className="mt-3">
+          <p className="text-sm leading-6 text-slate-500">
+            No pending invites. New space invitations will appear here with accept and reject actions.
+          </p>
+          {emptyActions?.length ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {emptyActions.map((action) => (
+                <Link
+                  className={`inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition ${
+                    action.variant === "primary"
+                      ? "app-button-primary"
+                      : "app-button-secondary"
+                  }`}
+                  href={action.href}
+                  key={`${action.href}:${action.label}`}
+                >
+                  {action.label}
+                </Link>
+              ))}
+            </div>
+          ) : null}
+        </div>
       )}
     </section>
   );

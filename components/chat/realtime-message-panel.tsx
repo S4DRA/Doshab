@@ -2,7 +2,8 @@
 
 import {
   FormEvent,
-  KeyboardEvent,
+  KeyboardEvent as ReactKeyboardEvent,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -30,6 +31,11 @@ type PendingMessage = ChatMessage & {
   pending: true;
 };
 
+type DecryptedMessageCacheEntry = {
+  key: string;
+  message: ChatMessage;
+};
+
 export function RealtimeMessagePanel({
   canPinMessages = false,
   channelId,
@@ -53,6 +59,7 @@ export function RealtimeMessagePanel({
   const [searchQuery, setSearchQuery] = useState("");
   const [sendError, setSendError] = useState<string | null>(null);
   const [streamError, setStreamError] = useState<string | null>(null);
+  const decryptedMessageCacheRef = useRef(new Map<string, DecryptedMessageCacheEntry>());
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const streamCursorRef = useRef(newestCreatedAt(initialMessages));
   const displayedMessages = useMemo(
@@ -81,12 +88,28 @@ export function RealtimeMessagePanel({
     let cancelled = false;
 
     async function decryptMessages() {
-      const messages = await Promise.all(
-        encryptedMessages.map((message) => decryptChatMessage(message)),
+      const nextMessages = await Promise.all(
+        encryptedMessages.map(async (message) => {
+          const cacheKey = getChatMessageCacheKey(message);
+          const cachedMessage = decryptedMessageCacheRef.current.get(message.id);
+
+          if (cachedMessage?.key === cacheKey) {
+            return cachedMessage.message;
+          }
+
+          const decryptedMessage = await decryptChatMessage(message);
+
+          decryptedMessageCacheRef.current.set(message.id, {
+            key: cacheKey,
+            message: decryptedMessage,
+          });
+
+          return decryptedMessage;
+        }),
       );
 
       if (!cancelled) {
-        setDecryptedMessages(messages);
+        setDecryptedMessages(nextMessages);
       }
     }
 
@@ -144,9 +167,16 @@ export function RealtimeMessagePanel({
     return () => eventSource.close();
   }, [channelId]);
 
-  async function handleMessageUpdate(message: ChatMessage) {
-    const decryptedMessage = await decryptChatMessage(message);
+  const handleMessageUpdate = useCallback(async (message: ChatMessage) => {
+    setEncryptedMessages((current) => mergeMessages(current, [message]));
 
+    const decryptedMessage = await decryptChatMessage(message);
+    const cacheKey = getChatMessageCacheKey(message);
+
+    decryptedMessageCacheRef.current.set(message.id, {
+      key: cacheKey,
+      message: decryptedMessage,
+    });
     setDecryptedMessages((current) => mergeMessages(current, [decryptedMessage]));
     setPinnedMessages((current) => {
       const nextMessages = decryptedMessage.pinnedAt
@@ -159,7 +189,7 @@ export function RealtimeMessagePanel({
           new Date(first.pinnedAt ?? first.createdAt).getTime(),
       );
     });
-  }
+  }, []);
 
   async function loadPinnedMessages() {
     setPinnedOpen(true);
@@ -296,7 +326,7 @@ export function RealtimeMessagePanel({
     }
   }
 
-  function submitOnEnter(event: KeyboardEvent<HTMLTextAreaElement>) {
+  function submitOnEnter(event: ReactKeyboardEvent<HTMLTextAreaElement>) {
     if (event.key !== "Enter" || event.shiftKey) {
       return;
     }
@@ -321,7 +351,7 @@ export function RealtimeMessagePanel({
         ) : null}
       </div>
 
-      <div className="chat-toolbar mt-2 flex min-w-0 shrink-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-2">
+      <div className="chat-toolbar mx-auto mt-2 flex w-full max-w-[min(100%,70rem)] min-w-0 shrink-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-2">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <button
             className="app-icon-button h-10 w-10"
@@ -382,7 +412,7 @@ export function RealtimeMessagePanel({
         />
       ) : null}
 
-      <div className="message-feed min-h-0 min-w-0 flex-1 scroll-pb-24 overflow-x-hidden overflow-y-auto overscroll-contain py-2 pr-1 sm:py-3">
+      <div className="message-feed min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain pb-4 pr-1 pt-2 scroll-pb-[calc(var(--dashboard-bottom-nav-height,4rem)+11rem)] sm:pb-5 sm:pt-3 sm:scroll-pb-44">
         <MessageList
           canPinMessages={canPinMessages}
           currentUserId={currentUser?.id}
@@ -393,62 +423,67 @@ export function RealtimeMessagePanel({
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="chat-composer min-w-0 shrink-0 overflow-hidden border-t border-white/10 bg-[#070907]/95 pb-[max(calc(var(--dashboard-bottom-nav-height,4rem)+0.25rem),0.25rem)] pt-3 backdrop-blur md:pb-[max(env(safe-area-inset-bottom),0.25rem)]">
-        {replyTarget ? (
-          <div className="mb-2 flex items-start justify-between gap-3 rounded-lg border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-3 py-2">
-            <div className="min-w-0">
-              <p className="truncate text-xs font-semibold text-[#FFB199]">
-                Replying to {replyTarget.sender.name || replyTarget.sender.email}
-              </p>
-              <p className="mt-1 line-clamp-1 text-xs text-slate-300">
-                {replyTarget.content}
-              </p>
+      <div className="chat-composer sticky bottom-0 z-10 min-w-0 shrink-0 overflow-hidden border-t border-white/10 bg-[#070907]/95 pb-[max(calc(var(--dashboard-bottom-nav-height,4rem)+0.25rem),0.25rem)] pt-3 backdrop-blur md:pb-[max(env(safe-area-inset-bottom),0.25rem)]">
+        <div className="mx-auto w-full max-w-[min(100%,70rem)]">
+          {replyTarget ? (
+            <div className="mb-2 flex items-start justify-between gap-3 rounded-lg border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-3 py-2">
+              <div className="min-w-0">
+                <p className="truncate text-xs font-semibold text-[#FFB199]">
+                  Replying to {replyTarget.sender.name || replyTarget.sender.email}
+                </p>
+                <p className="mt-1 line-clamp-1 text-xs text-slate-300">
+                  {replyTarget.content}
+                </p>
+              </div>
+              <button
+                aria-label="Cancel reply"
+                className="app-icon-button h-8 w-8 shrink-0"
+                onClick={() => setReplyTarget(null)}
+                type="button"
+              >
+                <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
             </div>
+          ) : null}
+          <form className="flex w-full min-w-0 max-w-full items-end gap-2 sm:gap-3" data-tour-target="message-composer" onSubmit={sendMessage}>
+            <textarea
+              className="max-h-28 min-h-12 min-w-0 max-w-full flex-1 resize-none overflow-y-auto rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-11 sm:max-h-36 sm:text-sm"
+              disabled={!encryptionReady || !currentUser}
+              maxLength={2000}
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={submitOnEnter}
+              placeholder={
+                encryptionReady
+                  ? `Encrypted message #${channelName}`
+                  : "Preparing encrypted chat..."
+              }
+              required
+              rows={Math.min(5, Math.max(1, draft.split("\n").length))}
+              value={draft}
+            />
             <button
-              aria-label="Cancel reply"
-              className="app-icon-button h-8 w-8 shrink-0"
-              onClick={() => setReplyTarget(null)}
-              type="button"
+              aria-label="Send message"
+              className="app-icon-button app-icon-button-primary h-12 w-12 shrink-0 disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:w-11"
+              disabled={!encryptionReady || !draft.trim() || !currentUser}
+              title="Send message"
+              type="submit"
             >
-              <span aria-hidden="true">x</span>
+              <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="m22 2-7 20-4-9-9-4Z" />
+                <path d="M22 2 11 13" />
+              </svg>
             </button>
+          </form>
+          <div className="mt-2 flex items-center justify-between gap-3 text-[11px] text-slate-500">
+            <span className="hidden sm:inline">Enter to send. Shift+Enter for a new line.</span>
+            <span className="sm:hidden">Encrypted chat</span>
+            <span>{draft.length}/2000</span>
           </div>
-        ) : null}
-        <form className="flex w-full min-w-0 max-w-full items-end gap-2 sm:gap-3" data-tour-target="message-composer" onSubmit={sendMessage}>
-          <textarea
-            className="max-h-28 min-h-12 min-w-0 max-w-full flex-1 resize-none overflow-y-auto rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-11 sm:max-h-36 sm:text-sm"
-            disabled={!encryptionReady || !currentUser}
-            maxLength={2000}
-            onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={submitOnEnter}
-            placeholder={
-              encryptionReady
-                ? `Encrypted message #${channelName}`
-                : "Preparing encrypted chat..."
-            }
-            required
-            rows={Math.min(5, Math.max(1, draft.split("\n").length))}
-            value={draft}
-          />
-          <button
-            aria-label="Send message"
-            className="app-icon-button app-icon-button-primary h-12 w-12 shrink-0 disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:w-11"
-            disabled={!encryptionReady || !draft.trim() || !currentUser}
-            title="Send message"
-            type="submit"
-          >
-            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="m22 2-7 20-4-9-9-4Z" />
-              <path d="M22 2 11 13" />
-            </svg>
-          </button>
-        </form>
-        <div className="mt-2 flex items-center justify-between gap-3 text-[11px] text-slate-500">
-          <span className="hidden sm:inline">Enter to send. Shift+Enter for a new line.</span>
-          <span className="sm:hidden">Encrypted chat</span>
-          <span>{draft.length}/2000</span>
+          {sendError ? <p className="mt-2 text-xs text-amber-200">{sendError}</p> : null}
         </div>
-        {sendError ? <p className="mt-2 text-xs text-amber-200">{sendError}</p> : null}
       </div>
     </div>
   );
@@ -475,6 +510,16 @@ function newestCreatedAt(messages: ChatMessage[]) {
   }, 0);
 
   return new Date(newest).toISOString();
+}
+
+function getChatMessageCacheKey(message: ChatMessage) {
+  return JSON.stringify([
+    message.content,
+    message.replyTo?.content ?? null,
+    message.pinnedAt ?? null,
+    message.reactions ?? [],
+    message.poll ?? null,
+  ]);
 }
 
 async function decryptChatMessage<T extends ChatMessage>(message: T): Promise<T> {
@@ -506,9 +551,11 @@ function SearchPanel({
   results: ChatMessage[];
   setQuery: (value: string) => void;
 }) {
+  useCloseOnEscape(onClose);
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-end bg-black/45 sm:absolute sm:inset-0 sm:items-start sm:justify-end sm:bg-black/20">
-      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:m-3 sm:max-w-md sm:rounded-lg">
+    <div className="fixed inset-0 z-[70] flex items-end bg-black/45 sm:absolute sm:inset-0 sm:items-start sm:justify-end sm:bg-black/20" onClick={onClose}>
+      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:m-3 sm:max-w-md sm:rounded-lg" onClick={(event) => event.stopPropagation()}>
         <PanelHeader onClose={onClose} overline="Search" title="Channel search" />
         <input
           autoFocus
@@ -557,9 +604,11 @@ function PinnedPanel({
   messages: ChatMessage[];
   onClose: () => void;
 }) {
+  useCloseOnEscape(onClose);
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-end bg-black/45 sm:absolute sm:inset-0 sm:items-start sm:justify-end sm:bg-black/20">
-      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:m-3 sm:max-w-md sm:rounded-lg">
+    <div className="fixed inset-0 z-[70] flex items-end bg-black/45 sm:absolute sm:inset-0 sm:items-start sm:justify-end sm:bg-black/20" onClick={onClose}>
+      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:m-3 sm:max-w-md sm:rounded-lg" onClick={(event) => event.stopPropagation()}>
         <PanelHeader onClose={onClose} overline="Pinned" title="Pinned messages" />
         <div className="mt-4 grid gap-2">
           {loading ? (
@@ -616,9 +665,11 @@ function PollDialog({
 }) {
   const validOptionCount = options.filter((option) => option.trim()).length;
 
+  useCloseOnEscape(onClose);
+
   return (
-    <div className="fixed inset-0 z-[75] flex items-end bg-black/50 sm:items-center sm:justify-center">
-      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:max-w-lg sm:rounded-lg">
+    <div className="fixed inset-0 z-[75] flex items-end bg-black/50 sm:items-center sm:justify-center" onClick={onClose}>
+      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:max-w-lg sm:rounded-lg" onClick={(event) => event.stopPropagation()}>
         <PanelHeader onClose={onClose} overline="Poll" title="Create poll" />
         <label className="mt-4 block">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
@@ -701,7 +752,10 @@ function PanelHeader({
         onClick={onClose}
         type="button"
       >
-        <span aria-hidden="true">x</span>
+        <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
+        </svg>
       </button>
     </div>
   );
@@ -723,4 +777,20 @@ function formatMessageDate(value: Date | string | null | undefined) {
     dateStyle: "short",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function useCloseOnEscape(onClose: () => void) {
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [onClose]);
 }

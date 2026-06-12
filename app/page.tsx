@@ -7,7 +7,7 @@ const showcaseCards = [
   {
     title: "Desktop dashboard",
     description:
-      "Manage groups, channels, friends, and conversations from one clean dashboard.",
+      "Manage spaces, channels, friends, and conversations from one clean dashboard.",
     variant: "desktop",
   },
   {
@@ -22,7 +22,7 @@ const showcaseCards = [
   },
   {
     title: "Theme settings",
-    description: "Give every group a different identity with custom cinematic themes.",
+    description: "Give every space a different identity with custom cinematic themes.",
     variant: "themes",
   },
 ] as const;
@@ -38,10 +38,10 @@ const features = [
   },
   {
     title: "Friend System",
-    description: "Add friends, manage requests, and invite people into your groups.",
+    description: "Add friends, manage requests, and invite people into your spaces.",
   },
   {
-    title: "Group Invites",
+    title: "Space Invites",
     description: "Bring accepted friends into your spaces with simple invites.",
   },
   {
@@ -67,7 +67,7 @@ const themeCards = [
   },
   {
     name: "Araz: Credit Empire",
-    mood: "Galactic finance terminal for ambitious groups.",
+    mood: "Galactic finance terminal for ambitious spaces.",
     colors: ["#ffc84d", "#27c8ff", "#061126"],
   },
   {
@@ -119,7 +119,7 @@ export default function Home() {
               Private voice, chat, and worlds
             </p>
             <h1 className="mt-6 text-5xl font-black leading-[0.96] tracking-tight text-white sm:text-6xl lg:text-7xl">
-              Your private world for voice, chat, and groups.
+              Your private world for voice, chat, and spaces.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
               VAL is a modern communication platform for friends, communities, and
@@ -137,7 +137,7 @@ export default function Home() {
           </div>
 
           <div
-            aria-label="VAL dashboard mockup showing groups, channels, chat, voice, notifications, and themes"
+            aria-label="VAL dashboard mockup showing spaces, channels, chat, voice, notifications, and themes"
             className="landing-float relative"
             role="img"
           >
@@ -175,7 +175,7 @@ export default function Home() {
           eyebrow="Everything your space needs"
           id="features-title"
           title="A communication platform that feels personal"
-          text="VAL keeps the core group workflow simple: create a space, organize channels, talk live, invite friends, and make the interface yours."
+          text="VAL keeps the core space workflow simple: create a space, organize channels, talk live, invite friends, and make the interface yours."
         />
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => (
@@ -195,7 +195,7 @@ export default function Home() {
           <SectionIntro
             eyebrow="Custom themes"
             id="themes-title"
-            title="Every group has a different energy."
+            title="Every space has a different energy."
             text="VAL themes turn your platform into a world - from spy dashboards to survival mode, street hero energy, blue corner calm, and founder mode."
           />
           <div className="landing-theme-row grid auto-cols-[minmax(16rem,1fr)] grid-flow-col gap-4 overflow-x-auto pb-3 lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible lg:pb-0">
@@ -259,7 +259,7 @@ export default function Home() {
             Create your VAL space.
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-300">
-            Start a group, invite your friends, and build a communication space
+            Start a space, invite your friends, and build a communication space
             that feels like yours.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">

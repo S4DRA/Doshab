@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ChannelHeaderActions } from "@/components/chat/channel-header-actions";
 import { RealtimeMessagePanel } from "@/components/chat/realtime-message-panel";
 import { ChannelList } from "@/components/groups/channel-list";
 import { CreateGroupForm } from "@/components/groups/create-group-form";
@@ -7,7 +8,7 @@ import { GroupMembersList } from "@/components/groups/group-members-list";
 import { Alert } from "@/components/ui/alert";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { LazyLiveKitVoiceRoom } from "@/components/voice/lazy-livekit-voice-room";
-import { formatUserStatus } from "@/lib/utils";
+import { formatReadableTimestamp, formatUserStatus } from "@/lib/utils";
 import type { ReactNode } from "react";
 import type {
   ChatMessage,
@@ -41,6 +42,7 @@ type DashboardShellProps = {
   groupSettingsPanel?: React.ReactNode;
   invitePanel?: React.ReactNode;
   messageThreads?: MessageThread[];
+  messagesPageContent?: React.ReactNode;
 };
 
 export function DashboardShell({
@@ -53,6 +55,7 @@ export function DashboardShell({
   groupSettingsPanel,
   invitePanel,
   messageThreads = [],
+  messagesPageContent,
 }: DashboardShellProps) {
   const canCreateChannels =
     !selectedGroup?.isDirectMessage &&
@@ -145,7 +148,7 @@ export function DashboardShell({
       <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header className="dashboard-shell-header sticky top-0 z-10 flex min-h-14 shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 backdrop-blur sm:px-6 min-[1180px]:min-h-16 min-[1180px]:px-7">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#FF5F25] min-[1180px]:text-[11px]">
+            <p className="app-section-title">
               {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : activeSection === "messages" ? "Messages" : "Dashboard"}
             </p>
             <p className="mt-0.5 truncate text-sm text-slate-400 min-[1180px]:text-xs">
@@ -185,8 +188,20 @@ export function DashboardShell({
           groupSettingsPanel
         ) : selectedChannel ? (
           <ChannelMain
+            canInvite={
+              !selectedGroup?.isDirectMessage &&
+              (selectedGroup?.currentUserRole === "OWNER" ||
+                selectedGroup?.currentUserRole === "ADMIN")
+            }
+            canManageSpace={
+              !selectedGroup?.isDirectMessage &&
+              (selectedGroup?.currentUserRole === "OWNER" ||
+                selectedGroup?.currentUserRole === "ADMIN")
+            }
             channel={selectedChannel}
+            channels={selectedGroup?.channels ?? []}
             currentUser={currentUser}
+            currentUserId={currentUser?.id}
             canPinMessages={
               !selectedGroup?.isDirectMessage &&
               (selectedGroup?.currentUserRole === "OWNER" ||
@@ -195,6 +210,7 @@ export function DashboardShell({
             groupId={selectedGroup?.id}
             groupName={selectedGroup?.name}
             messages={selectedChannel.messages ?? []}
+            members={selectedGroup?.members ?? []}
           />
         ) : selectedGroup ? (
           <GroupMain
@@ -210,9 +226,9 @@ export function DashboardShell({
         ) : activeSection === "channels" ? (
           <ChannelsHome groups={groups} />
         ) : activeSection === "messages" ? (
-          <MessagesHome threads={messageThreads} />
+          messagesPageContent ?? <MessagesHome threads={messageThreads} />
         ) : (
-          <DashboardHome data={homeData} groups={groups} />
+          <DashboardHome currentUserId={currentUser?.id} data={homeData} groups={groups} />
         )}
       </section>
     </main>
@@ -252,36 +268,51 @@ function MessageThreadSidebar({
           <div className="space-y-1">
             {threads.map((thread) => (
               <div
-                className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 transition ${
+                className={`group flex items-center gap-2 rounded-xl border px-2.5 py-2.5 transition ${
                   selectedGroupId === thread.id
-                    ? "border-[#FF5F25]/60 bg-[#FF5F25]/12"
-                    : "border-transparent hover:border-white/20 hover:bg-white/7"
+                    ? "border-[#FF5F25]/65 bg-[linear-gradient(180deg,rgba(255,95,37,0.18),rgba(255,95,37,0.08))] shadow-[0_14px_30px_-24px_rgba(255,95,37,0.5)]"
+                    : "border-transparent bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.06]"
                 }`}
                 key={thread.id}
               >
                 <Link
                   className="flex min-w-0 flex-1 items-center gap-3"
-                  href={`/dashboard/groups/${thread.id}/channels/${thread.channelId}`}
+                  href={getDirectMessageHref(thread.id, thread.channelId)}
                 >
-                <AvatarInitials
-                  imageUrl={thread.friend?.image}
-                  value={thread.name}
-                />
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-white">
-                    {thread.name}
+                  <AvatarInitials
+                    imageUrl={thread.friend?.image}
+                    value={thread.name}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-white">
+                      {thread.name}
+                    </span>
+                    <span
+                      className={`block truncate text-xs transition ${
+                        selectedGroupId === thread.id ? "text-[#FFD0BF]" : "text-slate-400"
+                      }`}
+                    >
+                      {thread.lastActivityAt
+                        ? `Active ${formatReadableTimestamp(thread.lastActivityAt)}`
+                        : "Private message"}
+                    </span>
+                    {selectedGroupId === thread.id ? (
+                      <span className="mt-1 inline-flex w-fit items-center rounded-full border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#FFD0BF]">
+                        Open
+                      </span>
+                    ) : null}
                   </span>
-                  <span className="block truncate text-xs text-slate-400">
-                    Private message
-                  </span>
-                </span>
                 </Link>
                 {thread.friend ? (
                   <form action="/api/friend-calls/start" method="post">
                     <input name="friendId" type="hidden" value={thread.friend.id} />
                     <button
                       aria-label={`Call ${thread.name}`}
-                    className="app-icon-button app-icon-button-primary h-10 w-10 min-[1180px]:h-7 min-[1180px]:w-7"
+                      className={`app-icon-button app-icon-button-primary h-10 w-10 min-[1180px]:h-7 min-[1180px]:w-7 ${
+                        selectedGroupId === thread.id
+                          ? "border-[#FF5F25]/45 bg-[#FF5F25]/10 text-[#FFD0BF]"
+                          : ""
+                      }`}
                       title={`Call ${thread.name}`}
                       type="submit"
                     >
@@ -330,30 +361,30 @@ function MessagesHome({ threads }: { threads: MessageThread[] }) {
               >
                 <Link
                   className="flex min-w-0 flex-1 items-center gap-3"
-                  href={`/dashboard/groups/${thread.id}/channels/${thread.channelId}`}
+                  href={getDirectMessageHref(thread.id, thread.channelId)}
                 >
-                <AvatarInitials
-                  imageUrl={thread.friend?.image}
-                  value={thread.name}
-                />
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-white">
-                    {thread.name}
+                  <AvatarInitials
+                    imageUrl={thread.friend?.image}
+                    value={thread.name}
+                  />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-white">
+                      {thread.name}
+                    </span>
+                    <span className="block truncate text-xs text-slate-400">
+                      Open private chat
+                    </span>
                   </span>
-                  <span className="block truncate text-xs text-slate-400">
-                    Open private chat
-                  </span>
-                </span>
                 </Link>
                 {thread.friend ? (
                   <form action="/api/friend-calls/start" method="post">
                     <input name="friendId" type="hidden" value={thread.friend.id} />
-                <button
-                  aria-label={`Call ${thread.name}`}
-                  className="app-icon-button app-icon-button-primary h-10 w-10"
-                  title={`Call ${thread.name}`}
-                  type="submit"
-                >
+                    <button
+                      aria-label={`Call ${thread.name}`}
+                      className="app-icon-button app-icon-button-primary h-10 w-10"
+                      title={`Call ${thread.name}`}
+                      type="submit"
+                    >
                       <PhoneIcon className="h-4 w-4" />
                     </button>
                   </form>
@@ -527,19 +558,29 @@ function ChannelsHome({
 }
 
 function ChannelMain({
+  canInvite = false,
+  canManageSpace = false,
   canPinMessages = false,
   channel,
+  channels,
   currentUser,
+  currentUserId,
   groupId,
   groupName,
   messages,
+  members,
 }: {
+  canInvite?: boolean;
+  canManageSpace?: boolean;
   canPinMessages?: boolean;
   channel: GroupChannel;
+  channels: GroupChannel[];
   currentUser?: ChatMessage["sender"];
+  currentUserId?: string;
   groupId?: string;
   groupName?: string;
   messages: ChatMessage[];
+  members: GroupMemberItem[];
 }) {
   if (channel.type === "VOICE") {
     return (
@@ -547,7 +588,7 @@ function ChannelMain({
         <div className="border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 backdrop-blur min-[1180px]:hidden">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
+              <p className="app-section-title">
                 {groupName ?? "Voice"}
               </p>
               <h2 className="truncate text-lg font-semibold text-white">
@@ -555,12 +596,15 @@ function ChannelMain({
               </h2>
             </div>
             {groupId ? (
-              <Link
-                className="inline-flex h-9 shrink-0 items-center rounded-lg border border-white/15 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25] hover:text-white"
-                href={`/dashboard/groups/${groupId}`}
-              >
-                Channels
-              </Link>
+              <ChannelHeaderActions
+                canInvite={canInvite}
+                canManageSpace={canManageSpace}
+                channels={channels}
+                currentUserId={currentUserId}
+                groupId={groupId}
+                groupName={groupName}
+                members={members}
+              />
             ) : null}
           </div>
         </div>
@@ -578,7 +622,7 @@ function ChannelMain({
       <section className="shrink-0 app-surface rounded-xl p-3 sm:p-4 min-[1180px]:rounded-lg min-[1180px]:p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
+            <p className="app-section-title">
               {groupName ?? "Channel"}
             </p>
             <h2 className="mt-1 truncate text-xl font-semibold text-white sm:text-2xl min-[1180px]:text-xl">
@@ -586,12 +630,15 @@ function ChannelMain({
             </h2>
           </div>
           {groupId ? (
-            <Link
-              className="inline-flex h-9 shrink-0 items-center rounded-lg border border-white/15 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25] hover:text-white min-[1180px]:hidden"
-              href={`/dashboard/groups/${groupId}`}
-            >
-              Channels
-            </Link>
+            <ChannelHeaderActions
+              canInvite={canInvite}
+              canManageSpace={canManageSpace}
+              channels={channels}
+              currentUserId={currentUserId}
+              groupId={groupId}
+              groupName={groupName}
+              members={members}
+            />
           ) : null}
         </div>
       </section>
@@ -610,9 +657,11 @@ function ChannelMain({
 }
 
 function DashboardHome({
+  currentUserId,
   data,
   groups,
 }: {
+  currentUserId?: string;
   data?: DashboardHomeData;
   groups: DashboardGroup[];
 }) {
@@ -623,23 +672,39 @@ function DashboardHome({
     <div className="app-page-scroll">
       <div className="app-page-container grid gap-5">
         <section className="app-page-header">
-          <div className="min-w-0">
-            <p className="app-section-title">Home</p>
-            <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
-              Home
-            </h1>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <p className="app-section-title">Home</p>
+              <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
+                Home
+              </h1>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                className="app-button-secondary inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
+                href="/dashboard/friends?add=1"
+              >
+                Add friend
+              </Link>
+              <Link
+                className="app-button-primary inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
+                href="#create-space"
+              >
+                Create space
+              </Link>
+            </div>
           </div>
         </section>
 
         {data?.message ? <Alert>{data.message}</Alert> : null}
 
-{data?.requestsPanel ? data.requestsPanel : null}
+        {data?.requestsPanel ? data.requestsPanel : null}
 
-<section className="grid gap-3">
+        <section className="grid gap-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="app-section-title">Groups</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Your groups</h2>
+              <p className="app-section-title">Spaces</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Your spaces</h2>
             </div>
             <span className="app-badge px-3 py-1 text-xs font-semibold">
               {groups.length} total
@@ -647,10 +712,28 @@ function DashboardHome({
           </div>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {groups.length ? (
-              groups.map((group) => <HomeGroupCard group={group} key={group.id} />)
+              groups.map((group) => (
+                <HomeGroupCard currentUserId={currentUserId} group={group} key={group.id} />
+              ))
             ) : (
-              <div className="app-card p-5 text-sm leading-6 text-slate-400 md:col-span-2 xl:col-span-3">
-                No groups yet. Create one below to start a private space.
+              <div className="app-card p-5 md:col-span-2 xl:col-span-3">
+                <p className="text-sm leading-6 text-slate-400">
+                  No spaces yet. Create one below to start a private place for messages, voice, and invites.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link
+                    className="app-button-primary inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
+                    href="#create-space"
+                  >
+                    Create space
+                  </Link>
+                  <Link
+                    className="app-button-secondary inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
+                    href="/dashboard/friends?add=1"
+                  >
+                    Add friend
+                  </Link>
+                </div>
               </div>
             )}
           </div>
@@ -672,8 +755,16 @@ function DashboardHome({
                 <OnlineFriendCard friend={friend} key={friend.id} />
               ))
             ) : (
-              <div className="app-card p-5 text-sm leading-6 text-slate-400 md:col-span-2 xl:col-span-3">
-                No friends are online right now.
+              <div className="app-card p-5 md:col-span-2 xl:col-span-3">
+                <p className="text-sm leading-6 text-slate-400">
+                  No friends are online right now.
+                </p>
+                <Link
+                  className="app-button-secondary mt-4 inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
+                  href="/dashboard/friends?add=1"
+                >
+                  Add friends
+                </Link>
               </div>
             )}
           </div>
@@ -697,10 +788,10 @@ function DashboardHome({
           </div>
         </section>
 
-        <section className="app-panel p-5" id="create-group">
+        <section className="app-panel p-5" id="create-space">
           <div className="mb-4">
-            <p className="app-section-title">Create group</p>
-            <h2 className="mt-2 text-xl font-semibold text-white">Create group</h2>
+            <p className="app-section-title">Create space</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">Create space</h2>
           </div>
           <CreateGroupForm />
         </section>
@@ -709,24 +800,39 @@ function DashboardHome({
   );
 }
 
-function HomeGroupCard({ group }: { group: DashboardGroup }) {
+function HomeGroupCard({
+  currentUserId,
+  group,
+}: {
+  currentUserId?: string;
+  group: DashboardGroup;
+}) {
   const members = group.members ?? [];
   const visibleMembers = members.slice(0, 3);
+  const currentMember = members.find((member) => member.user.id === currentUserId);
+  const canManageSpace =
+    currentMember?.role === "OWNER" || currentMember?.role === "ADMIN";
+  const defaultSpaceHref = getDefaultSpaceHref(group);
 
   return (
-    <Link
-      className="app-card grid min-h-44 content-between gap-4 p-4 transition hover:border-[#FF5F25]/70"
-      href={`/dashboard/groups/${group.id}`}
-    >
+    <article className="app-card grid min-h-44 content-between gap-4 p-4 transition hover:border-[#FF5F25]/70">
       <span className="flex min-w-0 items-start gap-3">
         <AvatarInitials fallback="group" imageUrl={group.image} value={group.name} />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-base font-semibold text-white">
+          <Link
+            className="block truncate text-base font-semibold text-white transition hover:text-[#FFB199]"
+            href={defaultSpaceHref}
+          >
             {group.name}
-          </span>
+          </Link>
           <span className="mt-1 block text-xs text-slate-400">
             {(group.channels ?? []).length} channels
           </span>
+          {group.description ? (
+            <span className="mt-2 block line-clamp-2 text-xs leading-5 text-slate-500">
+              {group.description}
+            </span>
+          ) : null}
         </span>
       </span>
 
@@ -763,7 +869,32 @@ function HomeGroupCard({ group }: { group: DashboardGroup }) {
           )}
         </span>
       </span>
-    </Link>
+
+      <div className="flex flex-wrap gap-2">
+        <Link
+          className="app-button-primary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
+          href={defaultSpaceHref}
+        >
+          Open
+        </Link>
+        {canManageSpace ? (
+          <>
+            <Link
+              className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
+              href={`/dashboard/groups/${group.id}#invite-friends`}
+            >
+              Invite
+            </Link>
+            <Link
+              className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
+              href={`/dashboard/groups/${group.id}/settings`}
+            >
+              Settings
+            </Link>
+          </>
+        ) : null}
+      </div>
+    </article>
   );
 }
 
@@ -824,6 +955,28 @@ function MetricCard({ label, value }: { label: string; value: number }) {
       <p className="mt-2 text-3xl font-semibold text-white">{value}</p>
     </div>
   );
+}
+
+function getDirectMessageHref(groupId: string, channelId?: string | null) {
+  if (!channelId) {
+    return `/dashboard/groups/${groupId}?view=messages`;
+  }
+
+  return `/dashboard/groups/${groupId}/channels/${channelId}?view=messages`;
+}
+
+function getDefaultSpaceHref(group: DashboardGroup) {
+  const firstTextChannel = group.channels?.find((channel) => channel.type === "TEXT");
+
+  if (firstTextChannel) {
+    return `/dashboard/groups/${group.id}/channels/${firstTextChannel.id}`;
+  }
+
+  if (group.firstTextChannelId) {
+    return `/dashboard/groups/${group.id}/channels/${group.firstTextChannelId}`;
+  }
+
+  return `/dashboard/groups/${group.id}`;
 }
 
 function GroupMain({

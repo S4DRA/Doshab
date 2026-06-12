@@ -112,6 +112,9 @@ export type MessageThread = {
   channelId: string;
   name: string;
   friend: FriendPerson | null;
+  lastActivityAt?: Date | string | null;
+  lastMessageEncryptedContent?: string | null;
+  lastMessageSenderName?: string | null;
 };
 
 export type DashboardNotification = {
