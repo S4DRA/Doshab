@@ -3,24 +3,49 @@
 import { DOSHAB_THEMES, getDoshabTheme } from "@/lib/themes";
 import { useDoshabTheme } from "@/components/theme/use-doshab-theme";
 
-export function ThemeToggle() {
+type ThemeToggleProps = {
+  className?: string;
+  variant?: "inline" | "mobile" | "sidebar";
+};
+
+export function ThemeToggle({
+  className = "",
+  variant = "inline",
+}: ThemeToggleProps) {
   const { setThemeId, themeId } = useDoshabTheme();
   const theme = getDoshabTheme(themeId);
-  const currentThemeIndex = DOSHAB_THEMES.findIndex((item) => item.id === theme.id);
-  const nextTheme = DOSHAB_THEMES[(currentThemeIndex + 1) % DOSHAB_THEMES.length];
 
   return (
-    <button
-      aria-label={`Switch to ${nextTheme.name}`}
-      className="theme-toggle inline-flex h-8 items-center justify-center rounded-full border px-2 text-[11px] font-semibold transition"
-      onClick={() => {
-        setThemeId(nextTheme.id);
-      }}
-      type="button"
+    <div
+      aria-label={`Theme mode. Current mode: ${theme.name}`}
+      className={`theme-toggle theme-toggle-${variant}${className ? ` ${className}` : ""}`}
+      role="group"
       title={`Theme: ${theme.name}`}
     >
-      <span className="theme-toggle-dot" />
-      <span className="theme-toggle-label">{theme.shortName}</span>
-    </button>
+      {DOSHAB_THEMES.map((item) => {
+        const active = item.id === theme.id;
+
+        return (
+          <button
+            aria-pressed={active}
+            className="theme-toggle-segment"
+            data-active={active ? "true" : "false"}
+            data-theme-option={item.id}
+            key={item.id}
+            onClick={() => {
+              setThemeId(item.id);
+            }}
+            title={active ? `${item.name} active` : `Switch to ${item.name}`}
+            type="button"
+          >
+            <span aria-hidden="true" className="theme-toggle-segment-swatch" />
+            <span className="theme-toggle-segment-copy">
+              <span className="theme-toggle-segment-title">{item.shortName}</span>
+              <span className="theme-toggle-segment-state">{active ? "Active" : "Use"}</span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
   );
 }

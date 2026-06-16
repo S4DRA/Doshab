@@ -79,12 +79,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000080",
+  themeColor: "#08090b",
 };
 
-const themeBootScript = `try{var theme=localStorage.getItem("${DOSHAB_THEME_STORAGE_KEY}");document.documentElement.dataset.theme=${JSON.stringify(
+const DARK_CHROME_COLOR = "#08090b";
+const LIGHT_CHROME_COLOR = "#f7f7f5";
+
+const themeBootScript = `try{var allowed=${JSON.stringify(
   DOSHAB_THEMES.map((theme) => theme.id),
-)}.includes(theme)?theme:"${DEFAULT_DOSHAB_THEME_ID}"}catch{document.documentElement.dataset.theme="${DEFAULT_DOSHAB_THEME_ID}"}`;
+)};var theme=localStorage.getItem("${DOSHAB_THEME_STORAGE_KEY}");var resolved=allowed.includes(theme)?theme:"${DEFAULT_DOSHAB_THEME_ID}";if(theme!==resolved){localStorage.setItem("${DOSHAB_THEME_STORAGE_KEY}",resolved)}document.documentElement.dataset.theme=resolved;var meta=document.querySelector('meta[name="theme-color"]');if(meta){meta.setAttribute("content",resolved==="light"?"${LIGHT_CHROME_COLOR}":"${DARK_CHROME_COLOR}")}}catch{document.documentElement.dataset.theme="${DEFAULT_DOSHAB_THEME_ID}";var meta=document.querySelector('meta[name="theme-color"]');if(meta){meta.setAttribute("content","${DARK_CHROME_COLOR}")}}`;
 
 export default function RootLayout({
   children,
@@ -106,7 +109,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="h-screen overflow-hidden bg-background text-foreground">
+      <body
+        className="h-screen overflow-hidden bg-background text-foreground"
+        suppressHydrationWarning
+      >
         <div className="h-screen overflow-hidden">
           <main className="h-screen overflow-hidden">{children}</main>
         </div>

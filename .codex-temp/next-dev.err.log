@@ -1,0 +1,1943 @@
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error [SocketError]: other side closed
+      at ignore-listed frames {
+    code: 'UND_ERR_SOCKET',
+    socket: {
+      localAddress: '192.168.1.110',
+      localPort: 50942,
+      remoteAddress: '104.18.38.10',
+      remotePort: 443,
+      remoteFamily: 'IPv4',
+      timeout: undefined,
+      bytesWritten: 113645,
+      bytesRead: 110944
+    }
+  }
+}
+Error [AuthApiError]: Invalid Refresh Token: Refresh Token Not Found
+    at ignore-listed frames {
+  __isAuthError: true,
+  status: 400,
+  code: 'refresh_token_not_found'
+}
+Error [AuthApiError]: Invalid Refresh Token: Refresh Token Not Found
+    at ignore-listed frames {
+  __isAuthError: true,
+  status: 400,
+  code: 'refresh_token_not_found'
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: getaddrinfo ENOTFOUND fpvjcntyrzcavtkinheh.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'fpvjcntyrzcavtkinheh.supabase.co'
+  }
+}
+⨯ ReferenceError: ThemeToggle is not defined
+    at DashboardSidebar (components\layout\dashboard-sidebar.tsx:1196:10)
+  1194 |       {profileMenu}
+  1195 |       <div className="theme-toggle-mobile-slot sm:hidden">
+> 1196 |         <ThemeToggle variant="mobile" />
+       |          ^
+  1197 |       </div>
+  1198 |       <nav className="grid w-full min-w-0 grid-cols-[repeat(3,minmax(0,1fr))_auto_repeat...
+  1199 |         <button {
+  digest: '613110125'
+}
+⨯ ReferenceError: ThemeToggle is not defined
+    at DashboardSidebar (components\layout\dashboard-sidebar.tsx:1196:10)
+  1194 |       {profileMenu}
+  1195 |       <div className="theme-toggle-mobile-slot sm:hidden">
+> 1196 |         <ThemeToggle variant="mobile" />
+       |          ^
+  1197 |       </div>
+  1198 |       <nav className="grid w-full min-w-0 grid-cols-[repeat(3,minmax(0,1fr))_auto_repeat...
+  1199 |         <button {
+  digest: '613110125'
+}
+⨯ ReferenceError: ThemeToggle is not defined
+    at DashboardSidebar (components\layout\dashboard-sidebar.tsx:1196:10)
+  1194 |       {profileMenu}
+  1195 |       <div className="theme-toggle-mobile-slot sm:hidden">
+> 1196 |         <ThemeToggle variant="mobile" />
+       |          ^
+  1197 |       </div>
+  1198 |       <nav className="grid w-full min-w-0 grid-cols-[repeat(3,minmax(0,1fr))_auto_repeat...
+  1199 |         <button {
+  digest: '613110125'
+}
+⨯ ReferenceError: ThemeToggle is not defined
+    at DashboardSidebar (components\layout\dashboard-sidebar.tsx:1196:10)
+  1194 |       {profileMenu}
+  1195 |       <div className="theme-toggle-mobile-slot sm:hidden">
+> 1196 |         <ThemeToggle variant="mobile" />
+       |          ^
+  1197 |       </div>
+  1198 |       <nav className="grid w-full min-w-0 grid-cols-[repeat(3,minmax(0,1fr))_auto_repeat...
+  1199 |         <button {
+  digest: '613110125'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⨯ ReferenceError: ThemeToggle is not defined
+    at DashboardSidebar (components\layout\dashboard-sidebar.tsx:1482:10)
+  1480 |
+  1481 |       <div className="hidden shrink-0 items-center gap-1.5 sm:flex sm:flex-col sm:gap-2">
+> 1482 |         <ThemeToggle className="theme-toggle-rail-slot" variant="sidebar" />
+       |          ^
+  1483 |         <div className="relative">
+  1484 |           <button
+  1485 |             aria-expanded={notificationsOpen} {
+  digest: '613110125'
+}
+⨯ ReferenceError: ThemeToggle is not defined
+    at DashboardSidebar (components\layout\dashboard-sidebar.tsx:1482:10)
+  1480 |
+  1481 |       <div className="hidden shrink-0 items-center gap-1.5 sm:flex sm:flex-col sm:gap-2">
+> 1482 |         <ThemeToggle className="theme-toggle-rail-slot" variant="sidebar" />
+       |          ^
+  1483 |         <div className="relative">
+  1484 |           <button
+  1485 |             aria-expanded={notificationsOpen} {
+  digest: '613110125'
+}
+⨯ ReferenceError: ThemeToggle is not defined
+    at DashboardSidebar (components\layout\dashboard-sidebar.tsx:1482:10)
+  1480 |
+  1481 |       <div className="hidden shrink-0 items-center gap-1.5 sm:flex sm:flex-col sm:gap-2">
+> 1482 |         <ThemeToggle className="theme-toggle-rail-slot" variant="sidebar" />
+       |          ^
+  1483 |         <div className="relative">
+  1484 |           <button
+  1485 |             aria-expanded={notificationsOpen} {
+  digest: '613110125'
+}
+⨯ ReferenceError: ThemeToggle is not defined
+    at DashboardSidebar (components\layout\dashboard-sidebar.tsx:1482:10)
+  1480 |
+  1481 |       <div className="hidden shrink-0 items-center gap-1.5 sm:flex sm:flex-col sm:gap-2">
+> 1482 |         <ThemeToggle className="theme-toggle-rail-slot" variant="sidebar" />
+       |          ^
+  1483 |         <div className="relative">
+  1484 |           <button
+  1485 |             aria-expanded={notificationsOpen} {
+  digest: '613110125'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/dashboard" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <LoadingBoundaryProvider loading={[...]}>
+                      <SegmentViewNode type="layout" pagePath="layout.tsx">
+                        <SegmentTrieNode>
+                        <link>
+                        <script>
+                        <script>
+                        <RootLayout>
+                          <html lang="en" className="geist_a715..." data-scroll-behavior="smooth" data-theme="dark" ...>
+                            <head>
+                            <body
+                              className="h-screen overflow-hidden bg-background text-foreground"
+-                             cz-shortcut-listen="true"
+                            >
+                  ...
+ 
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3439:25)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at emitPendingHydrationWarnings (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3438:13)
+    at completeWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6885:102)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:131)
+    at completeUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9622:23)
+    at performUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9557:28)
+    at workLoopConcurrentByScheduler (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9551:58)
+    at renderRootConcurrent (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9534:71)
+    at performWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:150)
+    at performWorkOnRootViaSchedulerTask (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10255:9)
+    at MessagePort.performWorkUntilDeadline (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:2647:64) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3439:25)
+[browser] The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [false]
+Incoming: [false, [object Object]] 
+    at areHookInputsEqual (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4604:56)
+    at updateEffectImpl (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:5300:50)
+    at Object.useEffect (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:15568:13)
+    at exports.useEffect (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:1722:36)
+    at DashboardSidebar (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/_0u7y9dw._.js?id=%255Bproject%255D%252Fcomponents%252Flayout%252Fdashboard-sidebar.tsx+%255Bapp-client%255D+%2528ecmascript%2529:514:180)
+    at Object.react_stack_bottom_frame (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:15037:24)
+    at renderWithHooksAgain (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4675:24)
+    at renderWithHooks (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4626:28)
+    at updateFunctionComponent (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6081:21)
+    at beginWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6691:24)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at performUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9555:97)
+    at workLoopSync (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9449:40)
+    at renderRootSync (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9433:13)
+    at performWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:186)
+    at performSyncWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10263:9)
+    at flushSyncWorkAcrossRoots_impl (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10179:316)
+    at flushSyncWork$1 (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9230:86)
+    at Object.scheduleRefresh (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:299:13)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:391:33)
+    at Set.forEach (<anonymous>)
+    at Object.performReactRefresh (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:384:38)
+    at applyUpdate (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:878:31)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:886:13) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4604:56)
+[browser] The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [false]
+Incoming: [false, [object Object]] 
+    at areHookInputsEqual (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4604:56)
+    at updateEffectImpl (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:5300:50)
+    at Object.useEffect (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:15568:13)
+    at exports.useEffect (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:1722:36)
+    at DashboardSidebar (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/_0u7y9dw._.js?id=%255Bproject%255D%252Fcomponents%252Flayout%252Fdashboard-sidebar.tsx+%255Bapp-client%255D+%2528ecmascript%2529:514:180)
+    at Object.react_stack_bottom_frame (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:15037:24)
+    at renderWithHooksAgain (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4675:24)
+    at renderWithHooks (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4626:28)
+    at updateFunctionComponent (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6081:21)
+    at beginWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6691:24)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at performUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9555:97)
+    at workLoopSync (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9449:40)
+    at renderRootSync (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9433:13)
+    at performWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:186)
+    at performSyncWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10263:9)
+    at flushSyncWorkAcrossRoots_impl (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10179:316)
+    at flushSyncWork$1 (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9230:86)
+    at Object.scheduleRefresh (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:299:13)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:391:33)
+    at Set.forEach (<anonymous>)
+    at Object.performReactRefresh (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:384:38)
+    at applyUpdate (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:878:31)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:886:13) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4604:56)
+[browser] The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [false, [object Object]]
+Incoming: [, false, [object Object], (action)=>{
+            setActiveCommandAction(null);
+            switch(action){
+                case "friends":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard/friends");
+                    return;
+                case "messages":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard/messages");
+                    return;
+                case "create":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard#create-space");
+                    return;
+                case "groups":
+                    setCommandOpen(true);
+                    setGroupPickerOpen(true);
+                    return;
+            }
+        }] 
+    at areHookInputsEqual (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4604:56)
+    at updateEffectImpl (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:5300:50)
+    at Object.useEffect (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:15568:13)
+    at exports.useEffect (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:1722:36)
+    at DashboardSidebar (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/_0u7y9dw._.js?id=%255Bproject%255D%252Fcomponents%252Flayout%252Fdashboard-sidebar.tsx+%255Bapp-client%255D+%2528ecmascript%2529:545:180)
+    at Object.react_stack_bottom_frame (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:15037:24)
+    at renderWithHooksAgain (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4675:24)
+    at renderWithHooks (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4626:28)
+    at updateFunctionComponent (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6081:21)
+    at beginWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6691:24)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at performUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9555:97)
+    at workLoopSync (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9449:40)
+    at renderRootSync (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9433:13)
+    at performWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:186)
+    at performSyncWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10263:9)
+    at flushSyncWorkAcrossRoots_impl (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10179:316)
+    at flushSyncWork$1 (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9230:86)
+    at Object.scheduleRefresh (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:299:13)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:391:33)
+    at Set.forEach (<anonymous>)
+    at Object.performReactRefresh (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:384:38)
+    at applyUpdate (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:878:31)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:886:13) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4604:56)
+[browser] The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [false, [object Object]]
+Incoming: [, false, [object Object], (action)=>{
+            setActiveCommandAction(null);
+            switch(action){
+                case "friends":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard/friends");
+                    return;
+                case "messages":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard/messages");
+                    return;
+                case "create":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard#create-space");
+                    return;
+                case "groups":
+                    setCommandOpen(true);
+                    setGroupPickerOpen(true);
+                    return;
+            }
+        }] 
+    at areHookInputsEqual (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4604:56)
+    at updateEffectImpl (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:5300:50)
+    at Object.useEffect (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:15568:13)
+    at exports.useEffect (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:1722:36)
+    at DashboardSidebar (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/_0u7y9dw._.js?id=%255Bproject%255D%252Fcomponents%252Flayout%252Fdashboard-sidebar.tsx+%255Bapp-client%255D+%2528ecmascript%2529:545:180)
+    at Object.react_stack_bottom_frame (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:15037:24)
+    at renderWithHooksAgain (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4675:24)
+    at renderWithHooks (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4626:28)
+    at updateFunctionComponent (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6081:21)
+    at beginWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6691:24)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at performUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9555:97)
+    at workLoopSync (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9449:40)
+    at renderRootSync (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9433:13)
+    at performWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:186)
+    at performSyncWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10263:9)
+    at flushSyncWorkAcrossRoots_impl (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10179:316)
+    at flushSyncWork$1 (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9230:86)
+    at Object.scheduleRefresh (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:299:13)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:391:33)
+    at Set.forEach (<anonymous>)
+    at Object.performReactRefresh (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:384:38)
+    at applyUpdate (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:878:31)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:886:13) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4604:56)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/dashboard" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <LoadingBoundaryProvider loading={[...]}>
+                      <SegmentViewNode type="layout" pagePath="layout.tsx">
+                        <SegmentTrieNode>
+                        <link>
+                        <script>
+                        <script>
+                        <RootLayout>
+                          <html lang="en" className="geist_a715..." data-scroll-behavior="smooth" data-theme="dark" ...>
+                            <head>
+                            <body
+                              className="h-screen overflow-hidden bg-background text-foreground"
+-                             cz-shortcut-listen="true"
+                            >
+                  ...
+ 
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3439:25)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at emitPendingHydrationWarnings (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3438:13)
+    at completeWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6885:102)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:131)
+    at completeUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9622:23)
+    at performUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9557:28)
+    at workLoopConcurrentByScheduler (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9551:58)
+    at renderRootConcurrent (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9534:71)
+    at performWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:150)
+    at performWorkOnRootViaSchedulerTask (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10255:9)
+    at MessagePort.performWorkUntilDeadline (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:2647:64) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3439:25)
+[browser] The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [, false, [object Object], (action)=>{
+            setActiveCommandAction(null);
+            switch(action){
+                case "friends":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard/friends");
+                    return;
+                case "messages":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard/messages");
+                    return;
+                case "create":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard#create-space");
+                    return;
+                case "groups":
+                    setCommandOpen(true);
+                    setGroupPickerOpen(true);
+                    return;
+            }
+        }]
+Incoming: [, false, , [object Object], (action)=>{
+            setActiveCommandAction(null);
+            switch(action){
+                case "friends":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard/friends");
+                    return;
+                case "messages":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard/messages");
+                    return;
+                case "create":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard#create-space");
+                    return;
+                case "groups":
+                    setCommandOpen(true);
+                    setGroupPickerOpen(true);
+                    return;
+            }
+        }] 
+    at areHookInputsEqual (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4604:56)
+    at updateEffectImpl (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:5300:50)
+    at Object.useEffect (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:15568:13)
+    at exports.useEffect (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:1722:36)
+    at DashboardSidebar (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/_0u7y9dw._.js?id=%255Bproject%255D%252Fcomponents%252Flayout%252Fdashboard-sidebar.tsx+%255Bapp-client%255D+%2528ecmascript%2529:571:180)
+    at Object.react_stack_bottom_frame (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:15037:24)
+    at renderWithHooksAgain (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4675:24)
+    at renderWithHooks (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4626:28)
+    at updateFunctionComponent (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6081:21)
+    at beginWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6691:24)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at performUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9555:97)
+    at workLoopSync (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9449:40)
+    at renderRootSync (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9433:13)
+    at performWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:186)
+    at performSyncWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10263:9)
+    at flushSyncWorkAcrossRoots_impl (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10179:316)
+    at flushSyncWork$1 (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9230:86)
+    at Object.scheduleRefresh (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:299:13)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:391:33)
+    at Set.forEach (<anonymous>)
+    at Object.performReactRefresh (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:384:38)
+    at applyUpdate (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:878:31)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:886:13) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4604:56)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/dashboard" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <LoadingBoundaryProvider loading={[...]}>
+                      <SegmentViewNode type="layout" pagePath="layout.tsx">
+                        <SegmentTrieNode>
+                        <link>
+                        <script>
+                        <script>
+                        <RootLayout>
+                          <html lang="en" className="geist_a715..." data-scroll-behavior="smooth" data-theme="dark" ...>
+                            <head>
+                            <body
+                              className="h-screen overflow-hidden bg-background text-foreground"
+-                             cz-shortcut-listen="true"
+                            >
+                  ...
+ 
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3439:25)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at emitPendingHydrationWarnings (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3438:13)
+    at completeWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6885:102)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:131)
+    at completeUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9622:23)
+    at performUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9557:28)
+    at workLoopConcurrentByScheduler (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9551:58)
+    at renderRootConcurrent (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9534:71)
+    at performWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:150)
+    at performWorkOnRootViaSchedulerTask (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10255:9)
+    at MessagePort.performWorkUntilDeadline (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:2647:64) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3439:25)
+[browser] The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+
+Previous: [, false, [object Object], (action)=>{
+            setActiveCommandAction(null);
+            switch(action){
+                case "friends":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard/friends");
+                    return;
+                case "messages":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard/messages");
+                    return;
+                case "create":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard#create-space");
+                    return;
+                case "groups":
+                    setCommandOpen(true);
+                    setGroupPickerOpen(true);
+                    return;
+            }
+        }]
+Incoming: [, false, , [object Object], (action)=>{
+            setActiveCommandAction(null);
+            switch(action){
+                case "friends":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard/friends");
+                    return;
+                case "messages":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard/messages");
+                    return;
+                case "create":
+                    setCommandOpen(false);
+                    setGroupPickerOpen(false);
+                    router.push("/dashboard#create-space");
+                    return;
+                case "groups":
+                    setCommandOpen(true);
+                    setGroupPickerOpen(true);
+                    return;
+            }
+        }] 
+    at areHookInputsEqual (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4604:56)
+    at updateEffectImpl (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:5300:50)
+    at Object.useEffect (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:15568:13)
+    at exports.useEffect (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:1722:36)
+    at DashboardSidebar (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/_0u7y9dw._.js?id=%255Bproject%255D%252Fcomponents%252Flayout%252Fdashboard-sidebar.tsx+%255Bapp-client%255D+%2528ecmascript%2529:571:180)
+    at Object.react_stack_bottom_frame (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:15037:24)
+    at renderWithHooksAgain (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4675:24)
+    at renderWithHooks (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4626:28)
+    at updateFunctionComponent (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6081:21)
+    at beginWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6691:24)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at performUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9555:97)
+    at workLoopSync (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9449:40)
+    at renderRootSync (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9433:13)
+    at performWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:186)
+    at performSyncWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10263:9)
+    at flushSyncWorkAcrossRoots_impl (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10179:316)
+    at flushSyncWork$1 (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9230:86)
+    at Object.scheduleRefresh (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:299:13)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:391:33)
+    at Set.forEach (<anonymous>)
+    at Object.performReactRefresh (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:384:38)
+    at applyUpdate (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:878:31)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:886:13) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4604:56)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13914:21)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13358:52) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13914:21)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13358:52) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13914:21)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13358:52) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13914:21)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13358:52) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+⨯ ./lib/dashboard-data.ts:87:1
+Expression expected
+  [90m85 |[0m     },
+  [90m86 |[0m   }),
+[31m[1m>[0m [90m87 |[0m });
+  [90m   |[0m [31m[1m^[0m
+  [90m88 |[0m
+  [90m89 |[0m [36mexport[0m [36mconst[0m getDashboardSidebarGroups = cache([36masync[0m (userId: string) => {
+  [90m90 |[0m   [36mawait[0m ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx
+
+
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13914:21)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13358:52) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+⨯ ./lib/dashboard-data.ts:87:1
+Expression expected
+  [90m85 |[0m     },
+  [90m86 |[0m   }),
+[31m[1m>[0m [90m87 |[0m });
+  [90m   |[0m [31m[1m^[0m
+  [90m88 |[0m
+  [90m89 |[0m [36mexport[0m [36mconst[0m getDashboardSidebarGroups = cache([36masync[0m (userId: string) => {
+  [90m90 |[0m   [36mawait[0m ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13914:21)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13358:52) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13914:21)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13358:52) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+⨯ ./lib/dashboard-data.ts:87:1
+Expression expected
+  [90m85 |[0m     },
+  [90m86 |[0m   }),
+[31m[1m>[0m [90m87 |[0m });
+  [90m   |[0m [31m[1m^[0m
+  [90m88 |[0m
+  [90m89 |[0m [36mexport[0m [36mconst[0m getDashboardSidebarGroups = cache([36masync[0m (userId: string) => {
+  [90m90 |[0m   [36mawait[0m ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx
+
+
+⨯ ./lib/dashboard-data.ts:87:1
+Expression expected
+  [90m85 |[0m     },
+  [90m86 |[0m   }),
+[31m[1m>[0m [90m87 |[0m });
+  [90m   |[0m [31m[1m^[0m
+  [90m88 |[0m
+  [90m89 |[0m [36mexport[0m [36mconst[0m getDashboardSidebarGroups = cache([36masync[0m (userId: string) => {
+  [90m90 |[0m   [36mawait[0m ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+
+⨯ ./lib/dashboard-data.ts:87:1
+Expression expected
+  [90m85 |[0m     },
+  [90m86 |[0m   }),
+[31m[1m>[0m [90m87 |[0m });
+  [90m   |[0m [31m[1m^[0m
+  [90m88 |[0m
+  [90m89 |[0m [36mexport[0m [36mconst[0m getDashboardSidebarGroups = cache([36masync[0m (userId: string) => {
+  [90m90 |[0m   [36mawait[0m ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx
+
+
+⨯ ./lib/dashboard-data.ts:87:1
+Expression expected
+  [90m85 |[0m     },
+  [90m86 |[0m   }),
+[31m[1m>[0m [90m87 |[0m });
+  [90m   |[0m [31m[1m^[0m
+  [90m88 |[0m
+  [90m89 |[0m [36mexport[0m [36mconst[0m getDashboardSidebarGroups = cache([36masync[0m (userId: string) => {
+  [90m90 |[0m   [36mawait[0m ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13914:21)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13358:52) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13914:21)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13358:52) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+⨯ ./lib/dashboard-data.ts:87:1
+Expression expected
+  [90m85 |[0m     },
+  [90m86 |[0m   }),
+[31m[1m>[0m [90m87 |[0m });
+  [90m   |[0m [31m[1m^[0m
+  [90m88 |[0m
+  [90m89 |[0m [36mexport[0m [36mconst[0m getDashboardSidebarGroups = cache([36masync[0m (userId: string) => {
+  [90m90 |[0m   [36mawait[0m ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx
+
+
+[browser] Uncaught Error: ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx
+
+
+    at <unknown> (Error: ./lib/dashboard-data.ts:87:1)
+    at <unknown> (Error: (./lib/dashboard-data.ts:87:1)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13914:21)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13358:52) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13851:21)
+⨯ ./lib/dashboard-data.ts:87:1
+Expression expected
+  [90m85 |[0m     },
+  [90m86 |[0m   }),
+[31m[1m>[0m [90m87 |[0m });
+  [90m   |[0m [31m[1m^[0m
+  [90m88 |[0m
+  [90m89 |[0m [36mexport[0m [36mconst[0m getDashboardSidebarGroups = cache([36masync[0m (userId: string) => {
+  [90m90 |[0m   [36mawait[0m ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx
+
+
+[browser] Uncaught Error: ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx
+
+
+    at <unknown> (Error: ./lib/dashboard-data.ts:87:1)
+    at <unknown> (Error: (./lib/dashboard-data.ts:87:1)
+[browser] Uncaught Error: ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx
+
+
+    at <unknown> (Error: ./lib/dashboard-data.ts:87:1)
+    at <unknown> (Error: (./lib/dashboard-data.ts:87:1)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/groups/[groupId]/channels/[channelId]/page.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/messages/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] ./lib/dashboard-data.ts:87:1
+Expression expected
+  85 |     },
+  86 |   }),
+> 87 | });
+     | ^
+  88 |
+  89 | export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  90 |   await ensureOwnedGroupMemberships(userId);
+
+Parsing ecmascript source code failed
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/layout.tsx
+
+  #2 [Server Component]:
+    ./lib/dashboard-data.ts
+    ./app/dashboard/page.tsx 
+    at handleErrors (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+    at processMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2835:28)
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2680:13)
+    at WebSocket.handleMessage (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2325:17) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2774:21)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/dashboard" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <LoadingBoundaryProvider loading={[...]}>
+                      <SegmentViewNode type="layout" pagePath="layout.tsx">
+                        <SegmentTrieNode>
+                        <link>
+                        <script>
+                        <script>
+                        <RootLayout>
+                          <html lang="en" className="geist_a715..." data-scroll-behavior="smooth" data-theme="dark" ...>
+                            <head>
+                            <body
+                              className="h-screen overflow-hidden bg-background text-foreground"
+-                             cz-shortcut-listen="true"
+                            >
+                  ...
+ 
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3439:25)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at emitPendingHydrationWarnings (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3438:13)
+    at completeWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6885:102)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:131)
+    at completeUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9622:23)
+    at performUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9557:28)
+    at workLoopConcurrentByScheduler (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9551:58)
+    at renderRootConcurrent (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9534:71)
+    at performWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:150)
+    at performWorkOnRootViaSchedulerTask (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10255:9)
+    at MessagePort.performWorkUntilDeadline (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:2647:64) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3439:25)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/dashboard" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <LoadingBoundaryProvider loading={[...]}>
+                      <SegmentViewNode type="layout" pagePath="layout.tsx">
+                        <SegmentTrieNode>
+                        <link>
+                        <script>
+                        <script>
+                        <RootLayout>
+                          <html lang="en" className="geist_a715..." data-scroll-behavior="smooth" data-theme="dark" ...>
+                            <head>
+                            <body
+                              className="h-screen overflow-hidden bg-background text-foreground"
+-                             cz-shortcut-listen="true"
+                            >
+                  ...
+ 
+    at <unknown> (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3439:25)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at emitPendingHydrationWarnings (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3438:13)
+    at completeWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6885:102)
+    at runWithFiberInDEV (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:131)
+    at completeUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9622:23)
+    at performUnitOfWork (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9557:28)
+    at workLoopConcurrentByScheduler (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9551:58)
+    at renderRootConcurrent (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9534:71)
+    at performWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:150)
+    at performWorkOnRootViaSchedulerTask (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10255:9)
+    at MessagePort.performWorkUntilDeadline (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:2647:64) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3439:25)

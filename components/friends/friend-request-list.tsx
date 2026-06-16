@@ -27,8 +27,27 @@ export function FriendRequestList({
   return (
     <section className="app-panel p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold text-white">{title}</h2>
-        <span className="rounded-full bg-[#FF5F25]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#FF5F25]">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="dashboard-glyph" aria-hidden="true">
+            {kind === "incoming" ? (
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                <path d="M15 10h4l-4-4" />
+                <path d="M19 10H9a5 5 0 0 0 0 10h1" />
+                <path d="M12 7a4 4 0 1 0-8 0" />
+                <path d="M2 21a6 6 0 0 1 10 0" />
+              </svg>
+            ) : (
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                <path d="M9 10H5l4-4" />
+                <path d="M5 10h10a5 5 0 0 1 0 10h-1" />
+                <path d="M12 7a4 4 0 1 0-8 0" />
+                <path d="M2 21a6 6 0 0 1 10 0" />
+              </svg>
+            )}
+          </span>
+          <h2 className="min-w-0 text-base font-bold text-white">{title}</h2>
+        </div>
+        <span className="app-badge px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]">
           {requests.length} {requests.length === 1 ? "request" : "requests"}
         </span>
       </div>
@@ -52,7 +71,7 @@ export function FriendRequestList({
                   <div className="flex w-full flex-wrap gap-2 sm:w-auto">
                     <form action={`/api/friends/requests/${request.id}/accept`} className="min-w-0 flex-1 sm:flex-none" method="post">
                       <SubmitButton
-                        className="h-11 w-full rounded-lg bg-emerald-500 px-4 text-xs font-semibold text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-400 sm:h-10"
+                        className="app-button-primary h-11 w-full rounded-lg px-4 text-xs font-semibold transition sm:h-10"
                         pendingText="Accepting..."
                       >
                         Accept
@@ -68,7 +87,7 @@ export function FriendRequestList({
                     </form>
                   </div>
                 ) : (
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+                  <span className="app-badge px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]">
                     Pending
                   </span>
                 )}

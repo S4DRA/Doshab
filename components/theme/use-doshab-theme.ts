@@ -10,9 +10,20 @@ import {
 } from "@/lib/themes";
 
 const themeChangeEventName = "doshab-theme-change";
+const DARK_CHROME_COLOR = "#08090b";
+const LIGHT_CHROME_COLOR = "#f7f7f5";
+
+function setThemeChromeColor(themeId: DoshabThemeId) {
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute("content", themeId === "light" ? LIGHT_CHROME_COLOR : DARK_CHROME_COLOR);
+  }
+}
 
 function setDocumentTheme(themeId: DoshabThemeId) {
   document.documentElement.dataset.theme = themeId;
+  setThemeChromeColor(themeId);
 }
 
 function applyTheme(themeId: DoshabThemeId) {
@@ -32,7 +43,14 @@ function getStoredTheme() {
     return DEFAULT_DOSHAB_THEME_ID;
   }
 
-  return resolveDoshabThemeId(window.localStorage.getItem(DOSHAB_THEME_STORAGE_KEY));
+  const storedTheme = window.localStorage.getItem(DOSHAB_THEME_STORAGE_KEY);
+  const resolvedTheme = resolveDoshabThemeId(storedTheme);
+
+  if (storedTheme !== resolvedTheme) {
+    window.localStorage.setItem(DOSHAB_THEME_STORAGE_KEY, resolvedTheme);
+  }
+
+  return resolvedTheme;
 }
 
 export function useDoshabTheme() {

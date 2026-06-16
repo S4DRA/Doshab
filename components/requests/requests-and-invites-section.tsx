@@ -204,7 +204,8 @@ async function RequestsAndInvitesBody() {
     }
 
     return (
-      <div className="mt-5 grid gap-4">
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div className="min-w-0">
         <FriendRequestList
           emptyText="No incoming friend requests."
           emptyAction={{
@@ -215,14 +216,18 @@ async function RequestsAndInvitesBody() {
           requests={incomingItems}
           title="Incoming friend requests"
         />
+        </div>
 
+        <div className="min-w-0">
         <FriendRequestList
           emptyText="No outgoing friend requests pending."
           kind="outgoing"
           requests={outgoingItems}
           title="Outgoing friend requests"
         />
+        </div>
 
+        <div className="min-w-0 lg:col-span-2">
         <GroupInvitesList
           emptyActions={[
             {
@@ -237,6 +242,7 @@ async function RequestsAndInvitesBody() {
           ]}
           invites={inviteItems}
         />
+        </div>
       </div>
     );
 }

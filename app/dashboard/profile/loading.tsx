@@ -2,7 +2,7 @@ import { BrandLoader } from "@/components/ui/loading-states";
 
 export default function ProfileLoading() {
   return (
-    <main className="loading-canvas app-page-scroll bg-[#050705] text-slate-100" aria-busy="true">
+    <main className="loading-canvas app-page-scroll text-[color:var(--text-high)]" aria-busy="true">
       <div className="app-page-container grid gap-5 py-4">
         <section className="grid justify-items-center py-2">
           <BrandLoader label="Loading settings" size="sm" />

@@ -172,7 +172,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         messageTone: params?.error ? "error" : undefined,
         friends,
         requestsPanel: (
-          <section className="grid gap-4" id="requests-and-invites">
+          <section className="grid gap-4 xl:grid-cols-2" id="requests-and-invites">
             <FriendRequestList
               title="Incoming friend requests"
               emptyText="No incoming friend requests."

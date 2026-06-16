@@ -207,13 +207,13 @@ export function ProfileSettingsPanel() {
   };
 
   return (
-    <section className="app-panel p-4 sm:p-6">
+    <section className="profile-settings-panel app-panel p-4 sm:p-6">
       <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="app-section-title">
             Preferences
           </p>
-          <h2 className="mt-2 text-2xl font-bold text-white">Settings panel</h2>
+          <h2 className="mt-2 text-2xl font-black tracking-tight text-white">Settings panel</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
             Control your local experience, alerts, and account access.
           </p>
@@ -232,11 +232,12 @@ export function ProfileSettingsPanel() {
           { id: "account", label: "Account" },
         ].map((section) => (
           <button
-            className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${
+            className={`inline-flex min-h-11 items-center rounded-lg px-4 text-sm font-semibold transition ${
               activeSection === section.id
-                ? "border-[#FF5F25]/70 bg-[#FF5F25]/14 text-white"
-                : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/20 hover:text-white"
+                ? "app-button-primary"
+                : "app-button-secondary"
             }`}
+            data-settings-tab
             key={section.id}
             onClick={() => setActiveSection(section.id as SettingsSectionId)}
             type="button"
@@ -297,7 +298,7 @@ export function ProfileSettingsPanel() {
                 Refresh status
               </button>
               <button
-                className="inline-flex min-h-10 items-center rounded-lg border border-white/15 px-4 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/60 hover:text-white"
+                className="app-button-secondary inline-flex min-h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
                 onClick={() => setShowPhoneSteps((current) => !current)}
                 type="button"
               >
@@ -306,7 +307,7 @@ export function ProfileSettingsPanel() {
             </div>
 
             {showAdvancedStatus ? (
-              <div className="mt-4 grid gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-3 sm:grid-cols-2">
+              <div className="app-card mt-4 grid gap-2 p-3 sm:grid-cols-2">
                 <StatusLine
                   label="Push subscription"
                   value={formatDiagnosticsValue(pushDiagnostics?.pushSubscription)}
@@ -425,7 +426,7 @@ export function ProfileSettingsPanel() {
             <span className="min-w-0">
               <span className="block text-sm font-semibold text-white">Themes</span>
               <span className="block text-sm leading-5 text-slate-400">
-                Open the full theme gallery and choose a global VAL style.
+                Open the appearance gallery and choose dark or light mode for VAL.
               </span>
             </span>
             <Link
@@ -437,7 +438,8 @@ export function ProfileSettingsPanel() {
           </div>
           <div className="app-row p-4">
             <p className="text-sm leading-6 text-slate-400">
-              Theme changes apply across VAL. The stronger visual diagnostics and icon collections live inside the theme gallery instead of crowding this page.
+              Theme changes apply across VAL and keep the same premium high-contrast
+              system on desktop and mobile.
             </p>
           </div>
         </div>
@@ -540,7 +542,7 @@ function NotificationToggle({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+    <label className="app-row p-3">
       <span className="flex items-center justify-between gap-3">
         <span className="text-sm font-semibold text-white">{label}</span>
         <input
@@ -560,7 +562,7 @@ function NotificationToggle({
 
 function StatusLine({ label, value }: { label: string; value: string }) {
   return (
-    <span className="flex items-center justify-between gap-3 rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-xs">
+    <span className="app-row flex items-center justify-between gap-3 px-3 py-2 text-xs">
       <span className="text-slate-400">{label}</span>
       <span className="font-semibold text-white">{value}</span>
     </span>
@@ -596,7 +598,7 @@ function NotificationSetupGuide({ installedPwa }: { installedPwa: boolean }) {
         ];
 
   return (
-    <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3">
+    <div className="app-card mt-4 p-3">
       <p className="text-sm font-semibold text-white">Phone notification setup</p>
       <p className="mt-2 text-xs leading-5 text-slate-400">
         Browsers and PWAs cannot reliably open every phone&apos;s floating notification settings page. Use these steps if banners, pop-ups, or lock screen alerts are missing.

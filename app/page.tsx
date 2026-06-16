@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ButtonLink } from "@/components/ui/button-link";
 import { LogoMark } from "@/components/ui/logo-mark";
+import { DOSHAB_THEMES } from "@/lib/themes";
 
 const showcaseCards = [
   {
@@ -22,7 +23,7 @@ const showcaseCards = [
   },
   {
     title: "Theme settings",
-    description: "Give every space a different identity with custom cinematic themes.",
+    description: "Switch between two focused high-contrast modes without losing the VAL identity.",
     variant: "themes",
   },
 ] as const;
@@ -49,43 +50,16 @@ const features = [
     description: "Get alerts for messages, calls, invites, and missed calls.",
   },
   {
-    title: "Custom Themes",
-    description: "Choose unique visual themes that make VAL feel personal.",
+    title: "Dark & Light Modes",
+    description: "Switch between premium high-contrast dark and light modes.",
   },
 ];
 
-const themeCards = [
-  {
-    name: "Agent Amir",
-    mood: "Spy dashboard, gold signal, quiet mission energy.",
-    colors: ["#d4af37", "#00ff7f", "#121212"],
-  },
-  {
-    name: "Nima: Last Light",
-    mood: "Survival mode, moss accents, calm danger.",
-    colors: ["#8b9f62", "#c4633a", "#101410"],
-  },
-  {
-    name: "Araz: Credit Empire",
-    mood: "Galactic finance terminal for ambitious spaces.",
-    colors: ["#ffc84d", "#27c8ff", "#061126"],
-  },
-  {
-    name: "3z: Street Hero",
-    mood: "Streetwear superhero confidence with bold sparks.",
-    colors: ["#ff3131", "#246bff", "#101014"],
-  },
-  {
-    name: "Mehran: Blue Corner",
-    mood: "Icy blue calm, focus, and silent-corner control.",
-    colors: ["#7fd7ff", "#d7f5ff", "#06111d"],
-  },
-  {
-    name: "Hamp: Root Forge",
-    mood: "Founder mode, forge gold, system-builder focus.",
-    colors: ["#d8b56a", "#86d79a", "#070808"],
-  },
-];
+const themeCards = DOSHAB_THEMES.map((theme) => ({
+  name: theme.name,
+  mood: theme.description,
+  colors: [theme.colors.accent, theme.colors.accentSecondary, theme.colors.surface],
+}));
 
 export default function Home() {
   return (
@@ -124,7 +98,7 @@ export default function Home() {
             <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
               VAL is a modern communication platform for friends, communities, and
               teams - with instant voice rooms, organized text channels, friend invites,
-              notifications, and custom themes.
+              notifications, and focused dark and light modes.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink className="h-12 px-6" href="/register">
@@ -137,7 +111,7 @@ export default function Home() {
           </div>
 
           <div
-            aria-label="VAL dashboard mockup showing spaces, channels, chat, voice, notifications, and themes"
+            aria-label="VAL dashboard mockup showing spaces, channels, chat, voice, notifications, and the two-mode design system"
             className="landing-float relative"
             role="img"
           >
@@ -151,7 +125,7 @@ export default function Home() {
           eyebrow="Platform image showcase"
           id="showcase-title"
           title="See VAL in action"
-          text="Polished mockups show the current VAL experience across desktop, mobile, voice, and themes."
+          text="Polished mockups show the current VAL experience across desktop, mobile, voice, and the two-mode visual system."
         />
         <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {showcaseCards.map((card) => (
@@ -175,7 +149,7 @@ export default function Home() {
           eyebrow="Everything your space needs"
           id="features-title"
           title="A communication platform that feels personal"
-          text="VAL keeps the core space workflow simple: create a space, organize channels, talk live, invite friends, and make the interface yours."
+          text="VAL keeps the core space workflow simple: create a space, organize channels, talk live, invite friends, and tune the interface with dark or light mode."
         />
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => (
@@ -193,12 +167,12 @@ export default function Home() {
       <section className="landing-section mx-auto w-full max-w-7xl px-4 py-16 sm:px-8 lg:px-10" aria-labelledby="themes-title">
         <div className="grid gap-8 lg:grid-cols-[0.75fr_1.25fr] lg:items-end">
           <SectionIntro
-            eyebrow="Custom themes"
+            eyebrow="Dark and light modes"
             id="themes-title"
-            title="Every space has a different energy."
-            text="VAL themes turn your platform into a world - from spy dashboards to survival mode, street hero energy, blue corner calm, and founder mode."
+            title="One identity. Two premium modes."
+            text="VAL now focuses on a single premium neo-brutalist system with dark and light mode, both tuned for strong contrast, tactile surfaces, and clear hierarchy."
           />
-          <div className="landing-theme-row grid auto-cols-[minmax(16rem,1fr)] grid-flow-col gap-4 overflow-x-auto pb-3 lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible lg:pb-0">
+          <div className="landing-theme-row grid auto-cols-[minmax(16rem,1fr)] grid-flow-col gap-4 overflow-x-auto pb-3 lg:grid-flow-row lg:grid-cols-2 lg:overflow-visible lg:pb-0">
             {themeCards.map((theme) => (
               <ThemeCard key={theme.name} theme={theme} />
             ))}
@@ -366,9 +340,16 @@ function DashboardMockup({ size }: { size: "hero" | "wide" }) {
             </span>
           </div>
           <div className="mt-5 grid flex-1 content-start gap-3">
-            <MessageBubble name="Nima" text="Voice room is open. Join when you are ready." />
-            <MessageBubble delay name="Araz" text="Pinned the invite notes and theme options." />
-            <MessageBubble name="3z" text="Street Hero theme is too clean on mobile." />
+            <MessageBubble name="Mara" text="Voice room is open. Join when you are ready." />
+            <MessageBubble
+              delay
+              name="Jules"
+              text="Pinned the invite notes and dark/light preview updates."
+            />
+            <MessageBubble
+              name="Omar"
+              text="Light mode still feels crisp on mobile. Keep that contrast."
+            />
           </div>
           <div className="mt-5 rounded-xl border border-[#d8b56a]/28 bg-[#d8b56a]/10 p-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -384,7 +365,7 @@ function DashboardMockup({ size }: { size: "hero" | "wide" }) {
             </div>
           </div>
           <div className="mt-4 grid grid-cols-3 gap-2">
-            {["Agent", "Blue", "Forge"].map((item) => (
+            {["Dark", "Light", "Focus"].map((item) => (
               <span className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-center text-xs font-bold text-slate-300" key={item}>
                 {item}
               </span>
@@ -470,7 +451,7 @@ function ThemeCard({
       <div
         className="mt-5 rounded-xl border border-white/10 p-3"
         style={{
-          background: `linear-gradient(135deg, ${theme.colors[2]}, #05030b)`,
+          background: `linear-gradient(135deg, ${theme.colors[2]}, rgba(255, 255, 255, 0.08))`,
         }}
       >
         <div className="flex items-center gap-2">
@@ -532,8 +513,8 @@ function NotificationMockup() {
   return (
     <div className="landing-card grid content-center gap-4 p-5 sm:p-6">
       {[
-        ["Message", "Araz sent a message in #main-chat"],
-        ["Invite", "Agent Amir invited you to Mission Room"],
+        ["Message", "Jules sent a message in #main-chat"],
+        ["Invite", "Mara invited you to Mission Room"],
         ["Missed call", "You missed a private VAL call"],
       ].map(([label, text]) => (
         <div className="rounded-xl border border-white/10 bg-white/[0.05] p-4" key={label}>

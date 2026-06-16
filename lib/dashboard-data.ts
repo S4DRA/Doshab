@@ -2,8 +2,40 @@ import { cache } from "react";
 
 import { prisma } from "@/lib/prisma";
 
-export const getDashboardGroups = cache(async (userId: string) =>
-  prisma.group.findMany({
+export const ensureOwnedGroupMemberships = cache(async (userId: string) => {
+  const ownedGroupsMissingMembership = await prisma.group.findMany({
+    where: {
+      isDirectMessage: false,
+      ownerId: userId,
+      members: {
+        none: {
+          userId,
+        },
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!ownedGroupsMissingMembership.length) {
+    return;
+  }
+
+  await prisma.groupMember.createMany({
+    data: ownedGroupsMissingMembership.map((group) => ({
+      groupId: group.id,
+      role: "OWNER" as const,
+      userId,
+    })),
+    skipDuplicates: true,
+  });
+});
+
+export const getDashboardGroups = cache(async (userId: string) => {
+  await ensureOwnedGroupMemberships(userId);
+
+  return prisma.group.findMany({
     where: {
       isDirectMessage: false,
       members: {
@@ -51,10 +83,12 @@ export const getDashboardGroups = cache(async (userId: string) =>
         },
       },
     },
-  }),
-);
+  });
+});
 
 export const getDashboardSidebarGroups = cache(async (userId: string) => {
+  await ensureOwnedGroupMemberships(userId);
+
   const groups = await prisma.group.findMany({
     where: {
       isDirectMessage: false,

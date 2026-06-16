@@ -6,7 +6,6 @@ import { useCallback, useDeferredValue, useEffect, useRef, useState } from "reac
 
 import { PushNotificationToggle } from "@/components/notifications/push-notification-toggle";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
-import { LogoMark } from "@/components/ui/logo-mark";
 import type { DashboardNotification } from "@/types";
 
 const navItems = [
@@ -14,10 +13,11 @@ const navItems = [
     href: "/dashboard",
     label: "Home",
     icon: (
-      <LogoMark
-        className="h-11 w-11 sm:h-12 sm:w-12 min-[1180px]:h-[3.25rem] min-[1180px]:w-[3.25rem]"
-        sizes="84px"
-      />
+      <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
+        <path d="m3 11 9-8 9 8" />
+        <path d="M5 10v10h14V10" />
+        <path d="M9 20v-6h6v6" />
+      </svg>
     ),
   },
   {
@@ -72,6 +72,8 @@ type SidebarSnapshot = {
   notifications: DashboardNotification[];
   unreadCount: number;
 };
+
+type MobileCommandAction = "friends" | "messages" | "create" | "groups";
 
 const mobileChannelPinCacheKey = "doshab-mobile-channel-pin-v1";
 const sidebarCacheKey = "doshab-sidebar-v6";
@@ -170,9 +172,14 @@ export function DashboardSidebar({
   const [createOpen, setCreateOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
   const [friendsQuery, setFriendsQuery] = useState("");
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [groupPickerOpen, setGroupPickerOpen] = useState(false);
+  const [activeCommandAction, setActiveCommandAction] = useState<MobileCommandAction | null>(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement | null>(null);
+  const commandButtonRef = useRef<HTMLButtonElement | null>(null);
+  const activeCommandActionRef = useRef<MobileCommandAction | null>(null);
   const [pinnedGroupId, setPinnedGroupId] = useState<string | null>(() => {
     if (typeof window === "undefined") {
       return null;
@@ -199,6 +206,31 @@ export function DashboardSidebar({
     setFriendsOpen(false);
     setFriendsQuery("");
   }, []);
+  const runMobileCommandAction = useCallback((action: MobileCommandAction) => {
+    setActiveCommandAction(null);
+
+    switch (action) {
+      case "friends":
+        setCommandOpen(false);
+        setGroupPickerOpen(false);
+        router.push("/dashboard/friends");
+        return;
+      case "messages":
+        setCommandOpen(false);
+        setGroupPickerOpen(false);
+        router.push("/dashboard/messages");
+        return;
+      case "create":
+        setCommandOpen(false);
+        setGroupPickerOpen(false);
+        router.push("/dashboard#create-space");
+        return;
+      case "groups":
+        setCommandOpen(true);
+        setGroupPickerOpen(true);
+        return;
+    }
+  }, [router]);
   const toggleFriendsMenu = useCallback(() => {
     const nextOpen = !friendsOpen;
 
@@ -442,7 +474,7 @@ export function DashboardSidebar({
 
   useEffect(() => {
     const anyMenuOpen =
-      channelsOpen || createOpen || friendsOpen || notificationsOpen || profileOpen;
+      channelsOpen || createOpen || friendsOpen || commandOpen || groupPickerOpen || notificationsOpen || profileOpen;
 
     if (!anyMenuOpen) {
       return;
@@ -458,6 +490,9 @@ export function DashboardSidebar({
       setChannelsOpen(false);
       setCreateOpen(false);
       closeFriendsMenu();
+      setCommandOpen(false);
+      setGroupPickerOpen(false);
+      setActiveCommandAction(null);
       setNotificationsOpen(false);
       setProfileOpen(false);
     }
@@ -470,6 +505,9 @@ export function DashboardSidebar({
       setChannelsOpen(false);
       setCreateOpen(false);
       closeFriendsMenu();
+      setCommandOpen(false);
+      setGroupPickerOpen(false);
+      setActiveCommandAction(null);
       setNotificationsOpen(false);
       setProfileOpen(false);
     }
@@ -481,7 +519,116 @@ export function DashboardSidebar({
       document.removeEventListener("pointerdown", closeOnOutsidePointer);
       document.removeEventListener("keydown", closeOnEscape);
     };
-  }, [channelsOpen, closeFriendsMenu, createOpen, friendsOpen, notificationsOpen, profileOpen]);
+  }, [channelsOpen, closeFriendsMenu, commandOpen, createOpen, friendsOpen, groupPickerOpen, notificationsOpen, profileOpen]);
+
+  useEffect(() => {
+    activeCommandActionRef.current = activeCommandAction;
+  }, [activeCommandAction]);
+
+  useEffect(() => {
+    if (!commandOpen) {
+      return;
+    }
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyTouchAction = document.body.style.touchAction;
+    const previousRootOverscrollBehavior = document.documentElement.style.overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    document.documentElement.style.overscrollBehavior = "none";
+
+    function getPointerElement(event: PointerEvent) {
+      return document.elementFromPoint(event.clientX, event.clientY) ?? event.target;
+    }
+
+    function getActionFromTarget(target: EventTarget | null): MobileCommandAction | null {
+      if (!(target instanceof Element)) {
+        return null;
+      }
+
+      const actionTarget = target.closest("[data-command-action]");
+
+      if (!(actionTarget instanceof HTMLElement)) {
+        return null;
+      }
+
+      const action = actionTarget.dataset.commandAction;
+
+      return action === "friends" || action === "messages" || action === "create" || action === "groups"
+        ? action
+        : null;
+    }
+
+    function highlightPointerAction(event: PointerEvent) {
+      event.preventDefault();
+      setActiveCommandAction(getActionFromTarget(getPointerElement(event)));
+    }
+
+    function cancelCommandHighlight(event: PointerEvent) {
+      event.preventDefault();
+      setActiveCommandAction(null);
+    }
+
+    function closeOnPointerRelease(event: PointerEvent) {
+      event.preventDefault();
+      const target = getPointerElement(event);
+
+      if (!(target instanceof Element)) {
+        setCommandOpen(false);
+        setGroupPickerOpen(false);
+        setActiveCommandAction(null);
+        return;
+      }
+
+      const groupTarget = target.closest("[data-command-group]");
+      if (groupTarget instanceof HTMLElement) {
+        const groupId = groupTarget.dataset.commandGroup;
+
+        if (groupId) {
+          const group = groups.find((item) => item.id === groupId);
+
+          setCommandOpen(false);
+          setGroupPickerOpen(false);
+          setActiveCommandAction(null);
+          router.push(group ? getGroupHref(group) : `/dashboard/groups/${groupId}`);
+        }
+
+        return;
+      }
+
+      const selectedAction = getActionFromTarget(target) ?? activeCommandActionRef.current;
+
+      if (selectedAction) {
+        runMobileCommandAction(selectedAction);
+        return;
+      }
+
+      if (commandButtonRef.current?.contains(target)) {
+        setCommandOpen(false);
+        setGroupPickerOpen(false);
+        setActiveCommandAction(null);
+        return;
+      }
+
+      setCommandOpen(false);
+      setGroupPickerOpen(false);
+      setActiveCommandAction(null);
+    }
+
+    document.addEventListener("pointermove", highlightPointerAction, { passive: false });
+    document.addEventListener("pointerup", closeOnPointerRelease);
+    document.addEventListener("pointercancel", cancelCommandHighlight);
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.touchAction = previousBodyTouchAction;
+      document.documentElement.style.overscrollBehavior = previousRootOverscrollBehavior;
+      document.removeEventListener("pointermove", highlightPointerAction);
+      document.removeEventListener("pointerup", closeOnPointerRelease);
+      document.removeEventListener("pointercancel", cancelCommandHighlight);
+    };
+  }, [commandOpen, groups, router, runMobileCommandAction]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -512,11 +659,44 @@ export function DashboardSidebar({
     pathname.startsWith("/dashboard/groups/") &&
     searchParams.get("view") === "messages";
   const messagesActive = pathname.startsWith("/dashboard/messages") || isPrivateChatRoute;
-  const channelsActive =
-    channelsOpen ||
-    ((pathname.startsWith("/dashboard/groups") || pathname.startsWith("/dashboard/channels")) &&
-      !isPrivateChatRoute);
   const pinnedGroup = groups.find((group) => group.id === pinnedGroupId) ?? groups[0] ?? null;
+  const closeCommandDock = () => {
+    setCommandOpen(false);
+    setGroupPickerOpen(false);
+    setActiveCommandAction(null);
+  };
+  const openCommandDock = () => {
+    setCommandOpen(true);
+    setActiveCommandAction(null);
+    setChannelsOpen(false);
+    setCreateOpen(false);
+    closeFriendsMenu();
+    setNotificationsOpen(false);
+    setProfileOpen(false);
+  };
+  const toggleCommandDock = () => {
+    setCommandOpen((open) => {
+      const nextOpen = !open;
+
+      if (!nextOpen) {
+        setGroupPickerOpen(false);
+        setActiveCommandAction(null);
+      }
+
+      return nextOpen;
+    });
+    setChannelsOpen(false);
+    setCreateOpen(false);
+    closeFriendsMenu();
+    setNotificationsOpen(false);
+    setProfileOpen(false);
+  };
+  const goToGroupMain = (groupId: string) => {
+    const group = groups.find((item) => item.id === groupId);
+
+    closeCommandDock();
+    router.push(group ? getGroupHref(group) : `/dashboard/groups/${groupId}`);
+  };
 
   async function markNotificationsRead() {
     const readAt = new Date().toISOString();
@@ -1180,181 +1360,157 @@ export function DashboardSidebar({
         </button>
       </div>
     ) : null}
-    <aside className="dashboard-main-sidebar fixed inset-x-0 bottom-0 z-50 flex h-[var(--dashboard-bottom-nav-height)] items-center border-t border-white/10 bg-[#0d100e]/95 px-2 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] backdrop-blur rounded-t-2xl sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-24 sm:flex-col sm:border-r sm:border-t-0 sm:px-3 sm:py-4 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] sm:rounded-t-none min-[1180px]:w-[6.5rem]" data-tour-target="groups-sidebar" ref={sidebarRef}>
+    <aside className="dashboard-main-sidebar fixed inset-x-0 bottom-0 z-50 flex h-[var(--dashboard-bottom-nav-height)] items-center border-t border-white/10 bg-[#0d100e]/95 px-2 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] rounded-t-2xl sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-24 sm:flex-col sm:border-r sm:border-t-0 sm:px-3 sm:py-4 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] sm:rounded-t-none min-[1180px]:w-[6.5rem]" data-tour-target="groups-sidebar" ref={sidebarRef}>
       {createMenu}
       {friendsMenu}
       {channelMenu}
       {notificationMenu}
       {profileMenu}
-      <nav className="grid w-full min-w-0 grid-cols-[repeat(3,minmax(0,1fr))_auto_repeat(3,minmax(0,1fr))] items-center gap-1 sm:hidden" aria-label="Mobile dashboard" data-tour-target="mobile-bottom-nav">
+      {commandOpen ? (
+        <>
+          <div aria-hidden="true" className="val-command-backdrop sm:hidden" />
+          <div
+            aria-label="VAL quick actions"
+            className="val-command-dock sm:hidden"
+            role="menu"
+          >
+            {groupPickerOpen ? (
+              <div className="val-command-group-picker" role="menu" aria-label="Joined spaces">
+                <p className="val-command-group-title">Spaces</p>
+                {groups.length ? (
+                  groups.slice(0, 5).map((group) => (
+                    <button
+                      aria-label={`Open ${group.name}`}
+                      className="val-command-group-item"
+                      data-command-group={group.id}
+                      key={group.id}
+                      onClick={() => goToGroupMain(group.id)}
+                      type="button"
+                    >
+                      <AvatarInitials fallback="group" imageUrl={group.image} size="sm" value={group.name} />
+                      <span>{group.name}</span>
+                    </button>
+                  ))
+                ) : (
+                  <p className="val-command-group-empty">No joined spaces yet.</p>
+                )}
+              </div>
+            ) : null}
+            <button
+              aria-label="Open friends"
+              className={`val-command-action val-command-action-friends${activeCommandAction === "friends" ? " val-command-action-active" : ""}`}
+              data-command-action="friends"
+              onClick={() => {
+                runMobileCommandAction("friends");
+              }}
+              role="menuitem"
+              type="button"
+            >
+              <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <span>Friends</span>
+            </button>
+            <button
+              aria-label="Open messages"
+              className={`val-command-action val-command-action-message${activeCommandAction === "messages" ? " val-command-action-active" : ""}`}
+              data-command-action="messages"
+              onClick={() => {
+                runMobileCommandAction("messages");
+              }}
+              role="menuitem"
+              type="button"
+            >
+              <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
+                <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
+              </svg>
+              <span>Messages</span>
+            </button>
+            <button
+              aria-label="Create space"
+              className={`val-command-action val-command-action-create${activeCommandAction === "create" ? " val-command-action-active" : ""}`}
+              data-command-action="create"
+              onClick={() => {
+                runMobileCommandAction("create");
+              }}
+              role="menuitem"
+              type="button"
+            >
+              <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
+                <path d="M12 5v14" />
+                <path d="M5 12h14" />
+              </svg>
+              <span>Create</span>
+            </button>
+            <button
+              aria-label="Show joined spaces"
+              className={`val-command-action val-command-action-groups${groupPickerOpen || activeCommandAction === "groups" ? " val-command-action-active" : ""}`}
+              data-command-action="groups"
+              onClick={() => {
+                runMobileCommandAction("groups");
+              }}
+              role="menuitem"
+              type="button"
+            >
+              <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
+                <path d="M4 6h16" />
+                <path d="M4 12h16" />
+                <path d="M4 18h16" />
+              </svg>
+              <span>Groups</span>
+            </button>
+          </div>
+        </>
+      ) : null}
+      <div className="flex w-full min-w-0 items-center justify-center sm:hidden" aria-label="VAL mobile command trigger" data-tour-target="mobile-command-button">
         <button
-          aria-label="Friends"
-          className={`dashboard-nav-icon mobile-dashboard-dock-button grid h-11 min-w-11 place-items-center rounded-xl border transition ${
-            pathname.startsWith("/dashboard/friends") || friendsOpen
-              ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
-              : "border-transparent text-slate-300"
+          aria-expanded={commandOpen}
+          aria-haspopup="menu"
+          aria-label={commandOpen ? "Close quick actions" : "Open quick actions"}
+          className={`val-command-button grid place-items-center rounded-full border transition ${
+            commandOpen ? "val-command-button-open" : ""
           }`}
-          aria-expanded={friendsOpen}
-          data-tour-target="friends-nav"
-          onClick={() => {
-            toggleFriendsMenu();
-            setChannelsOpen(false);
-            setCreateOpen(false);
-            setNotificationsOpen(false);
-            setProfileOpen(false);
+          onClick={(event) => {
+            event.preventDefault();
           }}
-          title="Friends"
+          onContextMenu={(event) => {
+            event.preventDefault();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              toggleCommandDock();
+              return;
+            }
+
+            if (event.key === "Escape") {
+              closeCommandDock();
+            }
+          }}
+          onPointerDown={(event) => {
+            event.preventDefault();
+            openCommandDock();
+          }}
+          ref={commandButtonRef}
+          title="VAL command dock"
           type="button"
         >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
+          <span className="val-command-button-mark" aria-hidden="true" />
         </button>
-
-        <Link
-          aria-label="Messages"
-          className={`dashboard-nav-icon mobile-dashboard-dock-button grid h-11 min-w-11 place-items-center rounded-xl border transition ${
-            messagesActive
-              ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
-              : "border-transparent text-slate-300"
-          }`}
-          href="/dashboard/messages"
-          aria-current={messagesActive ? "page" : undefined}
-          title="Messages"
-        >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
-          </svg>
-        </Link>
-
-        <button
-          aria-expanded={createOpen}
-          aria-label="Create menu"
-          className={`dashboard-nav-icon mobile-dashboard-dock-button grid h-11 min-w-11 place-items-center rounded-xl border transition ${
-            createOpen ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
-          }`}
-          onClick={() => {
-            setCreateOpen((open) => !open);
-            setChannelsOpen(false);
-            closeFriendsMenu();
-            setNotificationsOpen(false);
-            setProfileOpen(false);
-          }}
-          title="Create"
-          type="button"
-        >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path d="M12 5v14" />
-            <path d="M5 12h14" />
-          </svg>
-        </button>
-
-        <Link
-          aria-label="Home"
-          className={`dashboard-nav-icon mobile-dashboard-dock-button mobile-dashboard-dock-home grid h-12 min-w-12 place-items-center rounded-[1rem] border transition ${
-            pathname === "/dashboard"
-              ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
-              : "border-transparent text-slate-300"
-          }`}
-          href="/dashboard"
-          aria-current={pathname === "/dashboard" ? "page" : undefined}
-          title="Home"
-        >
-          <LogoMark className="h-11 w-11" sizes="56px" />
-        </Link>
-
-        <button
-          aria-expanded={channelsOpen}
-          aria-label={pinnedGroup ? `${pinnedGroup.name} channels` : "Channels"}
-          className={`dashboard-nav-icon mobile-dashboard-dock-button grid h-11 min-w-11 place-items-center rounded-xl border transition ${
-            channelsActive
-              ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
-              : "border-transparent text-slate-300"
-          }`}
-          data-tour-target="mobile-channel-drawer"
-          onClick={() => {
-            setChannelsOpen((open) => !open);
-            setCreateOpen(false);
-            closeFriendsMenu();
-            setNotificationsOpen(false);
-            setProfileOpen(false);
-          }}
-          title={pinnedGroup ? `${pinnedGroup.name} channels` : "Channels"}
-          type="button"
-        >
-          {pinnedGroup ? (
-            <AvatarInitials fallback="group" imageUrl={pinnedGroup.image} size="sm" value={pinnedGroup.name} />
-          ) : (
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M4 6h16" />
-              <path d="M4 12h16" />
-              <path d="M4 18h16" />
-            </svg>
-          )}
-        </button>
-
-        <button
-          aria-expanded={notificationsOpen}
-          aria-label="Notifications"
-          className={`dashboard-nav-icon mobile-dashboard-dock-button relative grid h-11 min-w-11 place-items-center rounded-xl border transition ${
-            notificationsOpen ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
-          }`}
-          data-tour-target="notifications-nav"
-          onClick={() => {
-            setNotificationsOpen((open) => !open);
-            setChannelsOpen(false);
-            setCreateOpen(false);
-            closeFriendsMenu();
-            setProfileOpen(false);
-          }}
-          title="Notifications"
-          type="button"
-        >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-          {unreadCount ? (
-            <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-[#FF5F25] px-1 text-[10px] font-black leading-5 text-black">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          ) : null}
-        </button>
-
-        <button
-          aria-expanded={profileOpen}
-          aria-label="Profile menu"
-          className={`dashboard-nav-icon mobile-dashboard-dock-button grid h-11 min-w-11 place-items-center rounded-xl border transition ${
-            profileActive || profileOpen ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]" : "border-transparent text-slate-300"
-          }`}
-          onClick={() => {
-            setProfileOpen((open) => !open);
-            setChannelsOpen(false);
-            setCreateOpen(false);
-            closeFriendsMenu();
-            setNotificationsOpen(false);
-          }}
-          title="Profile menu"
-          type="button"
-        >
-          {currentUser ? (
-            <AvatarInitials
-              imageUrl={currentUser.image}
-              value={currentUser.name || currentUser.email}
-            />
-          ) : (
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 21a8 8 0 0 1 16 0" />
-            </svg>
-          )}
-        </button>
-      </nav>
+      </div>
+      <Link
+        aria-label="VAL dashboard home"
+        className="dashboard-brand-lockup hidden shrink-0 flex-col items-center gap-2 rounded-xl border transition sm:flex"
+        href="/dashboard"
+      >
+        <span className="dashboard-brand-mark" aria-hidden="true" />
+        <span className="dashboard-brand-word">VAL</span>
+      </Link>
       <nav
-        className="hidden min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overscroll-contain px-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:flex sm:min-h-0 sm:flex-col sm:items-center sm:gap-2 sm:overflow-x-hidden sm:overflow-y-auto sm:px-0 sm:pb-2 [&::-webkit-scrollbar]:hidden"
+        className="hidden min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overscroll-contain px-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:flex sm:min-h-0 sm:flex-col sm:items-center sm:gap-2 sm:overflow-x-hidden sm:overflow-y-auto sm:px-0 sm:pb-2 sm:pt-3 [&::-webkit-scrollbar]:hidden"
         aria-label="Dashboard"
       >
         {navItems.map((item) => {

@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const supabase = createSupabaseRouteClient(request, response);
     const origin = getRequestOrigin(request);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -120,13 +120,20 @@ export async function POST(request: NextRequest) {
       return redirectWithError(request, "Invalid email or password.", returnTo);
     }
 
-    const { data } = await supabase.auth.getUser();
+    // Prefer the signed-in user returned by Auth directly. In local SSR flows,
+    // a same-request getUser() can miss the freshly written auth cookies.
+    let authenticatedUser: typeof signInData.user | null = signInData.user;
 
-    if (!data.user) {
+    if (!authenticatedUser) {
+      const { data } = await supabase.auth.getUser();
+      authenticatedUser = data.user;
+    }
+
+    if (!authenticatedUser) {
       return redirectWithError(request, "Authentication is temporarily unavailable.", returnTo);
     }
 
-    if (!data.user.email_confirmed_at) {
+    if (!authenticatedUser.email_confirmed_at) {
       await supabase.auth.signOut();
       return NextResponse.redirect(
         new URL(
@@ -140,8 +147,8 @@ export async function POST(request: NextRequest) {
     }
 
     const nameFromMetadata =
-      typeof data.user.user_metadata?.name === "string"
-        ? data.user.user_metadata.name
+      typeof authenticatedUser.user_metadata?.name === "string"
+        ? authenticatedUser.user_metadata.name
         : "";
 
     await prisma.user.upsert({

@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    background_color: "#111413",
+    background_color: "#0f1115",
     description:
       "VAL is a Virtual Architecture Layer for private communities, real-time voice rooms, and structured digital spaces.",
     display: "standalone",
@@ -29,6 +29,6 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     short_name: "VAL",
     start_url: "/dashboard",
-    theme_color: "#111413",
+    theme_color: "#0f1115",
   };
 }

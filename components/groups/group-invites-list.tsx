@@ -16,9 +16,24 @@ type GroupInvitesListProps = {
 
 export function GroupInvitesList({ invites, emptyActions }: GroupInvitesListProps) {
   return (
-    <section className="app-panel p-5">
-      <p className="app-section-title">Invites</p>
-      <h2 className="mt-2 text-base font-semibold text-white">Space invites</h2>
+    <section className="app-panel p-5 xl:col-span-2">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="dashboard-glyph" aria-hidden="true">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+              <path d="M4 4h16v16H4z" />
+              <path d="m4 7 8 6 8-6" />
+            </svg>
+          </span>
+          <span className="min-w-0">
+            <p className="app-section-title">Invites</p>
+            <h2 className="mt-2 text-base font-bold text-white">Space invites</h2>
+          </span>
+        </div>
+        <span className="app-badge px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]">
+          {invites.length} {invites.length === 1 ? "pending" : "pending"}
+        </span>
+      </div>
       {invites.length ? (
         <div className="mt-4 space-y-3">
           {invites.map((invite) => (
@@ -47,7 +62,7 @@ export function GroupInvitesList({ invites, emptyActions }: GroupInvitesListProp
               <div className="flex w-full gap-2 sm:w-auto">
                 <form action={`/api/groups/invites/${invite.id}/accept`} className="min-w-0 flex-1 sm:flex-none" method="post">
                   <SubmitButton
-                    className="h-11 w-full rounded-lg bg-emerald-500/20 px-3 text-xs text-emerald-100 hover:bg-emerald-500/30 sm:h-9"
+                    className="app-button-primary h-11 w-full rounded-lg px-3 text-xs transition sm:h-9"
                     pendingText="Accepting..."
                   >
                     Accept

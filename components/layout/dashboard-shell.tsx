@@ -118,7 +118,7 @@ export function DashboardShell({
                   {groups.map((group) => (
                     <Link
                       className="app-row flex min-w-0 items-center gap-3 px-3 py-3 transition hover:border-[#FF5F25]/70"
-                      href={`/dashboard/groups/${group.id}`}
+                      href={getDefaultSpaceHref(group)}
                       key={group.id}
                     >
                       <AvatarInitials fallback="group" imageUrl={group.image} value={group.name} />
@@ -147,7 +147,7 @@ export function DashboardShell({
       </aside>
 
       <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="dashboard-shell-header sticky top-0 z-10 flex min-h-14 shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 backdrop-blur sm:px-6 min-[1180px]:min-h-16 min-[1180px]:px-7">
+        <header className="dashboard-shell-header sticky top-0 z-10 flex min-h-14 shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 sm:px-6 min-[1180px]:min-h-16 min-[1180px]:px-7">
           <div className="min-w-0">
             <p className="app-section-title">
               {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : activeSection === "messages" ? "Messages" : "Dashboard"}
@@ -229,7 +229,7 @@ export function DashboardShell({
         ) : activeSection === "messages" ? (
           messagesPageContent ?? <MessagesHome threads={messageThreads} />
         ) : (
-          <DashboardHome currentUserId={currentUser?.id} data={homeData} groups={groups} />
+          <DashboardHome currentUser={currentUser} data={homeData} groups={groups} />
         )}
       </section>
     </main>
@@ -271,7 +271,7 @@ function MessageThreadSidebar({
               <div
                 className={`group flex items-center gap-2 rounded-xl border px-2.5 py-2.5 transition ${
                   selectedGroupId === thread.id
-                    ? "border-[#FF5F25]/65 bg-[linear-gradient(180deg,rgba(255,95,37,0.18),rgba(255,95,37,0.08))] shadow-[0_14px_30px_-24px_rgba(255,95,37,0.5)]"
+                    ? "border-[#6B5BFF] bg-[#1A1D22] shadow-[5px_5px_0_#000]"
                     : "border-transparent bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.06]"
                 }`}
                 key={thread.id}
@@ -586,7 +586,7 @@ function ChannelMain({
   if (channel.type === "VOICE") {
     return (
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden min-[1180px]:h-full">
-        <div className="border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 backdrop-blur min-[1180px]:hidden">
+        <div className="border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 min-[1180px]:hidden">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="app-section-title">
@@ -658,16 +658,18 @@ function ChannelMain({
 }
 
 function DashboardHome({
-  currentUserId,
+  currentUser,
   data,
   groups,
 }: {
-  currentUserId?: string;
+  currentUser?: ChatMessage["sender"];
   data?: DashboardHomeData;
   groups: DashboardGroup[];
 }) {
   const friends = data?.friends ?? [];
   const onlineFriends = friends.filter((friend) => friend.status === "ONLINE");
+  const currentUserId = currentUser?.id;
+  const firstName = currentUser?.name?.trim().split(/\s+/)[0];
 
   return (
     <div className="app-page-scroll">
@@ -676,9 +678,12 @@ function DashboardHome({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <p className="app-section-title">Home</p>
-              <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
-                Home
+              <h1 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">
+                Welcome back{firstName ? `, ${firstName}` : ""}
               </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                Your spaces, requests, invites, and online friends are ready from one focused command center.
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Link
@@ -705,9 +710,12 @@ function DashboardHome({
 
         <section className="grid gap-3">
           <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="app-section-title">Spaces</p>
+            <div className="flex min-w-0 items-center gap-3">
+              <DashboardGlyph icon="space" />
+              <span className="min-w-0">
+                <p className="app-section-title">Spaces</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Your spaces</h2>
+              </span>
             </div>
             <span className="app-badge px-3 py-1 text-xs font-semibold">
               {groups.length} total
@@ -744,9 +752,12 @@ function DashboardHome({
 
         <section className="grid gap-3">
           <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="app-section-title">Online friends</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Friends online</h2>
+            <div className="flex min-w-0 items-center gap-3">
+              <DashboardGlyph icon="friends" />
+              <span className="min-w-0">
+                <p className="app-section-title">Online friends</p>
+                <h2 className="mt-2 text-xl font-semibold text-white">Friends online</h2>
+              </span>
             </div>
             <span className="app-badge px-3 py-1 text-xs font-semibold">
               {onlineFriends.length} online
@@ -942,10 +953,37 @@ function OnlineFriendCard({ friend }: { friend: FriendPerson }) {
 
 function UpdateNewsItem({ body, title }: { body: string; title: string }) {
   return (
-    <article className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-      <h3 className="text-sm font-semibold text-white">{title}</h3>
-      <p className="mt-2 text-xs leading-5 text-slate-400">{body}</p>
+    <article className="app-row flex min-w-0 gap-3 p-4">
+      <DashboardGlyph icon="news" />
+      <span className="min-w-0">
+        <h3 className="text-sm font-semibold text-white">{title}</h3>
+        <p className="mt-2 text-xs leading-5 text-slate-400">{body}</p>
+      </span>
     </article>
+  );
+}
+
+function DashboardGlyph({ icon }: { icon: "friends" | "news" | "space" }) {
+  return (
+    <span className="dashboard-glyph" aria-hidden="true">
+      {icon === "friends" ? (
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      ) : icon === "news" ? (
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+          <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
+      ) : (
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+          <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
+        </svg>
+      )}
+    </span>
   );
 }
 

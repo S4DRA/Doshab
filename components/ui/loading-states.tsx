@@ -11,7 +11,7 @@ export function BrandLoader({ label = "Loading", size = "lg" }: BrandLoaderProps
 
 export function AppLoadingScreen({ label = "Loading" }: { label?: string }) {
   return (
-    <main className="loading-canvas grid min-h-[100dvh] place-items-center px-4 text-white">
+    <main className="loading-canvas grid min-h-[100dvh] place-items-center px-4 text-[color:var(--text-high)]">
       <BrandLoader label={label} />
     </main>
   );
@@ -19,7 +19,7 @@ export function AppLoadingScreen({ label = "Loading" }: { label?: string }) {
 
 export function DashboardLoadingShell() {
   return (
-    <main className="loading-canvas app-page-scroll text-white" aria-busy="true">
+    <main className="loading-canvas app-page-scroll text-[color:var(--text-high)]" aria-busy="true">
       <div className="app-page-container grid gap-5 py-4">
         <section className="grid justify-items-center py-2">
           <BrandLoader label="Loading dashboard" size="sm" />

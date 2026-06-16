@@ -42,7 +42,7 @@ const desktopTourSteps: TourStep[] = [
   {
     icon: <SparkIcon />,
     primaryLabel: "Start tour",
-    text: "VAL is your private space for spaces, voice channels, messages, friends, and custom themes.",
+    text: "VAL is your private space for spaces, voice channels, messages, friends, and focused dark or light modes.",
     title: "Welcome to VAL",
   },
   {
@@ -85,7 +85,7 @@ const desktopTourSteps: TourStep[] = [
   {
     icon: <PaletteIcon />,
     target: "themes-settings",
-    text: "Choose custom themes like Agent Amir, Nima: Last Light, 3z: Street Hero, Blue Corner, and Root Forge.",
+    text: "Choose the VAL mode that fits your environment: high-contrast dark or high-contrast light.",
     title: "Make VAL feel personal",
   },
   {
@@ -99,7 +99,7 @@ const mobileTourSteps: TourStep[] = [
   {
     icon: <SparkIcon />,
     primaryLabel: "Start tour",
-    text: "VAL keeps your spaces, calls, friends, and themes close while leaving room for the conversation.",
+    text: "VAL keeps your spaces, calls, friends, and dark or light mode close while leaving room for the conversation.",
     title: "Welcome to VAL",
   },
   {
@@ -141,7 +141,7 @@ const mobileTourSteps: TourStep[] = [
   {
     icon: <PaletteIcon />,
     target: "themes-settings",
-    text: "Themes carry across mobile and desktop, so VAL can keep the same personality everywhere.",
+    text: "Dark and light mode carry across mobile and desktop, so VAL stays consistent everywhere.",
     title: "Themes",
   },
   {
