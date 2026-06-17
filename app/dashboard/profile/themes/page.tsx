@@ -11,11 +11,11 @@ export default function ProfileThemesPage() {
             <div>
               <p className="app-section-title">Theme settings</p>
               <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
-                Choose dark or light mode
+                Choose your VAL palette
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-                VAL now uses one focused premium identity with two high-contrast
-                neo-brutalist modes.
+                Pick from ten premium neo-brutalist palettes. Your dark or light
+                preference stays global while the palette changes the full token set.
               </p>
             </div>
             <Link

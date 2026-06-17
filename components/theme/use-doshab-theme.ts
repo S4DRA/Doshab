@@ -3,32 +3,60 @@
 import { useEffect, useState } from "react";
 
 import {
+  DEFAULT_DOSHAB_PALETTE_ID,
   DEFAULT_DOSHAB_THEME_ID,
+  DEFAULT_DOSHAB_THEME_MODE,
+  DOSHAB_MODE_STORAGE_KEY,
+  DOSHAB_PALETTE_STORAGE_KEY,
   DOSHAB_THEME_STORAGE_KEY,
+  getDoshabThemeId,
+  resolveDoshabPaletteId,
   resolveDoshabThemeId,
+  resolveDoshabThemeMode,
+  type DoshabPaletteId,
   type DoshabThemeId,
+  type DoshabThemeMode,
 } from "@/lib/themes";
 
 const themeChangeEventName = "doshab-theme-change";
 const DARK_CHROME_COLOR = "#08090b";
-const LIGHT_CHROME_COLOR = "#f7f7f5";
+const LIGHT_CHROME_COLOR = "#f6f3ea";
 
-function setThemeChromeColor(themeId: DoshabThemeId) {
+function setThemeChromeColor(mode: DoshabThemeMode) {
   const metaThemeColor = document.querySelector('meta[name="theme-color"]');
 
   if (metaThemeColor) {
-    metaThemeColor.setAttribute("content", themeId === "light" ? LIGHT_CHROME_COLOR : DARK_CHROME_COLOR);
+    metaThemeColor.setAttribute("content", mode === "light" ? LIGHT_CHROME_COLOR : DARK_CHROME_COLOR);
   }
 }
 
 function setDocumentTheme(themeId: DoshabThemeId) {
+  const [paletteId, mode] = splitThemeId(themeId);
+
   document.documentElement.dataset.theme = themeId;
-  setThemeChromeColor(themeId);
+  document.documentElement.dataset.palette = paletteId;
+  document.documentElement.dataset.mode = mode;
+  setThemeChromeColor(mode);
+}
+
+function splitThemeId(themeId: DoshabThemeId): [DoshabPaletteId, DoshabThemeMode] {
+  const mode = themeId.endsWith("-light") ? "light" : "dark";
+  const paletteId = resolveDoshabPaletteId(themeId.replace(/-(dark|light)$/, ""));
+
+  return [paletteId, mode];
+}
+
+function storeTheme(themeId: DoshabThemeId) {
+  const [paletteId, mode] = splitThemeId(themeId);
+
+  window.localStorage.setItem(DOSHAB_THEME_STORAGE_KEY, themeId);
+  window.localStorage.setItem(DOSHAB_PALETTE_STORAGE_KEY, paletteId);
+  window.localStorage.setItem(DOSHAB_MODE_STORAGE_KEY, mode);
 }
 
 function applyTheme(themeId: DoshabThemeId) {
   setDocumentTheme(themeId);
-  window.localStorage.setItem(DOSHAB_THEME_STORAGE_KEY, themeId);
+  storeTheme(themeId);
   window.dispatchEvent(
     new CustomEvent(themeChangeEventName, {
       detail: {
@@ -44,10 +72,16 @@ function getStoredTheme() {
   }
 
   const storedTheme = window.localStorage.getItem(DOSHAB_THEME_STORAGE_KEY);
-  const resolvedTheme = resolveDoshabThemeId(storedTheme);
+  const storedPalette = window.localStorage.getItem(DOSHAB_PALETTE_STORAGE_KEY);
+  const storedMode = window.localStorage.getItem(DOSHAB_MODE_STORAGE_KEY);
+  const resolvedLegacyTheme = resolveDoshabThemeId(storedTheme);
+  const legacyTheme = storedTheme ? splitThemeId(resolvedLegacyTheme) : null;
+  const paletteId = resolveDoshabPaletteId(storedPalette ?? legacyTheme?.[0] ?? DEFAULT_DOSHAB_PALETTE_ID);
+  const mode = resolveDoshabThemeMode(storedMode ?? legacyTheme?.[1] ?? DEFAULT_DOSHAB_THEME_MODE);
+  const resolvedTheme = getDoshabThemeId(paletteId, mode);
 
   if (storedTheme !== resolvedTheme) {
-    window.localStorage.setItem(DOSHAB_THEME_STORAGE_KEY, resolvedTheme);
+    storeTheme(resolvedTheme);
   }
 
   return resolvedTheme;
@@ -55,6 +89,7 @@ function getStoredTheme() {
 
 export function useDoshabTheme() {
   const [themeId, setThemeIdState] = useState<DoshabThemeId>(DEFAULT_DOSHAB_THEME_ID);
+  const [paletteId, mode] = splitThemeId(themeId);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -64,8 +99,12 @@ export function useDoshabTheme() {
     });
 
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === DOSHAB_THEME_STORAGE_KEY) {
-        const nextThemeId = resolveDoshabThemeId(event.newValue);
+      if (
+        event.key === DOSHAB_THEME_STORAGE_KEY ||
+        event.key === DOSHAB_PALETTE_STORAGE_KEY ||
+        event.key === DOSHAB_MODE_STORAGE_KEY
+      ) {
+        const nextThemeId = getStoredTheme();
         setDocumentTheme(nextThemeId);
         setThemeIdState(nextThemeId);
       }
@@ -93,7 +132,19 @@ export function useDoshabTheme() {
     applyTheme(nextThemeId);
   };
 
+  const setPaletteId = (nextPaletteId: DoshabPaletteId) => {
+    setThemeId(getDoshabThemeId(nextPaletteId, mode));
+  };
+
+  const setMode = (nextMode: DoshabThemeMode) => {
+    setThemeId(getDoshabThemeId(paletteId, nextMode));
+  };
+
   return {
+    mode,
+    paletteId,
+    setMode,
+    setPaletteId,
     setThemeId,
     themeId,
   };

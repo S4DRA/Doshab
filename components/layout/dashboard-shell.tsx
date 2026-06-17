@@ -675,12 +675,13 @@ function DashboardHome({
 
   return (
     <div className="app-page-scroll">
-      <div className="app-page-container grid gap-5">
-        <section className="app-page-header">
+      <div className="app-page-container dashboard-home-stack grid">
+        <section className="app-page-header dashboard-welcome-card">
+          <span className="dashboard-welcome-mark" aria-hidden="true" />
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <p className="app-section-title">Home</p>
-              <h1 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">
+              <h1 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-5xl">
                 Welcome back{firstName ? `, ${firstName}` : ""}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
@@ -723,13 +724,13 @@ function DashboardHome({
               {groups.length} total
             </span>
           </div>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className={`grid gap-4 md:grid-cols-2 ${groups.length === 1 ? "xl:grid-cols-1" : "xl:grid-cols-3"}`}>
             {groups.length ? (
               groups.map((group) => (
                 <HomeGroupCard currentUserId={currentUserId} group={group} key={group.id} />
               ))
             ) : (
-              <div className="app-card p-5 md:col-span-2 xl:col-span-3">
+              <div className="app-empty-state md:col-span-2 xl:col-span-3">
                 <p className="text-sm leading-6 text-slate-400">
                   No spaces yet. Create one below to start a private place for messages, voice, and invites.
                 </p>
@@ -771,7 +772,7 @@ function DashboardHome({
                 <OnlineFriendCard friend={friend} key={friend.id} />
               ))
             ) : (
-              <div className="app-card p-5 md:col-span-2 xl:col-span-3">
+              <div className="app-empty-state md:col-span-2 xl:col-span-3">
                 <p className="text-sm leading-6 text-slate-400">
                   No friends are online right now.
                 </p>
@@ -824,6 +825,8 @@ function HomeGroupCard({
   group: DashboardGroup;
 }) {
   const members = group.members ?? [];
+  const channels = group.channels ?? [];
+  const visibleChannels = channels.slice(0, 3);
   const visibleMembers = members.slice(0, 3);
   const currentMember = members.find((member) => member.user.id === currentUserId);
   const canManageSpace =
@@ -831,28 +834,51 @@ function HomeGroupCard({
   const defaultSpaceHref = getDefaultSpaceHref(group);
 
   return (
-    <article className="app-card grid min-h-44 content-between gap-4 p-4 transition hover:border-[#FF5F25]/70">
-      <span className="flex min-w-0 items-start gap-3">
-        <AvatarInitials fallback="group" imageUrl={group.image} value={group.name} />
+    <article className="app-card dashboard-space-card transition">
+      <div className="dashboard-space-identity flex min-w-0 items-start gap-4">
+        <AvatarInitials fallback="group" imageUrl={group.image} size="lg" value={group.name} />
         <span className="min-w-0 flex-1">
           <Link
-            className="block truncate text-base font-semibold text-white transition hover:text-[#FFB199]"
+            className="block truncate text-lg font-black text-white transition hover:text-[#FFB199]"
             href={defaultSpaceHref}
           >
             {group.name}
           </Link>
-          <span className="mt-1 block text-xs text-slate-400">
-            {(group.channels ?? []).length} channels
+          <span className="mt-1 block text-xs font-bold text-slate-400">
+            {channels.length} {channels.length === 1 ? "channel" : "channels"} / {members.length} {members.length === 1 ? "member" : "members"}
           </span>
           {group.description ? (
             <span className="mt-2 block line-clamp-2 text-xs leading-5 text-slate-500">
               {group.description}
             </span>
           ) : null}
+          {visibleChannels.length ? (
+            <span className="dashboard-channel-pills mt-3 flex min-w-0 flex-wrap gap-2">
+              {visibleChannels.map((channel) => (
+                <Link
+                  className="dashboard-channel-pill"
+                  href={
+                    channel.type === "TEXT"
+                      ? `/dashboard/groups/${group.id}/channels/${channel.id}`
+                      : `/dashboard/groups/${group.id}`
+                  }
+                  key={channel.id}
+                >
+                  {channel.type === "TEXT" ? "# " : ""}
+                  {channel.name}
+                </Link>
+              ))}
+              {channels.length > visibleChannels.length ? (
+                <span className="dashboard-channel-pill dashboard-channel-pill-muted">
+                  +{channels.length - visibleChannels.length}
+                </span>
+              ) : null}
+            </span>
+          ) : null}
         </span>
-      </span>
+      </div>
 
-      <span className="block min-w-0">
+      <div className="dashboard-space-people min-w-0">
         <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#FF5F25]">
           People
         </span>
@@ -884,9 +910,14 @@ function HomeGroupCard({
             <span className="text-sm text-slate-400">No people yet</span>
           )}
         </span>
-      </span>
+      </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="dashboard-space-actions flex flex-wrap gap-2">
+        {currentMember?.role ? (
+          <span className="dashboard-space-role app-badge px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em]">
+            {currentMember.role.toLowerCase()}
+          </span>
+        ) : null}
         <Link
           className="app-button-primary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
           href={defaultSpaceHref}
@@ -967,7 +998,7 @@ function UpdateNewsItem({ body, title }: { body: string; title: string }) {
 
 function DashboardGlyph({ icon }: { icon: "friends" | "news" | "space" }) {
   return (
-    <span className="dashboard-glyph" aria-hidden="true">
+    <span className={`dashboard-glyph dashboard-glyph-${icon}`} aria-hidden="true">
       {icon === "friends" ? (
         <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />

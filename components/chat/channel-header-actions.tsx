@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { ChannelList } from "@/components/groups/channel-list";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
@@ -64,6 +65,152 @@ export function ChannelHeaderActions({
     };
   }, [openPanel]);
 
+  const openPanelDialog = openPanel ? (
+    <div className="fixed inset-0 z-[120] flex items-end bg-black/50 min-[1180px]:items-start min-[1180px]:justify-end min-[1180px]:bg-black/20">
+      <div
+        className="app-panel mx-3 mb-[calc(env(safe-area-inset-bottom)+6rem)] flex max-h-[72dvh] w-full max-w-xl flex-col overflow-hidden rounded-[1.4rem] p-4 min-[1180px]:mx-0 min-[1180px]:mr-7 min-[1180px]:mt-[7.25rem] min-[1180px]:mb-0 min-[1180px]:max-h-[calc(100dvh_-_9rem)] min-[1180px]:rounded-lg min-[1180px]:p-5"
+        ref={panelRef}
+        role="dialog"
+      >
+        {openPanel === "channels" ? (
+          <PanelShell
+            description="Switch channels without losing your place in this space."
+            onClose={() => setOpenPanel(null)}
+            title="Channels"
+          >
+            <div className="max-h-[50dvh] min-h-0 overflow-y-auto pr-1">
+              {channels.length ? (
+                <ChannelList
+                  channels={channels}
+                  groupId={groupId}
+                  onNavigate={() => setOpenPanel(null)}
+                  selectedChannelId={selectedChannelId}
+                />
+              ) : (
+                <div className="rounded-lg border border-dashed border-white/10 px-4 py-5 text-sm leading-6 text-slate-400">
+                  No channels yet in {groupName ?? "this space"}.
+                </div>
+              )}
+            </div>
+          </PanelShell>
+        ) : null}
+
+        {openPanel === "members" ? (
+          <PanelShell
+            description="See who is in the conversation and jump straight into a private chat."
+            onClose={() => setOpenPanel(null)}
+            title="Members"
+          >
+            <div className="grid gap-2">
+              {members.length ? (
+                members.map((member) => {
+                  const memberLabel = member.user.name || member.user.email;
+
+                  return (
+                    <div
+                      className="app-row flex min-w-0 flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center"
+                      key={member.id}
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <AvatarInitials imageUrl={member.user.image} value={memberLabel} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold text-white">
+                            {memberLabel}
+                          </span>
+                          <span className="block truncate text-xs text-slate-400">
+                            {member.user.email}
+                          </span>
+                          <span className="mt-1 flex items-center gap-2 text-[11px] text-slate-500">
+                            <span className="app-status-dot" data-status={member.user.status ?? "OFFLINE"} />
+                            {formatUserStatus(member.user.status)}
+                          </span>
+                        </span>
+                      </div>
+                      {currentUserId && member.user.id !== currentUserId ? (
+                        <div className="flex w-full gap-2 sm:w-auto">
+                          <form action="/api/private-messages" className="min-w-0 flex-1 sm:flex-none" method="post">
+                            <input name="friendId" type="hidden" value={member.user.id} />
+                            <button
+                              className="app-button-secondary h-10 w-full rounded-lg px-3 text-sm font-semibold transition sm:w-auto"
+                              type="submit"
+                            >
+                              Message
+                            </button>
+                          </form>
+                          <form action="/api/friend-calls/start" className="min-w-0 flex-1 sm:flex-none" method="post">
+                            <input name="friendId" type="hidden" value={member.user.id} />
+                            <button
+                              className="app-button-primary h-10 w-full rounded-lg px-3 text-sm font-semibold transition sm:w-auto"
+                              type="submit"
+                            >
+                              Call
+                            </button>
+                          </form>
+                        </div>
+                      ) : (
+                        <span className="app-badge w-fit px-3 py-1 text-[11px] font-semibold">
+                          {formatRoleLabel(member.role)}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="rounded-lg border border-dashed border-white/10 px-4 py-5 text-sm leading-6 text-slate-400">
+                  No members available right now.
+                </div>
+              )}
+            </div>
+          </PanelShell>
+        ) : null}
+
+        {openPanel === "more" ? (
+          <PanelShell
+            description="Extra space actions stay grouped here on mobile so the header stays calm."
+            onClose={() => setOpenPanel(null)}
+            title="More"
+          >
+            <div className="grid gap-2">
+              <Link
+                className="app-row flex min-h-12 items-center justify-between gap-3 px-3 py-3"
+                href="/dashboard/messages"
+                onClick={() => setOpenPanel(null)}
+              >
+                <span className="text-sm font-semibold text-white">Open messages</span>
+                <span className="text-[11px] font-semibold text-[#FFB199]">Go</span>
+              </Link>
+              {canInvite ? (
+                <Link
+                  className="app-row flex min-h-12 items-center justify-between gap-3 px-3 py-3"
+                  href={`/dashboard/groups/${groupId}/settings#invite-friends`}
+                  onClick={() => setOpenPanel(null)}
+                >
+                  <span className="text-sm font-semibold text-white">Invite friends</span>
+                  <span className="text-[11px] font-semibold text-[#FFB199]">Open</span>
+                </Link>
+              ) : null}
+              {canManageSpace ? (
+                <Link
+                  className="app-row flex min-h-12 items-center justify-between gap-3 px-3 py-3"
+                  href={`/dashboard/groups/${groupId}/settings`}
+                  onClick={() => setOpenPanel(null)}
+                >
+                  <span className="text-sm font-semibold text-white">Space settings</span>
+                  <span className="text-[11px] font-semibold text-[#FFB199]">Open</span>
+                </Link>
+              ) : null}
+              {!canInvite && !canManageSpace ? (
+                <div className="rounded-lg border border-dashed border-white/10 px-4 py-5 text-sm leading-6 text-slate-400">
+                  Space owners and admins see invite and settings actions here.
+                </div>
+              ) : null}
+            </div>
+          </PanelShell>
+        ) : null}
+      </div>
+    </div>
+  ) : null;
+
   return (
     <>
       <div className="flex shrink-0 flex-wrap justify-end gap-2 min-[1180px]:items-center">
@@ -101,151 +248,7 @@ export function ChannelHeaderActions({
         ) : null}
       </div>
 
-      {openPanel ? (
-        <div className="fixed inset-0 z-[120] flex items-end bg-black/50 min-[1180px]:items-start min-[1180px]:justify-end min-[1180px]:bg-black/20">
-          <div
-            className="app-panel mx-3 mb-[calc(env(safe-area-inset-bottom)+6rem)] flex max-h-[72dvh] w-full max-w-xl flex-col overflow-hidden rounded-[1.4rem] p-4 min-[1180px]:mx-0 min-[1180px]:mr-7 min-[1180px]:mt-[7.25rem] min-[1180px]:mb-0 min-[1180px]:max-h-[calc(100dvh_-_9rem)] min-[1180px]:rounded-lg min-[1180px]:p-5"
-            ref={panelRef}
-            role="dialog"
-          >
-            {openPanel === "channels" ? (
-              <PanelShell
-                description="Switch channels without losing your place in this space."
-                onClose={() => setOpenPanel(null)}
-                title="Channels"
-              >
-                <div className="max-h-[50dvh] min-h-0 overflow-y-auto pr-1">
-                  {channels.length ? (
-                    <ChannelList
-                      channels={channels}
-                      groupId={groupId}
-                      onNavigate={() => setOpenPanel(null)}
-                      selectedChannelId={selectedChannelId}
-                    />
-                  ) : (
-                    <div className="rounded-lg border border-dashed border-white/10 px-4 py-5 text-sm leading-6 text-slate-400">
-                      No channels yet in {groupName ?? "this space"}.
-                    </div>
-                  )}
-                </div>
-              </PanelShell>
-            ) : null}
-
-            {openPanel === "members" ? (
-              <PanelShell
-                description="See who is in the conversation and jump straight into a private chat."
-                onClose={() => setOpenPanel(null)}
-                title="Members"
-              >
-                <div className="grid gap-2">
-                  {members.length ? (
-                    members.map((member) => {
-                      const memberLabel = member.user.name || member.user.email;
-
-                      return (
-                        <div
-                          className="app-row flex min-w-0 flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center"
-                          key={member.id}
-                        >
-                          <div className="flex min-w-0 items-center gap-3">
-                            <AvatarInitials imageUrl={member.user.image} value={memberLabel} />
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate text-sm font-semibold text-white">
-                                {memberLabel}
-                              </span>
-                              <span className="block truncate text-xs text-slate-400">
-                                {member.user.email}
-                              </span>
-                              <span className="mt-1 flex items-center gap-2 text-[11px] text-slate-500">
-                                <span className="app-status-dot" data-status={member.user.status ?? "OFFLINE"} />
-                                {formatUserStatus(member.user.status)}
-                              </span>
-                            </span>
-                          </div>
-                          {currentUserId && member.user.id !== currentUserId ? (
-                            <div className="flex w-full gap-2 sm:w-auto">
-                              <form action="/api/private-messages" className="min-w-0 flex-1 sm:flex-none" method="post">
-                                <input name="friendId" type="hidden" value={member.user.id} />
-                                <button
-                                  className="app-button-secondary h-10 w-full rounded-lg px-3 text-sm font-semibold transition sm:w-auto"
-                                  type="submit"
-                                >
-                                  Message
-                                </button>
-                              </form>
-                              <form action="/api/friend-calls/start" className="min-w-0 flex-1 sm:flex-none" method="post">
-                                <input name="friendId" type="hidden" value={member.user.id} />
-                                <button
-                                  className="app-button-primary h-10 w-full rounded-lg px-3 text-sm font-semibold transition sm:w-auto"
-                                  type="submit"
-                                >
-                                  Call
-                                </button>
-                              </form>
-                            </div>
-                          ) : (
-                            <span className="app-badge w-fit px-3 py-1 text-[11px] font-semibold">
-                              {formatRoleLabel(member.role)}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="rounded-lg border border-dashed border-white/10 px-4 py-5 text-sm leading-6 text-slate-400">
-                      No members available right now.
-                    </div>
-                  )}
-                </div>
-              </PanelShell>
-            ) : null}
-
-            {openPanel === "more" ? (
-              <PanelShell
-                description="Extra space actions stay grouped here on mobile so the header stays calm."
-                onClose={() => setOpenPanel(null)}
-                title="More"
-              >
-                <div className="grid gap-2">
-                  <Link
-                    className="app-row flex min-h-12 items-center justify-between gap-3 px-3 py-3"
-                    href="/dashboard/messages"
-                    onClick={() => setOpenPanel(null)}
-                  >
-                    <span className="text-sm font-semibold text-white">Open messages</span>
-                    <span className="text-[11px] font-semibold text-[#FFB199]">Go</span>
-                  </Link>
-                  {canInvite ? (
-                    <Link
-                      className="app-row flex min-h-12 items-center justify-between gap-3 px-3 py-3"
-                      href={`/dashboard/groups/${groupId}/settings#invite-friends`}
-                      onClick={() => setOpenPanel(null)}
-                    >
-                      <span className="text-sm font-semibold text-white">Invite friends</span>
-                      <span className="text-[11px] font-semibold text-[#FFB199]">Open</span>
-                    </Link>
-                  ) : null}
-                  {canManageSpace ? (
-                    <Link
-                      className="app-row flex min-h-12 items-center justify-between gap-3 px-3 py-3"
-                      href={`/dashboard/groups/${groupId}/settings`}
-                      onClick={() => setOpenPanel(null)}
-                    >
-                      <span className="text-sm font-semibold text-white">Space settings</span>
-                      <span className="text-[11px] font-semibold text-[#FFB199]">Open</span>
-                    </Link>
-                  ) : null}
-                  {!canInvite && !canManageSpace ? (
-                    <div className="rounded-lg border border-dashed border-white/10 px-4 py-5 text-sm leading-6 text-slate-400">
-                      Space owners and admins see invite and settings actions here.
-                    </div>
-                  ) : null}
-                </div>
-              </PanelShell>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
+      {openPanelDialog ? createPortal(openPanelDialog, document.body) : null}
     </>
   );
 }

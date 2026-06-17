@@ -96,7 +96,7 @@ export function FriendRequestList({
           })}
         </div>
       ) : (
-        <div className="mt-5">
+        <div className="app-empty-state mt-5">
           <p className="text-sm leading-6 text-slate-400">{emptyText}</p>
           {emptyAction ? (
             <Link

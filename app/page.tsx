@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { ButtonLink } from "@/components/ui/button-link";
 import { LogoMark } from "@/components/ui/logo-mark";
-import { DOSHAB_THEMES } from "@/lib/themes";
+import { DOSHAB_PALETTES } from "@/lib/themes";
 
 const showcaseCards = [
   {
@@ -23,7 +23,7 @@ const showcaseCards = [
   },
   {
     title: "Theme settings",
-    description: "Switch between two focused high-contrast modes without losing the VAL identity.",
+    description: "Switch between ten focused high-contrast palettes without losing the VAL identity.",
     variant: "themes",
   },
 ] as const;
@@ -51,14 +51,18 @@ const features = [
   },
   {
     title: "Dark & Light Modes",
-    description: "Switch between premium high-contrast dark and light modes.",
+    description: "Pair any premium palette with designed dark and light modes.",
   },
 ];
 
-const themeCards = DOSHAB_THEMES.map((theme) => ({
+const themeCards = DOSHAB_PALETTES.map((theme) => ({
   name: theme.name,
   mood: theme.description,
-  colors: [theme.colors.accent, theme.colors.accentSecondary, theme.colors.surface],
+  colors: [
+    theme.colors.dark.accent,
+    theme.colors.dark.accentSecondary,
+    theme.colors.light.surface,
+  ],
 }));
 
 export default function Home() {
@@ -98,7 +102,7 @@ export default function Home() {
             <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
               VAL is a modern communication platform for friends, communities, and
               teams - with instant voice rooms, organized text channels, friend invites,
-              notifications, and focused dark and light modes.
+              notifications, and focused theme palettes with designed dark and light modes.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink className="h-12 px-6" href="/register">
@@ -170,7 +174,7 @@ export default function Home() {
             eyebrow="Dark and light modes"
             id="themes-title"
             title="One identity. Two premium modes."
-            text="VAL now focuses on a single premium neo-brutalist system with dark and light mode, both tuned for strong contrast, tactile surfaces, and clear hierarchy."
+            text="VAL now uses ten premium neo-brutalist palettes, each tuned for strong contrast, tactile surfaces, and clear light and dark mode hierarchy."
           />
           <div className="landing-theme-row grid auto-cols-[minmax(16rem,1fr)] grid-flow-col gap-4 overflow-x-auto pb-3 lg:grid-flow-row lg:grid-cols-2 lg:overflow-visible lg:pb-0">
             {themeCards.map((theme) => (

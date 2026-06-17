@@ -4,13 +4,15 @@ import type { CSSProperties } from "react";
 
 import { useDoshabTheme } from "@/components/theme/use-doshab-theme";
 import {
-  DOSHAB_THEMES,
+  DOSHAB_PALETTES,
+  getDoshabThemeId,
   getDoshabTheme,
-  type DoshabThemeConfig,
+  type DoshabPaletteConfig,
+  type DoshabThemeMode,
 } from "@/lib/themes";
 
 export function ThemeSelector() {
-  const { setThemeId, themeId } = useDoshabTheme();
+  const { mode, paletteId, setPaletteId, themeId } = useDoshabTheme();
   const activeTheme = getDoshabTheme(themeId);
 
   return (
@@ -19,21 +21,22 @@ export function ThemeSelector() {
         <div className="max-w-2xl">
           <p className="app-section-title">Appearance</p>
           <h3 className="mt-2 text-xl font-black tracking-tight text-white sm:text-2xl">
-            Dark or light, one VAL identity
+            Ten VAL palettes, one disciplined system
           </h3>
           <p className="mt-3 text-sm leading-6 text-slate-400">
-            VAL now ships with two focused high-contrast modes built around the same
-            premium neo-brutalist system.
+            Choose a bold neo-brutalist palette. The light and dark mode toggle keeps
+            your selected palette and swaps the token set globally.
           </p>
         </div>
         <span className="app-badge w-fit px-3 py-1 text-xs font-semibold">
-          Active: {activeTheme.name}
+          Active: {activeTheme.name} / {activeTheme.mode}
         </span>
       </div>
 
       <div className="theme-selector-grid mt-5 grid gap-4 lg:grid-cols-2">
-        {DOSHAB_THEMES.map((theme) => {
-          const active = theme.id === themeId;
+        {DOSHAB_PALETTES.map((palette) => {
+          const active = palette.id === paletteId;
+          const previewTheme = getDoshabTheme(getDoshabThemeId(palette.id, mode));
 
           return (
             <button
@@ -41,18 +44,18 @@ export function ThemeSelector() {
               className={`theme-choice-card flex min-w-0 flex-col gap-4 p-4 text-left transition ${
                 active ? "theme-choice-card-active" : ""
               }`}
-              key={theme.id}
-              onClick={() => setThemeId(theme.id)}
+              key={palette.id}
+              onClick={() => setPaletteId(palette.id)}
               type="button"
             >
               <div className="theme-preview-viewport">
-                <ThemePreview theme={theme} />
+                <ThemePreview mode={mode} palette={palette} />
               </div>
               <div className="theme-choice-card-body flex min-w-0 flex-1 flex-col gap-5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h4 className="text-lg font-black text-white">{theme.name}</h4>
+                  <h4 className="text-lg font-black text-white">{palette.name}</h4>
                   <span className="app-badge px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]">
-                    {theme.shortName}
+                    {palette.shortName}
                   </span>
                   {active ? (
                     <span className="app-badge px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]">
@@ -61,10 +64,10 @@ export function ThemeSelector() {
                   ) : null}
                 </div>
 
-                <p className="text-sm leading-6 text-slate-300">{theme.description}</p>
+                <p className="text-sm leading-6 text-slate-300">{palette.description}</p>
 
                 <div className="theme-detail-grid mt-auto grid gap-2 sm:grid-cols-2">
-                  {theme.previewDetails.map((detail) => (
+                  {palette.previewDetails.map((detail) => (
                     <span className="theme-detail-pill" key={detail}>
                       {detail}
                     </span>
@@ -73,14 +76,14 @@ export function ThemeSelector() {
 
                 <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
                   <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    {theme.personality}
+                    {palette.personality}
                   </span>
                   <span
                     className={`theme-select-button inline-flex h-11 items-center justify-center rounded-lg px-4 text-xs font-black uppercase tracking-[0.16em] transition ${
                       active ? "app-button-primary" : "app-button-secondary"
                     }`}
                   >
-                    {active ? "Selected" : "Use mode"}
+                    {active ? `${previewTheme.mode} selected` : "Use palette"}
                   </span>
                 </div>
               </div>
@@ -92,21 +95,30 @@ export function ThemeSelector() {
   );
 }
 
-function ThemePreview({ theme }: { theme: DoshabThemeConfig }) {
+function ThemePreview({
+  mode,
+  palette,
+}: {
+  mode: DoshabThemeMode;
+  palette: DoshabPaletteConfig;
+}) {
+  const colors = palette.colors[mode];
+
   return (
     <div
       className="theme-preview relative overflow-hidden rounded-lg border"
       style={
         {
-          "--theme-preview-accent": theme.colors.accent,
-          "--theme-preview-accent-secondary": theme.colors.accentSecondary,
-          "--theme-preview-background": theme.backgroundStyle,
-          "--theme-preview-border": theme.colors.border,
-          "--theme-preview-button": theme.buttonStyle,
-          "--theme-preview-card": theme.cardStyle,
-          "--theme-preview-glow": theme.accentStyle,
-          "--theme-preview-surface": theme.colors.surface,
-          "--theme-preview-text": theme.colors.text,
+          "--theme-preview-accent": colors.accent,
+          "--theme-preview-accent-secondary": colors.accentSecondary,
+          "--theme-preview-accent-tertiary": colors.accentTertiary,
+          "--theme-preview-background": colors.background,
+          "--theme-preview-border": colors.border,
+          "--theme-preview-button": colors.accent,
+          "--theme-preview-card": colors.card,
+          "--theme-preview-glow": `6px 6px 0 ${colors.shadow}`,
+          "--theme-preview-surface": colors.surface,
+          "--theme-preview-text": colors.text,
         } as CSSProperties
       }
     >

@@ -1,6 +1,6 @@
 "use client";
 
-import { DOSHAB_THEMES, getDoshabTheme } from "@/lib/themes";
+import { DOSHAB_THEME_MODES, getDoshabTheme } from "@/lib/themes";
 import { useDoshabTheme } from "@/components/theme/use-doshab-theme";
 
 type ThemeToggleProps = {
@@ -12,7 +12,7 @@ export function ThemeToggle({
   className = "",
   variant = "inline",
 }: ThemeToggleProps) {
-  const { setThemeId, themeId } = useDoshabTheme();
+  const { mode, setMode, themeId } = useDoshabTheme();
   const theme = getDoshabTheme(themeId);
 
   return (
@@ -22,25 +22,26 @@ export function ThemeToggle({
       role="group"
       title={`Theme: ${theme.name}`}
     >
-      {DOSHAB_THEMES.map((item) => {
-        const active = item.id === theme.id;
+      {DOSHAB_THEME_MODES.map((item) => {
+        const active = item === mode;
+        const label = item === "dark" ? "Dark" : "Light";
 
         return (
           <button
             aria-pressed={active}
             className="theme-toggle-segment"
             data-active={active ? "true" : "false"}
-            data-theme-option={item.id}
-            key={item.id}
+            data-theme-option={item}
+            key={item}
             onClick={() => {
-              setThemeId(item.id);
+              setMode(item);
             }}
-            title={active ? `${item.name} active` : `Switch to ${item.name}`}
+            title={active ? `${label} mode active` : `Switch to ${label} mode`}
             type="button"
           >
             <span aria-hidden="true" className="theme-toggle-segment-swatch" />
             <span className="theme-toggle-segment-copy">
-              <span className="theme-toggle-segment-title">{item.shortName}</span>
+              <span className="theme-toggle-segment-title">{label}</span>
               <span className="theme-toggle-segment-state">{active ? "Active" : "Use"}</span>
             </span>
           </button>

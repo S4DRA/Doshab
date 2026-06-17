@@ -240,7 +240,7 @@ function GroupSettingsPanel({
             </label>
 
             <button
-              className="h-12 rounded-xl bg-[#FF5F25] px-5 text-sm font-bold text-black transition hover:bg-[#ff7847] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500 sm:h-11"
+              className="app-button-primary h-12 rounded-lg px-5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60 sm:h-11"
               disabled={!canManage}
               type="submit"
             >

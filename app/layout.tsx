@@ -3,7 +3,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@livekit/components-styles";
 import "./globals.css";
 import {
+  DEFAULT_DOSHAB_PALETTE_ID,
   DEFAULT_DOSHAB_THEME_ID,
+  DEFAULT_DOSHAB_THEME_MODE,
+  DOSHAB_MODE_STORAGE_KEY,
+  DOSHAB_PALETTE_IDS,
+  DOSHAB_PALETTE_STORAGE_KEY,
   DOSHAB_THEMES,
   DOSHAB_THEME_STORAGE_KEY,
 } from "@/lib/themes";
@@ -83,11 +88,13 @@ export const viewport: Viewport = {
 };
 
 const DARK_CHROME_COLOR = "#08090b";
-const LIGHT_CHROME_COLOR = "#f7f7f5";
+const LIGHT_CHROME_COLOR = "#f6f3ea";
 
 const themeBootScript = `try{var allowed=${JSON.stringify(
   DOSHAB_THEMES.map((theme) => theme.id),
-)};var theme=localStorage.getItem("${DOSHAB_THEME_STORAGE_KEY}");var resolved=allowed.includes(theme)?theme:"${DEFAULT_DOSHAB_THEME_ID}";if(theme!==resolved){localStorage.setItem("${DOSHAB_THEME_STORAGE_KEY}",resolved)}document.documentElement.dataset.theme=resolved;var meta=document.querySelector('meta[name="theme-color"]');if(meta){meta.setAttribute("content",resolved==="light"?"${LIGHT_CHROME_COLOR}":"${DARK_CHROME_COLOR}")}}catch{document.documentElement.dataset.theme="${DEFAULT_DOSHAB_THEME_ID}";var meta=document.querySelector('meta[name="theme-color"]');if(meta){meta.setAttribute("content","${DARK_CHROME_COLOR}")}}`;
+)};var palettes=${JSON.stringify(
+  DOSHAB_PALETTE_IDS,
+)};var modes=["dark","light"];var storedTheme=localStorage.getItem("${DOSHAB_THEME_STORAGE_KEY}");var storedPalette=localStorage.getItem("${DOSHAB_PALETTE_STORAGE_KEY}");var storedMode=localStorage.getItem("${DOSHAB_MODE_STORAGE_KEY}");var legacyMode=storedTheme==="light"||storedTheme==="dark"?storedTheme:null;var validTheme=allowed.includes(storedTheme);var palette=palettes.includes(storedPalette)?storedPalette:(validTheme?storedTheme.replace(/-(dark|light)$/,""):"${DEFAULT_DOSHAB_PALETTE_ID}");var mode=modes.includes(storedMode)?storedMode:(legacyMode||(validTheme&&storedTheme.endsWith("-light")?"light":"${DEFAULT_DOSHAB_THEME_MODE}"));var resolved=palettes.includes(palette)&&modes.includes(mode)?palette+"-"+mode:"${DEFAULT_DOSHAB_THEME_ID}";if(!allowed.includes(resolved)){resolved="${DEFAULT_DOSHAB_THEME_ID}";palette="${DEFAULT_DOSHAB_PALETTE_ID}";mode="${DEFAULT_DOSHAB_THEME_MODE}"}localStorage.setItem("${DOSHAB_THEME_STORAGE_KEY}",resolved);localStorage.setItem("${DOSHAB_PALETTE_STORAGE_KEY}",palette);localStorage.setItem("${DOSHAB_MODE_STORAGE_KEY}",mode);document.documentElement.dataset.theme=resolved;document.documentElement.dataset.palette=palette;document.documentElement.dataset.mode=mode;var meta=document.querySelector('meta[name="theme-color"]');if(meta){meta.setAttribute("content",mode==="light"?"${LIGHT_CHROME_COLOR}":"${DARK_CHROME_COLOR}")}}catch{document.documentElement.dataset.theme="${DEFAULT_DOSHAB_THEME_ID}";document.documentElement.dataset.palette="${DEFAULT_DOSHAB_PALETTE_ID}";document.documentElement.dataset.mode="${DEFAULT_DOSHAB_THEME_MODE}";var meta=document.querySelector('meta[name="theme-color"]');if(meta){meta.setAttribute("content","${DARK_CHROME_COLOR}")}}`;
 
 export default function RootLayout({
   children,
@@ -99,6 +106,8 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-screen antialiased overflow-hidden`}
       data-scroll-behavior="smooth"
+      data-mode={DEFAULT_DOSHAB_THEME_MODE}
+      data-palette={DEFAULT_DOSHAB_PALETTE_ID}
       data-theme={DEFAULT_DOSHAB_THEME_ID}
       suppressHydrationWarning
     >

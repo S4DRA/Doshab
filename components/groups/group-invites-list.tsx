@@ -81,7 +81,7 @@ export function GroupInvitesList({ invites, emptyActions }: GroupInvitesListProp
           ))}
         </div>
       ) : (
-        <div className="mt-3">
+        <div className="app-empty-state mt-4">
           <p className="text-sm leading-6 text-slate-500">
             No pending invites. New space invitations will appear here with accept and reject actions.
           </p>
