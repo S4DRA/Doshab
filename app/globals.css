@@ -4639,6 +4639,8 @@ html[data-theme] .val-command-dock::before {
 }
 
 html[data-theme] .val-command-action {
+  --val-command-active-x: 0px;
+  --val-command-active-y: 0px;
   position: absolute;
   z-index: 1;
   left: 0 !important;
@@ -4675,6 +4677,13 @@ html[data-theme] .val-command-action:active {
   background-color: #ffd400 !important;
   background-image: none !important;
   color: #111111 !important;
+  box-shadow:
+    2px 2px 0 #000000,
+    0 0 0 6px color-mix(in srgb, #ffd400 24%, transparent) !important;
+  transform: translate(
+    calc(-50% + var(--val-command-x, 0px) + 2px),
+    calc(-50% + var(--val-command-y, 0px) + 2px)
+  ) scale(1.06) !important;
 }
 
 html[data-theme] .val-command-action:hover,
@@ -4692,28 +4701,28 @@ html[data-theme] .val-command-action:active {
 }
 
 html[data-theme] .val-command-action-create {
-  --val-command-x: 78px;
-  --val-command-y: -118px;
+  --val-command-x: min(88px, 24vw);
+  --val-command-y: -126px;
 }
 
 html[data-theme] .val-command-action-home {
   --val-command-x: 0px;
-  --val-command-y: -118px;
+  --val-command-y: -148px;
 }
 
 html[data-theme] .val-command-action-friends {
-  --val-command-x: -128px;
-  --val-command-y: -58px;
+  --val-command-x: max(-136px, -36vw);
+  --val-command-y: -74px;
 }
 
 html[data-theme] .val-command-action-message {
-  --val-command-x: -78px;
-  --val-command-y: -118px;
+  --val-command-x: max(-88px, -24vw);
+  --val-command-y: -126px;
 }
 
 html[data-theme] .val-command-action-groups {
-  --val-command-x: 128px;
-  --val-command-y: -58px;
+  --val-command-x: min(136px, 36vw);
+  --val-command-y: -74px;
 }
 
 html[data-theme] .val-command-group-picker {
@@ -5193,25 +5202,23 @@ html[data-theme] .val-command-backdrop {
   }
 
   html[data-theme] .val-command-dock .val-command-action-home {
-    left: 50% !important;
-    top: -118px !important;
-    transform: translate(-50%, -50%) !important;
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px))) !important;
   }
 
   html[data-theme] .val-command-dock .val-command-action-friends {
-    transform: translate(calc(-50% - 128px), calc(-50% - 58px)) !important;
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px))) !important;
   }
 
   html[data-theme] .val-command-dock .val-command-action-message {
-    transform: translate(calc(-50% - 78px), calc(-50% - 118px)) !important;
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px))) !important;
   }
 
   html[data-theme] .val-command-dock .val-command-action-create {
-    transform: translate(calc(-50% + 78px), calc(-50% - 118px)) !important;
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px))) !important;
   }
 
   html[data-theme] .val-command-dock .val-command-action-groups {
-    transform: translate(calc(-50% + 128px), calc(-50% - 58px)) !important;
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px))) !important;
   }
 
   html[data-theme] .dashboard-main-sidebar .val-command-button,
@@ -7243,16 +7250,59 @@ html[data-theme] .theme-preview {
 
 html[data-theme] .val-command-backdrop {
   background-color: rgba(0, 0, 0, 0.58) !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
+  -webkit-backdrop-filter: blur(12px) saturate(120%) !important;
+  backdrop-filter: blur(12px) saturate(120%) !important;
 }
 
 html[data-theme] .val-command-action,
 html[data-theme] .val-command-group-item {
   border: 2px solid #2b3442 !important;
+  border-radius: 999px !important;
   background-color: #121821 !important;
   color: #f4f7ff !important;
-  box-shadow: 4px 4px 0 #050609 !important;
+  box-shadow:
+    0 10px 24px rgba(107, 91, 255, 0.24),
+    0 18px 34px rgba(95, 120, 255, 0.16),
+    0 3px 0 #050609 !important;
+}
+
+html[data-theme] .val-command-action {
+  width: 4.45rem !important;
+  height: 4.45rem !important;
+  min-width: 4.45rem !important;
+  min-height: 4.45rem !important;
+  overflow: visible !important;
+  isolation: isolate;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+html[data-theme] .val-command-action::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -0.85rem;
+  z-index: -1;
+  width: 74%;
+  height: 1.4rem;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, rgba(125, 92, 255, 0.72), rgba(125, 92, 255, 0.28) 44%, transparent 74%);
+  filter: blur(7px);
+  opacity: 0.72;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease,
+    filter 150ms ease;
+}
+
+html[data-theme] .val-command-group-item {
+  border-radius: 10px !important;
 }
 
 html[data-theme] .val-command-action:hover,
@@ -7260,7 +7310,46 @@ html[data-theme] .val-command-group-item:hover {
   border-color: var(--val-brand-red) !important;
 }
 
+html[data-theme] .val-command-action-active,
+html[data-theme] .val-command-action:hover,
+html[data-theme] .val-command-action:focus-visible {
+  border-color: var(--val-brand-red) !important;
+  background-color: #1b2430 !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, #7d5cff 32%, transparent),
+    0 18px 34px rgba(125, 92, 255, 0.42),
+    0 4px 0 #050609 !important;
+  transform: translate(
+    calc(-50% + var(--val-command-x, 0px) - 3px),
+    calc(-50% + var(--val-command-y, 0px) - 3px)
+  ) scale(1.08) !important;
+}
+
+html[data-theme] .val-command-action-active::after,
+html[data-theme] .val-command-action:hover::after,
+html[data-theme] .val-command-action:focus-visible::after {
+  opacity: 1;
+  filter: blur(10px);
+  transform: translateX(-50%) scale(1.24);
+}
+
+html[data-theme] .val-command-action:active {
+  box-shadow: 1px 1px 0 #050609 !important;
+  transform: translate(
+    calc(-50% + var(--val-command-x, 0px) + 2px),
+    calc(-50% + var(--val-command-y, 0px) + 2px)
+  ) scale(0.98) !important;
+}
+
 html[data-theme] .val-command-action-create {
+  background-color: var(--accent) !important;
+  color: #080a0f !important;
+}
+
+html[data-theme] .val-command-action-create.val-command-action-active,
+html[data-theme] .val-command-action-create:hover,
+html[data-theme] .val-command-action-create:focus-visible {
   background-color: var(--accent) !important;
   color: #080a0f !important;
 }
@@ -7268,7 +7357,17 @@ html[data-theme] .val-command-action-create {
 html[data-theme] .dashboard-main-sidebar .val-command-button {
   border: 2px solid #050609 !important;
   background-color: var(--val-brand-red) !important;
-  box-shadow: 5px 5px 0 #050609 !important;
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.34) !important;
+}
+
+html[data-theme] .dashboard-main-sidebar .val-command-button:hover,
+html[data-theme] .dashboard-main-sidebar .val-command-button:focus-visible,
+html[data-theme] .dashboard-main-sidebar .val-command-button:active,
+html[data-theme] .dashboard-main-sidebar .val-command-button.val-command-button-open {
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, #7d5cff 18%, transparent),
+    0 12px 24px rgba(0, 0, 0, 0.34) !important;
 }
 
 html[data-theme] .dashboard-sidebar-popover .app-section-title,
@@ -7409,5 +7508,503 @@ html[data-theme] .dashboard-shell-root section.app-surface {
 
   html[data-theme] .dashboard-welcome-mark {
     transform: translateY(-50%) rotate(-8deg) scale(1.08);
+  }
+}
+
+/* VAL mobile command bloom: separated actions connected to the floating origin. */
+html[data-theme] .val-command-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 80 !important;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.46) !important;
+  -webkit-backdrop-filter: blur(2px) saturate(108%) !important;
+  backdrop-filter: blur(2px) saturate(108%) !important;
+  pointer-events: none !important;
+  animation: val-command-backdrop-in 160ms ease-out both;
+}
+
+html[data-theme] .val-command-backdrop::before,
+html[data-theme] .val-command-backdrop::after {
+  content: "";
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) - 2.25rem);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+html[data-theme] .val-command-backdrop::before {
+  width: min(32rem, 120vw);
+  height: 17rem;
+  border-radius: 999px 999px 0 0;
+  background:
+    radial-gradient(ellipse at 50% 88%, rgba(255, 212, 0, 0.12), transparent 54%),
+    radial-gradient(ellipse at 50% 72%, rgba(95, 120, 255, 0.1), transparent 68%) !important;
+  filter: blur(18px);
+  opacity: 0.62;
+  animation: val-command-bottom-bloom 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html[data-theme] .val-command-backdrop::after {
+  width: min(20rem, 86vw);
+  height: 7rem;
+  border-radius: 999px 999px 0 0;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255, 212, 0, 0.12), transparent 72%) !important;
+  filter: blur(12px);
+  opacity: 0.5;
+}
+
+@media (max-width: 639px) {
+  html[data-theme] .val-command-dock {
+    position: fixed !important;
+    left: 50% !important;
+    bottom: calc(env(safe-area-inset-bottom) + 50px) !important;
+    z-index: 90 !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: visible !important;
+    border: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    pointer-events: auto !important;
+    touch-action: none !important;
+    user-select: none !important;
+    transform: translateX(-50%) !important;
+  }
+
+  html[data-theme] .val-command-veins {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 91;
+    display: block !important;
+    width: min(18rem, calc(100vw - 1rem));
+    height: 12.25rem;
+    overflow: visible;
+    pointer-events: none;
+    transform: translate(-50%, -100%);
+  }
+
+  html[data-theme] .val-command-vein {
+    fill: none;
+    stroke: color-mix(in srgb, #7d5cff 74%, #79d8ff);
+    stroke-width: 1.25;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    opacity: 0.2;
+    filter: drop-shadow(0 0 3px rgba(125, 92, 255, 0.28));
+    vector-effect: non-scaling-stroke;
+    animation:
+      val-command-vein-grow 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards,
+      val-command-vein-pulse 1.7s ease-in-out 240ms infinite;
+    animation-delay: calc(var(--val-command-index, 0) * 34ms), calc(240ms + (var(--val-command-index, 0) * 34ms));
+  }
+
+  html[data-theme] .val-command-vein-active {
+    stroke: #ffd400;
+    stroke-width: 1.65;
+    opacity: 0.58;
+    filter:
+      drop-shadow(0 0 4px rgba(255, 212, 0, 0.72))
+      drop-shadow(0 0 10px rgba(125, 92, 255, 0.62));
+    animation:
+      val-command-vein-grow 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards,
+      val-command-vein-focus-pulse 1.25s ease-in-out 240ms infinite;
+  }
+
+  html[data-theme] .val-command-dock .val-command-action {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 100;
+    display: grid !important;
+    width: 4.05rem !important;
+    height: 4.05rem !important;
+    min-width: 4.05rem !important;
+    min-height: 4.05rem !important;
+    place-items: center !important;
+    gap: 0.12rem !important;
+    padding: 0.34rem 0.18rem !important;
+    border: 2px solid #586477 !important;
+    border-radius: 13px !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 42%),
+      #192231 !important;
+    color: #f4f7ff !important;
+    box-shadow:
+      0 14px 26px rgba(0, 0, 0, 0.44),
+      0 0 18px rgba(95, 120, 255, 0.22),
+      0 3px 0 #050609,
+      inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    font-size: 0.54rem !important;
+    font-weight: 950 !important;
+    line-height: 1 !important;
+    letter-spacing: 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    text-transform: none !important;
+    touch-action: none !important;
+    user-select: none !important;
+    will-change: transform, opacity;
+    animation: val-command-item-rise 180ms cubic-bezier(0.22, 1, 0.36, 1) both !important;
+    animation-delay: calc(44ms + (var(--val-command-index, 0) * 42ms)) !important;
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px))) scale(1) !important;
+    transition:
+      border-color 100ms ease-out,
+      background-color 100ms ease-out,
+      box-shadow 100ms ease-out,
+      color 100ms ease-out,
+      transform 100ms ease-out !important;
+  }
+
+  html[data-theme] .val-command-dock .val-command-action svg {
+    width: 1.32rem !important;
+    height: 1.32rem !important;
+    flex: none;
+  }
+
+  html[data-theme] .val-command-dock .val-command-action span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  html[data-theme] .val-command-action-home {
+    --val-command-index: 3;
+    --val-command-x: clamp(58px, 17vw, 64px);
+    --val-command-y: -136px;
+  }
+
+  html[data-theme] .val-command-action-friends {
+    --val-command-index: 0;
+    --val-command-x: clamp(-112px, -30vw, -100px);
+    --val-command-y: -78px;
+  }
+
+  html[data-theme] .val-command-action-message {
+    --val-command-index: 1;
+    --val-command-x: clamp(-64px, -17vw, -58px);
+    --val-command-y: -136px;
+  }
+
+  html[data-theme] .val-command-action-create {
+    --val-command-index: 2;
+    --val-command-create-accent: #FFD400;
+    --val-command-x: 0px;
+    --val-command-y: -154px;
+    width: 4.2rem !important;
+    height: 4.2rem !important;
+    min-width: 4.2rem !important;
+    min-height: 4.2rem !important;
+    border-radius: 16px !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 48%),
+      var(--val-command-create-accent) !important;
+    color: #080a0f !important;
+    font-size: 0.58rem !important;
+    box-shadow:
+      0 0 0 4px rgba(125, 92, 255, 0.18),
+      0 16px 30px rgba(0, 0, 0, 0.36),
+      0 0 18px rgba(255, 212, 0, 0.26),
+      0 3px 0 #050609 !important;
+  }
+
+  html[data-theme] .val-command-action-groups {
+    --val-command-index: 4;
+    --val-command-x: clamp(100px, 30vw, 112px);
+    --val-command-y: -78px;
+  }
+
+  html[data-theme] .val-command-action-active {
+    border-color: color-mix(in srgb, #FFD400 84%, #ffffff) !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 48%),
+      #FFD400 !important;
+    color: #080a0f !important;
+    box-shadow:
+      0 0 0 4px rgba(125, 92, 255, 0.24),
+      0 0 20px color-mix(in srgb, #FFD400 42%, transparent),
+      0 18px 34px color-mix(in srgb, #FFD400 24%, rgba(0, 0, 0, 0.28)),
+      0 4px 0 #050609,
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px) - 0.28rem)) scale(1.08) !important;
+  }
+
+  html[data-theme] .val-command-action:focus-visible {
+    outline: 2px solid #FFD400;
+    outline-offset: 4px;
+  }
+
+  html[data-theme] .val-command-action:not(.val-command-action-active):focus-visible {
+    border-color: color-mix(in srgb, #FFD400 64%, #ffffff) !important;
+    box-shadow:
+      0 0 0 3px rgba(255, 212, 0, 0.18),
+      0 16px 30px rgba(0, 0, 0, 0.42),
+      0 3px 0 #050609,
+      inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px) - 0.12rem)) scale(1.03) !important;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    html[data-theme] .val-command-action:not(.val-command-action-active):hover {
+      border-color: #6f7d94 !important;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 46%),
+        #202a39 !important;
+      color: #ffffff !important;
+      box-shadow:
+        0 16px 30px rgba(0, 0, 0, 0.42),
+        0 0 16px rgba(95, 120, 255, 0.24),
+        0 3px 0 #050609,
+        inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+      transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px) - 0.12rem)) scale(1.03) !important;
+    }
+  }
+
+  html[data-theme] .val-command-dock .val-command-action-active {
+    animation: val-command-drag-focus 190ms cubic-bezier(0.2, 1.2, 0.28, 1) both !important;
+    animation-delay: 0ms !important;
+  }
+
+  html[data-theme] .val-command-action-create.val-command-action-active,
+  html[data-theme] .val-command-action-create:focus-visible {
+    border-color: color-mix(in srgb, var(--val-command-create-accent) 84%, #ffffff) !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 48%),
+      var(--val-command-create-accent) !important;
+    color: #080a0f !important;
+    box-shadow:
+      0 0 0 5px rgba(125, 92, 255, 0.34),
+      0 0 28px rgba(255, 212, 0, 0.42),
+      0 20px 36px rgba(0, 0, 0, 0.4),
+      0 4px 0 #050609 !important;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    html[data-theme] .val-command-action-create:not(.val-command-action-active):hover {
+      border-color: color-mix(in srgb, var(--val-command-create-accent) 72%, #ffffff) !important;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.24), transparent 48%),
+        var(--val-command-create-accent) !important;
+      color: #080a0f !important;
+      box-shadow:
+        0 0 0 4px rgba(125, 92, 255, 0.22),
+        0 0 24px rgba(255, 212, 0, 0.34),
+        0 18px 32px rgba(0, 0, 0, 0.38),
+        0 4px 0 #050609 !important;
+      transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px) - 0.16rem)) scale(1.04) !important;
+    }
+  }
+
+  html[data-theme] .val-command-action:active {
+    box-shadow:
+      0 0 0 4px rgba(255, 212, 0, 0.2),
+      0 2px 0 #050609 !important;
+    transform: translate(calc(-50% + var(--val-command-x, 0px) + 2px), calc(-50% + var(--val-command-y, 0px) + 2px)) scale(0.98) !important;
+  }
+
+  html[data-theme] .val-command-dock .val-command-action.val-command-action-active {
+    border-color: color-mix(in srgb, #FFD400 84%, #ffffff) !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.24), transparent 48%),
+      #FFD400 !important;
+    color: #080a0f !important;
+    box-shadow:
+      0 0 0 5px rgba(125, 92, 255, 0.3),
+      0 0 26px rgba(255, 212, 0, 0.46),
+      0 20px 36px rgba(0, 0, 0, 0.42),
+      0 4px 0 #050609,
+      inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px) - 0.28rem)) scale(1.08) !important;
+  }
+
+  html[data-theme] .val-command-group-picker {
+    bottom: 5.6rem !important;
+    border-color: #2b3442 !important;
+    border-radius: 14px !important;
+    background-color: #121821 !important;
+    box-shadow:
+      0 18px 42px rgba(0, 0, 0, 0.44),
+      0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  }
+
+  html[data-theme] .dashboard-main-sidebar .val-command-button {
+    position: relative;
+    z-index: 110 !important;
+    border: 2px solid #050609 !important;
+    background:
+      radial-gradient(circle at 42% 34%, rgba(255, 255, 255, 0.28), transparent 28%),
+      #ffd400 !important;
+    color: #080a0f !important;
+    box-shadow:
+      0 0 0 6px rgba(125, 92, 255, 0.16),
+      0 0 30px rgba(255, 212, 0, 0.22),
+      0 10px 22px rgba(0, 0, 0, 0.38) !important;
+    animation: val-command-button-breathe 3.4s ease-in-out infinite !important;
+    will-change: transform, box-shadow;
+  }
+
+  html[data-theme] .dashboard-main-sidebar .val-command-button:hover,
+  html[data-theme] .dashboard-main-sidebar .val-command-button:focus-visible {
+    background:
+      radial-gradient(circle at 42% 34%, rgba(255, 255, 255, 0.34), transparent 28%),
+      #ffd400 !important;
+    box-shadow:
+      0 0 0 6px rgba(125, 92, 255, 0.22),
+      0 0 32px rgba(255, 212, 0, 0.28),
+      0 12px 24px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  html[data-theme] .dashboard-main-sidebar .val-command-button.val-command-button-pressing,
+  html[data-theme] .dashboard-main-sidebar .val-command-button:active,
+  html[data-theme] .dashboard-main-sidebar .val-command-button.val-command-button-open {
+    background:
+      radial-gradient(circle at 42% 34%, rgba(255, 255, 255, 0.22), transparent 28%),
+      #ffd400 !important;
+    box-shadow:
+      0 0 0 9px rgba(125, 92, 255, 0.2),
+      0 0 38px rgba(255, 212, 0, 0.36),
+      0 7px 16px rgba(0, 0, 0, 0.38) !important;
+    animation: none !important;
+    transform: translateY(2px) scale(0.94) !important;
+  }
+
+  html[data-theme] .dashboard-main-sidebar .val-command-button-mark {
+    background: #080a0f !important;
+  }
+
+  html[data-theme] .dashboard-main-sidebar > [aria-label="VAL mobile command trigger"] {
+    z-index: 110 !important;
+  }
+
+  html[data-theme] .dashboard-main-sidebar.val-command-sidebar-open {
+    z-index: 95 !important;
+  }
+}
+
+@keyframes val-command-backdrop-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes val-command-bottom-bloom {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(2.2rem) scale(0.82);
+  }
+
+  to {
+    opacity: 0.62;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes val-command-vein-grow {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes val-command-vein-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes val-command-vein-focus-pulse {
+  0%,
+  100% {
+    opacity: 0.65;
+  }
+
+  50% {
+    opacity: 0.78;
+  }
+}
+
+@keyframes val-command-item-rise {
+  from {
+    opacity: 0.01;
+    filter: blur(2px);
+  }
+
+  to {
+    opacity: 1;
+    visibility: visible;
+    filter: blur(0);
+  }
+}
+
+@keyframes val-command-drag-focus {
+  0% {
+    filter: brightness(1);
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px) + 0.1rem)) scale(0.96);
+  }
+
+  62% {
+    filter: brightness(1.12);
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px) - 0.42rem)) scale(1.13);
+  }
+
+  100% {
+    filter: brightness(1.05);
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px) - 0.28rem)) scale(1.08);
+  }
+}
+
+@keyframes val-command-button-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow:
+      0 0 0 6px rgba(125, 92, 255, 0.14),
+      0 0 26px rgba(255, 212, 0, 0.18),
+      0 10px 22px rgba(0, 0, 0, 0.38);
+  }
+
+  50% {
+    transform: translateY(-1px) scale(1.018);
+    box-shadow:
+      0 0 0 8px rgba(125, 92, 255, 0.18),
+      0 0 34px rgba(255, 212, 0, 0.28),
+      0 12px 24px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme] .val-command-backdrop,
+  html[data-theme] .val-command-backdrop::before,
+  html[data-theme] .val-command-vein,
+  html[data-theme] .val-command-dock .val-command-action,
+  html[data-theme] .dashboard-main-sidebar .val-command-button {
+    animation: none !important;
+  }
+
+  html[data-theme] .val-command-vein {
+    stroke-dashoffset: 0;
+  }
+
+  html[data-theme] .val-command-dock .val-command-action {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--val-command-x, 0px)), calc(-50% + var(--val-command-y, 0px))) scale(1) !important;
   }
 }

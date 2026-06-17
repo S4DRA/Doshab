@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
+import { createPortal } from "react-dom";
 
 import { PushNotificationToggle } from "@/components/notifications/push-notification-toggle";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
@@ -78,7 +80,16 @@ type MobileCommandAction = "home" | "friends" | "messages" | "create" | "groups"
 const mobileChannelPinCacheKey = "doshab-mobile-channel-pin-v1";
 const sidebarCacheKey = "doshab-sidebar-v6";
 const notificationSettingsKey = "doshabProfileSettings";
-const mobileCommandHoldDelayMs = 260;
+const mobileCommandHoldDelayMs = 210;
+const mobileCommandDragThresholdPx = 10;
+const mobileCommandHitRadiusPx = 48;
+const mobileCommandActions = [
+  { action: "friends", label: "Friends", line: "M 0 0 C -28 -30 -66 -58 -112 -78" },
+  { action: "messages", label: "Messages", line: "M 0 0 C -18 -46 -42 -100 -64 -136" },
+  { action: "create", label: "Create", line: "M 0 0 C 0 -56 0 -112 0 -154" },
+  { action: "home", label: "Home", line: "M 0 0 C 18 -46 42 -100 64 -136" },
+  { action: "groups", label: "Spaces", line: "M 0 0 C 28 -30 66 -58 112 -78" },
+] satisfies { action: MobileCommandAction; label: string; line: string }[];
 
 type DashboardSidebarProps = {
   initialCurrentUser?: SidebarUser | null;
@@ -174,6 +185,7 @@ export function DashboardSidebar({
   const [friendsOpen, setFriendsOpen] = useState(false);
   const [friendsQuery, setFriendsQuery] = useState("");
   const [commandOpen, setCommandOpen] = useState(false);
+  const [commandPressing, setCommandPressing] = useState(false);
   const [groupPickerOpen, setGroupPickerOpen] = useState(false);
   const [activeCommandAction, setActiveCommandAction] = useState<MobileCommandAction | null>(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -182,6 +194,8 @@ export function DashboardSidebar({
   const commandButtonRef = useRef<HTMLButtonElement | null>(null);
   const activeCommandActionRef = useRef<MobileCommandAction | null>(null);
   const activeCommandPointerIdRef = useRef<number | null>(null);
+  const commandHoldStartPointRef = useRef<{ x: number; y: number } | null>(null);
+  const commandDragReadyRef = useRef(false);
   const commandOpenedAtRef = useRef(0);
   const commandHoldTimerRef = useRef<number | null>(null);
   const commandHoldCleanupRef = useRef<(() => void) | null>(null);
@@ -212,6 +226,7 @@ export function DashboardSidebar({
     setFriendsQuery("");
   }, []);
   const runMobileCommandAction = useCallback((action: MobileCommandAction) => {
+    vibrateForCommand("select");
     setActiveCommandAction(null);
     activeCommandPointerIdRef.current = null;
     commandOpenedAtRef.current = 0;
@@ -238,8 +253,9 @@ export function DashboardSidebar({
         router.push("/dashboard#create-space");
         return;
       case "groups":
-        setCommandOpen(true);
-        setGroupPickerOpen(true);
+        setCommandOpen(false);
+        setGroupPickerOpen(false);
+        router.push("/dashboard/channels");
         return;
     }
   }, [router]);
@@ -501,7 +517,14 @@ export function DashboardSidebar({
     function closeOnOutsidePointer(event: PointerEvent) {
       const target = event.target;
 
-      if (!(target instanceof Node) || sidebarRef.current?.contains(target)) {
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (
+        sidebarRef.current?.contains(target) ||
+        (target instanceof Element && target.closest(".val-command-dock, .val-command-backdrop"))
+      ) {
         return;
       }
 
@@ -544,6 +567,54 @@ export function DashboardSidebar({
   }, [activeCommandAction]);
 
   useEffect(() => {
+    if (!commandOpen || !isCommandDebugEnabled()) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      const actionElements = Array.from(document.querySelectorAll<HTMLElement>("[data-command-action]"));
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      console.info("[VAL command] open", {
+        focused: activeCommandActionRef.current,
+        itemCount: actionElements.length,
+        viewport: `${viewportWidth}x${viewportHeight}`,
+      });
+      console.table(
+        actionElements.map((actionElement) => {
+          const rect = actionElement.getBoundingClientRect();
+
+          return {
+            action: actionElement.dataset.commandAction,
+            bottom: Math.round(rect.bottom),
+            left: Math.round(rect.left),
+            right: Math.round(rect.right),
+            top: Math.round(rect.top),
+            visible:
+              rect.width > 0 &&
+              rect.height > 0 &&
+              rect.left >= 0 &&
+              rect.right <= viewportWidth &&
+              rect.top >= 0 &&
+              rect.bottom <= viewportHeight,
+          };
+        }),
+      );
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [commandOpen]);
+
+  useEffect(() => {
+    if (!commandOpen || !isCommandDebugEnabled()) {
+      return;
+    }
+
+    console.info("[VAL command] focused", activeCommandAction);
+  }, [activeCommandAction, commandOpen]);
+
+  useEffect(() => {
     if (!commandOpen) {
       return;
     }
@@ -558,6 +629,36 @@ export function DashboardSidebar({
 
     function getPointerElement(event: PointerEvent) {
       return document.elementFromPoint(event.clientX, event.clientY) ?? event.target;
+    }
+
+    function getActionFromPoint(event: PointerEvent): MobileCommandAction | null {
+      const actionElements = document.querySelectorAll<HTMLElement>("[data-command-action]");
+      let nearestAction: MobileCommandAction | null = null;
+      let nearestDistance = Number.POSITIVE_INFINITY;
+
+      for (const actionElement of actionElements) {
+        const rect = actionElement.getBoundingClientRect();
+
+        if (
+          event.clientX >= rect.left &&
+          event.clientX <= rect.right &&
+          event.clientY >= rect.top &&
+          event.clientY <= rect.bottom
+        ) {
+          return getActionFromTarget(actionElement);
+        }
+
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY);
+
+        if (distance < nearestDistance && distance <= mobileCommandHitRadiusPx) {
+          nearestAction = getActionFromTarget(actionElement);
+          nearestDistance = distance;
+        }
+      }
+
+      return nearestAction;
     }
 
     function getActionFromTarget(target: EventTarget | null): MobileCommandAction | null {
@@ -588,7 +689,27 @@ export function DashboardSidebar({
       }
 
       event.preventDefault();
-      setActiveCommandAction(getActionFromTarget(getPointerElement(event)));
+      const startPoint = commandHoldStartPointRef.current;
+
+      if (startPoint && !commandDragReadyRef.current) {
+        const distance = Math.hypot(event.clientX - startPoint.x, event.clientY - startPoint.y);
+
+        if (distance < mobileCommandDragThresholdPx) {
+          return;
+        }
+
+        commandDragReadyRef.current = true;
+      }
+
+      const nextAction = getActionFromPoint(event) ?? getActionFromTarget(getPointerElement(event));
+
+      setActiveCommandAction((currentAction) => {
+        if (currentAction !== nextAction && nextAction) {
+          vibrateForCommand("focus");
+        }
+
+        return nextAction;
+      });
     }
 
     function cancelCommandHighlight(event: PointerEvent) {
@@ -607,6 +728,8 @@ export function DashboardSidebar({
 
       event.preventDefault();
       activeCommandPointerIdRef.current = null;
+      commandDragReadyRef.current = false;
+      commandHoldStartPointRef.current = null;
       const target = getPointerElement(event);
 
       if (!(target instanceof Element)) {
@@ -630,7 +753,7 @@ export function DashboardSidebar({
         return;
       }
 
-      const selectedAction = getActionFromTarget(target);
+      const selectedAction = getActionFromPoint(event) ?? getActionFromTarget(target);
 
       if (selectedAction) {
         runMobileCommandAction(selectedAction);
@@ -702,9 +825,12 @@ export function DashboardSidebar({
     commandHoldCleanupRef.current?.();
     commandHoldCleanupRef.current = null;
     setCommandOpen(false);
+    setCommandPressing(false);
     setGroupPickerOpen(false);
     setActiveCommandAction(null);
     activeCommandPointerIdRef.current = null;
+    commandDragReadyRef.current = false;
+    commandHoldStartPointRef.current = null;
     commandOpenedAtRef.current = 0;
   };
   const openCommandDock = (pointerId?: number) => {
@@ -716,9 +842,12 @@ export function DashboardSidebar({
     commandHoldCleanupRef.current?.();
     commandHoldCleanupRef.current = null;
     setCommandOpen(true);
+    setCommandPressing(false);
     setActiveCommandAction(null);
     activeCommandPointerIdRef.current = pointerId ?? null;
+    commandDragReadyRef.current = false;
     commandOpenedAtRef.current = performance.now();
+    vibrateForCommand("open");
     setChannelsOpen(false);
     setCreateOpen(false);
     closeFriendsMenu();
@@ -735,10 +864,16 @@ export function DashboardSidebar({
     commandHoldCleanupRef.current?.();
     commandHoldCleanupRef.current = null;
     activeCommandPointerIdRef.current = null;
+    commandHoldStartPointRef.current = null;
+    commandDragReadyRef.current = false;
+    setCommandPressing(false);
   };
-  const startCommandHold = (pointerId: number) => {
+  const startCommandHold = (pointerId: number, point: { x: number; y: number }) => {
     cancelCommandHold();
     activeCommandPointerIdRef.current = pointerId;
+    commandHoldStartPointRef.current = point;
+    commandDragReadyRef.current = false;
+    setCommandPressing(true);
 
     const cancelPendingHold = (event: PointerEvent) => {
       if (event.pointerId !== pointerId) {
@@ -1444,13 +1579,13 @@ export function DashboardSidebar({
         </button>
       </div>
     ) : null}
-    <aside className="dashboard-main-sidebar fixed inset-x-0 bottom-0 z-50 flex h-[var(--dashboard-bottom-nav-height)] items-center border-t border-white/10 bg-[#0d100e]/95 px-2 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] rounded-t-2xl sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-24 sm:flex-col sm:border-r sm:border-t-0 sm:px-3 sm:py-4 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] sm:rounded-t-none min-[1180px]:w-[6.5rem]" data-tour-target="groups-sidebar" ref={sidebarRef}>
+    <aside className={`dashboard-main-sidebar fixed inset-x-0 bottom-0 z-50 flex h-[var(--dashboard-bottom-nav-height)] items-center border-t border-white/10 bg-[#0d100e]/95 px-2 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] rounded-t-2xl sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-24 sm:flex-col sm:border-r sm:border-t-0 sm:px-3 sm:py-4 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] sm:rounded-t-none min-[1180px]:w-[6.5rem]${commandOpen ? " val-command-sidebar-open" : ""}`} data-tour-target="groups-sidebar" ref={sidebarRef}>
       {createMenu}
       {friendsMenu}
       {channelMenu}
       {notificationMenu}
       {profileMenu}
-      {commandOpen ? (
+      {typeof document !== "undefined" && commandOpen ? createPortal(
         <>
           <div aria-hidden="true" className="val-command-backdrop sm:hidden" />
           <div
@@ -1458,6 +1593,21 @@ export function DashboardSidebar({
             className="val-command-dock sm:hidden"
             role="menu"
           >
+            <svg aria-hidden="true" className="val-command-veins" viewBox="-180 -270 360 280">
+              {mobileCommandActions.map((item, index) => (
+                <path
+                  className={`val-command-vein val-command-vein-${item.action}${
+                    activeCommandAction === item.action || (item.action === "groups" && groupPickerOpen)
+                      ? " val-command-vein-active"
+                      : ""
+                  }`}
+                  d={item.line}
+                  key={item.action}
+                  pathLength="1"
+                  style={{ "--val-command-index": index } as CSSProperties}
+                />
+              ))}
+            </svg>
             {groupPickerOpen ? (
               <div className="val-command-group-picker" role="menu" aria-label="Joined spaces">
                 <p className="val-command-group-title">Spaces</p>
@@ -1495,6 +1645,7 @@ export function DashboardSidebar({
                 <path d="M5 10v10h14V10" />
                 <path d="M9 20v-6h6v6" />
               </svg>
+              <span>Home</span>
             </button>
             <button
               aria-label="Open friends"
@@ -1512,6 +1663,7 @@ export function DashboardSidebar({
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
+              <span>Friends</span>
             </button>
             <button
               aria-label="Open messages"
@@ -1526,6 +1678,7 @@ export function DashboardSidebar({
               <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
                 <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
               </svg>
+              <span>Messages</span>
             </button>
             <button
               aria-label="Create space"
@@ -1541,9 +1694,10 @@ export function DashboardSidebar({
                 <path d="M12 5v14" />
                 <path d="M5 12h14" />
               </svg>
+              <span>Create</span>
             </button>
             <button
-              aria-label="Show joined spaces"
+              aria-label="Open spaces"
               className={`val-command-action val-command-action-groups${groupPickerOpen || activeCommandAction === "groups" ? " val-command-action-active" : ""}`}
               data-command-action="groups"
               onClick={() => {
@@ -1557,9 +1711,11 @@ export function DashboardSidebar({
                 <path d="M4 12h16" />
                 <path d="M4 18h16" />
               </svg>
+              <span>Spaces</span>
             </button>
           </div>
-        </>
+        </>,
+        document.body,
       ) : null}
       <div className="flex w-full min-w-0 items-center justify-center sm:hidden" aria-label="VAL mobile command trigger" data-tour-target="mobile-command-button">
         <button
@@ -1568,7 +1724,7 @@ export function DashboardSidebar({
           aria-label={commandOpen ? "Close quick actions" : "Open quick actions"}
           className={`val-command-button grid place-items-center rounded-full border transition ${
             commandOpen ? "val-command-button-open" : ""
-          }`}
+          }${commandPressing ? " val-command-button-pressing" : ""}`}
           onClick={(event) => {
             event.preventDefault();
           }}
@@ -1593,7 +1749,7 @@ export function DashboardSidebar({
               return;
             }
 
-            startCommandHold(event.pointerId);
+            startCommandHold(event.pointerId, { x: event.clientX, y: event.clientY });
           }}
           onPointerCancel={(event) => {
             event.preventDefault();
@@ -1897,4 +2053,21 @@ function getNotificationActionLabel(type: DashboardNotification["type"]) {
     default:
       return "Open";
   }
+}
+
+function vibrateForCommand(kind: "focus" | "open" | "select") {
+  if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") {
+    return;
+  }
+
+  const pattern = kind === "select" ? [18, 24, 28] : kind === "open" ? 12 : 8;
+  navigator.vibrate(pattern);
+}
+
+function isCommandDebugEnabled() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.localStorage.getItem("valCommandDebug") === "1";
 }
