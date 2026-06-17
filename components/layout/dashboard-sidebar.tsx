@@ -78,6 +78,7 @@ type MobileCommandAction = "friends" | "messages" | "create" | "groups";
 const mobileChannelPinCacheKey = "doshab-mobile-channel-pin-v1";
 const sidebarCacheKey = "doshab-sidebar-v6";
 const notificationSettingsKey = "doshabProfileSettings";
+const mobileCommandHoldDelayMs = 260;
 
 type DashboardSidebarProps = {
   initialCurrentUser?: SidebarUser | null;
@@ -180,6 +181,10 @@ export function DashboardSidebar({
   const sidebarRef = useRef<HTMLElement | null>(null);
   const commandButtonRef = useRef<HTMLButtonElement | null>(null);
   const activeCommandActionRef = useRef<MobileCommandAction | null>(null);
+  const activeCommandPointerIdRef = useRef<number | null>(null);
+  const commandOpenedAtRef = useRef(0);
+  const commandHoldTimerRef = useRef<number | null>(null);
+  const commandHoldCleanupRef = useRef<(() => void) | null>(null);
   const [pinnedGroupId, setPinnedGroupId] = useState<string | null>(() => {
     if (typeof window === "undefined") {
       return null;
@@ -208,6 +213,8 @@ export function DashboardSidebar({
   }, []);
   const runMobileCommandAction = useCallback((action: MobileCommandAction) => {
     setActiveCommandAction(null);
+    activeCommandPointerIdRef.current = null;
+    commandOpenedAtRef.current = 0;
 
     switch (action) {
       case "friends":
@@ -470,6 +477,12 @@ export function DashboardSidebar({
     if (toastTimerRef.current) {
       window.clearTimeout(toastTimerRef.current);
     }
+
+    if (commandHoldTimerRef.current) {
+      window.clearTimeout(commandHoldTimerRef.current);
+    }
+
+    commandHoldCleanupRef.current?.();
   }, []);
 
   useEffect(() => {
@@ -560,18 +573,35 @@ export function DashboardSidebar({
         : null;
     }
 
+    function isActiveCommandPointer(event: PointerEvent) {
+      return activeCommandPointerIdRef.current === null || event.pointerId === activeCommandPointerIdRef.current;
+    }
+
     function highlightPointerAction(event: PointerEvent) {
+      if (!isActiveCommandPointer(event)) {
+        return;
+      }
+
       event.preventDefault();
       setActiveCommandAction(getActionFromTarget(getPointerElement(event)));
     }
 
     function cancelCommandHighlight(event: PointerEvent) {
+      if (!isActiveCommandPointer(event)) {
+        return;
+      }
+
       event.preventDefault();
       setActiveCommandAction(null);
     }
 
     function closeOnPointerRelease(event: PointerEvent) {
+      if (!isActiveCommandPointer(event)) {
+        return;
+      }
+
       event.preventDefault();
+      activeCommandPointerIdRef.current = null;
       const target = getPointerElement(event);
 
       if (!(target instanceof Element)) {
@@ -597,7 +627,7 @@ export function DashboardSidebar({
         return;
       }
 
-      const selectedAction = getActionFromTarget(target) ?? activeCommandActionRef.current;
+      const selectedAction = getActionFromTarget(target);
 
       if (selectedAction) {
         runMobileCommandAction(selectedAction);
@@ -605,8 +635,6 @@ export function DashboardSidebar({
       }
 
       if (commandButtonRef.current?.contains(target)) {
-        setCommandOpen(false);
-        setGroupPickerOpen(false);
         setActiveCommandAction(null);
         return;
       }
@@ -661,18 +689,71 @@ export function DashboardSidebar({
   const messagesActive = pathname.startsWith("/dashboard/messages") || isPrivateChatRoute;
   const pinnedGroup = groups.find((group) => group.id === pinnedGroupId) ?? groups[0] ?? null;
   const closeCommandDock = () => {
+    if (commandHoldTimerRef.current) {
+      window.clearTimeout(commandHoldTimerRef.current);
+      commandHoldTimerRef.current = null;
+    }
+
+    commandHoldCleanupRef.current?.();
+    commandHoldCleanupRef.current = null;
     setCommandOpen(false);
     setGroupPickerOpen(false);
     setActiveCommandAction(null);
+    activeCommandPointerIdRef.current = null;
+    commandOpenedAtRef.current = 0;
   };
-  const openCommandDock = () => {
+  const openCommandDock = (pointerId?: number) => {
+    if (commandHoldTimerRef.current) {
+      window.clearTimeout(commandHoldTimerRef.current);
+      commandHoldTimerRef.current = null;
+    }
+
+    commandHoldCleanupRef.current?.();
+    commandHoldCleanupRef.current = null;
     setCommandOpen(true);
     setActiveCommandAction(null);
+    activeCommandPointerIdRef.current = pointerId ?? null;
+    commandOpenedAtRef.current = performance.now();
     setChannelsOpen(false);
     setCreateOpen(false);
     closeFriendsMenu();
     setNotificationsOpen(false);
     setProfileOpen(false);
+  };
+  const cancelCommandHold = () => {
+    if (!commandHoldTimerRef.current) {
+      return;
+    }
+
+    window.clearTimeout(commandHoldTimerRef.current);
+    commandHoldTimerRef.current = null;
+    commandHoldCleanupRef.current?.();
+    commandHoldCleanupRef.current = null;
+    activeCommandPointerIdRef.current = null;
+  };
+  const startCommandHold = (pointerId: number) => {
+    cancelCommandHold();
+    activeCommandPointerIdRef.current = pointerId;
+
+    const cancelPendingHold = (event: PointerEvent) => {
+      if (event.pointerId !== pointerId) {
+        return;
+      }
+
+      event.preventDefault();
+      cancelCommandHold();
+    };
+
+    document.addEventListener("pointerup", cancelPendingHold, { passive: false });
+    document.addEventListener("pointercancel", cancelPendingHold, { passive: false });
+    commandHoldCleanupRef.current = () => {
+      document.removeEventListener("pointerup", cancelPendingHold);
+      document.removeEventListener("pointercancel", cancelPendingHold);
+    };
+
+    commandHoldTimerRef.current = window.setTimeout(() => {
+      openCommandDock(pointerId);
+    }, mobileCommandHoldDelayMs);
   };
   const toggleCommandDock = () => {
     setCommandOpen((open) => {
@@ -1412,7 +1493,6 @@ export function DashboardSidebar({
                 <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
-              <span>Friends</span>
             </button>
             <button
               aria-label="Open messages"
@@ -1427,7 +1507,6 @@ export function DashboardSidebar({
               <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
                 <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
               </svg>
-              <span>Messages</span>
             </button>
             <button
               aria-label="Create space"
@@ -1443,7 +1522,6 @@ export function DashboardSidebar({
                 <path d="M12 5v14" />
                 <path d="M5 12h14" />
               </svg>
-              <span>Create</span>
             </button>
             <button
               aria-label="Show joined spaces"
@@ -1460,7 +1538,6 @@ export function DashboardSidebar({
                 <path d="M4 12h16" />
                 <path d="M4 18h16" />
               </svg>
-              <span>Groups</span>
             </button>
           </div>
         </>
@@ -1492,7 +1569,20 @@ export function DashboardSidebar({
           }}
           onPointerDown={(event) => {
             event.preventDefault();
-            openCommandDock();
+            if (commandOpen) {
+              closeCommandDock();
+              return;
+            }
+
+            startCommandHold(event.pointerId);
+          }}
+          onPointerCancel={(event) => {
+            event.preventDefault();
+            cancelCommandHold();
+          }}
+          onPointerUp={(event) => {
+            event.preventDefault();
+            cancelCommandHold();
           }}
           ref={commandButtonRef}
           title="VAL command dock"

@@ -605,6 +605,7 @@ function ChannelMain({
                 groupId={groupId}
                 groupName={groupName}
                 members={members}
+                selectedChannelId={channel.id}
               />
             ) : null}
           </div>
@@ -639,6 +640,7 @@ function ChannelMain({
               groupId={groupId}
               groupName={groupName}
               members={members}
+              selectedChannelId={channel.id}
             />
           ) : null}
         </div>

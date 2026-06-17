@@ -10,6 +10,7 @@ type ChannelListProps = {
   canManageChannels?: boolean;
   channels: GroupChannel[];
   groupId: string;
+  onNavigate?: () => void;
   returnToSettings?: boolean;
   selectedChannelId?: string;
   showManagementActions?: boolean;
@@ -19,6 +20,7 @@ export function ChannelList({
   canManageChannels = false,
   channels,
   groupId,
+  onNavigate,
   returnToSettings = false,
   selectedChannelId,
   showManagementActions = false,
@@ -37,6 +39,7 @@ export function ChannelList({
         canManageChannels={canManageChannels}
         groupId={groupId}
         label="Text channels"
+        onNavigate={onNavigate}
         prefix="#"
         returnToSettings={returnToSettings}
         selectedChannelId={selectedChannelId}
@@ -47,6 +50,7 @@ export function ChannelList({
         canManageChannels={canManageChannels}
         groupId={groupId}
         label="Voice rooms"
+        onNavigate={onNavigate}
         prefix="Voice"
         returnToSettings={returnToSettings}
         selectedChannelId={selectedChannelId}
@@ -63,6 +67,7 @@ function ChannelSection({
   canManageChannels,
   groupId,
   selectedChannelId,
+  onNavigate,
   returnToSettings,
   showManagementActions,
 }: {
@@ -71,6 +76,7 @@ function ChannelSection({
   channels: GroupChannel[];
   canManageChannels: boolean;
   groupId: string;
+  onNavigate?: () => void;
   returnToSettings: boolean;
   selectedChannelId?: string;
   showManagementActions: boolean;
@@ -97,6 +103,7 @@ function ChannelSection({
                     channelId={channel.id}
                     channelName={channel.name}
                     groupId={groupId}
+                    onNavigate={onNavigate}
                     prefix={prefix}
                   />
                 ) : (
@@ -104,6 +111,7 @@ function ChannelSection({
                     aria-current={selectedChannelId === channel.id ? "page" : undefined}
                     className="flex min-w-0 flex-1 items-center justify-between gap-2"
                     href={`/dashboard/groups/${groupId}/channels/${channel.id}`}
+                    onClick={onNavigate}
                   >
                     <span className="flex min-w-0 items-center gap-2">
                       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/7 text-xs font-bold text-slate-200 min-[1180px]:h-7 min-[1180px]:w-7 min-[1180px]:rounded-md min-[1180px]:text-[11px]">

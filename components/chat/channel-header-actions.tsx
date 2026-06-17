@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { ChannelList } from "@/components/groups/channel-list";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { formatUserStatus } from "@/lib/utils";
 import type { GroupChannel, GroupMemberItem } from "@/types";
@@ -15,6 +16,7 @@ type ChannelHeaderActionsProps = {
   groupId: string;
   groupName?: string;
   members: GroupMemberItem[];
+  selectedChannelId?: string;
 };
 
 type OpenPanel = "channels" | "members" | "more" | null;
@@ -27,6 +29,7 @@ export function ChannelHeaderActions({
   groupId,
   groupName,
   members,
+  selectedChannelId,
 }: ChannelHeaderActionsProps) {
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -99,9 +102,9 @@ export function ChannelHeaderActions({
       </div>
 
       {openPanel ? (
-        <div className="fixed inset-0 z-[85] flex items-end bg-black/50 min-[1180px]:items-start min-[1180px]:justify-end min-[1180px]:bg-black/20">
+        <div className="fixed inset-0 z-[120] flex items-end bg-black/50 min-[1180px]:items-start min-[1180px]:justify-end min-[1180px]:bg-black/20">
           <div
-            className="app-panel mx-3 mb-[calc(var(--dashboard-bottom-nav-height)+0.5rem)] max-h-[72dvh] w-full max-w-xl overflow-y-auto rounded-[1.4rem] p-4 min-[1180px]:mx-0 min-[1180px]:mr-7 min-[1180px]:mt-[7.25rem] min-[1180px]:mb-0 min-[1180px]:max-h-[calc(100dvh_-_9rem)] min-[1180px]:rounded-lg min-[1180px]:p-5"
+            className="app-panel mx-3 mb-[calc(env(safe-area-inset-bottom)+6rem)] flex max-h-[72dvh] w-full max-w-xl flex-col overflow-hidden rounded-[1.4rem] p-4 min-[1180px]:mx-0 min-[1180px]:mr-7 min-[1180px]:mt-[7.25rem] min-[1180px]:mb-0 min-[1180px]:max-h-[calc(100dvh_-_9rem)] min-[1180px]:rounded-lg min-[1180px]:p-5"
             ref={panelRef}
             role="dialog"
           >
@@ -111,29 +114,14 @@ export function ChannelHeaderActions({
                 onClose={() => setOpenPanel(null)}
                 title="Channels"
               >
-                <div className="grid gap-2">
+                <div className="max-h-[50dvh] min-h-0 overflow-y-auto pr-1">
                   {channels.length ? (
-                    channels.map((channel) => (
-                      <Link
-                        className="app-row flex min-h-14 items-center justify-between gap-3 px-3 py-3"
-                        href={`/dashboard/groups/${groupId}/channels/${channel.id}`}
-                        key={channel.id}
-                        onClick={() => setOpenPanel(null)}
-                      >
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm font-semibold text-white">
-                            {channel.type === "TEXT" ? "# " : ""}
-                            {channel.name}
-                          </span>
-                          <span className="mt-1 block text-xs text-slate-400">
-                            {channel.type === "TEXT" ? "Text channel" : "Voice room"}
-                          </span>
-                        </span>
-                        <span className="shrink-0 text-[11px] font-semibold text-[#FFB199]">
-                          Open
-                        </span>
-                      </Link>
-                    ))
+                    <ChannelList
+                      channels={channels}
+                      groupId={groupId}
+                      onNavigate={() => setOpenPanel(null)}
+                      selectedChannelId={selectedChannelId}
+                    />
                   ) : (
                     <div className="rounded-lg border border-dashed border-white/10 px-4 py-5 text-sm leading-6 text-slate-400">
                       No channels yet in {groupName ?? "this space"}.

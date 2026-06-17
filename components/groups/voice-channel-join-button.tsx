@@ -16,6 +16,7 @@ type VoiceChannelJoinButtonProps = {
   channelId: string;
   channelName: string;
   groupId: string;
+  onNavigate?: () => void;
   prefix: string;
 };
 
@@ -23,6 +24,7 @@ export function VoiceChannelJoinButton({
   channelId,
   channelName,
   groupId,
+  onNavigate,
   prefix,
 }: VoiceChannelJoinButtonProps) {
   const call = useOptionalPersistentCall();
@@ -38,6 +40,7 @@ export function VoiceChannelJoinButton({
     }
 
     if (activeHere) {
+      onNavigate?.();
       router.push(href);
       return;
     }
@@ -76,6 +79,7 @@ export function VoiceChannelJoinButton({
         title: channelName,
         token: data.token,
       });
+      onNavigate?.();
       router.push(href);
     } catch (joinError) {
       setError(
