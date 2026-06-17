@@ -398,6 +398,47 @@ html[data-theme] .app-switch:checked::after {
   background: var(--control-text);
 }
 
+html[data-theme] .voice-settings-range {
+  accent-color: var(--accent);
+}
+
+html[data-theme] .voice-settings-range::-webkit-slider-runnable-track {
+  height: 0.72rem;
+  border: 2px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-inset);
+  box-shadow: var(--shadow-inset);
+}
+
+html[data-theme] .voice-settings-range::-webkit-slider-thumb {
+  width: 1.45rem;
+  height: 1.45rem;
+  margin-top: -0.48rem;
+  border: 2px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--border-strong) 86%, black);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+html[data-theme] .voice-settings-range::-moz-range-track {
+  height: 0.72rem;
+  border: 2px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-inset);
+  box-shadow: var(--shadow-inset);
+}
+
+html[data-theme] .voice-settings-range::-moz-range-thumb {
+  width: 1.45rem;
+  height: 1.45rem;
+  border: 2px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--border-strong) 86%, black);
+}
+
 html[data-theme] :is(a, button, input, textarea, select):focus-visible {
   outline: 3px solid var(--support-accent) !important;
   outline-offset: 3px;

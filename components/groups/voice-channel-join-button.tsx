@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { useOptionalPersistentCall } from "@/components/calls/persistent-call-provider";
 import { cn } from "@/lib/utils";
+import { loadVoiceSettingsForCall } from "@/lib/voice-settings.client";
 
 type LiveKitTokenResponse = {
   token: string;
@@ -69,6 +70,8 @@ export function VoiceChannelJoinButton({
         throw new Error(data.error ?? "Could not join this voice room.");
       }
 
+      const voiceSettings = await loadVoiceSettingsForCall();
+
       call.startCall({
         href,
         id: `group:${channelId}`,
@@ -78,6 +81,7 @@ export function VoiceChannelJoinButton({
         subtitle: data.roomName,
         title: channelName,
         token: data.token,
+        voiceSettings,
       });
       onNavigate?.();
       router.push(href);

@@ -36,9 +36,38 @@ model User {
   reportedMessages       MessageReport[]    @relation("MessageReportReporter")
   reviewedMessageReports MessageReport[]    @relation("MessageReportReviewer")
   pollVotes              PollVote[]
+  voiceSettings          UserVoiceSettings?
 
   @@index([status])
   @@map("users")
+}
+
+model UserVoiceSettings {
+  id                     String   @id @default(cuid())
+  userId                 String   @unique @map("user_id")
+  inputDeviceId          String?  @map("input_device_id")
+  outputDeviceId         String?  @map("output_device_id")
+  inputVolume            Int      @default(100) @map("input_volume")
+  outputVolume           Int      @default(100) @map("output_volume")
+  inputMode              String   @default("voice_activity") @map("input_mode")
+  autoSensitivity        Boolean  @default(true) @map("auto_sensitivity")
+  sensitivity            Int      @default(55)
+  pushToTalkKey          String?  @map("push_to_talk_key")
+  noiseSuppression       Boolean  @default(true) @map("noise_suppression")
+  echoCancellation       Boolean  @default(true) @map("echo_cancellation")
+  autoGainControl        Boolean  @default(true) @map("auto_gain_control")
+  voiceIsolation         Boolean  @default(false) @map("voice_isolation")
+  attenuation            Int      @default(0)
+  joinMuted              Boolean  @default(false) @map("join_muted")
+  joinDeafened           Boolean  @default(false) @map("join_deafened")
+  showVoiceWarnings      Boolean  @default(true) @map("show_voice_warnings")
+  showSpeakingIndicators Boolean  @default(true) @map("show_speaking_indicators")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_voice_settings")
 }
 
 model FriendRequest {

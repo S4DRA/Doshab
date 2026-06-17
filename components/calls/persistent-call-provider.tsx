@@ -23,6 +23,7 @@ import {
 } from "react";
 
 import { cn } from "@/lib/utils";
+import { defaultVoiceSettings, type VoiceSettings } from "@/lib/voice-settings";
 
 const endedCallIdsStorageKey = "palaver:ended-call-ids";
 const maxRememberedEndedCalls = 50;
@@ -38,6 +39,7 @@ type PersistentCallSession = {
   roomName: string;
   endUrl?: string;
   statusUrl?: string;
+  voiceSettings?: VoiceSettings;
 };
 
 type PersistentCallContextValue = {
@@ -208,22 +210,24 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
     [activeCall, endCall, endedCallIds, poppedOut, startCall],
   );
   const showDock = Boolean(activeCall && (poppedOut || !isActiveCallPage(activeCall, pathname)));
+  const activeVoiceSettings = activeCall?.voiceSettings ?? defaultVoiceSettings;
 
   return (
     <PersistentCallContext.Provider value={value}>
       {activeCall ? (
         <LiveKitRoom
-          audio
+          audio={getLiveKitAudioOptions(activeVoiceSettings)}
           className="contents"
           connect
           data-lk-theme="default"
           key={activeCall.id}
           onDisconnected={endCall}
+          options={getLiveKitRoomOptions(activeVoiceSettings)}
           serverUrl={activeCall.livekitUrl}
           token={activeCall.token}
           video={activeCall.kind === "group"}
         >
-          <RoomAudioRenderer />
+          {activeVoiceSettings.joinDeafened ? null : <RoomAudioRenderer />}
           {children}
           {showDock ? (
             <ActiveCallDock
@@ -893,4 +897,28 @@ function getCallHref(session: PersistentCallSession) {
   const channelId = session.id.replace(/^group:/, "");
 
   return groupId ? `/dashboard/groups/${groupId}/channels/${channelId}` : "/dashboard/channels";
+}
+
+function getLiveKitAudioOptions(settings: VoiceSettings) {
+  if (settings.joinMuted) {
+    return false;
+  }
+
+  return {
+    autoGainControl: settings.autoGainControl,
+    deviceId: settings.inputDeviceId ? { ideal: settings.inputDeviceId } : undefined,
+    echoCancellation: settings.echoCancellation,
+    noiseSuppression: settings.noiseSuppression,
+    voiceIsolation: settings.voiceIsolation || undefined,
+  };
+}
+
+function getLiveKitRoomOptions(settings: VoiceSettings) {
+  return {
+    audioOutput: settings.outputDeviceId
+      ? {
+          deviceId: settings.outputDeviceId,
+        }
+      : undefined,
+  };
 }

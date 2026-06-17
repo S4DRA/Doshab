@@ -8,6 +8,7 @@ import {
   usePersistentCall,
 } from "@/components/calls/persistent-call-provider";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
+import { loadVoiceSettingsForCall } from "@/lib/voice-settings.client";
 import type { FriendPerson } from "@/types";
 
 type FriendCallTokenResponse = {
@@ -98,6 +99,8 @@ export function FriendCallRoom({
         return;
       }
 
+      const voiceSettings = await loadVoiceSettingsForCall();
+
       startCall({
         endUrl: `/api/friend-calls/${callId}/end`,
         href: `/dashboard/calls/${callId}`,
@@ -109,6 +112,7 @@ export function FriendCallRoom({
         subtitle: "Private call",
         title: data.call.friend.name || data.call.friend.email,
         token: data.token,
+        voiceSettings,
       });
     } catch {
       showUnavailable("Could not join this call.", call);

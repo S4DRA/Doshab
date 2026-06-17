@@ -14,3 +14,101 @@
     at performWorkOnRoot (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:150)
     at performWorkOnRootViaSchedulerTask (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10255:9)
     at MessagePort.performWorkUntilDeadline (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:2647:64) (file://D:/Exairon Github/Doshab/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:4104:33)
+⚠ Fast Refresh had to perform a full reload when ./components/calls/persistent-call-provider.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload when ./components/calls/persistent-call-provider.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload when ./components/calls/persistent-call-provider.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload when ./components/calls/persistent-call-provider.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload when ./lib/voice-settings.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload when ./lib/voice-settings.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload when ./lib/voice-settings.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload when ./lib/voice-settings.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⨯ TypeError: Cannot read properties of undefined (reading 'findUnique')
+    at GET (app\api\profile\voice-settings\route.ts:22:51)
+  20 |   }
+  21 |
+> 22 |   const settings = await prisma.userVoiceSettings.findUnique({
+     |                                                   ^
+  23 |     where: {
+  24 |       userId: user.id,
+  25 |     },
+⨯ TypeError: Cannot read properties of undefined (reading 'findUnique')
+    at GET (app\api\profile\voice-settings\route.ts:22:51)
+  20 |   }
+  21 |
+> 22 |   const settings = await prisma.userVoiceSettings.findUnique({
+     |                                                   ^
+  23 |     where: {
+  24 |       userId: user.id,
+  25 |     },
+⨯ TypeError: Cannot read properties of undefined (reading 'upsert')
+    at PATCH (app\api\profile\voice-settings\route.ts:47:51)
+  45 |   }
+  46 |
+> 47 |   const settings = await prisma.userVoiceSettings.upsert({
+     |                                                   ^
+  48 |     create: getVoiceSettingsCreateData(user.id, parsed.data),
+  49 |     update: parsed.data,
+  50 |     where: {
+⨯ TypeError: Cannot read properties of undefined (reading 'upsert')
+    at PATCH (app\api\profile\voice-settings\route.ts:47:51)
+  45 |   }
+  46 |
+> 47 |   const settings = await prisma.userVoiceSettings.upsert({
+     |                                                   ^
+  48 |     create: getVoiceSettingsCreateData(user.id, parsed.data),
+  49 |     update: parsed.data,
+  50 |     where: {
+⨯ TypeError: Cannot read properties of undefined (reading 'upsert')
+    at PATCH (app\api\profile\voice-settings\route.ts:47:51)
+  45 |   }
+  46 |
+> 47 |   const settings = await prisma.userVoiceSettings.upsert({
+     |                                                   ^
+  48 |     create: getVoiceSettingsCreateData(user.id, parsed.data),
+  49 |     update: parsed.data,
+  50 |     where: {
+⨯ TypeError: Cannot read properties of undefined (reading 'upsert')
+    at PATCH (app\api\profile\voice-settings\route.ts:47:51)
+  45 |   }
+  46 |
+> 47 |   const settings = await prisma.userVoiceSettings.upsert({
+     |                                                   ^
+  48 |     create: getVoiceSettingsCreateData(user.id, parsed.data),
+  49 |     update: parsed.data,
+  50 |     where: {
+⨯ TypeError: Cannot read properties of undefined (reading 'upsert')
+    at PATCH (app\api\profile\voice-settings\route.ts:47:51)
+  45 |   }
+  46 |
+> 47 |   const settings = await prisma.userVoiceSettings.upsert({
+     |                                                   ^
+  48 |     create: getVoiceSettingsCreateData(user.id, parsed.data),
+  49 |     update: parsed.data,
+  50 |     where: {
+⨯ TypeError: Cannot read properties of undefined (reading 'upsert')
+    at PATCH (app\api\profile\voice-settings\route.ts:47:51)
+  45 |   }
+  46 |
+> 47 |   const settings = await prisma.userVoiceSettings.upsert({
+     |                                                   ^
+  48 |     create: getVoiceSettingsCreateData(user.id, parsed.data),
+  49 |     update: parsed.data,
+  50 |     where: {
+⨯ TypeError: Cannot read properties of undefined (reading 'upsert')
+    at PATCH (app\api\profile\voice-settings\route.ts:47:51)
+  45 |   }
+  46 |
+> 47 |   const settings = await prisma.userVoiceSettings.upsert({
+     |                                                   ^
+  48 |     create: getVoiceSettingsCreateData(user.id, parsed.data),
+  49 |     update: parsed.data,
+  50 |     where: {
+⨯ TypeError: Cannot read properties of undefined (reading 'upsert')
+    at PATCH (app\api\profile\voice-settings\route.ts:47:51)
+  45 |   }
+  46 |
+> 47 |   const settings = await prisma.userVoiceSettings.upsert({
+     |                                                   ^
+  48 |     create: getVoiceSettingsCreateData(user.id, parsed.data),
+  49 |     update: parsed.data,
+  50 |     where: {

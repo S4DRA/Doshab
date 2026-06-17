@@ -6,6 +6,7 @@ import {
   PersistentCallSurface,
   usePersistentCall,
 } from "@/components/calls/persistent-call-provider";
+import { loadVoiceSettingsForCall } from "@/lib/voice-settings.client";
 
 type LiveKitTokenResponse = {
   token: string;
@@ -57,6 +58,8 @@ export function LiveKitVoiceRoom({ channelId, channelName, groupId }: LiveKitVoi
         throw new Error(data.error ?? "Could not join this voice room.");
       }
 
+      const voiceSettings = await loadVoiceSettingsForCall();
+
       startCall({
         href: groupId ? `/dashboard/groups/${groupId}/channels/${channelId}` : undefined,
         id: `group:${channelId}`,
@@ -66,6 +69,7 @@ export function LiveKitVoiceRoom({ channelId, channelName, groupId }: LiveKitVoi
         subtitle: data.roomName,
         title: channelName,
         token: data.token,
+        voiceSettings,
       });
       setJoinedOnce(true);
     } catch (joinError) {

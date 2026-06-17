@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
+import { VoiceAudioSettingsPanel } from "@/components/profile/voice-audio-settings-panel";
 import {
   getBrowserPushDiagnostics,
   getPushRegistrationMessage,
@@ -32,6 +33,7 @@ const defaultSettings: ProfileSettings = {
 
 type SettingsSectionId =
   | "profile"
+  | "voice"
   | "notifications"
   | "appearance"
   | "security"
@@ -226,6 +228,7 @@ export function ProfileSettingsPanel() {
       <div className="mb-4 flex flex-wrap gap-2">
         {[
           { id: "profile", label: "Profile" },
+          { id: "voice", label: "Voice & Audio" },
           { id: "notifications", label: "Notifications" },
           { id: "appearance", label: "Appearance" },
           { id: "security", label: "Security" },
@@ -382,6 +385,10 @@ export function ProfileSettingsPanel() {
             </p>
           ) : null}
         </div>
+      ) : null}
+
+      {activeSection === "voice" ? (
+        <VoiceAudioSettingsPanel />
       ) : null}
 
       {activeSection === "profile" ? (
