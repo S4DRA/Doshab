@@ -73,7 +73,7 @@ type SidebarSnapshot = {
   unreadCount: number;
 };
 
-type MobileCommandAction = "friends" | "messages" | "create" | "groups";
+type MobileCommandAction = "home" | "friends" | "messages" | "create" | "groups";
 
 const mobileChannelPinCacheKey = "doshab-mobile-channel-pin-v1";
 const sidebarCacheKey = "doshab-sidebar-v6";
@@ -217,6 +217,11 @@ export function DashboardSidebar({
     commandOpenedAtRef.current = 0;
 
     switch (action) {
+      case "home":
+        setCommandOpen(false);
+        setGroupPickerOpen(false);
+        router.push("/dashboard");
+        return;
       case "friends":
         setCommandOpen(false);
         setGroupPickerOpen(false);
@@ -568,7 +573,7 @@ export function DashboardSidebar({
 
       const action = actionTarget.dataset.commandAction;
 
-      return action === "friends" || action === "messages" || action === "create" || action === "groups"
+      return action === "home" || action === "friends" || action === "messages" || action === "create" || action === "groups"
         ? action
         : null;
     }
@@ -616,12 +621,10 @@ export function DashboardSidebar({
         const groupId = groupTarget.dataset.commandGroup;
 
         if (groupId) {
-          const group = groups.find((item) => item.id === groupId);
-
           setCommandOpen(false);
           setGroupPickerOpen(false);
           setActiveCommandAction(null);
-          router.push(group ? getGroupHref(group) : `/dashboard/groups/${groupId}`);
+          router.push(`/dashboard/groups/${groupId}`);
         }
 
         return;
@@ -635,6 +638,8 @@ export function DashboardSidebar({
       }
 
       if (commandButtonRef.current?.contains(target)) {
+        setCommandOpen(false);
+        setGroupPickerOpen(false);
         setActiveCommandAction(null);
         return;
       }
@@ -773,10 +778,8 @@ export function DashboardSidebar({
     setProfileOpen(false);
   };
   const goToGroupMain = (groupId: string) => {
-    const group = groups.find((item) => item.id === groupId);
-
     closeCommandDock();
-    router.push(group ? getGroupHref(group) : `/dashboard/groups/${groupId}`);
+    router.push(`/dashboard/groups/${groupId}`);
   };
 
   async function markNotificationsRead() {
@@ -1206,7 +1209,7 @@ export function DashboardSidebar({
               className={`app-row flex items-center gap-3 p-3 ${
                 pinnedGroup?.id === group.id ? "border-[#FF5F25]/60 bg-[#FF5F25]/12" : ""
               }`}
-              href={getGroupHref(group)}
+              href={`/dashboard/groups/${group.id}`}
               key={group.id}
               onClick={() => {
                 setPinnedGroupId(group.id);
@@ -1477,6 +1480,22 @@ export function DashboardSidebar({
                 )}
               </div>
             ) : null}
+            <button
+              aria-label="Open home"
+              className={`val-command-action val-command-action-home${activeCommandAction === "home" ? " val-command-action-active" : ""}`}
+              data-command-action="home"
+              onClick={() => {
+                runMobileCommandAction("home");
+              }}
+              role="menuitem"
+              type="button"
+            >
+              <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
+                <path d="m3 11 9-8 9 8" />
+                <path d="M5 10v10h14V10" />
+                <path d="M9 20v-6h6v6" />
+              </svg>
+            </button>
             <button
               aria-label="Open friends"
               className={`val-command-action val-command-action-friends${activeCommandAction === "friends" ? " val-command-action-active" : ""}`}

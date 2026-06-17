@@ -4666,23 +4666,28 @@ html[data-theme] .val-command-action:active {
 }
 
 html[data-theme] .val-command-action-create {
-  --val-command-x: 42px;
-  --val-command-y: -132px;
+  --val-command-x: 78px;
+  --val-command-y: -118px;
+}
+
+html[data-theme] .val-command-action-home {
+  --val-command-x: 0px;
+  --val-command-y: -142px;
 }
 
 html[data-theme] .val-command-action-friends {
-  --val-command-x: -108px;
-  --val-command-y: -78px;
+  --val-command-x: -128px;
+  --val-command-y: -58px;
 }
 
 html[data-theme] .val-command-action-message {
-  --val-command-x: -42px;
-  --val-command-y: -132px;
+  --val-command-x: -78px;
+  --val-command-y: -118px;
 }
 
 html[data-theme] .val-command-action-groups {
-  --val-command-x: 108px;
-  --val-command-y: -78px;
+  --val-command-x: 128px;
+  --val-command-y: -58px;
 }
 
 html[data-theme] .val-command-group-picker {
@@ -5157,20 +5162,24 @@ html[data-theme] .val-command-backdrop {
     height: 1.45rem !important;
   }
 
+  html[data-theme] .val-command-dock .val-command-action-home {
+    transform: translate(-50%, calc(-50% - 142px)) !important;
+  }
+
   html[data-theme] .val-command-dock .val-command-action-friends {
-    transform: translate(calc(-50% - 108px), calc(-50% - 78px)) !important;
+    transform: translate(calc(-50% - 128px), calc(-50% - 58px)) !important;
   }
 
   html[data-theme] .val-command-dock .val-command-action-message {
-    transform: translate(calc(-50% - 42px), calc(-50% - 132px)) !important;
+    transform: translate(calc(-50% - 78px), calc(-50% - 118px)) !important;
   }
 
   html[data-theme] .val-command-dock .val-command-action-create {
-    transform: translate(calc(-50% + 42px), calc(-50% - 132px)) !important;
+    transform: translate(calc(-50% + 78px), calc(-50% - 118px)) !important;
   }
 
   html[data-theme] .val-command-dock .val-command-action-groups {
-    transform: translate(calc(-50% + 108px), calc(-50% - 78px)) !important;
+    transform: translate(calc(-50% + 128px), calc(-50% - 58px)) !important;
   }
 
   html[data-theme] .dashboard-main-sidebar .val-command-button,

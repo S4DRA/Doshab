@@ -100,12 +100,6 @@ export default async function GroupPage({ params, searchParams }: GroupPageProps
     redirect("/dashboard");
   }
 
-  const firstTextChannel = selectedGroup.channels.find((channel) => channel.type === "TEXT");
-
-  if (firstTextChannel) {
-    redirect(`/dashboard/groups/${selectedGroup.id}/channels/${firstTextChannel.id}`);
-  }
-
   const canInvite =
     !selectedGroup.isDirectMessage &&
     (currentMember.role === "OWNER" || currentMember.role === "ADMIN");
