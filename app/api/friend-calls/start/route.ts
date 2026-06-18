@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 import {
   createFriendCallRoomName,
@@ -8,9 +9,14 @@ import {
   getFriendCallHref,
   findFriendship,
 } from "@/lib/calls";
-import { getCurrentUser } from "@/lib/auth";
 import { createNotification } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { auditSecurityEvent, requireAuth } from "@/lib/security/permissions";
+
+const startCallSchema = z.object({
+  friendId: z.string().trim().min(1).max(128),
+});
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
@@ -20,24 +26,35 @@ async function getFriendId(request: NextRequest) {
   const contentType = request.headers.get("content-type") ?? "";
 
   if (contentType.includes("application/json")) {
-    const body = (await request.json().catch(() => null)) as {
-      friendId?: unknown;
-    } | null;
+    const parsed = startCallSchema.safeParse(await request.json().catch(() => null));
 
-    return typeof body?.friendId === "string" ? body.friendId : "";
+    return parsed.success ? parsed.data.friendId : "";
   }
 
   const formData = await request.formData().catch(() => null);
-  const friendId = formData?.get("friendId");
+  const parsed = startCallSchema.safeParse({
+    friendId: formData?.get("friendId"),
+  });
 
-  return typeof friendId === "string" ? friendId : "";
+  return parsed.success ? parsed.data.friendId : "";
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
 
   if (!user) {
     return jsonError("Authentication required.", 401);
+  }
+
+  const limited = await rateLimit(request, {
+    identifiers: [`user:${user.id}`],
+    key: "friend-calls:start",
+    limit: 20,
+    windowMs: 60 * 60_000,
+  });
+
+  if (limited) {
+    return limited;
   }
 
   const friendId = await getFriendId(request);
@@ -159,6 +176,16 @@ export async function POST(request: NextRequest) {
       tag: `friend-call-${call.id}`,
     },
   });
+
+  await auditSecurityEvent(
+    "friend-call.start",
+    {
+      actorId: user.id,
+      callId: call.id,
+      receiverId: friend.id,
+    },
+    request,
+  );
 
   if (isJsonRequest) {
     return NextResponse.json({

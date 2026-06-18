@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { auditSecurityEvent, requireAuth } from "@/lib/security/permissions";
+
+const createGroupSchema = z.object({
+  description: z.string().trim().max(180).optional(),
+  name: z.string().trim().min(1).max(80),
+});
 
 function redirectWithError(request: NextRequest, error: string) {
   return NextResponse.redirect(
@@ -11,19 +18,34 @@ function redirectWithError(request: NextRequest, error: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getCurrentUser();
+  const limited = await rateLimit(request, {
+    key: "groups:create",
+    limit: 12,
+    windowMs: 60_000,
+  });
+
+  if (limited) {
+    return limited;
+  }
+
+  const user = await requireAuth().catch(() => null);
 
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
   }
 
   const formData = await request.formData();
-  const name = String(formData.get("name") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
+  const parsed = createGroupSchema.safeParse({
+    description: formData.get("description") ?? undefined,
+    name: formData.get("name"),
+  });
 
-  if (!name) {
+  if (!parsed.success) {
     return redirectWithError(request, "Space name is required.");
   }
+
+  const { name } = parsed.data;
+  const description = parsed.data.description ?? "";
 
   const group = await prisma.$transaction(async (tx) => {
     const createdGroup = await tx.group.create({
@@ -62,6 +84,15 @@ export async function POST(request: NextRequest) {
 
     return createdGroup;
   });
+
+  await auditSecurityEvent(
+    "group.create",
+    {
+      actorId: user.id,
+      groupId: group.id,
+    },
+    request,
+  );
 
   return NextResponse.redirect(
     new URL(`/dashboard/groups/${group.id}`, request.url),

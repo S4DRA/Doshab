@@ -37,9 +37,39 @@ model User {
   reviewedMessageReports MessageReport[]    @relation("MessageReportReviewer")
   pollVotes              PollVote[]
   voiceSettings          UserVoiceSettings?
+  auditLogs              AuditLog[]
 
   @@index([status])
   @@map("users")
+}
+
+model RateLimitBucket {
+  key       String   @id
+  count     Int
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
+  @@map("rate_limit_buckets")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  targetType String?
+  targetId   String?
+  ip         String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@index([targetType, targetId])
+  @@map("audit_logs")
 }
 
 model UserVoiceSettings {

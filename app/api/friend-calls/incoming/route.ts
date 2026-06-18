@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/auth";
 import { markFriendCallMissed } from "@/lib/calls";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/security/permissions";
 
 export async function GET() {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
 
   if (!user) {
     return NextResponse.json({ error: "Authentication required." }, { status: 401 });

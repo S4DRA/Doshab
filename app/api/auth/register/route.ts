@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { isValidEmail, isValidPassword, normalizeEmail } from "@/lib/auth";
+import { normalizeEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
+
+const registerSchema = z.object({
+  email: z.string().trim().email(),
+  name: z.string().trim().min(1).max(80),
+  password: z.string().min(8),
+});
 
 function redirectWithError(request: NextRequest, error: string) {
   return NextResponse.redirect(
@@ -25,22 +33,30 @@ function getRequestOrigin(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const limited = await rateLimit(request, {
+    key: "auth:register",
+    limit: 3,
+    windowMs: 60 * 60_000,
+  });
+
+  if (limited) {
+    return limited;
+  }
+
   const formData = await request.formData();
-  const name = String(formData.get("name") ?? "").trim();
-  const email = normalizeEmail(String(formData.get("email") ?? ""));
-  const password = String(formData.get("password") ?? "");
+  const parsed = registerSchema.safeParse({
+    email: formData.get("email"),
+    name: formData.get("name"),
+    password: formData.get("password"),
+  });
 
-  if (!name) {
-    return redirectWithError(request, "Name is required.");
+  if (!parsed.success) {
+    return redirectWithError(request, "Enter a valid name, email, and password.");
   }
 
-  if (!isValidEmail(email)) {
-    return redirectWithError(request, "Enter a valid email address.");
-  }
-
-  if (!isValidPassword(password)) {
-    return redirectWithError(request, "Password must be at least 8 characters.");
-  }
+  const name = parsed.data.name;
+  const email = normalizeEmail(parsed.data.email);
+  const password = parsed.data.password;
 
   try {
     const response = NextResponse.redirect(

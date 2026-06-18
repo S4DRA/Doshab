@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { isValidEmail, normalizeEmail, getCurrentUser } from "@/lib/auth";
+import { isValidEmail, normalizeEmail } from "@/lib/auth";
 import { areAlreadyFriends } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { requireAuth } from "@/lib/security/permissions";
 
 function getRedirectPath(request: NextRequest) {
   const redirectTo = request.nextUrl.searchParams.get("redirectTo");
@@ -26,7 +28,17 @@ function redirectWithParams(
 }
 
 export async function GET(request: NextRequest) {
-  const user = await getCurrentUser();
+  const limited = await rateLimit(request, {
+    key: "friends:search",
+    limit: 60,
+    windowMs: 60_000,
+  });
+
+  if (limited) {
+    return limited;
+  }
+
+  const user = await requireAuth().catch(() => null);
 
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });

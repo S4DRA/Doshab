@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/auth";
 import { chatMessageBaseSelect, formatChatMessages } from "@/lib/chat-messages";
-import { getChannelMembership } from "@/lib/community-permissions";
 import { prisma } from "@/lib/prisma";
+import { requireAuth, requireChannelMember } from "@/lib/security/permissions";
 
 type PinnedRouteProps = {
   params: Promise<{
@@ -12,14 +11,14 @@ type PinnedRouteProps = {
 };
 
 export async function GET(_request: Request, { params }: PinnedRouteProps) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
   const { channelId } = await params;
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const channel = await getChannelMembership(channelId, user.id);
+  const channel = await requireChannelMember(user.id, channelId).catch(() => null);
 
   if (!channel) {
     return NextResponse.json({ error: "Channel not found." }, { status: 404 });

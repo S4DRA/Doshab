@@ -1,77 +1,15 @@
-import { prisma } from "@/lib/prisma";
+import {
+  canManageChannel as canManageSpace,
+  requireChannelMember,
+  requireMessageAccess,
+} from "@/lib/security/permissions";
 
 export async function getMessageAccess(messageId: string, userId: string) {
-  return prisma.message.findFirst({
-    where: {
-      id: messageId,
-      channel: {
-        group: {
-          members: {
-            some: {
-              userId,
-            },
-          },
-        },
-      },
-    },
-    select: {
-      id: true,
-      channelId: true,
-      channel: {
-        select: {
-          groupId: true,
-          group: {
-            select: {
-              isDirectMessage: true,
-              members: {
-                where: {
-                  userId,
-                },
-                select: {
-                  role: true,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
+  return requireMessageAccess(userId, messageId).catch(() => null);
 }
 
 export async function getChannelMembership(channelId: string, userId: string) {
-  return prisma.channel.findFirst({
-    where: {
-      id: channelId,
-      group: {
-        members: {
-          some: {
-            userId,
-          },
-        },
-      },
-    },
-    select: {
-      id: true,
-      groupId: true,
-      type: true,
-      group: {
-        select: {
-          isDirectMessage: true,
-          members: {
-            where: {
-              userId,
-            },
-            select: {
-              role: true,
-            },
-          },
-        },
-      },
-    },
-  });
+  return requireChannelMember(userId, channelId).catch(() => null);
 }
 
-export function canManageSpace(role: "OWNER" | "ADMIN" | "MEMBER" | undefined) {
-  return role === "OWNER" || role === "ADMIN";
-}
+export { canManageSpace };

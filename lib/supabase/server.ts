@@ -1,8 +1,12 @@
+import "server-only";
+
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import type { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 function getSupabaseEnv() {
+  // Server-side Supabase clients intentionally use only the publishable/anon key.
+  // Never add SUPABASE_SERVICE_ROLE_KEY here.
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
