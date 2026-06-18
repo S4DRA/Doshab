@@ -1,33 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { getAuthState } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { requireAuth } from "@/lib/security/permissions";
 
-type DeviceKeyBody = {
-  deviceId?: unknown;
-  publicKey?: unknown;
-};
+const deviceKeySchema = z.object({
+  deviceId: z.string().trim().min(1).max(160),
+  publicKey: z.string().trim().min(1).max(4000),
+});
 
 export async function POST(request: NextRequest) {
-  const auth = await getAuthState();
+  const limited = await rateLimit(request, {
+    key: "e2ee:device-key",
+    limit: 30,
+    windowMs: 60_000,
+  });
 
-  if (auth.status === "unverified") {
-    return NextResponse.json({ error: "Email not verified" }, { status: 403 });
+  if (limited) {
+    return limited;
   }
 
-  if (auth.status !== "authenticated") {
+  const user = await requireAuth().catch(() => null);
+
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userId = auth.user.id;
+  const parsed = deviceKeySchema.safeParse(await request.json().catch(() => null));
 
-  const body = (await request.json().catch(() => null)) as DeviceKeyBody | null;
-  const deviceId = typeof body?.deviceId === "string" ? body.deviceId : "";
-  const publicKey = typeof body?.publicKey === "string" ? body.publicKey : "";
-
-  if (!deviceId || !publicKey || publicKey.length > 4000) {
+  if (!parsed.success) {
     return NextResponse.json({ error: "Invalid device key" }, { status: 400 });
   }
+
+  const { deviceId, publicKey } = parsed.data;
 
   await prisma.userDeviceKey.upsert({
     where: {
@@ -37,13 +43,13 @@ export async function POST(request: NextRequest) {
       id: deviceId,
       publicKey,
       userAgent: request.headers.get("user-agent"),
-      userId,
+      userId: user.id,
     },
     update: {
       lastSeen: new Date(),
       publicKey,
       userAgent: request.headers.get("user-agent"),
-      userId,
+      userId: user.id,
     },
   });
 

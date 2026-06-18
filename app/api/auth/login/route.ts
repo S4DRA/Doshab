@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
 
-import { isValidEmail, normalizeEmail } from "@/lib/auth";
+import { normalizeEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { auditSecurityEvent } from "@/lib/security/permissions";
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
+
+const loginSchema = z.object({
+  email: z.string().trim().email(),
+  password: z.string().min(1),
+  returnTo: z.string().optional(),
+});
 
 function redirectWithError(request: NextRequest, error: string, returnTo = "/dashboard") {
   const params = new URLSearchParams({
@@ -40,12 +49,28 @@ function getRequestOrigin(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
-  const email = normalizeEmail(String(formData.get("email") ?? ""));
-  const password = String(formData.get("password") ?? "");
-  const returnTo = getSafeReturnTo(String(formData.get("returnTo") ?? "/dashboard"));
+  const parsed = loginSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+    returnTo: formData.get("returnTo") ?? undefined,
+  });
 
-  if (!isValidEmail(email) || !password) {
-    return redirectWithError(request, "Enter a valid email and password.", returnTo);
+  if (!parsed.success) {
+    return redirectWithError(request, "Enter a valid email and password.");
+  }
+
+  const email = normalizeEmail(parsed.data.email);
+  const password = parsed.data.password;
+  const returnTo = getSafeReturnTo(parsed.data.returnTo ?? "/dashboard");
+  const limited = await rateLimit(request, {
+    identifiers: [`email:${email}`],
+    key: "auth:login",
+    limit: 5,
+    windowMs: 10 * 60_000,
+  });
+
+  if (limited) {
+    return limited;
   }
 
   try {
@@ -62,6 +87,14 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (error.code === "email_not_confirmed") {
+        await auditSecurityEvent(
+          "auth.login.failure",
+          {
+            email,
+            reason: "email_not_confirmed",
+          },
+          request,
+        );
         return NextResponse.redirect(
           new URL(
             `/verify-email?error=${encodeURIComponent(
@@ -117,6 +150,14 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      await auditSecurityEvent(
+        "auth.login.failure",
+        {
+          email,
+          reason: "invalid_credentials",
+        },
+        request,
+      );
       return redirectWithError(request, "Invalid email or password.", returnTo);
     }
 
@@ -130,11 +171,27 @@ export async function POST(request: NextRequest) {
     }
 
     if (!authenticatedUser) {
+      await auditSecurityEvent(
+        "auth.login.failure",
+        {
+          email,
+          reason: "missing_authenticated_user",
+        },
+        request,
+      );
       return redirectWithError(request, "Authentication is temporarily unavailable.", returnTo);
     }
 
     if (!authenticatedUser.email_confirmed_at) {
       await supabase.auth.signOut();
+      await auditSecurityEvent(
+        "auth.login.failure",
+        {
+          email,
+          reason: "email_unconfirmed",
+        },
+        request,
+      );
       return NextResponse.redirect(
         new URL(
           `/verify-email?error=${encodeURIComponent(
@@ -151,7 +208,7 @@ export async function POST(request: NextRequest) {
         ? authenticatedUser.user_metadata.name
         : "";
 
-    await prisma.user.upsert({
+    const prismaUser = await prisma.user.upsert({
       where: {
         email,
       },
@@ -163,6 +220,15 @@ export async function POST(request: NextRequest) {
         name: nameFromMetadata || email,
       },
     });
+
+    await auditSecurityEvent(
+      "auth.login.success",
+      {
+        actorId: prismaUser.id,
+        email,
+      },
+      request,
+    );
 
     return response;
   } catch (error) {

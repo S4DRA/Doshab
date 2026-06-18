@@ -1,18 +1,26 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-import { getAuthState } from "@/lib/auth";
 import { dashboardNotificationSelect } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/security/permissions";
+import { rateLimit } from "@/lib/security/rate-limit";
 
-export async function GET() {
-  const auth = await getAuthState();
+export async function GET(request: NextRequest) {
+  const user = await requireAuth().catch(() => null);
 
-  if (auth.status === "unverified") {
-    return NextResponse.json({ error: "Email not verified" }, { status: 403 });
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (auth.status !== "authenticated") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = await rateLimit(request, {
+    identifiers: [`user:${user.id}`],
+    key: "notifications:poll",
+    limit: 120,
+    windowMs: 60_000,
+  });
+
+  if (limited) {
+    return limited;
   }
 
   const [notifications, unreadCount] = await Promise.all([
@@ -26,7 +34,7 @@ export async function GET() {
             },
           },
         ],
-        userId: auth.user.id,
+        userId: user.id,
       },
       orderBy: {
         createdAt: "desc",
@@ -37,7 +45,7 @@ export async function GET() {
     prisma.notification.count({
       where: {
         readAt: null,
-        userId: auth.user.id,
+        userId: user.id,
       },
     }),
   ]);

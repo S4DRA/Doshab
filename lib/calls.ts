@@ -1,6 +1,7 @@
 import { orderedFriendshipPair } from "@/lib/friends";
 import { createNotification } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
+import { auditSecurityEvent } from "@/lib/security/permissions";
 
 export const friendCallDurationMs = 60_000;
 
@@ -68,5 +69,11 @@ export async function markFriendCallMissed({
     title: "Missed call",
     type: "MISSED_CALL",
     userId: receiverId,
+  });
+
+  await auditSecurityEvent("friend-call.missed", {
+    actorId: caller.id,
+    callId,
+    receiverId,
   });
 }

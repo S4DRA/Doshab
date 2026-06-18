@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { getCurrentUser } from "@/lib/auth";
 import { reactionEmojis } from "@/lib/chat-constants";
 import { chatMessageBaseSelect, formatChatMessage } from "@/lib/chat-messages";
-import { getMessageAccess } from "@/lib/community-permissions";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { requireAuth, requireMessageAccess } from "@/lib/security/permissions";
+
+const reactionSchema = z.object({
+  emoji: z.enum(reactionEmojis),
+});
 
 type ReactionRouteProps = {
   params: Promise<{
@@ -13,21 +18,31 @@ type ReactionRouteProps = {
 };
 
 export async function POST(request: NextRequest, { params }: ReactionRouteProps) {
-  const user = await getCurrentUser();
+  const limited = await rateLimit(request, {
+    key: "messages:reactions",
+    limit: 120,
+    windowMs: 60_000,
+  });
+
+  if (limited) {
+    return limited;
+  }
+
+  const user = await requireAuth().catch(() => null);
   const { messageId } = await params;
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json().catch(() => null)) as { emoji?: unknown } | null;
-  const emoji = typeof body?.emoji === "string" ? body.emoji : "";
+  const parsed = reactionSchema.safeParse(await request.json().catch(() => null));
 
-  if (!reactionEmojis.includes(emoji as (typeof reactionEmojis)[number])) {
+  if (!parsed.success) {
     return NextResponse.json({ error: "Unsupported reaction." }, { status: 400 });
   }
 
-  const access = await getMessageAccess(messageId, user.id);
+  const emoji = parsed.data.emoji;
+  const access = await requireMessageAccess(user.id, messageId).catch(() => null);
 
   if (!access) {
     return NextResponse.json({ error: "Message not found." }, { status: 404 });

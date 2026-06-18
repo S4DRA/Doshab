@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { extname, join } from "node:path";
+import { z } from "zod";
 
-import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  auditSecurityEvent,
+  requireAuth,
+  requireGroupRole,
+  SecurityError,
+} from "@/lib/security/permissions";
 
 const maxGroupImageBytes = 2 * 1024 * 1024;
 const allowedGroupImageTypes = new Map([
@@ -14,6 +20,12 @@ const allowedGroupImageTypes = new Map([
   ["image/gif", ".gif"],
   ["image/svg+xml", ".svg"],
 ]);
+
+const settingsFormSchema = z.object({
+  description: z.string().trim().max(180),
+  image: z.string(),
+  name: z.string().trim().min(2).max(80),
+});
 
 type GroupSettingsRouteProps = {
   params: Promise<{
@@ -98,57 +110,51 @@ export async function POST(
   request: NextRequest,
   { params }: GroupSettingsRouteProps,
 ) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
   const { groupId } = await params;
 
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
   }
 
-  const membership = await prisma.groupMember.findUnique({
-    where: {
-      groupId_userId: {
-        groupId,
-        userId: user.id,
-      },
-    },
-    select: {
-      role: true,
-      group: {
-        select: {
-          isDirectMessage: true,
-        },
-      },
-    },
-  });
+  const membership = await requireGroupRole(user.id, groupId, ["OWNER", "ADMIN"]).catch(
+    (error: unknown) => {
+      if (error instanceof SecurityError && error.status === 404) {
+        return null;
+      }
 
-  if (!membership) {
+      return undefined;
+    },
+  );
+
+  if (membership === null) {
     return NextResponse.redirect(new URL("/dashboard", request.url), {
       status: 303,
     });
+  }
+
+  if (!membership) {
+    return redirectToSettings(request, groupId, "error", "Only owners and admins can edit space settings.");
   }
 
   if (membership.group.isDirectMessage) {
     return redirectToSettings(request, groupId, "error", "Private messages do not have space settings.");
   }
 
-  if (membership.role !== "OWNER" && membership.role !== "ADMIN") {
-    return redirectToSettings(request, groupId, "error", "Only owners and admins can edit space settings.");
-  }
-
   const formData = await request.formData();
-  const name = String(formData.get("name") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  const imageUrl = normalizeImageUrl(String(formData.get("image") ?? ""));
+  const parsed = settingsFormSchema.safeParse({
+    description: formData.get("description") ?? "",
+    image: formData.get("image") ?? "",
+    name: formData.get("name"),
+  });
   const imageUpload = formData.get("imageUpload");
 
-  if (name.length < 2 || name.length > 80) {
+  if (!parsed.success) {
     return redirectToSettings(request, groupId, "error", "Space name must be 2 to 80 characters.");
   }
 
-  if (description.length > 180) {
-    return redirectToSettings(request, groupId, "error", "Description must be 180 characters or fewer.");
-  }
+  const { description, name } = parsed.data;
+  const imageUrl = normalizeImageUrl(parsed.data.image);
 
   if (imageUrl === undefined) {
     return redirectToSettings(request, groupId, "error", "Enter a valid http or https image URL.");
@@ -176,6 +182,15 @@ export async function POST(
       name,
     },
   });
+
+  await auditSecurityEvent(
+    "group.settings.update",
+    {
+      actorId: user.id,
+      groupId,
+    },
+    request,
+  );
 
   return redirectToSettings(request, groupId, "message", "Space settings updated.");
 }

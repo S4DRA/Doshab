@@ -18,10 +18,12 @@ type MessageListProps = {
 type MessageRowProps = {
   canPinMessages: boolean;
   currentUserId?: string;
+  isGrouped: boolean;
   message: ChatMessage;
   onMessageUpdate?: (message: ChatMessage) => void;
   onReport: () => void;
   onReply?: (message: ChatMessage) => void;
+  showDateSeparator: boolean;
 };
 
 const reportReasons = [
@@ -54,18 +56,26 @@ function MessageListComponent({
 
   return (
     <>
-      <div className="message-stack mx-auto flex min-h-full w-full max-w-[min(100%,70rem)] flex-col justify-end gap-2 px-1 sm:px-2">
-        {messages.map((message) => (
-          <MemoMessageRow
-            canPinMessages={canPinMessages}
-            currentUserId={currentUserId}
-            key={message.id}
-            message={message}
-            onMessageUpdate={onMessageUpdate}
-            onReport={() => setReportingMessage(message)}
-            onReply={onReply}
-          />
-        ))}
+      <div className="message-stack mx-auto flex min-h-full w-full max-w-[min(100%,82rem)] flex-col justify-end px-1 sm:px-2">
+        {messages.map((message, index) => {
+          const previousMessage = messages[index - 1];
+          const isGrouped = shouldGroupMessage(previousMessage, message);
+          const showDateSeparator = shouldShowDateSeparator(previousMessage, message);
+
+          return (
+            <MemoMessageRow
+              canPinMessages={canPinMessages}
+              currentUserId={currentUserId}
+              isGrouped={isGrouped}
+              key={message.id}
+              message={message}
+              onMessageUpdate={onMessageUpdate}
+              onReport={() => setReportingMessage(message)}
+              onReply={onReply}
+              showDateSeparator={showDateSeparator}
+            />
+          );
+        })}
       </div>
       {reportingMessage ? (
         <ReportDialog
@@ -90,10 +100,12 @@ export const MessageList = memo(
 const MemoMessageRow = memo(function MessageRow({
   canPinMessages,
   currentUserId,
+  isGrouped,
   message,
   onMessageUpdate,
   onReport,
   onReply,
+  showDateSeparator,
 }: MessageRowProps) {
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [actionsOpen, setActionsOpen] = useState(false);
@@ -215,18 +227,36 @@ const MemoMessageRow = memo(function MessageRow({
   }
 
   return (
-    <article
-      className={`message-row group/message flex scroll-mt-28 gap-2.5 border border-transparent px-1.5 py-2.5 transition hover:border-white/10 hover:bg-white/[0.02] sm:gap-3 sm:px-2 ${
-        isOwnMessage ? "message-row-own" : "message-row-friend"
-      }`}
-      id={`message-${message.id}`}
-    >
-      <AvatarInitials
-        imageUrl={message.sender.image}
-        value={senderLabel}
-      />
-      <div className="message-shell min-w-0">
-        <div className="message-bubble relative pr-12 sm:pr-14">
+    <>
+      {showDateSeparator ? (
+        <div className="message-date-separator flex items-center gap-3 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+          <span className="h-px flex-1 bg-white/10" />
+          <time>{formatMessageDay(message.createdAt)}</time>
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+      ) : null}
+      <article
+        className={`message-row group/message flex scroll-mt-28 gap-2.5 border border-transparent px-1.5 transition sm:gap-3 sm:px-2 ${
+          isGrouped ? "message-row-grouped py-1" : "py-2.5"
+        } ${message.pinnedAt ? "message-row-pinned" : ""} ${
+          isOwnMessage ? "message-row-own" : "message-row-friend"
+        }`}
+        id={`message-${message.id}`}
+      >
+        <div className="message-avatar-slot shrink-0">
+          {isGrouped ? (
+            <time className="message-group-time hidden text-[10px] text-slate-600 sm:block">
+              {formatMessageTime(message.createdAt)}
+            </time>
+          ) : (
+            <AvatarInitials
+              imageUrl={message.sender.image}
+              value={senderLabel}
+            />
+          )}
+        </div>
+        <div className="message-shell min-w-0 flex-1">
+          <div className="message-bubble relative pr-12 sm:pr-14">
           <button
             aria-expanded={actionsOpen}
             aria-label={`More actions for ${senderLabel}`}
@@ -242,21 +272,23 @@ const MemoMessageRow = memo(function MessageRow({
             <span aria-hidden="true" className="text-sm leading-none">...</span>
           </button>
 
-          <div className="message-meta flex min-w-0 items-start gap-2">
-            <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
-              <p className="min-w-0 max-w-full truncate text-sm font-semibold text-white">
-                {senderLabel}
-              </p>
-              <time className="text-[11px] text-slate-500 sm:text-xs">
-                {formatReadableTimestamp(message.createdAt)}
-              </time>
-              {message.pinnedAt ? (
-                <span className="rounded-md border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#FFB199]">
-                  Pinned
-                </span>
-              ) : null}
+          {!isGrouped ? (
+            <div className="message-meta flex min-w-0 items-start gap-2">
+              <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
+                <p className="min-w-0 max-w-full truncate text-sm font-semibold text-white">
+                  {senderLabel}
+                </p>
+                <time className="text-[11px] text-slate-500 sm:text-xs">
+                  {formatReadableTimestamp(message.createdAt)}
+                </time>
+                {message.pinnedAt ? (
+                  <span className="rounded-md border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#FFB199]">
+                    Pinned
+                  </span>
+                ) : null}
+              </div>
             </div>
-          </div>
+          ) : null}
 
           {message.replyTo ? (
             <button
@@ -273,7 +305,7 @@ const MemoMessageRow = memo(function MessageRow({
             </button>
           ) : null}
 
-          <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-slate-300 [overflow-wrap:anywhere]">
+          <p className={`${isGrouped ? "mt-0" : "mt-1"} whitespace-pre-wrap break-words text-[0.95rem] leading-6 text-slate-200 [overflow-wrap:anywhere]`}>
             {message.content}
           </p>
 
@@ -364,9 +396,10 @@ const MemoMessageRow = memo(function MessageRow({
               </button>
             </div>
           ) : null}
-        </div>
+          </div>
       </div>
-    </article>
+      </article>
+    </>
   );
 }, areMessageRowPropsEqual);
 
@@ -557,6 +590,73 @@ function scrollToMessage(messageId?: string) {
   });
 }
 
+function shouldGroupMessage(
+  previousMessage: ChatMessage | undefined,
+  message: ChatMessage,
+) {
+  if (!previousMessage || message.replyTo || message.poll || message.pinnedAt) {
+    return false;
+  }
+
+  if (getSenderKey(previousMessage) !== getSenderKey(message)) {
+    return false;
+  }
+
+  const previousTime = new Date(previousMessage.createdAt).getTime();
+  const messageTime = new Date(message.createdAt).getTime();
+
+  return Number.isFinite(previousTime) &&
+    Number.isFinite(messageTime) &&
+    messageTime - previousTime <= 5 * 60 * 1000;
+}
+
+function getSenderKey(message: ChatMessage) {
+  return message.sender.id ?? `${message.sender.email}:${message.sender.name}`;
+}
+
+function shouldShowDateSeparator(
+  previousMessage: ChatMessage | undefined,
+  message: ChatMessage,
+) {
+  if (!previousMessage) {
+    return true;
+  }
+
+  return formatDateKey(previousMessage.createdAt) !== formatDateKey(message.createdAt);
+}
+
+function formatDateKey(value: Date | string) {
+  const date = new Date(value);
+
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+function formatMessageDay(value: Date | string) {
+  const date = new Date(value);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  if (formatDateKey(date) === formatDateKey(today)) {
+    return "Today";
+  }
+
+  if (formatDateKey(date) === formatDateKey(yesterday)) {
+    return "Yesterday";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+  }).format(date);
+}
+
+function formatMessageTime(value: Date | string) {
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 function useCloseOnEscape(onClose: () => void) {
   useEffect(() => {
     function closeOnEscape(event: KeyboardEvent) {
@@ -580,8 +680,10 @@ function areMessageRowPropsEqual(
   return (
     previousProps.canPinMessages === nextProps.canPinMessages &&
     previousProps.currentUserId === nextProps.currentUserId &&
+    previousProps.isGrouped === nextProps.isGrouped &&
     previousProps.message === nextProps.message &&
     previousProps.onMessageUpdate === nextProps.onMessageUpdate &&
-    previousProps.onReply === nextProps.onReply
+    previousProps.onReply === nextProps.onReply &&
+    previousProps.showDateSeparator === nextProps.showDateSeparator
   );
 }

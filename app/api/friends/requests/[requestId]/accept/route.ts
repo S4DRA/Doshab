@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/auth";
 import { orderedFriendshipPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
+import { auditSecurityEvent, requireAuth } from "@/lib/security/permissions";
 
 type RequestActionProps = {
   params: Promise<{
@@ -19,7 +19,7 @@ function redirectToRequestsPanel(request: NextRequest, message: string) {
 }
 
 export async function POST(request: NextRequest, { params }: RequestActionProps) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
 
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
@@ -67,6 +67,15 @@ export async function POST(request: NextRequest, { params }: RequestActionProps)
       update: {},
     }),
   ]);
+
+  await auditSecurityEvent(
+    "friend-request.accept",
+    {
+      actorId: user.id,
+      requestId: friendRequest.id,
+    },
+    request,
+  );
 
   return redirectToRequestsPanel(request, "Friend request accepted.");
 }
