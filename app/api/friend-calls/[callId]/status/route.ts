@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/auth";
 import { isCallExpired, markFriendCallMissed } from "@/lib/calls";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/security/permissions";
 
 type CallStatusRouteProps = {
   params: Promise<{
@@ -11,7 +11,7 @@ type CallStatusRouteProps = {
 };
 
 export async function GET(_: NextRequest, { params }: CallStatusRouteProps) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
   const { callId } = await params;
 
   if (!user) {

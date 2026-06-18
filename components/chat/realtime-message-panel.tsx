@@ -351,7 +351,7 @@ export function RealtimeMessagePanel({
         ) : null}
       </div>
 
-      <div className="chat-toolbar mx-auto mt-2 flex w-full max-w-[min(100%,70rem)] min-w-0 shrink-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-2">
+      <div className="chat-toolbar mx-auto mt-2 flex w-full max-w-[min(100%,82rem)] min-w-0 shrink-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-2">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <button
             className="app-icon-button h-10 w-10"
@@ -367,6 +367,7 @@ export function RealtimeMessagePanel({
           <button
             className="inline-flex h-10 items-center rounded-lg border border-white/10 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25]/60 hover:text-white"
             onClick={() => void loadPinnedMessages()}
+            title="Pinned messages"
             type="button"
           >
             Pinned
@@ -374,12 +375,13 @@ export function RealtimeMessagePanel({
           <button
             className="inline-flex h-10 items-center rounded-lg border border-white/10 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25]/60 hover:text-white"
             onClick={() => setPollOpen(true)}
+            title="Create poll"
             type="button"
           >
             Poll
           </button>
         </div>
-        <span className="text-[11px] text-slate-500">
+        <span className="message-load-status text-[11px] text-slate-500">
           {displayedMessages.length} loaded
         </span>
       </div>
@@ -424,7 +426,7 @@ export function RealtimeMessagePanel({
       </div>
 
       <div className="chat-composer sticky bottom-0 z-10 min-w-0 shrink-0 overflow-hidden border-t border-white/10 bg-[#070907]/95 pb-[max(calc(var(--dashboard-bottom-nav-height,4rem)+0.25rem),0.25rem)] pt-3 backdrop-blur md:pb-[max(env(safe-area-inset-bottom),0.25rem)]">
-        <div className="mx-auto w-full max-w-[min(100%,70rem)]">
+        <div className="mx-auto w-full max-w-[min(100%,82rem)]">
           {replyTarget ? (
             <div className="mb-2 flex items-start justify-between gap-3 rounded-lg border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-3 py-2">
               <div className="min-w-0">
@@ -448,7 +450,7 @@ export function RealtimeMessagePanel({
               </button>
             </div>
           ) : null}
-          <form className="flex w-full min-w-0 max-w-full items-end gap-2 sm:gap-3" data-tour-target="message-composer" onSubmit={sendMessage}>
+          <form className="message-composer-form flex w-full min-w-0 max-w-full items-end gap-2 sm:gap-3" data-tour-target="message-composer" onSubmit={sendMessage}>
             <textarea
               className="max-h-28 min-h-12 min-w-0 max-w-full flex-1 resize-none overflow-y-auto rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-11 sm:max-h-36 sm:text-sm"
               disabled={!encryptionReady || !currentUser}

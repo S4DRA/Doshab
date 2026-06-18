@@ -1,3 +1,5 @@
+import "server-only";
+
 import { AccessToken } from "livekit-server-sdk";
 
 type LiveKitParticipant = {
@@ -7,6 +9,7 @@ type LiveKitParticipant = {
 };
 
 export function getLiveKitConfig() {
+  // Server-only: LIVEKIT_API_SECRET must never be exposed to browser bundles.
   const livekitUrl = process.env.LIVEKIT_URL;
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;

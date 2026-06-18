@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  auditSecurityEvent,
+  requireAuth,
+  requireGroupRole,
+  SecurityError,
+} from "@/lib/security/permissions";
 
 type DeleteChannelRouteProps = {
   params: Promise<{
@@ -32,7 +37,7 @@ export async function POST(
   request: NextRequest,
   { params }: DeleteChannelRouteProps,
 ) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
   const { channelId, groupId } = await params;
 
   if (!user) {
@@ -42,25 +47,23 @@ export async function POST(
   const formData = await request.formData();
   const returnTo = String(formData.get("returnTo") ?? "");
 
-  const membership = await prisma.groupMember.findUnique({
-    where: {
-      groupId_userId: {
-        groupId,
-        userId: user.id,
-      },
-    },
-    select: {
-      role: true,
-    },
-  });
+  const membership = await requireGroupRole(user.id, groupId, ["OWNER", "ADMIN"]).catch(
+    (error: unknown) => {
+      if (error instanceof SecurityError && error.status === 404) {
+        return null;
+      }
 
-  if (!membership) {
+      return undefined;
+    },
+  );
+
+  if (membership === null) {
     return NextResponse.redirect(new URL("/dashboard", request.url), {
       status: 303,
     });
   }
 
-  if (membership.role !== "OWNER" && membership.role !== "ADMIN") {
+  if (!membership) {
     return redirectAfterChannelDelete(
       request,
       groupId,
@@ -95,6 +98,16 @@ export async function POST(
       id: channel.id,
     },
   });
+
+  await auditSecurityEvent(
+    "channel.delete",
+    {
+      actorId: user.id,
+      channelId: channel.id,
+      groupId,
+    },
+    request,
+  );
 
   return redirectAfterChannelDelete(
     request,

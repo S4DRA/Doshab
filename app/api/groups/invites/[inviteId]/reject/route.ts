@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { auditSecurityEvent, requireAuth } from "@/lib/security/permissions";
 
 type RejectInviteContext = {
   params: Promise<{
@@ -18,7 +18,7 @@ function redirectToRequestsPanel(request: NextRequest, message: string) {
 }
 
 export async function POST(request: NextRequest, context: RejectInviteContext) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
 
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
@@ -48,6 +48,15 @@ export async function POST(request: NextRequest, context: RejectInviteContext) {
       status: "REJECTED",
     },
   });
+
+  await auditSecurityEvent(
+    "group-invite.reject",
+    {
+      actorId: user.id,
+      inviteId: invite.id,
+    },
+    request,
+  );
 
   return redirectToRequestsPanel(request, "Space invite rejected.");
 }

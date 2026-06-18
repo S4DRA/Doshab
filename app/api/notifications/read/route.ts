@@ -1,36 +1,36 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
-import { getAuthState } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/security/permissions";
 
-type ReadNotificationsBody = {
-  href?: unknown;
-  ids?: unknown;
-};
+const readNotificationsSchema = z.object({
+  href: z.string().max(500).optional(),
+  ids: z.array(z.string().min(1).max(128)).max(100).optional(),
+});
 
 export async function POST(request: Request) {
-  const auth = await getAuthState();
+  const user = await requireAuth().catch(() => null);
 
-  if (auth.status === "unverified") {
-    return NextResponse.json({ error: "Email not verified" }, { status: 403 });
-  }
-
-  if (auth.status !== "authenticated") {
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json().catch(() => null)) as ReadNotificationsBody | null;
-  const ids = Array.isArray(body?.ids)
-    ? body.ids.filter((id): id is string => typeof id === "string")
-    : [];
-  const href = typeof body?.href === "string" ? body.href : "";
+  const parsed = readNotificationsSchema.safeParse(await request.json().catch(() => null));
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid notification request" }, { status: 400 });
+  }
+
+  const ids = parsed.data.ids ?? [];
+  const href = parsed.data.href ?? "";
 
   await prisma.notification.updateMany({
     where: {
       ...(ids.length ? { id: { in: ids } } : {}),
       ...(href ? { href } : {}),
       readAt: null,
-      userId: auth.user.id,
+      userId: user.id,
     },
     data: {
       readAt: new Date(),

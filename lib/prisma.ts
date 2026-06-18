@@ -1,3 +1,5 @@
+import "server-only";
+
 import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "@/lib/generated/prisma/client";
@@ -6,6 +8,7 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
+// Server-only: database connection strings must stay in Vercel/project env vars.
 process.env.DATABASE_URL ??= process.env.DIRECT_URL;
 
 const connectionTimeoutMillis = Number(

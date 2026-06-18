@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { getAuthState } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireAuth, requireChannelMember } from "@/lib/security/permissions";
 
 type DeviceKeysRouteProps = {
   params: Promise<{
@@ -10,30 +10,22 @@ type DeviceKeysRouteProps = {
 };
 
 export async function GET(_: Request, { params }: DeviceKeysRouteProps) {
-  const auth = await getAuthState();
-
-  if (auth.status === "unverified") {
-    return NextResponse.json({ error: "Email not verified" }, { status: 403 });
-  }
-
-  if (auth.status !== "authenticated") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await requireAuth().catch(() => null);
   const { channelId } = await params;
 
-  const userId = auth.user.id;
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  const channel = await prisma.channel.findFirst({
+  const channelAccess = await requireChannelMember(user.id, channelId).catch(() => null);
+
+  if (!channelAccess || channelAccess.type !== "TEXT") {
+    return NextResponse.json({ error: "Channel not found" }, { status: 404 });
+  }
+
+  const channel = await prisma.channel.findUniqueOrThrow({
     where: {
       id: channelId,
-      type: "TEXT",
-      group: {
-        members: {
-          some: {
-            userId,
-          },
-        },
-      },
     },
     select: {
       group: {
@@ -47,11 +39,6 @@ export async function GET(_: Request, { params }: DeviceKeysRouteProps) {
       },
     },
   });
-
-  if (!channel) {
-    return NextResponse.json({ error: "Channel not found" }, { status: 404 });
-  }
-
   const memberIds = channel.group.members.map((member) => member.userId);
   const devices = await prisma.userDeviceKey.findMany({
     where: {

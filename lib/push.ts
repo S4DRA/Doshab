@@ -1,3 +1,5 @@
+import "server-only";
+
 import webpush, { type PushSubscription } from "web-push";
 import { loadEnvConfig } from "@next/env";
 
@@ -44,6 +46,7 @@ function configureWebPush() {
   ensureEnvLoaded();
 
   const publicKey = getVapidPublicKey();
+  // Server-only: VAPID_PRIVATE_KEY signs push payloads and must never reach clients.
   const privateKey = process.env.VAPID_PRIVATE_KEY;
 
   if (!publicKey || !privateKey) {

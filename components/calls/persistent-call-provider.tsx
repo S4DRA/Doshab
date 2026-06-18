@@ -1,14 +1,17 @@
 "use client";
 
 import {
+  AudioTrack,
   ControlBar,
   DisconnectButton,
   LiveKitRoom,
   ParticipantTile,
-  RoomAudioRenderer,
+  useIsSpeaking,
+  useParticipants,
   useTracks,
 } from "@livekit/components-react";
-import { Track } from "livekit-client";
+import type { Participant } from "livekit-client";
+import { ConnectionQuality, Track } from "livekit-client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { PointerEvent as ReactPointerEvent } from "react";
@@ -26,7 +29,29 @@ import { cn } from "@/lib/utils";
 import { defaultVoiceSettings, type VoiceSettings } from "@/lib/voice-settings";
 
 const endedCallIdsStorageKey = "palaver:ended-call-ids";
+const participantVoicePreferencesStorageKey = "val:participant-voice-preferences:v1";
 const maxRememberedEndedCalls = 50;
+const defaultParticipantVoicePreference = {
+  localVolume: 100,
+  locallyMuted: false,
+};
+
+type ParticipantVoicePreference = {
+  targetUserId: string;
+  localVolume: number;
+  locallyMuted: boolean;
+};
+
+type ParticipantVoicePreferenceMap = Record<string, ParticipantVoicePreference>;
+
+type ParticipantVoicePreferencesContextValue = {
+  getPreference: (targetUserId: string) => ParticipantVoicePreference;
+  resetPreference: (targetUserId: string) => void;
+  updatePreference: (
+    targetUserId: string,
+    patch: Partial<Omit<ParticipantVoicePreference, "targetUserId">>,
+  ) => void;
+};
 
 type PersistentCallSession = {
   href?: string;
@@ -52,6 +77,8 @@ type PersistentCallContextValue = {
 };
 
 const PersistentCallContext = createContext<PersistentCallContextValue | null>(null);
+const ParticipantVoicePreferencesContext =
+  createContext<ParticipantVoicePreferencesContextValue | null>(null);
 
 function readRememberedEndedCallIds() {
   if (typeof window === "undefined") {
@@ -83,6 +110,142 @@ function rememberEndedCallIds(callIds: ReadonlySet<string>) {
   } catch {
     // A storage failure should not make leaving a call fail.
   }
+}
+
+function clampParticipantVolume(value: unknown) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return defaultParticipantVoicePreference.localVolume;
+  }
+
+  return Math.min(Math.max(Math.round(value), 0), 200);
+}
+
+function readParticipantVoicePreferences() {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const value = window.localStorage.getItem(participantVoicePreferencesStorageKey);
+    const parsed = value ? JSON.parse(value) : {};
+
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return {};
+    }
+
+    return Object.entries(parsed).reduce<ParticipantVoicePreferenceMap>((preferences, [targetUserId, preference]) => {
+      if (!targetUserId || !preference || typeof preference !== "object" || Array.isArray(preference)) {
+        return preferences;
+      }
+
+      const item = preference as Partial<ParticipantVoicePreference>;
+      preferences[targetUserId] = {
+        targetUserId,
+        localVolume: clampParticipantVolume(item.localVolume),
+        locallyMuted: Boolean(item.locallyMuted),
+      };
+      return preferences;
+    }, {});
+  } catch {
+    return {};
+  }
+}
+
+function writeParticipantVoicePreferences(preferences: ParticipantVoicePreferenceMap) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      participantVoicePreferencesStorageKey,
+      JSON.stringify(preferences),
+    );
+  } catch {
+    // Local voice preferences should never block the call UI.
+  }
+}
+
+function ParticipantVoicePreferencesProvider({ children }: { children: React.ReactNode }) {
+  const [preferences, setPreferences] = useState<ParticipantVoicePreferenceMap>(
+    readParticipantVoicePreferences,
+  );
+
+  useEffect(() => {
+    writeParticipantVoicePreferences(preferences);
+  }, [preferences]);
+
+  const getPreference = useCallback((targetUserId: string): ParticipantVoicePreference => {
+    return preferences[targetUserId] ?? {
+      targetUserId,
+      ...defaultParticipantVoicePreference,
+    };
+  }, [preferences]);
+
+  const updatePreference = useCallback<ParticipantVoicePreferencesContextValue["updatePreference"]>(
+    (targetUserId, patch) => {
+      setPreferences((current) => {
+        const existing = current[targetUserId] ?? {
+          targetUserId,
+          ...defaultParticipantVoicePreference,
+        };
+        const next = {
+          ...existing,
+          ...patch,
+          targetUserId,
+          localVolume: patch.localVolume === undefined
+            ? existing.localVolume
+            : clampParticipantVolume(patch.localVolume),
+          locallyMuted: patch.locallyMuted === undefined
+            ? existing.locallyMuted
+            : patch.locallyMuted,
+        };
+
+        return {
+          ...current,
+          [targetUserId]: next,
+        };
+      });
+    },
+    [],
+  );
+
+  const resetPreference = useCallback((targetUserId: string) => {
+    setPreferences((current) => {
+      if (!current[targetUserId]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[targetUserId];
+      return next;
+    });
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      getPreference,
+      resetPreference,
+      updatePreference,
+    }),
+    [getPreference, resetPreference, updatePreference],
+  );
+
+  return (
+    <ParticipantVoicePreferencesContext.Provider value={value}>
+      {children}
+    </ParticipantVoicePreferencesContext.Provider>
+  );
+}
+
+function useParticipantVoicePreferences() {
+  const context = useContext(ParticipantVoicePreferencesContext);
+
+  if (!context) {
+    throw new Error("useParticipantVoicePreferences must be used inside ParticipantVoicePreferencesProvider.");
+  }
+
+  return context;
 }
 
 export function PersistentCallProvider({ children }: { children: React.ReactNode }) {
@@ -227,17 +390,19 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
           token={activeCall.token}
           video={activeCall.kind === "group"}
         >
-          {activeVoiceSettings.joinDeafened ? null : <RoomAudioRenderer />}
-          {children}
-          {showDock ? (
-            <ActiveCallDock
-              expanded={expanded}
-              onEnd={endCall}
-              onToggle={() => setExpanded((current) => !current)}
-              onUnpop={() => setPoppedOut(false)}
-              session={activeCall}
-            />
-          ) : null}
+          <ParticipantVoicePreferencesProvider>
+            {activeVoiceSettings.joinDeafened ? null : <ParticipantAudioRenderer />}
+            {children}
+            {showDock ? (
+              <ActiveCallDock
+                expanded={expanded}
+                onEnd={endCall}
+                onToggle={() => setExpanded((current) => !current)}
+                onUnpop={() => setPoppedOut(false)}
+                session={activeCall}
+              />
+            ) : null}
+          </ParticipantVoicePreferencesProvider>
         </LiveKitRoom>
       ) : (
         children
@@ -258,6 +423,34 @@ export function usePersistentCall() {
 
 export function useOptionalPersistentCall() {
   return useContext(PersistentCallContext);
+}
+
+function ParticipantAudioRenderer() {
+  const { getPreference } = useParticipantVoicePreferences();
+  const audioTracks = useTracks(
+    [Track.Source.Microphone, Track.Source.ScreenShareAudio, Track.Source.Unknown],
+    {
+      onlySubscribed: true,
+      updateOnlyOn: [],
+    },
+  ).filter((track) => !track.participant.isLocal && track.publication.kind === Track.Kind.Audio);
+
+  return (
+    <div style={{ display: "none" }}>
+      {audioTracks.map((track) => {
+        const preference = getPreference(track.participant.identity);
+        const volume = preference.locallyMuted ? 0 : preference.localVolume / 100;
+
+        return (
+          <AudioTrack
+            key={getTrackKey(track)}
+            trackRef={track}
+            volume={volume}
+          />
+        );
+      })}
+    </div>
+  );
 }
 
 function ActiveCallDock({
@@ -597,6 +790,7 @@ function PersistentCallParticipants({
           track={focusedTrack}
         />
       ) : null}
+      <ParticipantVoiceControlsSection />
       <div className="flex flex-wrap content-start justify-center gap-3">
         {orderedTracks.map((track) => (
           <SmallCallCard
@@ -624,7 +818,9 @@ function FocusedCallCard({
   const hideControlsTimerRef = useRef<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [topBarVisible, setTopBarVisible] = useState(true);
+  const [controlsOpen, setControlsOpen] = useState(false);
   const isShare = getTrackSource(track) === Track.Source.ScreenShare;
+  const canControlParticipant = !isLocalTrack(track);
 
   const revealTopBar = useCallback((holdOpen = false) => {
     if (hideControlsTimerRef.current) {
@@ -710,6 +906,26 @@ function FocusedCallCard({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {canControlParticipant ? (
+            <div className="relative">
+              <button
+                aria-expanded={controlsOpen}
+                aria-label={`Open local voice controls for ${getParticipantLabel(track)}`}
+                className="app-icon-button h-10 w-10"
+                onClick={() => setControlsOpen((current) => !current)}
+                title="Participant voice controls"
+                type="button"
+              >
+                <MoreIcon />
+              </button>
+              {controlsOpen ? (
+                <ParticipantVoiceControlsPanel
+                  onClose={() => setControlsOpen(false)}
+                  participant={track.participant}
+                />
+              ) : null}
+            </div>
+          ) : null}
           <button
             aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen card"}
             className="app-icon-button h-10 w-10"
@@ -750,6 +966,8 @@ function SmallCallCard({
   track: PersistentTrack;
 }) {
   const isShare = getTrackSource(track) === Track.Source.ScreenShare;
+  const [controlsOpen, setControlsOpen] = useState(false);
+  const canControlParticipant = !isLocalTrack(track);
 
   return (
     <div
@@ -769,6 +987,30 @@ function SmallCallCard({
       tabIndex={0}
     >
       <CallCardContent track={track} />
+      {canControlParticipant ? (
+        <div className="absolute right-2 top-2 z-20">
+          <button
+            aria-expanded={controlsOpen}
+            aria-label={`Open local voice controls for ${getParticipantLabel(track)}`}
+            className="app-icon-button h-10 w-10 border-black/40 bg-black/55 text-white shadow-lg shadow-black/40 backdrop-blur hover:bg-black/75"
+            onClick={(event) => {
+              event.stopPropagation();
+              setControlsOpen((current) => !current);
+            }}
+            onKeyDown={(event) => event.stopPropagation()}
+            title="Participant voice controls"
+            type="button"
+          >
+            <MoreIcon />
+          </button>
+          {controlsOpen ? (
+            <ParticipantVoiceControlsPanel
+              onClose={() => setControlsOpen(false)}
+              participant={track.participant}
+            />
+          ) : null}
+        </div>
+      ) : null}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2">
         <p className="truncate text-xs font-semibold text-white">{getParticipantLabel(track)}</p>
         {isShare ? (
@@ -777,6 +1019,197 @@ function SmallCallCard({
           </p>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+function ParticipantVoiceControlsSection() {
+  const participants = useParticipants();
+  const remoteParticipants = participants.filter((participant) => !participant.isLocal);
+  const [openParticipantId, setOpenParticipantId] = useState<string | null>(null);
+  const { getPreference } = useParticipantVoicePreferences();
+
+  if (!remoteParticipants.length) {
+    return null;
+  }
+
+  return (
+    <section className="mb-3 rounded-lg border border-white/10 bg-[#090d12] p-3 shadow-inner shadow-black/30">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
+            Participant Voice Controls
+          </p>
+          <p className="mt-1 text-[11px] text-slate-400">
+            Local listening controls. Only changes what you hear.
+          </p>
+        </div>
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        {remoteParticipants.map((participant) => {
+          const preference = getPreference(participant.identity);
+          const participantId = participant.identity;
+
+          return (
+            <div
+              className="relative flex min-w-0 items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.035] px-3 py-2"
+              key={participant.sid || participant.identity}
+            >
+              <div className="min-w-0">
+                <p className="truncate text-xs font-semibold text-white">
+                  {getParticipantName(participant)}
+                </p>
+                <p className="truncate text-[11px] text-slate-400">
+                  {preference.locallyMuted ? "Locally muted" : `${preference.localVolume}% local volume`}
+                </p>
+              </div>
+              <button
+                aria-expanded={openParticipantId === participantId}
+                aria-label={`Open local voice controls for ${getParticipantName(participant)}`}
+                className="app-icon-button h-10 w-10"
+                onClick={() => {
+                  setOpenParticipantId((current) => (
+                    current === participantId ? null : participantId
+                  ));
+                }}
+                title="Participant voice controls"
+                type="button"
+              >
+                <MoreIcon />
+              </button>
+              {openParticipantId === participantId ? (
+                <ParticipantVoiceControlsPanel
+                  onClose={() => setOpenParticipantId(null)}
+                  participant={participant}
+                />
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+export function ParticipantVoiceControlsPanel({
+  onClose,
+  participant,
+}: {
+  onClose: () => void;
+  participant: Participant;
+}) {
+  const isSpeaking = useIsSpeaking(participant);
+  const { getPreference, resetPreference, updatePreference } = useParticipantVoicePreferences();
+  const preference = getPreference(participant.identity);
+  const label = getParticipantName(participant);
+  const microphonePublication = participant.getTrackPublication(Track.Source.Microphone);
+  const voiceStatus = microphonePublication?.isMuted ? "Mic muted" : "Mic available";
+
+  return (
+    <>
+      <button
+        aria-label="Close participant voice controls"
+        className="fixed inset-0 z-[79] cursor-default bg-black/55 sm:hidden"
+        onClick={(event) => {
+          event.stopPropagation();
+          onClose();
+        }}
+        type="button"
+      />
+      <div
+        className="fixed inset-x-3 bottom-3 z-[80] rounded-xl border border-[#FF5F25]/30 bg-[#080b10] p-4 text-left shadow-2xl shadow-black/60 sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-[calc(100%+0.5rem)] sm:w-80"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
+              Only for me
+            </p>
+            <h3 className="mt-1 truncate text-sm font-semibold text-white">{label}</h3>
+          </div>
+          <button
+            aria-label="Close participant voice controls"
+            className="app-icon-button h-9 w-9"
+            onClick={onClose}
+            title="Close"
+            type="button"
+          >
+            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.035] p-3">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <label className="text-xs font-semibold text-white" htmlFor={`participant-volume-${participant.identity}`}>
+              Local volume
+            </label>
+            <span className="text-xs font-semibold text-[#FFD400]">
+              {preference.locallyMuted ? "Muted" : `${preference.localVolume}%`}
+            </span>
+          </div>
+          <input
+            aria-label={`Local volume for ${label}`}
+            className="voice-settings-range w-full"
+            disabled={preference.locallyMuted}
+            id={`participant-volume-${participant.identity}`}
+            max="200"
+            min="0"
+            onChange={(event) => {
+              updatePreference(participant.identity, {
+                localVolume: Number(event.currentTarget.value),
+              });
+            }}
+            step="5"
+            type="range"
+            value={preference.localVolume}
+          />
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button
+            className={cn(
+              "h-11 rounded-lg border px-3 text-xs font-semibold transition active:scale-[0.98]",
+              preference.locallyMuted
+                ? "border-[#FFD400]/45 bg-[#FFD400]/15 text-[#FFE875]"
+                : "border-white/10 bg-white/[0.04] text-slate-200 hover:border-white/20 hover:bg-white/[0.07]",
+            )}
+            onClick={() => {
+              updatePreference(participant.identity, {
+                locallyMuted: !preference.locallyMuted,
+              });
+            }}
+            type="button"
+          >
+            {preference.locallyMuted ? "Unmute for me" : "Mute for me"}
+          </button>
+          <button
+            className="h-11 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-xs font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/[0.07] active:scale-[0.98]"
+            onClick={() => resetPreference(participant.identity)}
+            type="button"
+          >
+            Reset
+          </button>
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+          <StatusPill label="Activity" value={isSpeaking ? "Speaking" : "Quiet"} />
+          <StatusPill label="Voice" value={voiceStatus} />
+          <StatusPill label="Connection" value={formatConnectionQuality(participant.connectionQuality)} />
+          <StatusPill label="Scope" value="Local only" />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function StatusPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-black/25 px-3 py-2">
+      <p className="font-semibold uppercase tracking-[0.14em] text-slate-500">{label}</p>
+      <p className="mt-1 truncate font-semibold text-slate-200">{value}</p>
     </div>
   );
 }
@@ -842,6 +1275,16 @@ function FullscreenIcon({ active }: { active: boolean }) {
   );
 }
 
+function MoreIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24">
+      <path d="M12 12h.01" />
+      <path d="M19 12h.01" />
+      <path d="M5 12h.01" />
+    </svg>
+  );
+}
+
 function ScreenShareGlyph({ className }: { className: string }) {
   return (
     <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -872,6 +1315,26 @@ function getTrackKey(track: PersistentTrack) {
 
 function getParticipantLabel(track: PersistentTrack) {
   return track.participant.name || track.participant.identity || "Someone";
+}
+
+function getParticipantName(participant: Participant) {
+  return participant.name || participant.identity || "Voice participant";
+}
+
+function formatConnectionQuality(connectionQuality: ConnectionQuality) {
+  switch (connectionQuality) {
+    case ConnectionQuality.Excellent:
+      return "Excellent";
+    case ConnectionQuality.Good:
+      return "Good";
+    case ConnectionQuality.Poor:
+      return "Poor";
+    case ConnectionQuality.Lost:
+      return "Lost";
+    case ConnectionQuality.Unknown:
+    default:
+      return "Unknown";
+  }
 }
 
 function isActiveCallPage(session: PersistentCallSession, pathname: string) {

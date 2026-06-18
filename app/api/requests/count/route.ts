@@ -1,20 +1,16 @@
 import { NextResponse } from "next/server";
 
-import { getAuthState } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/security/permissions";
 
 export async function GET() {
-  const auth = await getAuthState({ includeImage: true });
+  const user = await requireAuth().catch(() => null);
 
-  if (auth.status === "unverified") {
-    return NextResponse.json({ error: "Email not verified" }, { status: 403 });
-  }
-
-  if (auth.status !== "authenticated") {
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userId = auth.user.id;
+  const userId = user.id;
 
   const [incomingCount, outgoingCount] = await Promise.all([
     prisma.friendRequest.count({

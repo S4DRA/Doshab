@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { getCurrentUser } from "@/lib/auth";
 import { orderedFriendshipPair } from "@/lib/friends";
 import { createNotification } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/security/rate-limit";
+import {
+  auditSecurityEvent,
+  requireAuth,
+  requireGroupRole,
+  SecurityError,
+} from "@/lib/security/permissions";
+
+const inviteFormSchema = z.object({
+  receiverId: z.string().trim().min(1).max(128),
+});
 
 type InviteRouteContext = {
   params: Promise<{
@@ -25,15 +36,29 @@ function redirectToInviteSettings(
 }
 
 export async function POST(request: NextRequest, context: InviteRouteContext) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
 
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
   }
 
   const { groupId } = await context.params;
+  const limited = await rateLimit(request, {
+    identifiers: [`group:${groupId}`, `admin:${user.id}`],
+    key: "groups:invites:create",
+    limit: 30,
+    windowMs: 60 * 60_000,
+  });
+
+  if (limited) {
+    return limited;
+  }
+
   const formData = await request.formData();
-  const receiverId = String(formData.get("receiverId") ?? "");
+  const parsed = inviteFormSchema.safeParse({
+    receiverId: formData.get("receiverId"),
+  });
+  const receiverId = parsed.success ? parsed.data.receiverId : "";
 
   if (!receiverId || receiverId === user.id) {
     return redirectToInviteSettings(
@@ -44,24 +69,17 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
     );
   }
 
-  const membership = await prisma.groupMember.findUnique({
-    where: {
-      groupId_userId: {
-        groupId,
-        userId: user.id,
-      },
-    },
-    select: {
-      group: {
-        select: {
-          name: true,
-        },
-      },
-      role: true,
-    },
-  });
+  const membership = await requireGroupRole(user.id, groupId, ["OWNER", "ADMIN"]).catch(
+    (error: unknown) => {
+      if (error instanceof SecurityError && error.status === 404) {
+        return null;
+      }
 
-  if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
+      return undefined;
+    },
+  );
+
+  if (!membership) {
     return redirectToInviteSettings(
       request,
       groupId,
@@ -195,6 +213,16 @@ export async function POST(request: NextRequest, context: InviteRouteContext) {
 
     await createGroupInviteNotification(invite.id);
   }
+
+  await auditSecurityEvent(
+    "group.invite",
+    {
+      actorId: user.id,
+      groupId,
+      inviteeId: receiverId,
+    },
+    request,
+  );
 
   return redirectToInviteSettings(request, groupId, "message", "Space invite sent.");
 

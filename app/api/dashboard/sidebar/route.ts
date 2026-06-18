@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { getDashboardSidebarGroups } from "@/lib/dashboard-data";
 import { getAuthState } from "@/lib/auth";
 import { friendFromPair } from "@/lib/friends";
 import { dashboardNotificationSelect } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/security/rate-limit";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const auth = await getAuthState({ includeImage: true });
 
   if (auth.status === "unverified") {
@@ -18,6 +20,16 @@ export async function GET() {
   }
 
   const userId = auth.user.id;
+  const limited = await rateLimit(request, {
+    identifiers: [`user:${userId}`],
+    key: "dashboard:sidebar:poll",
+    limit: 120,
+    windowMs: 60_000,
+  });
+
+  if (limited) {
+    return limited;
+  }
 
   const [currentUser, groups, friendships] = await Promise.all([
     Promise.resolve({

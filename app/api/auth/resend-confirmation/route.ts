@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { isValidEmail, normalizeEmail } from "@/lib/auth";
+import { normalizeEmail } from "@/lib/auth";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
+
+const resendConfirmationSchema = z.object({
+  email: z.string().trim().email(),
+});
 
 function getRequestOrigin(request: NextRequest) {
   const url = new URL(request.url);
@@ -35,10 +41,24 @@ function redirectToVerifyEmail(
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
-  const email = normalizeEmail(String(formData.get("email") ?? ""));
+  const parsed = resendConfirmationSchema.safeParse({
+    email: formData.get("email"),
+  });
 
-  if (!isValidEmail(email)) {
-    return redirectToVerifyEmail(request, "error", "Enter a valid email address.", email);
+  if (!parsed.success) {
+    return redirectToVerifyEmail(request, "error", "Enter a valid email address.");
+  }
+
+  const email = normalizeEmail(parsed.data.email);
+  const limited = await rateLimit(request, {
+    identifiers: [`email:${email}`],
+    key: "auth:resend-confirmation",
+    limit: 3,
+    windowMs: 60 * 60_000,
+  });
+
+  if (limited) {
+    return limited;
   }
 
   try {
