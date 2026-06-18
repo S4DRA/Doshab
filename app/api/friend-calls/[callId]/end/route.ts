@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { auditSecurityEvent, requireAuth } from "@/lib/security/permissions";
 
 type EndCallRouteProps = {
   params: Promise<{
@@ -9,8 +9,8 @@ type EndCallRouteProps = {
   }>;
 };
 
-export async function POST(_: NextRequest, { params }: EndCallRouteProps) {
-  const user = await getCurrentUser();
+export async function POST(request: NextRequest, { params }: EndCallRouteProps) {
+  const user = await requireAuth().catch(() => null);
   const { callId } = await params;
 
   if (!user) {
@@ -46,6 +46,14 @@ export async function POST(_: NextRequest, { params }: EndCallRouteProps) {
         status: "ENDED",
       },
     });
+    await auditSecurityEvent(
+      "friend-call.end",
+      {
+        actorId: user.id,
+        callId,
+      },
+      request,
+    );
   }
 
   return NextResponse.json({ ok: true });

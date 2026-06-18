@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { auditSecurityEvent, requireAuth } from "@/lib/security/permissions";
 
 type DeclineCallRouteProps = {
   params: Promise<{
@@ -9,8 +9,8 @@ type DeclineCallRouteProps = {
   }>;
 };
 
-export async function POST(_: NextRequest, { params }: DeclineCallRouteProps) {
-  const user = await getCurrentUser();
+export async function POST(request: NextRequest, { params }: DeclineCallRouteProps) {
+  const user = await requireAuth().catch(() => null);
   const { callId } = await params;
 
   if (!user) {
@@ -45,6 +45,14 @@ export async function POST(_: NextRequest, { params }: DeclineCallRouteProps) {
         status: "DECLINED",
       },
     });
+    await auditSecurityEvent(
+      "friend-call.decline",
+      {
+        actorId: user.id,
+        callId,
+      },
+      request,
+    );
   }
 
   return NextResponse.json({ ok: true });

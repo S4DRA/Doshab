@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/auth";
 import { isCallExpired, markFriendCallMissed } from "@/lib/calls";
 import { createLiveKitToken } from "@/lib/livekit";
 import { prisma } from "@/lib/prisma";
+import { auditSecurityEvent, requireAuth } from "@/lib/security/permissions";
 
 type CallTokenRouteProps = {
   params: Promise<{
@@ -15,8 +15,8 @@ function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
 }
 
-export async function POST(_: NextRequest, { params }: CallTokenRouteProps) {
-  const user = await getCurrentUser();
+export async function POST(request: NextRequest, { params }: CallTokenRouteProps) {
+  const user = await requireAuth().catch(() => null);
   const { callId } = await params;
 
   if (!user) {
@@ -116,6 +116,14 @@ export async function POST(_: NextRequest, { params }: CallTokenRouteProps) {
   }
 
   const friend = isCaller ? call.receiver : call.caller;
+  await auditSecurityEvent(
+    "friend-call.token",
+    {
+      actorId: user.id,
+      callId: call.id,
+    },
+    request,
+  );
 
   return NextResponse.json({
     ...tokenResponse,

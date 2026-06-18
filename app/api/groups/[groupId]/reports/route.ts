@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { getCurrentUser } from "@/lib/auth";
-import { canManageSpace } from "@/lib/community-permissions";
 import { prisma } from "@/lib/prisma";
+import {
+  auditSecurityEvent,
+  requireAuth,
+  requireGroupRole,
+} from "@/lib/security/permissions";
 
 const reportStatuses = ["OPEN", "REVIEWED", "DISMISSED"] as const;
 
 type ReportStatus = (typeof reportStatuses)[number];
+const reportReviewSchema = z.object({
+  reportId: z.string().trim().min(1).max(128),
+  status: z.enum(reportStatuses),
+});
 
 type GroupReportsRouteProps = {
   params: Promise<{
@@ -14,31 +22,15 @@ type GroupReportsRouteProps = {
   }>;
 };
 
-async function getModeratorMembership(groupId: string, userId: string) {
-  const membership = await prisma.groupMember.findUnique({
-    where: {
-      groupId_userId: {
-        groupId,
-        userId,
-      },
-    },
-    select: {
-      role: true,
-    },
-  });
-
-  return canManageSpace(membership?.role) ? membership : null;
-}
-
 export async function GET(_request: NextRequest, { params }: GroupReportsRouteProps) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
   const { groupId } = await params;
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const membership = await getModeratorMembership(groupId, user.id);
+  const membership = await requireGroupRole(user.id, groupId, ["OWNER", "ADMIN"]).catch(() => null);
 
   if (!membership) {
     return NextResponse.json({ error: "Only owners and admins can view reports." }, { status: 403 });
@@ -88,29 +80,26 @@ export async function GET(_request: NextRequest, { params }: GroupReportsRoutePr
 }
 
 export async function PATCH(request: NextRequest, { params }: GroupReportsRouteProps) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
   const { groupId } = await params;
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const membership = await getModeratorMembership(groupId, user.id);
+  const membership = await requireGroupRole(user.id, groupId, ["OWNER", "ADMIN"]).catch(() => null);
 
   if (!membership) {
     return NextResponse.json({ error: "Only owners and admins can review reports." }, { status: 403 });
   }
 
-  const body = (await request.json().catch(() => null)) as {
-    reportId?: unknown;
-    status?: unknown;
-  } | null;
-  const reportId = typeof body?.reportId === "string" ? body.reportId : "";
-  const status = typeof body?.status === "string" ? body.status : "";
+  const parsed = reportReviewSchema.safeParse(await request.json().catch(() => null));
 
-  if (!reportId || !reportStatuses.includes(status as ReportStatus)) {
+  if (!parsed.success) {
     return NextResponse.json({ error: "Choose a valid report status." }, { status: 400 });
   }
+
+  const { reportId, status } = parsed.data;
 
   const report = await prisma.messageReport.updateMany({
     where: {
@@ -127,6 +116,16 @@ export async function PATCH(request: NextRequest, { params }: GroupReportsRouteP
   if (!report.count) {
     return NextResponse.json({ error: "Report not found." }, { status: 404 });
   }
+
+  await auditSecurityEvent(
+    "message-report.review",
+    {
+      actorId: user.id,
+      groupId,
+      reportId,
+    },
+    request,
+  );
 
   return NextResponse.json({ message: "Report updated." });
 }

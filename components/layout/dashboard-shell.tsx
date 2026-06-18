@@ -620,14 +620,14 @@ function ChannelMain({
   }
 
   return (
-    <div className="dashboard-shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-2.5 py-2.5 sm:px-4 sm:py-4 min-[1180px]:px-7 min-[1180px]:py-5">
-      <section className="shrink-0 app-surface rounded-xl p-3 sm:p-4 min-[1180px]:rounded-lg min-[1180px]:p-4">
+    <div className="dashboard-shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-2.5 py-2.5 sm:px-4 sm:py-4 min-[1180px]:px-6 min-[1180px]:py-4">
+      <section className="channel-top-bar shrink-0 app-surface rounded-xl px-3 py-2.5 sm:px-4 min-[1180px]:rounded-lg min-[1180px]:px-4 min-[1180px]:py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="app-section-title">
               {groupName ?? "Channel"}
             </p>
-            <h2 className="mt-1 truncate text-xl font-semibold text-white sm:text-2xl min-[1180px]:text-xl">
+            <h2 className="mt-0.5 truncate text-lg font-semibold text-white sm:text-xl min-[1180px]:text-xl">
               # {channel.name}
             </h2>
           </div>
@@ -645,7 +645,7 @@ function ChannelMain({
           ) : null}
         </div>
       </section>
-      <div className="mt-3 flex min-h-0 min-w-0 flex-1 flex-col sm:mt-4">
+      <div className="mt-2 flex min-h-0 min-w-0 flex-1 flex-col sm:mt-3">
         <RealtimeMessagePanel
           canPinMessages={canPinMessages}
           channelId={channel.id}

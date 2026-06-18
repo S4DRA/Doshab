@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { isValidPassword } from "@/lib/auth";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
+
+const updatePasswordSchema = z.object({
+  confirmPassword: z.string().min(8),
+  password: z.string().min(8),
+  returnTo: z.enum(["profile", "reset"]).optional(),
+});
 
 type PasswordReturnTarget = "profile" | "reset";
 
@@ -45,12 +52,25 @@ function getSuccessResponse(request: NextRequest, target: PasswordReturnTarget) 
 }
 
 export async function POST(request: NextRequest) {
-  const formData = await request.formData();
-  const password = String(formData.get("password") ?? "");
-  const confirmPassword = String(formData.get("confirmPassword") ?? "");
-  const returnTarget = getReturnTarget(formData.get("returnTo"));
+  const limited = await rateLimit(request, {
+    key: "auth:update-password",
+    limit: 6,
+    windowMs: 60_000,
+  });
 
-  if (!isValidPassword(password)) {
+  if (limited) {
+    return limited;
+  }
+
+  const formData = await request.formData();
+  const returnTarget = getReturnTarget(formData.get("returnTo"));
+  const parsed = updatePasswordSchema.safeParse({
+    confirmPassword: formData.get("confirmPassword"),
+    password: formData.get("password"),
+    returnTo: formData.get("returnTo") ?? undefined,
+  });
+
+  if (!parsed.success) {
     return redirectWithStatus(
       request,
       returnTarget,
@@ -58,6 +78,9 @@ export async function POST(request: NextRequest) {
       "Password must be at least 8 characters.",
     );
   }
+
+  const password = parsed.data.password;
+  const confirmPassword = parsed.data.confirmPassword;
 
   if (password !== confirmPassword) {
     return redirectWithStatus(

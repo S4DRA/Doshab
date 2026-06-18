@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { getCurrentUser } from "@/lib/auth";
-import { getMessageAccess } from "@/lib/community-permissions";
 import { prisma } from "@/lib/prisma";
+import { auditSecurityEvent, requireAuth, requireMessageAccess } from "@/lib/security/permissions";
 
 const reportReasons = ["SPAM", "HARASSMENT", "HATE_OR_ABUSE", "NSFW", "OTHER"] as const;
 
 type ReportReason = (typeof reportReasons)[number];
+const reportSchema = z.object({
+  details: z.string().max(600).optional(),
+  reason: z.enum(reportReasons),
+});
 
 type ReportRouteProps = {
   params: Promise<{
@@ -15,32 +19,27 @@ type ReportRouteProps = {
 };
 
 export async function POST(request: NextRequest, { params }: ReportRouteProps) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
   const { messageId } = await params;
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const access = await getMessageAccess(messageId, user.id);
+  const access = await requireMessageAccess(user.id, messageId).catch(() => null);
 
   if (!access) {
     return NextResponse.json({ error: "Message not found." }, { status: 404 });
   }
 
-  const body = (await request.json().catch(() => null)) as {
-    details?: unknown;
-    reason?: unknown;
-  } | null;
-  const reason = typeof body?.reason === "string" ? body.reason : "";
+  const parsed = reportSchema.safeParse(await request.json().catch(() => null));
 
-  if (!reportReasons.includes(reason as ReportReason)) {
+  if (!parsed.success) {
     return NextResponse.json({ error: "Choose a report reason." }, { status: 400 });
   }
 
-  const details = typeof body?.details === "string"
-    ? body.details.trim().slice(0, 600)
-    : "";
+  const reason = parsed.data.reason;
+  const details = parsed.data.details?.trim() ?? "";
 
   await prisma.messageReport.create({
     data: {
@@ -52,6 +51,16 @@ export async function POST(request: NextRequest, { params }: ReportRouteProps) {
       reporterId: user.id,
     },
   });
+
+  await auditSecurityEvent(
+    "message.report",
+    {
+      actorId: user.id,
+      groupId: access.channel.groupId,
+      messageId,
+    },
+    request,
+  );
 
   return NextResponse.json({ message: "Report sent." }, { status: 201 });
 }

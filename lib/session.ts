@@ -1,15 +1,18 @@
+import "server-only";
+
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
 export const sessionCookieName = "doshab_session";
 
-const sessionDurationMs = 1000 * 60 * 60 * 24 * 7;
+const sessionDurationMs = 1000 * 60 * 60 * 8;
 
 type SessionPayload = {
   userId: string;
 };
 
 function getSessionSecret() {
+  // Server-only: SESSION_SECRET/AUTH_SECRET signs legacy VAL JWT cookies.
   const secret = process.env.SESSION_SECRET ?? process.env.AUTH_SECRET;
 
   if (!secret || secret.length < 32) {
@@ -23,7 +26,7 @@ export async function createSessionToken(payload: SessionPayload) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("7d")
+    .setExpirationTime("8h")
     .sign(getSessionSecret());
 }
 

@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  auditSecurityEvent,
+  requireAuth,
+  requireGroupRole,
+  SecurityError,
+} from "@/lib/security/permissions";
 
 type DeleteGroupRouteProps = {
   params: Promise<{
@@ -23,29 +28,28 @@ export async function POST(
   request: NextRequest,
   { params }: DeleteGroupRouteProps,
 ) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
   const { groupId } = await params;
 
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
   }
 
-  const group = await prisma.group.findUnique({
-    where: {
-      id: groupId,
-    },
-    select: {
-      ownerId: true,
-    },
+  const membership = await requireGroupRole(user.id, groupId, ["OWNER"]).catch((error: unknown) => {
+    if (error instanceof SecurityError && error.status === 404) {
+      return null;
+    }
+
+    return undefined;
   });
 
-  if (!group) {
+  if (membership === null) {
     return NextResponse.redirect(new URL("/dashboard", request.url), {
       status: 303,
     });
   }
 
-  if (group.ownerId !== user.id) {
+  if (!membership || membership.group.ownerId !== user.id) {
     return redirectToGroup(request, groupId, "Only the space owner can delete this space.");
   }
 
@@ -54,6 +58,15 @@ export async function POST(
       id: groupId,
     },
   });
+
+  await auditSecurityEvent(
+    "group.delete",
+    {
+      actorId: user.id,
+      groupId,
+    },
+    request,
+  );
 
   return NextResponse.redirect(
     new URL("/dashboard?message=Space%20deleted.", request.url),
