@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { shouldBypassEmailVerificationForDev } from "@/lib/auth-dev-flags";
 import { normalizeEmail } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/security/rate-limit";
-import {
-  confirmSupabaseUserEmailForDev,
-  createSupabaseAdminClient,
-} from "@/lib/supabase/admin";
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
 
 const registerSchema = z.object({
@@ -22,6 +16,29 @@ function redirectWithError(request: NextRequest, error: string) {
     new URL(`/register?error=${encodeURIComponent(error)}`, request.url),
     { status: 303 },
   );
+}
+
+function redirectToLogin(request: NextRequest, params: Record<string, string>) {
+  const url = new URL("/login", request.url);
+
+  Object.entries(params).forEach(([key, value]) => {
+    url.searchParams.set(key, value);
+  });
+
+  return NextResponse.redirect(url, { status: 303 });
+}
+
+function getRequestOrigin(request: NextRequest) {
+  const url = new URL(request.url);
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const host = forwardedHost ?? request.headers.get("host");
+
+  if (host) {
+    return `${forwardedProto ?? url.protocol.replace(":", "")}://${host}`;
+  }
+
+  return url.origin;
 }
 
 export async function POST(request: NextRequest) {
@@ -51,76 +68,74 @@ export async function POST(request: NextRequest) {
   const password = parsed.data.password;
 
   try {
-    if (!shouldBypassEmailVerificationForDev()) {
-      return redirectWithError(
-        request,
-        "Direct signup is temporarily development-only. Disable Supabase email confirmation before production.",
-      );
-    }
-
     const response = NextResponse.redirect(new URL("/dashboard", request.url), {
       status: 303,
     });
     const supabase = createSupabaseRouteClient(request, response);
+    const origin = getRequestOrigin(request);
 
-    // TODO: Re-enable email verification/reset before production.
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { error: createError } = await supabaseAdmin.auth.admin.createUser({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
-      email_confirm: true,
       password,
-      user_metadata: {
-        name,
+      options: {
+        data: {
+          name,
+        },
+        emailRedirectTo: `${origin}/auth/callback`,
       },
     });
 
-    if (createError?.message?.toLowerCase().includes("already")) {
+    if (signUpError?.message?.toLowerCase().includes("already")) {
       const existingSignIn = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (existingSignIn.error?.code === "email_not_confirmed") {
-        await confirmSupabaseUserEmailForDev(email);
-        const retry = await supabase.auth.signInWithPassword({
-          email,
-          password,
+        return redirectToLogin(request, {
+          message: "Account exists, but the email is not confirmed yet. Check your inbox.",
         });
-
-        if (retry.error) {
-          return redirectWithError(request, retry.error.message || "Could not sign in.");
-        }
       } else if (existingSignIn.error) {
         return redirectWithError(
           request,
           "This account already exists. Log in with the existing password.",
         );
       }
-    } else if (createError) {
-      return redirectWithError(request, createError.message || "Sign up failed.");
-    } else {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
 
-      if (signInError) {
-        return redirectWithError(request, signInError.message || "Could not sign in.");
-      }
+      return response;
     }
 
-    await prisma.user.upsert({
-      where: {
-        email,
-      },
-      update: {
-        name,
-      },
-      create: {
-        email,
-        name,
-      },
-    });
+    if (signUpError) {
+      return redirectWithError(request, signUpError.message || "Sign up failed.");
+    }
+
+    if (!signUpData.session) {
+      return redirectToLogin(request, {
+        message: "Account created. Check your email to confirm it, then log in.",
+      });
+    }
+
+    if (signUpData.user) {
+      const nameFromMetadata =
+        typeof signUpData.user.user_metadata?.name === "string"
+          ? signUpData.user.user_metadata.name
+          : "";
+
+      if (!nameFromMetadata) {
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: {
+            name,
+          },
+        });
+
+        if (updateError) {
+          return redirectWithError(
+            request,
+            updateError.message || "Account created, but profile setup failed.",
+          );
+        }
+      }
+    }
 
     return response;
   } catch (error) {
@@ -128,13 +143,6 @@ export async function POST(request: NextRequest) {
 
     if (message.includes("Missing NEXT_PUBLIC_SUPABASE_URL")) {
       return redirectWithError(request, "Supabase Auth is not configured on this server.");
-    }
-
-    if (message.includes("SUPABASE_SERVICE_ROLE_KEY")) {
-      return redirectWithError(
-        request,
-        "Direct signup needs SUPABASE_SERVICE_ROLE_KEY on the server.",
-      );
     }
 
     console.error("Registration failed", error);

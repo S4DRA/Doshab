@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AuthCard } from "@/components/layout/auth-card";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { createSupabaseBrowserClientFromRuntimeConfig } from "@/lib/supabase/client";
 
 const fallbackError =
   "We couldn't complete this auth link. Please try logging in again.";
@@ -39,7 +39,7 @@ export default function AuthCallbackPage() {
     let isActive = true;
 
     async function completeAuthCallback() {
-      const supabase = createSupabaseBrowserClient({
+      const supabase = await createSupabaseBrowserClientFromRuntimeConfig({
         auth: {
           detectSessionInUrl: false,
         },

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { AuthCard } from "@/components/layout/auth-card";
 import { AuthField } from "@/components/ui/auth-field";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { createSupabaseBrowserClientFromRuntimeConfig } from "@/lib/supabase/client";
 
 type ResetStatus = "checking" | "ready" | "error";
 
@@ -34,7 +34,7 @@ export default function ResetPasswordPage() {
     let isActive = true;
 
     async function preparePasswordReset() {
-      const supabase = createSupabaseBrowserClient({
+      const supabase = await createSupabaseBrowserClientFromRuntimeConfig({
         auth: {
           detectSessionInUrl: false,
         },
