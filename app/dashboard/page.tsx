@@ -18,10 +18,6 @@ type DashboardPageProps = {
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const auth = await getAuthState();
 
-  if (auth.status === "unverified") {
-    redirect("/verify-email");
-  }
-
   if (auth.status !== "authenticated") {
     redirect("/login");
   }

@@ -15,7 +15,7 @@ export function isDevEmailAuthBypassEnabled() {
 
 export function shouldBypassEmailVerificationForDev() {
   // TODO: Re-enable email verification/reset before production.
-  return isNonProductionRuntime();
+  return true;
 }
 
 export function isDevPasswordResetEnabled() {

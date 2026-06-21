@@ -18,10 +18,6 @@ type ChannelPageProps = {
 export default async function ChannelPage({ params }: ChannelPageProps) {
   const auth = await getAuthState();
 
-  if (auth.status === "unverified") {
-    redirect("/verify-email");
-  }
-
   if (auth.status !== "authenticated") {
     redirect("/login");
   }

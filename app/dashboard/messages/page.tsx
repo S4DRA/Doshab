@@ -17,10 +17,6 @@ type MessagesPageProps = {
 export default async function MessagesPage({ searchParams }: MessagesPageProps) {
   const auth = await getAuthState();
 
-  if (auth.status === "unverified") {
-    redirect("/verify-email");
-  }
-
   if (auth.status !== "authenticated") {
     redirect("/login");
   }

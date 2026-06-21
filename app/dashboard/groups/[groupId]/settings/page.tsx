@@ -29,10 +29,6 @@ export default async function GroupSettingsPage({
 }: GroupSettingsPageProps) {
   const auth = await getAuthState();
 
-  if (auth.status === "unverified") {
-    redirect("/verify-email");
-  }
-
   if (auth.status !== "authenticated") {
     redirect("/login");
   }

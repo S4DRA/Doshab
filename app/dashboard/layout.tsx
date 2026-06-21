@@ -18,10 +18,6 @@ export default async function DashboardLayout({
 }) {
   const auth = await getAuthState({ includeImage: true });
 
-  if (auth.status === "unverified") {
-    redirect("/verify-email");
-  }
-
   if (auth.status !== "authenticated") {
     const headerList = await headers();
     const returnTo = getSafeDashboardReturnTo(headerList.get("x-doshab-path"));
