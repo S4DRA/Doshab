@@ -11,6 +11,8 @@ type RegisterPageProps = {
   }>;
 };
 
+const supabaseConfigError = "Supabase Auth is not configured on this server.";
+
 export default async function RegisterPage({ searchParams }: RegisterPageProps) {
   const user = await getCurrentUser();
 
@@ -19,6 +21,13 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
   }
 
   const params = await searchParams;
+  const hasSupabaseConfig =
+    Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+    Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
+  if (params?.error === supabaseConfigError && hasSupabaseConfig) {
+    redirect("/register");
+  }
 
   return (
     <AuthCard

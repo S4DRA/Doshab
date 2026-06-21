@@ -14,11 +14,25 @@ type LoginPageProps = {
   }>;
 };
 
+const supabaseConfigError = "Supabase Auth is not configured on this server.";
+
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const user = await getCurrentUser();
 
   const params = await searchParams;
   const returnTo = getSafeReturnTo(params?.returnTo);
+  const hasSupabaseConfig =
+    Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+    Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
+  if (params?.error === supabaseConfigError && hasSupabaseConfig) {
+    const cleanParams = new URLSearchParams({
+      message: "Auth config is active. Try logging in again.",
+      returnTo,
+    });
+
+    redirect(`/login?${cleanParams.toString()}`);
+  }
 
   if (user) {
     redirect(returnTo);
