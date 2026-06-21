@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { isDevEmailAuthBypassEnabled } from "@/lib/auth-dev-flags";
 import { normalizeEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 =======
+=======
+>>>>>>> Stashed changes
 import { shouldBypassEmailVerificationForDev } from "@/lib/auth-dev-flags";
 import { isValidEmail, isValidPassword, normalizeEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -15,6 +18,9 @@ import {
   confirmSupabaseUserEmailForDev,
   createSupabaseAdminClient,
 } from "@/lib/supabase/admin";
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
 
@@ -31,6 +37,7 @@ function redirectWithError(request: NextRequest, error: string) {
   );
 }
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 function getRequestOrigin(request: NextRequest) {
   const url = new URL(request.url);
@@ -57,6 +64,8 @@ function redirectWithSuccess(request: NextRequest, email: string) {
   );
 }
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 export async function POST(request: NextRequest) {
@@ -86,6 +95,7 @@ export async function POST(request: NextRequest) {
   const password = parsed.data.password;
 
   try {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     if (isDevEmailAuthBypassEnabled()) {
       // TODO: Re-enable email verification/reset before production.
@@ -131,12 +141,17 @@ export async function POST(request: NextRequest) {
     const supabase = createSupabaseRouteClient(request, response);
     const origin = getRequestOrigin(request);
 =======
+=======
+>>>>>>> Stashed changes
     if (!shouldBypassEmailVerificationForDev()) {
       return redirectWithError(
         request,
         "Direct signup is temporarily development-only. Disable Supabase email confirmation before production.",
       );
     }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     const response = NextResponse.redirect(new URL("/dashboard", request.url), {
@@ -215,7 +230,11 @@ export async function POST(request: NextRequest) {
       return redirectWithError(
         request,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         "Development signup bypass needs SUPABASE_SERVICE_ROLE_KEY on the server.",
+=======
+        "Direct signup needs SUPABASE_SERVICE_ROLE_KEY on the server.",
+>>>>>>> Stashed changes
 =======
         "Direct signup needs SUPABASE_SERVICE_ROLE_KEY on the server.",
 >>>>>>> Stashed changes

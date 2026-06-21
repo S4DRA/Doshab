@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { isDevEmailAuthBypassEnabled } from "@/lib/auth-dev-flags";
 import { normalizeEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -11,11 +12,16 @@ import { auditSecurityEvent } from "@/lib/security/permissions";
 import {
   confirmSupabaseEmailForDev,
 =======
+=======
+>>>>>>> Stashed changes
 import { shouldBypassEmailVerificationForDev } from "@/lib/auth-dev-flags";
 import { isValidEmail, normalizeEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   confirmSupabaseUserEmailForDev,
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   createSupabaseAdminClient,
 } from "@/lib/supabase/admin";
@@ -85,6 +91,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
+<<<<<<< Updated upstream
       if (error.code === "email_not_confirmed") {
 <<<<<<< Updated upstream
         if (isDevEmailAuthBypassEnabled()) {
@@ -141,10 +148,81 @@ export async function POST(request: NextRequest) {
             returnTo,
 >>>>>>> Stashed changes
           );
+=======
+      if (error.code === "email_not_confirmed" && shouldBypassEmailVerificationForDev()) {
+        // TODO: Re-enable email verification/reset before production.
+        await confirmSupabaseUserEmailForDev(email);
+        const retry = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        signInData = retry.data;
+        error = retry.error;
+      }
+
+      if (error) {
+        const legacyUser = await prisma.user.findUnique({
+          where: { email },
+          select: { name: true, passwordHash: true },
+        });
+
+        if (legacyUser?.passwordHash) {
+          const ok = await bcrypt.compare(password, legacyUser.passwordHash).catch(() => false);
+
+          if (ok) {
+            if (!shouldBypassEmailVerificationForDev()) {
+              return redirectWithError(
+                request,
+                "Direct signup is temporarily development-only. Disable Supabase email confirmation before production.",
+                returnTo,
+              );
+            }
+
+            // TODO: Re-enable email verification/reset before production.
+            const supabaseAdmin = createSupabaseAdminClient();
+            const { error: createError } = await supabaseAdmin.auth.admin.createUser({
+              email,
+              email_confirm: true,
+              password,
+              user_metadata: {
+                name: legacyUser.name,
+              },
+            });
+
+            if (createError?.message?.toLowerCase().includes("already")) {
+              return redirectWithError(
+                request,
+                "This email already exists. Try logging in again.",
+                returnTo,
+              );
+            }
+
+            if (createError) {
+              return redirectWithError(
+                request,
+                createError.message || "Could not create account.",
+                returnTo,
+              );
+            }
+
+            const retry = await supabase.auth.signInWithPassword({
+              email,
+              password,
+            });
+
+            if (retry.error) {
+              return redirectWithError(request, retry.error.message || "Could not sign in.", returnTo);
+            }
+
+            signInData = retry.data;
+            error = null;
+          }
+>>>>>>> Stashed changes
         }
       }
 
       if (error) {
+<<<<<<< Updated upstream
         // Backward-compat: if the user exists in Prisma (old auth), allow them to
 <<<<<<< Updated upstream
         // "upgrade" by creating a Supabase Auth account with the same password.
@@ -293,12 +371,12 @@ export async function POST(request: NextRequest) {
 
       if (error) {
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         return redirectWithError(request, "Invalid email or password.", returnTo);
       }
     }
 
-    // Prefer the signed-in user returned by Auth directly. In local SSR flows,
-    // a same-request getUser() can miss the freshly written auth cookies.
     let authenticatedUser: typeof signInData.user | null = signInData.user;
 
     if (!authenticatedUser) {
@@ -318,6 +396,7 @@ export async function POST(request: NextRequest) {
       return redirectWithError(request, "Authentication is temporarily unavailable.", returnTo);
     }
 
+<<<<<<< Updated upstream
     // TODO: Re-enable email verification/reset before production.
 <<<<<<< Updated upstream
     if (!authenticatedUser.email_confirmed_at && !isDevEmailAuthBypassEnabled()) {
@@ -344,6 +423,13 @@ export async function POST(request: NextRequest) {
       return redirectWithError(
         request,
         "Email verification is disabled for development. Confirm this account before production login.",
+        returnTo,
+>>>>>>> Stashed changes
+=======
+    if (!authenticatedUser.email_confirmed_at && !shouldBypassEmailVerificationForDev()) {
+      return redirectWithError(
+        request,
+        "Email confirmation is disabled in this build. Confirm this account before production login.",
         returnTo,
 >>>>>>> Stashed changes
       );
@@ -388,7 +474,11 @@ export async function POST(request: NextRequest) {
       return redirectWithError(
         request,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         "Development email bypass needs SUPABASE_SERVICE_ROLE_KEY on the server.",
+=======
+        "Direct auth needs SUPABASE_SERVICE_ROLE_KEY on the server.",
+>>>>>>> Stashed changes
 =======
         "Direct auth needs SUPABASE_SERVICE_ROLE_KEY on the server.",
 >>>>>>> Stashed changes

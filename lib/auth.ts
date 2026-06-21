@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma, UserStatus } from "@/lib/generated/prisma/client";
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { isDevEmailAuthBypassEnabled } from "@/lib/auth-dev-flags";
+=======
+import { shouldBypassEmailVerificationForDev } from "@/lib/auth-dev-flags";
+>>>>>>> Stashed changes
 =======
 import { shouldBypassEmailVerificationForDev } from "@/lib/auth-dev-flags";
 >>>>>>> Stashed changes
@@ -70,7 +74,11 @@ export async function getAuthState(options?: { includeImage?: boolean }): Promis
 
     // TODO: Re-enable email verification/reset before production.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     if (!data.user.email_confirmed_at && !isDevEmailAuthBypassEnabled()) {
+=======
+    if (!data.user.email_confirmed_at && !shouldBypassEmailVerificationForDev()) {
+>>>>>>> Stashed changes
 =======
     if (!data.user.email_confirmed_at && !shouldBypassEmailVerificationForDev()) {
 >>>>>>> Stashed changes

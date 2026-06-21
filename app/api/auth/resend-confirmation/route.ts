@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { isDevEmailAuthBypassEnabled } from "@/lib/auth-dev-flags";
 import { normalizeEmail } from "@/lib/auth";
 import { rateLimit } from "@/lib/security/rate-limit";
@@ -126,6 +127,9 @@ export async function POST(request: NextRequest) {
   }
 =======
 export async function POST(request: NextRequest) {
+=======
+export async function POST(request: NextRequest) {
+>>>>>>> Stashed changes
   // TODO: Re-enable email verification/reset before production.
   return NextResponse.redirect(
     new URL(
@@ -136,5 +140,8 @@ export async function POST(request: NextRequest) {
     ),
     { status: 303 },
   );
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }
