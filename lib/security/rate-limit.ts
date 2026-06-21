@@ -39,82 +39,87 @@ function rateLimitKey(request: NextRequest, options: RateLimitOptions) {
 }
 
 export async function rateLimit(request: NextRequest, options: RateLimitOptions) {
-  const now = new Date();
-  const resetAt = new Date(now.getTime() + options.windowMs);
-  const key = rateLimitKey(request, options);
-  const created = await prisma.rateLimitBucket
-    .create({
+  try {
+    const now = new Date();
+    const resetAt = new Date(now.getTime() + options.windowMs);
+    const key = rateLimitKey(request, options);
+    const created = await prisma.rateLimitBucket
+      .create({
+        data: {
+          count: 1,
+          key,
+          resetAt,
+        },
+      })
+      .then(() => true)
+      .catch(() => false);
+
+    if (created) {
+      return null;
+    }
+
+    const update = await prisma.rateLimitBucket.updateMany({
+      data: {
+        count: {
+          increment: 1,
+        },
+      },
+      where: {
+        count: {
+          lt: options.limit,
+        },
+        key,
+        resetAt: {
+          gt: now,
+        },
+      },
+    });
+
+    if (update.count) {
+      return null;
+    }
+
+    const expiredReset = await prisma.rateLimitBucket.updateMany({
       data: {
         count: 1,
-        key,
         resetAt,
       },
-    })
-    .then(() => true)
-    .catch(() => false);
+      where: {
+        key,
+        resetAt: {
+          lte: now,
+        },
+      },
+    });
 
-  if (created) {
+    if (expiredReset.count) {
+      return null;
+    }
+
+    const bucket = await prisma.rateLimitBucket.findUnique({
+      where: {
+        key,
+      },
+      select: {
+        resetAt: true,
+      },
+    });
+    const retryAfterSeconds = Math.max(
+      1,
+      Math.ceil(((bucket?.resetAt.getTime() ?? resetAt.getTime()) - now.getTime()) / 1000),
+    );
+
+    return NextResponse.json(
+      { error: "Too many requests. Try again shortly." },
+      {
+        headers: {
+          "Retry-After": String(retryAfterSeconds),
+        },
+        status: 429,
+      },
+    );
+  } catch (error) {
+    console.error("Rate limit check failed open", error);
     return null;
   }
-
-  const update = await prisma.rateLimitBucket.updateMany({
-    data: {
-      count: {
-        increment: 1,
-      },
-    },
-    where: {
-      count: {
-        lt: options.limit,
-      },
-      key,
-      resetAt: {
-        gt: now,
-      },
-    },
-  });
-
-  if (update.count) {
-    return null;
-  }
-
-  const expiredReset = await prisma.rateLimitBucket.updateMany({
-    data: {
-      count: 1,
-      resetAt,
-    },
-    where: {
-      key,
-      resetAt: {
-        lte: now,
-      },
-    },
-  });
-
-  if (expiredReset.count) {
-    return null;
-  }
-
-  const bucket = await prisma.rateLimitBucket.findUnique({
-    where: {
-      key,
-    },
-    select: {
-      resetAt: true,
-    },
-  });
-  const retryAfterSeconds = Math.max(
-    1,
-    Math.ceil(((bucket?.resetAt.getTime() ?? resetAt.getTime()) - now.getTime()) / 1000),
-  );
-
-  return NextResponse.json(
-    { error: "Too many requests. Try again shortly." },
-    {
-      headers: {
-        "Retry-After": String(retryAfterSeconds),
-      },
-      status: 429,
-    },
-  );
 }
