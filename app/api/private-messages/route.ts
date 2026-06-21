@@ -35,10 +35,6 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await getAuthState();
 
-    if (auth.status === "unverified") {
-      return NextResponse.redirect(new URL("/verify-email", request.url), { status: 303 });
-    }
-
     if (auth.status !== "authenticated") {
       return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
     }

@@ -19,10 +19,6 @@ type GroupPageProps = {
 export default async function GroupPage({ params, searchParams }: GroupPageProps) {
   const auth = await getAuthState();
 
-  if (auth.status === "unverified") {
-    redirect("/verify-email");
-  }
-
   if (auth.status !== "authenticated") {
     redirect("/login");
   }

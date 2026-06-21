@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { getCurrentUser } from "@/lib/auth";
 import {
   chatMessageBaseSelect,
   formatChatMessage,
@@ -13,9 +13,27 @@ import {
 } from "@/lib/message-bus";
 import { prisma } from "@/lib/prisma";
 import { sendPushNotifications } from "@/lib/push";
+import { rateLimit } from "@/lib/security/rate-limit";
+import {
+  auditSecurityEvent,
+  requireAuth,
+  requireChannelMember,
+} from "@/lib/security/permissions";
 
 const messageBatchSize = 50;
 const messagePollIntervalMs = 30_000;
+
+const jsonMessageSchema = z.object({
+  encryptedContent: z.string().trim().min(1).max(200000),
+  notificationPreview: z.string().optional(),
+  poll: z
+    .object({
+      options: z.array(z.string()).min(2).max(5),
+      question: z.string(),
+    })
+    .optional(),
+  replyToMessageId: z.string().optional(),
+});
 
 type MessagesRouteProps = {
   params: Promise<{
@@ -134,7 +152,7 @@ function sanitizePoll(value: unknown) {
 }
 
 export async function POST(request: NextRequest, { params }: MessagesRouteProps) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
   const { channelId } = await params;
 
   if (!user) {
@@ -145,7 +163,19 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
   }
 
-  const channel = await getTextChannelForUser(channelId, user.id);
+  const limited = await rateLimit(request, {
+    identifiers: [`user:${user.id}`, `channel:${channelId}`],
+    key: "channels:messages:create",
+    limit: 60,
+    windowMs: 60_000,
+  });
+
+  if (limited) {
+    return limited;
+  }
+
+  const channelAccess = await requireChannelMember(user.id, channelId).catch(() => null);
+  const channel = channelAccess ? await getTextChannelForUser(channelId, user.id) : null;
 
   if (!channel) {
     if (request.headers.get("content-type")?.includes("application/json")) {
@@ -169,23 +199,20 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
     .get("content-type")
     ?.includes("application/json");
   const jsonBody = isJsonRequest
-    ? ((await request.json().catch(() => null)) as {
-        encryptedContent?: unknown;
-        notificationPreview?: unknown;
-        poll?: unknown;
-        replyToMessageId?: unknown;
-      } | null)
+    ? jsonMessageSchema.safeParse(await request.json().catch(() => null))
     : null;
   const content = isJsonRequest
     ? String(
-        jsonBody?.encryptedContent ?? "",
+        (jsonBody?.success ? jsonBody.data.encryptedContent : "") ?? "",
       ).trim()
     : String((await request.formData()).get("content") ?? "").trim();
   const notificationPreview = sanitizeNotificationPreview(
-    jsonBody?.notificationPreview,
+    jsonBody?.success ? jsonBody.data.notificationPreview : undefined,
   );
-  const replyToMessageId = sanitizeReplyToMessageId(jsonBody?.replyToMessageId);
-  const poll = sanitizePoll(jsonBody?.poll);
+  const replyToMessageId = sanitizeReplyToMessageId(
+    jsonBody?.success ? jsonBody.data.replyToMessageId : undefined,
+  );
+  const poll = sanitizePoll(jsonBody?.success ? jsonBody.data.poll : undefined);
 
   if (
     !content ||
@@ -312,6 +339,16 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
   const formattedMessage = await formatChatMessage(result.message, user.id);
 
   publishChannelMessage(channel.id, formattedMessage);
+  await auditSecurityEvent(
+    "message.create",
+    {
+      actorId: user.id,
+      channelId: channel.id,
+      groupId: channel.groupId,
+      messageId: result.message.id,
+    },
+    request,
+  );
 
   if (isJsonRequest) {
     return NextResponse.json(formattedMessage, { status: 201 });
@@ -321,11 +358,17 @@ export async function POST(request: NextRequest, { params }: MessagesRouteProps)
 }
 
 export async function GET(request: NextRequest, { params }: MessagesRouteProps) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
   const { channelId } = await params;
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const channelAccess = await requireChannelMember(user.id, channelId).catch(() => null);
+
+  if (!channelAccess || channelAccess.type !== "TEXT") {
+    return NextResponse.json({ error: "Channel not found" }, { status: 404 });
   }
 
   const messageId = request.nextUrl.searchParams.get("messageId");

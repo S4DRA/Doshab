@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { getCurrentUser } from "@/lib/auth";
 import { orderedFriendshipPair } from "@/lib/friends";
 import { createNotification } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { auditSecurityEvent, requireAuth } from "@/lib/security/permissions";
+
+const friendRequestSchema = z.object({
+  receiverId: z.string().trim().min(1).max(128),
+});
 
 function getRedirectPath(formData: FormData) {
   const redirectTo = String(formData.get("redirectTo") ?? "");
@@ -22,14 +28,28 @@ function redirectWithMessage(request: NextRequest, path: string, message: string
 }
 
 export async function POST(request: NextRequest) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
 
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
   }
 
+  const limited = await rateLimit(request, {
+    identifiers: [`user:${user.id}`],
+    key: "friends:requests:create",
+    limit: 20,
+    windowMs: 60 * 60_000,
+  });
+
+  if (limited) {
+    return limited;
+  }
+
   const formData = await request.formData();
-  const receiverId = String(formData.get("receiverId") ?? "");
+  const parsed = friendRequestSchema.safeParse({
+    receiverId: formData.get("receiverId"),
+  });
+  const receiverId = parsed.success ? parsed.data.receiverId : "";
   const redirectPath = getRedirectPath(formData);
 
   if (!receiverId || receiverId === user.id) {
@@ -97,6 +117,16 @@ export async function POST(request: NextRequest) {
     type: "FRIEND_REQUEST",
     userId: receiverId,
   });
+
+  await auditSecurityEvent(
+    "friend-request.create",
+    {
+      actorId: user.id,
+      receiverId,
+      requestId: requestRecord.id,
+    },
+    request,
+  );
 
   return redirectWithMessage(request, redirectPath, "Friend request sent.");
 }

@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { getCurrentUser } from "@/lib/auth";
 import { chatMessageBaseSelect, formatChatMessage } from "@/lib/chat-messages";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { requireAuth } from "@/lib/security/permissions";
+
+const voteSchema = z.object({
+  optionId: z.string().trim().min(1).max(128),
+});
 
 type PollVoteRouteProps = {
   params: Promise<{
@@ -11,19 +17,30 @@ type PollVoteRouteProps = {
 };
 
 export async function POST(request: NextRequest, { params }: PollVoteRouteProps) {
-  const user = await getCurrentUser();
+  const limited = await rateLimit(request, {
+    key: "polls:vote",
+    limit: 120,
+    windowMs: 60_000,
+  });
+
+  if (limited) {
+    return limited;
+  }
+
+  const user = await requireAuth().catch(() => null);
   const { pollId } = await params;
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json().catch(() => null)) as { optionId?: unknown } | null;
-  const optionId = typeof body?.optionId === "string" ? body.optionId : "";
+  const parsed = voteSchema.safeParse(await request.json().catch(() => null));
 
-  if (!optionId) {
+  if (!parsed.success) {
     return NextResponse.json({ error: "Choose a poll option." }, { status: 400 });
   }
+
+  const optionId = parsed.data.optionId;
 
   const poll = await prisma.poll.findFirst({
     where: {

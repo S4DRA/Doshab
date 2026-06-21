@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  auditSecurityEvent,
+  requireAuth,
+  requireGroupMember,
+  SecurityError,
+} from "@/lib/security/permissions";
 
 type LeaveGroupRouteProps = {
   params: Promise<{
@@ -23,33 +28,22 @@ export async function POST(
   request: NextRequest,
   { params }: LeaveGroupRouteProps,
 ) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
   const { groupId } = await params;
 
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
   }
 
-  const membership = await prisma.groupMember.findUnique({
-    where: {
-      groupId_userId: {
-        groupId,
-        userId: user.id,
-      },
-    },
-    select: {
-      id: true,
-      role: true,
-      group: {
-        select: {
-          isDirectMessage: true,
-          ownerId: true,
-        },
-      },
-    },
+  const membership = await requireGroupMember(user.id, groupId).catch((error: unknown) => {
+    if (error instanceof SecurityError && error.status === 404) {
+      return null;
+    }
+
+    throw error;
   });
 
-  if (!membership) {
+  if (membership === null) {
     return NextResponse.redirect(new URL("/dashboard", request.url), {
       status: 303,
     });
@@ -68,6 +62,15 @@ export async function POST(
       id: membership.id,
     },
   });
+
+  await auditSecurityEvent(
+    "group.leave",
+    {
+      actorId: user.id,
+      groupId,
+    },
+    request,
+  );
 
   return NextResponse.redirect(
     new URL("/dashboard?message=You%20left%20the%20space.", request.url),

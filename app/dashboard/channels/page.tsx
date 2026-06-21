@@ -7,10 +7,6 @@ import { prisma } from "@/lib/prisma";
 export default async function ChannelsPage() {
   const auth = await getAuthState();
 
-  if (auth.status === "unverified") {
-    redirect("/verify-email");
-  }
-
   if (auth.status !== "authenticated") {
     redirect("/login");
   }

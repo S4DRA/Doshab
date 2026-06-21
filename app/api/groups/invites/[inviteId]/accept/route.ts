@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { auditSecurityEvent, requireAuth } from "@/lib/security/permissions";
 
 type AcceptInviteContext = {
   params: Promise<{
@@ -18,7 +18,7 @@ function redirectToRequestsPanel(request: NextRequest, message: string) {
 }
 
 export async function POST(request: NextRequest, context: AcceptInviteContext) {
-  const user = await getCurrentUser();
+  const user = await requireAuth().catch(() => null);
 
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
@@ -84,6 +84,16 @@ export async function POST(request: NextRequest, context: AcceptInviteContext) {
       },
     }),
   ]);
+
+  await auditSecurityEvent(
+    "group-invite.accept",
+    {
+      actorId: user.id,
+      groupId: invite.groupId,
+      inviteId: invite.id,
+    },
+    request,
+  );
 
   return NextResponse.redirect(
     new URL(`/dashboard/groups/${invite.groupId}`, request.url),

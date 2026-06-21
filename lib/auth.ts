@@ -1,3 +1,4 @@
+import { shouldBypassEmailVerificationForDev } from "@/lib/auth-dev-flags";
 import { prisma } from "@/lib/prisma";
 import type { Prisma, UserStatus } from "@/lib/generated/prisma/client";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -63,7 +64,8 @@ export async function getAuthState(options?: { includeImage?: boolean }): Promis
       select,
     });
 
-    if (!data.user.email_confirmed_at) {
+    // TODO: Re-enable email verification/reset before production.
+    if (!data.user.email_confirmed_at && !shouldBypassEmailVerificationForDev()) {
       return { status: "unverified", email };
     }
 

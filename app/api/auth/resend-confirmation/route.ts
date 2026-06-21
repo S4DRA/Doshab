@@ -1,92 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { isValidEmail, normalizeEmail } from "@/lib/auth";
-import { createSupabaseRouteClient } from "@/lib/supabase/server";
-
-function getRequestOrigin(request: NextRequest) {
-  const url = new URL(request.url);
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const host = forwardedHost ?? request.headers.get("host");
-
-  if (host) {
-    return `${forwardedProto ?? url.protocol.replace(":", "")}://${host}`;
-  }
-
-  return url.origin;
-}
-
-function redirectToVerifyEmail(
-  request: NextRequest,
-  type: "error" | "message",
-  text: string,
-  email?: string,
-) {
-  const url = new URL("/verify-email", request.url);
-
-  url.searchParams.set(type, text);
-
-  if (email) {
-    url.searchParams.set("email", email);
-  }
-
-  return NextResponse.redirect(url, { status: 303 });
-}
-
 export async function POST(request: NextRequest) {
-  const formData = await request.formData();
-  const email = normalizeEmail(String(formData.get("email") ?? ""));
-
-  if (!isValidEmail(email)) {
-    return redirectToVerifyEmail(request, "error", "Enter a valid email address.", email);
-  }
-
-  try {
-    const response = redirectToVerifyEmail(
-      request,
-      "message",
-      "We sent a fresh verification email. Please use the newest link.",
-      email,
-    );
-    const supabase = createSupabaseRouteClient(request, response);
-    const origin = getRequestOrigin(request);
-
-    const { error } = await supabase.auth.resend({
-      type: "signup",
-      email,
-      options: {
-        emailRedirectTo: `${origin}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      return redirectToVerifyEmail(
-        request,
-        "error",
-        error.message || "Could not resend the verification email.",
-        email,
-      );
-    }
-
-    return response;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "";
-
-    if (message.includes("Missing NEXT_PUBLIC_SUPABASE_URL")) {
-      return redirectToVerifyEmail(
-        request,
-        "error",
-        "Supabase Auth is not configured on this server.",
-        email,
-      );
-    }
-
-    console.error("Resend confirmation failed", error);
-    return redirectToVerifyEmail(
-      request,
-      "error",
-      "Authentication is temporarily unavailable.",
-      email,
-    );
-  }
+  // TODO: Re-enable email verification/reset before production.
+  return NextResponse.redirect(
+    new URL(
+      `/login?message=${encodeURIComponent(
+        "Email verification is disabled for development. Log in to continue.",
+      )}`,
+      request.url,
+    ),
+    { status: 303 },
+  );
 }

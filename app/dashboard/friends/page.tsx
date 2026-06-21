@@ -20,10 +20,6 @@ type FriendsPageProps = {
 export default async function FriendsPage({ searchParams }: FriendsPageProps) {
   const auth = await getAuthState();
 
-  if (auth.status === "unverified") {
-    redirect("/verify-email");
-  }
-
   if (auth.status !== "authenticated") {
     redirect("/login");
   }
