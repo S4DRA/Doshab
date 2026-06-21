@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { isLegacyEmailPasswordResetEnabled } from "@/lib/auth-dev-flags";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
 
@@ -92,6 +93,16 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    if (returnTarget === "reset" && !isLegacyEmailPasswordResetEnabled()) {
+      // TODO: Re-enable email verification/reset before production.
+      return redirectWithStatus(
+        request,
+        returnTarget,
+        "error",
+        "Password reset is temporarily unavailable.",
+      );
+    }
+
     const response = getSuccessResponse(request, returnTarget);
     const supabase = createSupabaseRouteClient(request, response);
     const { data, error: userError } = await supabase.auth.getUser();

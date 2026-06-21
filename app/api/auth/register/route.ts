@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { isDevEmailAuthBypassEnabled } from "@/lib/auth-dev-flags";
 import { normalizeEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
 
 const registerSchema = z.object({
@@ -30,6 +32,18 @@ function getRequestOrigin(request: NextRequest) {
   }
 
   return url.origin;
+}
+
+function redirectWithSuccess(request: NextRequest, email: string) {
+  return NextResponse.redirect(
+    new URL(
+      `/login?registered=1&message=${encodeURIComponent(
+        "Account created. You can log in now.",
+      )}&email=${encodeURIComponent(email)}`,
+      request.url,
+    ),
+    { status: 303 },
+  );
 }
 
 export async function POST(request: NextRequest) {
@@ -59,6 +73,38 @@ export async function POST(request: NextRequest) {
   const password = parsed.data.password;
 
   try {
+    if (isDevEmailAuthBypassEnabled()) {
+      // TODO: Re-enable email verification/reset before production.
+      const supabaseAdmin = createSupabaseAdminClient();
+      const { error } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        password,
+        user_metadata: {
+          name,
+        },
+      });
+
+      if (error) {
+        return redirectWithError(request, error.message || "Sign up failed.");
+      }
+
+      await prisma.user.upsert({
+        where: {
+          email,
+        },
+        update: {
+          name,
+        },
+        create: {
+          email,
+          name,
+        },
+      });
+
+      return redirectWithSuccess(request, email);
+    }
+
     const response = NextResponse.redirect(
       new URL(
         `/verify-email?message=${encodeURIComponent(
@@ -105,6 +151,13 @@ export async function POST(request: NextRequest) {
 
     if (message.includes("Missing NEXT_PUBLIC_SUPABASE_URL")) {
       return redirectWithError(request, "Supabase Auth is not configured on this server.");
+    }
+
+    if (message.includes("SUPABASE_SERVICE_ROLE_KEY")) {
+      return redirectWithError(
+        request,
+        "Development signup bypass needs SUPABASE_SERVICE_ROLE_KEY on the server.",
+      );
     }
 
     console.error("Registration failed", error);

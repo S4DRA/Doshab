@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { isDevEmailAuthBypassEnabled } from "@/lib/auth-dev-flags";
 import { normalizeEmail } from "@/lib/auth";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
@@ -40,6 +41,19 @@ function redirectToVerifyEmail(
 }
 
 export async function POST(request: NextRequest) {
+  if (isDevEmailAuthBypassEnabled()) {
+    // TODO: Re-enable email verification/reset before production.
+    return NextResponse.redirect(
+      new URL(
+        `/login?message=${encodeURIComponent(
+          "Email verification is temporarily disabled for development.",
+        )}`,
+        request.url,
+      ),
+      { status: 303 },
+    );
+  }
+
   const formData = await request.formData();
   const parsed = resendConfirmationSchema.safeParse({
     email: formData.get("email"),

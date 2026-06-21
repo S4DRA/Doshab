@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
+import { isDevEmailAuthBypassEnabled } from "@/lib/auth-dev-flags";
 import { normalizeEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { auditSecurityEvent } from "@/lib/security/permissions";
+import {
+  confirmSupabaseEmailForDev,
+  createSupabaseAdminClient,
+} from "@/lib/supabase/admin";
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
 
 const loginSchema = z.object({
@@ -80,68 +85,46 @@ export async function POST(request: NextRequest) {
     const supabase = createSupabaseRouteClient(request, response);
     const origin = getRequestOrigin(request);
 
-    const { data: signInData, error } = await supabase.auth.signInWithPassword({
+    let { data: signInData, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
       if (error.code === "email_not_confirmed") {
-        await auditSecurityEvent(
-          "auth.login.failure",
-          {
-            email,
-            reason: "email_not_confirmed",
-          },
-          request,
-        );
-        return NextResponse.redirect(
-          new URL(
-            `/verify-email?error=${encodeURIComponent(
-              "Please verify your email before using VAL.",
-            )}&email=${encodeURIComponent(email)}`,
-            request.url,
-          ),
-          { status: 303 },
-        );
-      }
-
-      // Backward-compat: if the user exists in Prisma (old auth), allow them to
-      // "upgrade" by creating a Supabase Auth account with the same password.
-      const legacyUser = await prisma.user.findUnique({
-        where: { email },
-        select: { name: true, passwordHash: true },
-      });
-
-      if (legacyUser?.passwordHash) {
-        const ok = await bcrypt.compare(password, legacyUser.passwordHash).catch(() => false);
-
-        if (ok) {
-          const { error: signUpError } = await supabase.auth.signUp({
+        if (isDevEmailAuthBypassEnabled()) {
+          // TODO: Re-enable email verification/reset before production.
+          await confirmSupabaseEmailForDev(email);
+          const retry = await supabase.auth.signInWithPassword({
             email,
             password,
-            options: {
-              data: {
-                name: legacyUser.name,
-              },
-              emailRedirectTo: `${origin}/auth/callback`,
-            },
           });
 
-          // If the user already exists in Supabase Auth but with a different password,
-          // guide them to reset their password instead of failing silently.
-          if (signUpError?.message?.toLowerCase().includes("already")) {
-            return redirectWithError(
-              request,
-              "This email already exists. Try logging in again, or reset your password in Supabase.",
-              returnTo,
-            );
-          }
+          signInData = retry.data;
+          error = retry.error;
+        }
 
+        if (!error) {
+          await auditSecurityEvent(
+            "auth.login.dev_email_bypass",
+            {
+              email,
+            },
+            request,
+          );
+        } else {
+          await auditSecurityEvent(
+            "auth.login.failure",
+            {
+              email,
+              reason: "email_not_confirmed",
+            },
+            request,
+          );
           return NextResponse.redirect(
             new URL(
-              `/verify-email?message=${encodeURIComponent(
-                "Account found. Please check your email to verify your VAL account.",
+              `/verify-email?error=${encodeURIComponent(
+                "Please verify your email before using VAL.",
               )}&email=${encodeURIComponent(email)}`,
               request.url,
             ),
@@ -150,15 +133,99 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      await auditSecurityEvent(
-        "auth.login.failure",
-        {
-          email,
-          reason: "invalid_credentials",
-        },
-        request,
-      );
-      return redirectWithError(request, "Invalid email or password.", returnTo);
+      if (error) {
+        // Backward-compat: if the user exists in Prisma (old auth), allow them to
+        // "upgrade" by creating a Supabase Auth account with the same password.
+        const legacyUser = await prisma.user.findUnique({
+          where: { email },
+          select: { name: true, passwordHash: true },
+        });
+
+        if (legacyUser?.passwordHash) {
+          const ok = await bcrypt.compare(password, legacyUser.passwordHash).catch(() => false);
+
+          if (ok) {
+            if (isDevEmailAuthBypassEnabled()) {
+              // TODO: Re-enable email verification/reset before production.
+              const supabaseAdmin = createSupabaseAdminClient();
+              const { error: createError } = await supabaseAdmin.auth.admin.createUser({
+                email,
+                email_confirm: true,
+                password,
+                user_metadata: {
+                  name: legacyUser.name,
+                },
+              });
+
+              if (createError?.message?.toLowerCase().includes("already")) {
+                return redirectWithError(
+                  request,
+                  "This email already exists. Try logging in again, or use the development reset flow.",
+                  returnTo,
+                );
+              }
+
+              if (createError) {
+                return redirectWithError(request, createError.message, returnTo);
+              }
+
+              const retry = await supabase.auth.signInWithPassword({
+                email,
+                password,
+              });
+
+              if (retry.error) {
+                return redirectWithError(request, retry.error.message, returnTo);
+              }
+
+              return response;
+            }
+
+            if (error) {
+              const { error: signUpError } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                  data: {
+                    name: legacyUser.name,
+                  },
+                  emailRedirectTo: `${origin}/auth/callback`,
+                },
+              });
+
+              // If the user already exists in Supabase Auth but with a different password,
+              // guide them to reset their password instead of failing silently.
+              if (signUpError?.message?.toLowerCase().includes("already")) {
+                return redirectWithError(
+                  request,
+                  "This email already exists. Try logging in again, or reset your password in Supabase.",
+                  returnTo,
+                );
+              }
+
+              return NextResponse.redirect(
+                new URL(
+                  `/verify-email?message=${encodeURIComponent(
+                    "Account found. Please check your email to verify your VAL account.",
+                  )}&email=${encodeURIComponent(email)}`,
+                  request.url,
+                ),
+                { status: 303 },
+              );
+            }
+          }
+        }
+
+        await auditSecurityEvent(
+          "auth.login.failure",
+          {
+            email,
+            reason: "invalid_credentials",
+          },
+          request,
+        );
+        return redirectWithError(request, "Invalid email or password.", returnTo);
+      }
     }
 
     // Prefer the signed-in user returned by Auth directly. In local SSR flows,
@@ -182,7 +249,8 @@ export async function POST(request: NextRequest) {
       return redirectWithError(request, "Authentication is temporarily unavailable.", returnTo);
     }
 
-    if (!authenticatedUser.email_confirmed_at) {
+    // TODO: Re-enable email verification/reset before production.
+    if (!authenticatedUser.email_confirmed_at && !isDevEmailAuthBypassEnabled()) {
       await supabase.auth.signOut();
       await auditSecurityEvent(
         "auth.login.failure",
@@ -236,6 +304,14 @@ export async function POST(request: NextRequest) {
 
     if (message.includes("Missing NEXT_PUBLIC_SUPABASE_URL")) {
       return redirectWithError(request, "Supabase Auth is not configured on this server.", returnTo);
+    }
+
+    if (message.includes("SUPABASE_SERVICE_ROLE_KEY")) {
+      return redirectWithError(
+        request,
+        "Development email bypass needs SUPABASE_SERVICE_ROLE_KEY on the server.",
+        returnTo,
+      );
     }
 
     console.error("Login failed", error);

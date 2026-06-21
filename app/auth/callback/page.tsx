@@ -8,7 +8,7 @@ import { AuthCard } from "@/components/layout/auth-card";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const fallbackError =
-  "We couldn't verify your email link. Please try logging in, or request a new confirmation email.";
+  "We couldn't complete this auth link. Please try logging in again.";
 
 function getCallbackError(searchParams: URLSearchParams, hashParams: URLSearchParams) {
   return (
@@ -33,7 +33,7 @@ function getSafeErrorMessage(error: unknown) {
 
 export default function AuthCallbackPage() {
   const router = useRouter();
-  const [message, setMessage] = useState("Completing email verification...");
+  const [message, setMessage] = useState("Completing authentication...");
 
   useEffect(() => {
     let isActive = true;
@@ -64,7 +64,7 @@ export default function AuthCallbackPage() {
       const refreshToken = hashParams.get("refresh_token");
 
       if (tokenHash && type) {
-        setMessage("Verifying your email link...");
+        setMessage("Verifying your auth link...");
 
         const { error } = await supabase.auth.verifyOtp({
           token_hash: tokenHash,
@@ -121,9 +121,9 @@ export default function AuthCallbackPage() {
 
   return (
     <AuthCard
-      title="Verifying email"
+      title="Completing sign-in"
       subtitle="Hang tight while VAL finishes your secure sign-in."
-      footerText="Already verified?"
+      footerText="Ready?"
       footerHref="/login"
       footerLinkText="Log in"
       notice={message}

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma, UserStatus } from "@/lib/generated/prisma/client";
+import { isDevEmailAuthBypassEnabled } from "@/lib/auth-dev-flags";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export function normalizeEmail(email: string) {
@@ -63,7 +64,8 @@ export async function getAuthState(options?: { includeImage?: boolean }): Promis
       select,
     });
 
-    if (!data.user.email_confirmed_at) {
+    // TODO: Re-enable email verification/reset before production.
+    if (!data.user.email_confirmed_at && !isDevEmailAuthBypassEnabled()) {
       return { status: "unverified", email };
     }
 
