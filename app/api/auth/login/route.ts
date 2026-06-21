@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
+<<<<<<< Updated upstream
 import { isDevEmailAuthBypassEnabled } from "@/lib/auth-dev-flags";
 import { normalizeEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -9,6 +10,13 @@ import { rateLimit } from "@/lib/security/rate-limit";
 import { auditSecurityEvent } from "@/lib/security/permissions";
 import {
   confirmSupabaseEmailForDev,
+=======
+import { shouldBypassEmailVerificationForDev } from "@/lib/auth-dev-flags";
+import { isValidEmail, normalizeEmail } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import {
+  confirmSupabaseUserEmailForDev,
+>>>>>>> Stashed changes
   createSupabaseAdminClient,
 } from "@/lib/supabase/admin";
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
@@ -37,19 +45,6 @@ function getSafeReturnTo(returnTo: string) {
 
 function isDashboardPath(path: string) {
   return path === "/dashboard" || path.startsWith("/dashboard/") || path.startsWith("/dashboard?");
-}
-
-function getRequestOrigin(request: NextRequest) {
-  const url = new URL(request.url);
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const host = forwardedHost ?? request.headers.get("host");
-
-  if (host) {
-    return `${forwardedProto ?? url.protocol.replace(":", "")}://${host}`;
-  }
-
-  return url.origin;
 }
 
 export async function POST(request: NextRequest) {
@@ -83,7 +78,6 @@ export async function POST(request: NextRequest) {
       status: 303,
     });
     const supabase = createSupabaseRouteClient(request, response);
-    const origin = getRequestOrigin(request);
 
     let { data: signInData, error } = await supabase.auth.signInWithPassword({
       email,
@@ -92,14 +86,24 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (error.code === "email_not_confirmed") {
+<<<<<<< Updated upstream
         if (isDevEmailAuthBypassEnabled()) {
           // TODO: Re-enable email verification/reset before production.
           await confirmSupabaseEmailForDev(email);
+=======
+        if (shouldBypassEmailVerificationForDev()) {
+          // TODO: Re-enable email verification/reset before production.
+          await confirmSupabaseUserEmailForDev(email);
+>>>>>>> Stashed changes
           const retry = await supabase.auth.signInWithPassword({
             email,
             password,
           });
+          signInData = retry.data;
+          error = retry.error;
+        }
 
+<<<<<<< Updated upstream
           signInData = retry.data;
           error = retry.error;
         }
@@ -129,13 +133,24 @@ export async function POST(request: NextRequest) {
               request.url,
             ),
             { status: 303 },
+=======
+        if (error) {
+          return redirectWithError(
+            request,
+            "Email verification is disabled for development. Ask the server to confirm this account or create it again.",
+            returnTo,
+>>>>>>> Stashed changes
           );
         }
       }
 
       if (error) {
         // Backward-compat: if the user exists in Prisma (old auth), allow them to
+<<<<<<< Updated upstream
         // "upgrade" by creating a Supabase Auth account with the same password.
+=======
+        // "upgrade" by creating a confirmed Supabase Auth account with the same password.
+>>>>>>> Stashed changes
         const legacyUser = await prisma.user.findUnique({
           where: { email },
           select: { name: true, passwordHash: true },
@@ -145,6 +160,7 @@ export async function POST(request: NextRequest) {
           const ok = await bcrypt.compare(password, legacyUser.passwordHash).catch(() => false);
 
           if (ok) {
+<<<<<<< Updated upstream
             if (isDevEmailAuthBypassEnabled()) {
               // TODO: Re-enable email verification/reset before production.
               const supabaseAdmin = createSupabaseAdminClient();
@@ -224,6 +240,59 @@ export async function POST(request: NextRequest) {
           },
           request,
         );
+=======
+            if (!shouldBypassEmailVerificationForDev()) {
+              return redirectWithError(
+                request,
+                "Direct signup is temporarily development-only. Disable Supabase email confirmation before production.",
+                returnTo,
+              );
+            }
+
+            // TODO: Re-enable email verification/reset before production.
+            const supabaseAdmin = createSupabaseAdminClient();
+            const { error: createError } = await supabaseAdmin.auth.admin.createUser({
+              email,
+              email_confirm: true,
+              password,
+              user_metadata: {
+                name: legacyUser.name,
+              },
+            });
+
+            if (createError?.message?.toLowerCase().includes("already")) {
+              return redirectWithError(
+                request,
+                "This email already exists. Try logging in again.",
+                returnTo,
+              );
+            }
+
+            if (createError) {
+              return redirectWithError(
+                request,
+                createError.message || "Could not create account.",
+                returnTo,
+              );
+            }
+
+            const retry = await supabase.auth.signInWithPassword({
+              email,
+              password,
+            });
+
+            if (retry.error) {
+              return redirectWithError(request, retry.error.message || "Could not sign in.", returnTo);
+            }
+
+            signInData = retry.data;
+            error = null;
+          }
+        }
+      }
+
+      if (error) {
+>>>>>>> Stashed changes
         return redirectWithError(request, "Invalid email or password.", returnTo);
       }
     }
@@ -250,6 +319,7 @@ export async function POST(request: NextRequest) {
     }
 
     // TODO: Re-enable email verification/reset before production.
+<<<<<<< Updated upstream
     if (!authenticatedUser.email_confirmed_at && !isDevEmailAuthBypassEnabled()) {
       await supabase.auth.signOut();
       await auditSecurityEvent(
@@ -268,6 +338,14 @@ export async function POST(request: NextRequest) {
           request.url,
         ),
         { status: 303 },
+=======
+    if (!authenticatedUser.email_confirmed_at && !shouldBypassEmailVerificationForDev()) {
+      await supabase.auth.signOut();
+      return redirectWithError(
+        request,
+        "Email verification is disabled for development. Confirm this account before production login.",
+        returnTo,
+>>>>>>> Stashed changes
       );
     }
 
@@ -309,7 +387,11 @@ export async function POST(request: NextRequest) {
     if (message.includes("SUPABASE_SERVICE_ROLE_KEY")) {
       return redirectWithError(
         request,
+<<<<<<< Updated upstream
         "Development email bypass needs SUPABASE_SERVICE_ROLE_KEY on the server.",
+=======
+        "Direct auth needs SUPABASE_SERVICE_ROLE_KEY on the server.",
+>>>>>>> Stashed changes
         returnTo,
       );
     }

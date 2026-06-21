@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma, UserStatus } from "@/lib/generated/prisma/client";
+<<<<<<< Updated upstream
 import { isDevEmailAuthBypassEnabled } from "@/lib/auth-dev-flags";
+=======
+import { shouldBypassEmailVerificationForDev } from "@/lib/auth-dev-flags";
+>>>>>>> Stashed changes
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export function normalizeEmail(email: string) {
@@ -65,7 +69,11 @@ export async function getAuthState(options?: { includeImage?: boolean }): Promis
     });
 
     // TODO: Re-enable email verification/reset before production.
+<<<<<<< Updated upstream
     if (!data.user.email_confirmed_at && !isDevEmailAuthBypassEnabled()) {
+=======
+    if (!data.user.email_confirmed_at && !shouldBypassEmailVerificationForDev()) {
+>>>>>>> Stashed changes
       return { status: "unverified", email };
     }
 

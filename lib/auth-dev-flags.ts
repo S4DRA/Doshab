@@ -1,5 +1,6 @@
 import "server-only";
 
+<<<<<<< Updated upstream
 function isEnabled(value: string | undefined) {
   return value === "true" || value === "1";
 }
@@ -22,3 +23,9 @@ export function isLegacyEmailPasswordResetEnabled() {
   // TODO: Re-enable email verification/reset before production.
   return isNonProductionRuntime() && isEnabled(process.env.ENABLE_EMAIL_PASSWORD_RESET);
 }
+=======
+export function shouldBypassEmailVerificationForDev() {
+  // TODO: Re-enable email verification/reset before production.
+  return process.env.NODE_ENV !== "production";
+}
+>>>>>>> Stashed changes

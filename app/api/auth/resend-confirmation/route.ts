@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+<<<<<<< Updated upstream
 import { isDevEmailAuthBypassEnabled } from "@/lib/auth-dev-flags";
 import { normalizeEmail } from "@/lib/auth";
 import { rateLimit } from "@/lib/security/rate-limit";
@@ -123,4 +124,17 @@ export async function POST(request: NextRequest) {
       email,
     );
   }
+=======
+export async function POST(request: NextRequest) {
+  // TODO: Re-enable email verification/reset before production.
+  return NextResponse.redirect(
+    new URL(
+      `/login?message=${encodeURIComponent(
+        "Email verification is disabled for development. Log in to continue.",
+      )}`,
+      request.url,
+    ),
+    { status: 303 },
+  );
+>>>>>>> Stashed changes
 }
