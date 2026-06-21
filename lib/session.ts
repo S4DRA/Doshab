@@ -2,6 +2,7 @@ import "server-only";
 
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import type { NextResponse } from "next/server";
 
 export const sessionCookieName = "doshab_session";
 
@@ -49,6 +50,21 @@ export async function setSessionCookie(userId: string) {
   const cookieStore = await cookies();
 
   cookieStore.set(sessionCookieName, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    expires: new Date(Date.now() + sessionDurationMs),
+  });
+}
+
+export async function setSessionCookieOnResponse(
+  response: NextResponse,
+  userId: string,
+) {
+  const token = await createSessionToken({ userId });
+
+  response.cookies.set(sessionCookieName, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

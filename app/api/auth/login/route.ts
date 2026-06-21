@@ -7,10 +7,7 @@ import { normalizeEmail } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { auditSecurityEvent } from "@/lib/security/permissions";
-import {
-  confirmSupabaseUserEmailForDev,
-  createSupabaseAdminClient,
-} from "@/lib/supabase/admin";
+import { setSessionCookieOnResponse } from "@/lib/session";
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
 
 const loginSchema = z.object({
@@ -71,27 +68,21 @@ export async function POST(request: NextRequest) {
     });
     const supabase = createSupabaseRouteClient(request, response);
 
-    let { data: signInData, error } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-
-    if (error?.code === "email_not_confirmed" && shouldBypassEmailVerificationForDev()) {
-      // TODO: Re-enable email verification/reset before production.
-      await confirmSupabaseUserEmailForDev(email);
-      const retry = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      signInData = retry.data;
-      error = retry.error;
-    }
+    let error = signInError;
 
     if (error) {
       const legacyUser = await prisma.user.findUnique({
-        where: { email },
-        select: { name: true, passwordHash: true },
+        where: {
+          email,
+        },
+        select: {
+          id: true,
+          passwordHash: true,
+        },
       });
 
       if (legacyUser?.passwordHash) {
@@ -106,43 +97,7 @@ export async function POST(request: NextRequest) {
             );
           }
 
-          // TODO: Re-enable email verification/reset before production.
-          const supabaseAdmin = createSupabaseAdminClient();
-          const { error: createError } = await supabaseAdmin.auth.admin.createUser({
-            email,
-            email_confirm: true,
-            password,
-            user_metadata: {
-              name: legacyUser.name,
-            },
-          });
-
-          if (createError?.message?.toLowerCase().includes("already")) {
-            return redirectWithError(
-              request,
-              "This email already exists. Try logging in again.",
-              returnTo,
-            );
-          }
-
-          if (createError) {
-            return redirectWithError(
-              request,
-              createError.message || "Could not create account.",
-              returnTo,
-            );
-          }
-
-          const retry = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-
-          if (retry.error) {
-            return redirectWithError(request, retry.error.message || "Could not sign in.", returnTo);
-          }
-
-          signInData = retry.data;
+          await setSessionCookieOnResponse(response, legacyUser.id);
           error = null;
         }
       }
@@ -168,15 +123,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!authenticatedUser) {
-      await auditSecurityEvent(
-        "auth.login.failure",
-        {
-          email,
-          reason: "missing_authenticated_user",
-        },
-        request,
-      );
-      return redirectWithError(request, "Authentication is temporarily unavailable.", returnTo);
+      return response;
     }
 
     // TODO: Re-enable email verification/reset before production.
@@ -221,14 +168,6 @@ export async function POST(request: NextRequest) {
 
     if (message.includes("Missing NEXT_PUBLIC_SUPABASE_URL")) {
       return redirectWithError(request, "Supabase Auth is not configured on this server.", returnTo);
-    }
-
-    if (message.includes("SUPABASE_SERVICE_ROLE_KEY")) {
-      return redirectWithError(
-        request,
-        "Direct auth needs SUPABASE_SERVICE_ROLE_KEY on the server.",
-        returnTo,
-      );
     }
 
     console.error("Login failed", error);

@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 import { normalizeEmail } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { setSessionCookieOnResponse } from "@/lib/session";
 import { createSupabaseRouteClient } from "@/lib/supabase/server";
 
 const registerSchema = z.object({
@@ -16,16 +19,6 @@ function redirectWithError(request: NextRequest, error: string) {
     new URL(`/register?error=${encodeURIComponent(error)}`, request.url),
     { status: 303 },
   );
-}
-
-function redirectToLogin(request: NextRequest, params: Record<string, string>) {
-  const url = new URL("/login", request.url);
-
-  Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.set(key, value);
-  });
-
-  return NextResponse.redirect(url, { status: 303 });
 }
 
 function getRequestOrigin(request: NextRequest) {
@@ -68,6 +61,22 @@ export async function POST(request: NextRequest) {
   const password = parsed.data.password;
 
   try {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingUser) {
+      return redirectWithError(
+        request,
+        "This account already exists. Log in with the existing password.",
+      );
+    }
+
     const response = NextResponse.redirect(new URL("/dashboard", request.url), {
       status: 303,
     });
@@ -92,9 +101,10 @@ export async function POST(request: NextRequest) {
       });
 
       if (existingSignIn.error?.code === "email_not_confirmed") {
-        return redirectToLogin(request, {
-          message: "Account exists, but the email is not confirmed yet. Check your inbox.",
-        });
+        return redirectWithError(
+          request,
+          "This account already exists. Log in with the existing password.",
+        );
       } else if (existingSignIn.error) {
         return redirectWithError(
           request,
@@ -105,14 +115,26 @@ export async function POST(request: NextRequest) {
       return response;
     }
 
+    const passwordHash = await bcrypt.hash(password, 12);
+
     if (signUpError) {
       return redirectWithError(request, signUpError.message || "Sign up failed.");
     }
 
+    const prismaUser = await prisma.user.create({
+      data: {
+        email,
+        name,
+        passwordHash,
+      },
+      select: {
+        id: true,
+      },
+    });
+
     if (!signUpData.session) {
-      return redirectToLogin(request, {
-        message: "Account created. Check your email to confirm it, then log in.",
-      });
+      await setSessionCookieOnResponse(response, prismaUser.id);
+      return response;
     }
 
     if (signUpData.user) {
