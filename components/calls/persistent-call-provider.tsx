@@ -201,6 +201,10 @@ function clampParticipantVolume(value: unknown) {
   return Math.min(Math.max(Math.round(value), 0), 200);
 }
 
+function getMediaElementVolume(value: number) {
+  return Math.min(Math.max(value / 100, 0), 1);
+}
+
 function readParticipantVoicePreferences() {
   if (typeof window === "undefined") {
     return {};
@@ -525,7 +529,9 @@ function ParticipantAudioRenderer() {
     <div style={{ display: "none" }}>
       {audioTracks.map((track) => {
         const preference = getPreference(track.participant.identity);
-        const volume = preference.locallyMuted ? 0 : preference.localVolume / 100;
+        const volume = preference.locallyMuted
+          ? 0
+          : getMediaElementVolume(preference.localVolume);
 
         return (
           <AudioTrack
