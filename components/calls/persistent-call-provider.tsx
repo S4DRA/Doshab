@@ -16,6 +16,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import {
+  Component,
   createContext,
   useCallback,
   useContext,
@@ -80,6 +81,86 @@ const PersistentCallContext = createContext<PersistentCallContextValue | null>(n
 const ParticipantVoicePreferencesContext =
   createContext<ParticipantVoicePreferencesContextValue | null>(null);
 
+type CallRenderErrorBoundaryProps = {
+  boundaryKey: string;
+  children: React.ReactNode;
+  onEnd: () => void;
+};
+
+type CallRenderErrorBoundaryState = {
+  error: Error | null;
+  resetVersion: number;
+};
+
+class CallRenderErrorBoundary extends Component<
+  CallRenderErrorBoundaryProps,
+  CallRenderErrorBoundaryState
+> {
+  state: CallRenderErrorBoundaryState = {
+    error: null,
+    resetVersion: 0,
+  };
+
+  static getDerivedStateFromError(error: Error): Partial<CallRenderErrorBoundaryState> {
+    return { error };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error("Voice room render failed", error);
+  }
+
+  componentDidUpdate(previousProps: CallRenderErrorBoundaryProps) {
+    if (previousProps.boundaryKey !== this.props.boundaryKey && this.state.error) {
+      this.setState({ error: null, resetVersion: 0 });
+    }
+  }
+
+  render() {
+    if (!this.state.error) {
+      return this.state.resetVersion ? (
+        <div key={this.state.resetVersion} className="contents">
+          {this.props.children}
+        </div>
+      ) : (
+        this.props.children
+      );
+    }
+
+    return (
+      <div className="dashboard-content-frame dashboard-density grid min-h-0 w-full min-w-0 place-items-center overflow-hidden bg-[#050705] px-4 py-8">
+        <section className="app-panel w-full max-w-lg p-5 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF5F25]">
+            Voice room stopped rendering
+          </p>
+          <h2 className="mt-3 text-2xl font-bold text-white">Leave and rejoin the channel</h2>
+          <p className="mt-3 text-sm leading-6 text-slate-300">
+            The active call UI hit a client-side rendering problem. Leaving clears the stuck room state so the channel can open normally again.
+          </p>
+          <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <button
+              className="app-button-primary h-11 rounded-lg px-5 text-sm font-bold transition"
+              onClick={this.props.onEnd}
+              type="button"
+            >
+              Leave call
+            </button>
+            <button
+              className="app-button-secondary h-11 rounded-lg px-5 text-sm font-bold transition"
+              onClick={() => this.setState((state) => ({
+                error: null,
+                resetVersion: state.resetVersion + 1,
+              }))}
+              type="button"
+            >
+              Retry call UI
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+}
+
 function readRememberedEndedCallIds() {
   if (typeof window === "undefined") {
     return new Set<string>();
@@ -118,6 +199,10 @@ function clampParticipantVolume(value: unknown) {
   }
 
   return Math.min(Math.max(Math.round(value), 0), 200);
+}
+
+function getMediaElementVolume(value: number) {
+  return Math.min(Math.max(value / 100, 0), 1);
 }
 
 function readParticipantVoicePreferences() {
@@ -378,32 +463,37 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
   return (
     <PersistentCallContext.Provider value={value}>
       {activeCall ? (
-        <LiveKitRoom
-          audio={getLiveKitAudioOptions(activeVoiceSettings)}
-          className="contents"
-          connect
-          data-lk-theme="default"
-          key={activeCall.id}
-          onDisconnected={endCall}
-          options={getLiveKitRoomOptions(activeVoiceSettings)}
-          serverUrl={activeCall.livekitUrl}
-          token={activeCall.token}
-          video={activeCall.kind === "group"}
+        <CallRenderErrorBoundary
+          boundaryKey={activeCall.id}
+          onEnd={endCall}
         >
-          <ParticipantVoicePreferencesProvider>
-            {activeVoiceSettings.joinDeafened ? null : <ParticipantAudioRenderer />}
-            {children}
-            {showDock ? (
-              <ActiveCallDock
-                expanded={expanded}
-                onEnd={endCall}
-                onToggle={() => setExpanded((current) => !current)}
-                onUnpop={() => setPoppedOut(false)}
-                session={activeCall}
-              />
-            ) : null}
-          </ParticipantVoicePreferencesProvider>
-        </LiveKitRoom>
+          <LiveKitRoom
+            audio={getLiveKitAudioOptions(activeVoiceSettings)}
+            className="contents"
+            connect
+            data-lk-theme="default"
+            key={activeCall.id}
+            onDisconnected={endCall}
+            options={getLiveKitRoomOptions(activeVoiceSettings)}
+            serverUrl={activeCall.livekitUrl}
+            token={activeCall.token}
+            video={activeCall.kind === "group"}
+          >
+            <ParticipantVoicePreferencesProvider>
+              {activeVoiceSettings.joinDeafened ? null : <ParticipantAudioRenderer />}
+              {children}
+              {showDock ? (
+                <ActiveCallDock
+                  expanded={expanded}
+                  onEnd={endCall}
+                  onToggle={() => setExpanded((current) => !current)}
+                  onUnpop={() => setPoppedOut(false)}
+                  session={activeCall}
+                />
+              ) : null}
+            </ParticipantVoicePreferencesProvider>
+          </LiveKitRoom>
+        </CallRenderErrorBoundary>
       ) : (
         children
       )}
@@ -439,7 +529,9 @@ function ParticipantAudioRenderer() {
     <div style={{ display: "none" }}>
       {audioTracks.map((track) => {
         const preference = getPreference(track.participant.identity);
-        const volume = preference.locallyMuted ? 0 : preference.localVolume / 100;
+        const volume = preference.locallyMuted
+          ? 0
+          : getMediaElementVolume(preference.localVolume);
 
         return (
           <AudioTrack

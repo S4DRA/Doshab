@@ -1,11 +1,21 @@
 "use client";
 
+import Link from "next/link";
+import { useEffect } from "react";
+
 type DashboardErrorProps = {
   error: Error & { digest?: string };
-  reset: () => void;
+  reset?: () => void;
+  unstable_retry?: () => void;
 };
 
-export default function DashboardError({ error, reset }: DashboardErrorProps) {
+export default function DashboardError({ error, reset, unstable_retry }: DashboardErrorProps) {
+  useEffect(() => {
+    console.error("Dashboard route failed", error);
+  }, [error]);
+
+  const retry = unstable_retry ?? reset;
+
   return (
     <main className="grid min-h-[100dvh] place-items-center bg-[#050705] px-4 py-8 pb-[calc(var(--dashboard-bottom-nav-height)+1rem)] text-white sm:pb-8 sm:pl-20">
       <section className="app-panel w-full max-w-lg p-5">
@@ -22,13 +32,22 @@ export default function DashboardError({ error, reset }: DashboardErrorProps) {
             Digest: {error.digest}
           </p>
         ) : null}
-        <button
-          className="app-button-primary mt-5 h-11 rounded-xl px-5 text-sm font-bold transition"
-          onClick={reset}
-          type="button"
-        >
-          Retry dashboard
-        </button>
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+          <button
+            className="app-button-primary h-11 rounded-xl px-5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={!retry}
+            onClick={retry}
+            type="button"
+          >
+            Retry dashboard
+          </button>
+          <Link
+            className="app-button-secondary inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-bold transition"
+            href="/dashboard"
+          >
+            Back to dashboard
+          </Link>
+        </div>
       </section>
     </main>
   );
