@@ -27,6 +27,8 @@ import {
 } from "react";
 
 import { cn } from "@/lib/utils";
+import { MusicButton } from "@/components/music/music-button";
+import { MusicSessionProvider } from "@/components/music/music-session-provider";
 import { defaultVoiceSettings, type VoiceSettings } from "@/lib/voice-settings";
 
 const endedCallIdsStorageKey = "palaver:ended-call-ids";
@@ -480,17 +482,19 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
             video={activeCall.kind === "group"}
           >
             <ParticipantVoicePreferencesProvider>
-              {activeVoiceSettings.joinDeafened ? null : <ParticipantAudioRenderer />}
-              {children}
-              {showDock ? (
-                <ActiveCallDock
-                  expanded={expanded}
-                  onEnd={endCall}
-                  onToggle={() => setExpanded((current) => !current)}
-                  onUnpop={() => setPoppedOut(false)}
-                  session={activeCall}
-                />
-              ) : null}
+              <MusicSessionProvider channelId={activeCall.kind === "group" ? activeCall.id.slice("group:".length) : null}>
+                {activeVoiceSettings.joinDeafened ? null : <ParticipantAudioRenderer />}
+                {children}
+                {showDock ? (
+                  <ActiveCallDock
+                    expanded={expanded}
+                    onEnd={endCall}
+                    onToggle={() => setExpanded((current) => !current)}
+                    onUnpop={() => setPoppedOut(false)}
+                    session={activeCall}
+                  />
+                ) : null}
+              </MusicSessionProvider>
             </ParticipantVoicePreferencesProvider>
           </LiveKitRoom>
         </CallRenderErrorBoundary>
@@ -724,6 +728,7 @@ function ActiveCallDock({
           </div>
           <div className="overflow-visible border-t border-white/10 px-3 py-3">
             <div className="flex flex-wrap items-center justify-center gap-2">
+              {session.kind === "group" ? <MusicButton /> : null}
               <ControlBar
                 className="!w-auto !border-0 !bg-transparent !p-0"
                 controls={{
@@ -812,6 +817,7 @@ export function PersistentCallSurface({
       </div>
       <div className="mt-2 shrink-0 overflow-visible rounded-lg border border-white/10 bg-[#0b0f0b] px-2 py-2">
         <div className="flex flex-wrap items-center justify-center gap-2">
+          {activeCall.kind === "group" ? <MusicButton /> : null}
           <ControlBar
             className="!w-auto !border-0 !bg-transparent !p-0"
             controls={{
