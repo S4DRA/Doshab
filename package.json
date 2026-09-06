@@ -20,8 +20,8 @@
   "dependencies": {
     "@livekit/components-react": "^2.9.21",
     "@livekit/components-styles": "^1.2.0",
-    "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "^7.8.0",
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.2",
     "@types/web-push": "^3.6.4",
@@ -29,7 +29,7 @@
     "jose": "^6.2.3",
     "livekit-client": "^2.19.0",
     "livekit-server-sdk": "^2.15.3",
-    "next": "16.2.6",
+    "next": "16.3.4",
     "pg": "^8.21.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -43,15 +43,21 @@
     "@types/react-dom": "^19",
     "dotenv": "^17.4.2",
     "eslint": "^9",
-    "eslint-config-next": "16.2.6",
-    "prisma": "^7.8.0",
+    "eslint-config-next": "16.3.4",
+    "prisma": "7.10.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
   "overrides": {
-    "@hono/node-server": "1.19.13",
-    "hono": "4.12.26",
-    "js-yaml": "4.2.0",
-    "postcss": "8.5.15"
+    "@hono/node-server": "1.19.17",
+    "hono": "4.13.7",
+    "js-yaml": "4.3.2",
+    "postcss": "8.5.28",
+    "@prisma/config": {
+      "deepmerge-ts": "8.0.2"
+    },
+    "prisma": {
+      "mysql2": "3.24.3"
+    }
   }
 }
