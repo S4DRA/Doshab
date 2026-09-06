@@ -12,6 +12,14 @@ This file summarizes the backend security baseline currently implemented for VAL
 - CI/CD hardening with lint/build/audit, Trivy, Gitleaks, Dependabot, and protected `main`.
 - Backup and recovery runbook plus daily backup workflow.
 
+## Dependency maintenance
+
+Next.js and its ESLint configuration are aligned at 16.3.4. Prisma CLI, client, and PostgreSQL adapter are pinned together at 7.10.0.
+
+The root overrides retain patched Hono, Node adapter, YAML, and PostCSS releases. Two overrides are scoped to Prisma tooling: `@prisma/config` uses `deepmerge-ts` 8.0.2, and `prisma` uses `mysql2` 3.24.3. Remove these scoped overrides when upstream pins patched versions. The merge override addresses [GHSA-ggr8-5vv4-36mx](https://github.com/advisories/GHSA-ggr8-5vv4-36mx); version 8 changes Map merging, but VAL's Prisma configuration contains plain objects and strings. Verify config loading, schema validation, client generation, and the production build when changing this override.
+
+Run the full `npm audit --audit-level=moderate`; do not suppress development dependencies or weaken CI thresholds to pass the release check. Avoid `npm audit fix --force`, which can suggest a Prisma major downgrade.
+
 ## Server-Only Environment Variables
 
 Keep these out of browser bundles and committed files:
