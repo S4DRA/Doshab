@@ -2,6 +2,7 @@
 
 import {
   AudioTrack,
+  StartAudio,
   ControlBar,
   DisconnectButton,
   LiveKitRoom,
@@ -26,6 +27,8 @@ import {
   useState,
 } from "react";
 
+import { StreamControls, StreamControlsProvider } from "@/components/calls/stream-controls";
+import { participantAudioVolume } from "@/lib/participant-audio";
 import { cn } from "@/lib/utils";
 import { MusicButton } from "@/components/music/music-button";
 import { MusicSessionProvider } from "@/components/music/music-session-provider";
@@ -36,12 +39,16 @@ const participantVoicePreferencesStorageKey = "val:participant-voice-preferences
 const maxRememberedEndedCalls = 50;
 const defaultParticipantVoicePreference = {
   localVolume: 100,
+  streamVolume: 100,
+  streamMuted: false,
   locallyMuted: false,
 };
 
 type ParticipantVoicePreference = {
   targetUserId: string;
   localVolume: number;
+  streamVolume: number;
+  streamMuted: boolean;
   locallyMuted: boolean;
 };
 
@@ -200,11 +207,7 @@ function clampParticipantVolume(value: unknown) {
     return defaultParticipantVoicePreference.localVolume;
   }
 
-  return Math.min(Math.max(Math.round(value), 0), 200);
-}
-
-function getMediaElementVolume(value: number) {
-  return Math.min(Math.max(value / 100, 0), 1);
+  return Math.min(Math.max(Math.round(value), 0), 100);
 }
 
 function readParticipantVoicePreferences() {
@@ -229,6 +232,8 @@ function readParticipantVoicePreferences() {
       preferences[targetUserId] = {
         targetUserId,
         localVolume: clampParticipantVolume(item.localVolume),
+        streamVolume: clampParticipantVolume(item.streamVolume),
+        streamMuted: item.streamMuted === true,
         locallyMuted: Boolean(item.locallyMuted),
       };
       return preferences;
@@ -283,6 +288,7 @@ function ParticipantVoicePreferencesProvider({ children }: { children: React.Rea
           localVolume: patch.localVolume === undefined
             ? existing.localVolume
             : clampParticipantVolume(patch.localVolume),
+          streamVolume: patch.streamVolume === undefined ? existing.streamVolume : clampParticipantVolume(patch.streamVolume),
           locallyMuted: patch.locallyMuted === undefined
             ? existing.locallyMuted
             : patch.locallyMuted,
@@ -482,19 +488,21 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
             video={activeCall.kind === "group"}
           >
             <ParticipantVoicePreferencesProvider>
-              <MusicSessionProvider channelId={activeCall.kind === "group" ? activeCall.id.slice("group:".length) : null}>
-                {activeVoiceSettings.joinDeafened ? null : <ParticipantAudioRenderer />}
-                {children}
-                {showDock ? (
-                  <ActiveCallDock
-                    expanded={expanded}
-                    onEnd={endCall}
-                    onToggle={() => setExpanded((current) => !current)}
-                    onUnpop={() => setPoppedOut(false)}
-                    session={activeCall}
-                  />
-                ) : null}
-              </MusicSessionProvider>
+              <StreamControlsProvider>
+                <MusicSessionProvider channelId={activeCall.kind === "group" ? activeCall.id.slice("group:".length) : null}>
+                  {activeVoiceSettings.joinDeafened ? null : <ParticipantAudioRenderer />}
+                  {children}
+                  {showDock ? (
+                    <ActiveCallDock
+                      expanded={expanded}
+                      onEnd={endCall}
+                      onToggle={() => setExpanded((current) => !current)}
+                      onUnpop={() => setPoppedOut(false)}
+                      session={activeCall}
+                    />
+                  ) : null}
+                </MusicSessionProvider>
+              </StreamControlsProvider>
             </ParticipantVoicePreferencesProvider>
           </LiveKitRoom>
         </CallRenderErrorBoundary>
@@ -533,9 +541,7 @@ function ParticipantAudioRenderer() {
     <div style={{ display: "none" }}>
       {audioTracks.map((track) => {
         const preference = getPreference(track.participant.identity);
-        const volume = preference.locallyMuted
-          ? 0
-          : getMediaElementVolume(preference.localVolume);
+        const volume = participantAudioVolume(track.source, preference);
 
         return (
           <AudioTrack
@@ -734,7 +740,7 @@ function ActiveCallDock({
                 controls={{
                   microphone: true,
                   camera: session.kind === "group",
-                  screenShare: true,
+                  screenShare: false,
                   chat: false,
                   settings: false,
                   leave: false,
@@ -742,6 +748,8 @@ function ActiveCallDock({
                 saveUserChoices={false}
                 variation="minimal"
               />
+              <StartAudio label="Enable call audio" />
+              <StreamControls />
               <DisconnectButton
                 className="app-button-danger h-11 rounded-lg px-3 text-xs font-semibold transition sm:h-10"
                 onClick={onEnd}
@@ -823,7 +831,7 @@ export function PersistentCallSurface({
             controls={{
               microphone: true,
               camera: activeCall.kind === "group",
-              screenShare: true,
+              screenShare: false,
               chat: false,
               settings: false,
               leave: false,
@@ -831,6 +839,8 @@ export function PersistentCallSurface({
             saveUserChoices={false}
             variation="minimal"
           />
+          <StartAudio label="Enable call audio" />
+          <StreamControls />
           <DisconnectButton
             className="app-button-danger h-11 rounded-lg px-3 text-xs font-semibold transition sm:h-10"
             onClick={endCall}
@@ -1136,7 +1146,7 @@ function ParticipantVoiceControlsSection() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">
-            Participant Voice Controls
+            Participant Audio Controls
           </p>
           <p className="mt-1 text-[11px] text-slate-400">
             Local listening controls. Only changes what you hear.
@@ -1215,7 +1225,7 @@ export function ParticipantVoiceControlsPanel({
         type="button"
       />
       <div
-        className="fixed inset-x-3 bottom-3 z-[80] rounded-xl border border-[#FF5F25]/30 bg-[#080b10] p-4 text-left shadow-2xl shadow-black/60 sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-[calc(100%+0.5rem)] sm:w-80"
+        className="fixed inset-x-3 bottom-3 z-[80] max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-xl border border-[#FF5F25]/30 bg-[#080b10] p-4 text-left shadow-2xl shadow-black/60 sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-[calc(100%+0.5rem)] sm:w-80"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
@@ -1242,18 +1252,18 @@ export function ParticipantVoiceControlsPanel({
         <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.035] p-3">
           <div className="mb-2 flex items-center justify-between gap-3">
             <label className="text-xs font-semibold text-white" htmlFor={`participant-volume-${participant.identity}`}>
-              Local volume
+              Voice volume
             </label>
             <span className="text-xs font-semibold text-[#FFD400]">
               {preference.locallyMuted ? "Muted" : `${preference.localVolume}%`}
             </span>
           </div>
           <input
-            aria-label={`Local volume for ${label}`}
+            aria-label={`Voice volume for ${label}`}
             className="voice-settings-range w-full"
             disabled={preference.locallyMuted}
             id={`participant-volume-${participant.identity}`}
-            max="200"
+            max="100"
             min="0"
             onChange={(event) => {
               updatePreference(participant.identity, {
@@ -1281,7 +1291,7 @@ export function ParticipantVoiceControlsPanel({
             }}
             type="button"
           >
-            {preference.locallyMuted ? "Unmute for me" : "Mute for me"}
+            {preference.locallyMuted ? "Unmute voice" : "Mute voice"}
           </button>
           <button
             className="h-11 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-xs font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/[0.07] active:scale-[0.98]"
@@ -1290,6 +1300,17 @@ export function ParticipantVoiceControlsPanel({
           >
             Reset
           </button>
+        </div>
+
+        <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.035] p-3">
+          <div className="flex justify-between text-xs font-semibold text-white">
+            Stream audio <span className="text-[#FFD400]">{preference.streamMuted ? "Muted" : `${preference.streamVolume}%`}</span>
+          </div>
+          <input aria-label={`Stream audio volume for ${label}`} className="voice-settings-range mt-3 w-full" disabled={preference.streamMuted} min={0} max={100} step={1} type="range" value={preference.streamVolume} onChange={(event) => updatePreference(participant.identity, { streamVolume: Number(event.target.value) })} />
+          <button aria-pressed={preference.streamMuted} className="app-button-secondary mt-2 h-10 w-full rounded-lg text-xs font-semibold" type="button" onClick={() => updatePreference(participant.identity, { streamMuted: !preference.streamMuted })}>
+            {preference.streamMuted ? "Unmute stream" : "Mute stream"}
+          </button>
+          <p className="mt-2 text-[11px] text-slate-400">Changes only shared sound. Voice volume stays separate.</p>
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
@@ -1476,6 +1497,8 @@ function getLiveKitAudioOptions(settings: VoiceSettings) {
 
 function getLiveKitRoomOptions(settings: VoiceSettings) {
   return {
+    adaptiveStream: true,
+    dynacast: true,
     audioOutput: settings.outputDeviceId
       ? {
           deviceId: settings.outputDeviceId,
