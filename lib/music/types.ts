@@ -8,6 +8,7 @@ export type MusicTrack = {
   artworkMirrors: string[];
   duration: number;
   genre: string;
+  taste?: { genres: string[]; moods: string[]; language?: string };
   permalink: string;
 };
 

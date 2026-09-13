@@ -8,7 +8,7 @@ import ts from "typescript";
 
 // Compile the production reducer, not a second implementation. Fixtures never enter VAL's database.
 const directory = mkdtempSync(path.join(tmpdir(), "val-music-tests-"));
-for (const name of ["types", "state", "metadata", "refresh"]) {
+for (const name of ["types", "state", "metadata", "refresh", "recommendations"]) {
   writeFileSync(path.join(directory, `${name}.js`), ts.transpileModule(readFileSync(new URL(`../lib/music/${name}.ts`, import.meta.url), "utf8"),
     { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText);
 }
@@ -17,10 +17,12 @@ const { emptySession, expectedPosition } = require(path.join(directory, "types.j
 const { applyCommand, reconcileDJ } = require(path.join(directory, "state.js"));
 const { musicSessionFromMetadata } = require(path.join(directory, "metadata.js"));
 const { coalesceMusicRefresh } = require(path.join(directory, "refresh.js"));
+const { musicTaste, artistIdentity, discoveryQueries, selectAutoplayTrack } = require(path.join(directory, "recommendations.js"));
 const metadataFile = path.resolve("lib/music/providers/youtube-metadata.ts");
 const metadataModule = new Module(metadataFile);
 metadataModule.filename = metadataFile;
 metadataModule.paths = Module._nodeModulePaths(path.dirname(metadataFile));
+metadataModule.require = (id) => id === "../recommendations" ? require(path.join(directory, "recommendations.js")) : require(id);
 metadataModule._compile(ts.transpileModule(readFileSync(metadataFile, "utf8"),
   { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText, metadataFile);
 const { youtubeVideoId, youtubeDuration, normalizeYouTubeVideo } = metadataModule.exports;
@@ -175,4 +177,71 @@ test("non-music, live, private, non-embeddable, and restricted videos are exclud
     (v) => { v.contentDetails.regionRestriction = { allowed: ["US"] }; },
   ];
   for (const mutate of variants) { const video = youtubeVideo(); mutate(video); assert.equal(normalizeYouTubeVideo(video, "TR"), null); }
+});
+
+test("taste extracts specific genres and moods, with topic fallback and bounded metadata", () => {
+  assert.deepEqual(musicTaste(["indie rock", "chill", "official video"], ["https://en.wikipedia.org/wiki/Pop_music"], "en-US"), { genres: ["indie rock"], moods: ["chill"], language: "en-us" });
+  assert.deepEqual(musicTaste([], ["https://en.wikipedia.org/wiki/Hip_hop_music"]), { genres: ["hip hop"], moods: [] });
+  assert.deepEqual(musicTaste(["popular", "household", "artist name"], []), { genres: [], moods: [] });
+  const video = youtubeVideo();
+  video.snippet.tags = ["deep house", "dance"];
+  const result = normalizeYouTubeVideo(video);
+  assert.equal(result.genre, "deep house");
+  assert.deepEqual(result.taste.moods, ["dance"]);
+});
+
+const recommendation = (id, artist, genre = "indie rock") => ({ ...track(id), title: `${artist} - Song ${id}`, artist, taste: { genres: [genre], moods: ["chill"] } });
+
+test("discovery searches musical style without restricting to the singer or channel", () => {
+  const seed = recommendation("seed", "Singer");
+  for (const query of discoveryQueries(seed)) { assert.match(query, /indie rock/); assert.doesNotMatch(query, /Singer/); }
+  assert.match(discoveryQueries({ ...seed, taste: undefined, genre: "Music" })[0], /similar artists/);
+  assert.equal(artistIdentity({ ...seed, title: "Song", artist: "SingerVEVO" }), "singer");
+  assert.equal(artistIdentity({ ...seed, title: "Song", artist: "SingerOfficialVEVO" }), "singer");
+  assert.equal(artistIdentity({ ...seed, title: "Singer – Song", artist: "Record label" }), "singer");
+});
+
+test("autoplay favors different artists while allowing occasional same-artist picks", () => {
+  const seed = recommendation("seed", "Singer");
+  const same = recommendation("same", "Singer"), different = recommendation("different", "Another artist");
+  assert.equal(selectAutoplayTrack(seed, [same, different], [], () => 0.2).id, "different");
+  assert.equal(selectAutoplayTrack(seed, [same, different], [], () => 0.95).id, "same");
+  let diverse = 0;
+  for (let i = 0; i < 100; i++) if (selectAutoplayTrack(seed, [same, different], [], () => i / 100).id === "different") diverse++;
+  assert.equal(diverse, 85);
+});
+
+test("autoplay excludes history, current song versions, duplicate results, and long mixes", () => {
+  const seed = recommendation("seed", "Singer");
+  const played = recommendation("played", "Other");
+  const alternate = { ...seed, id: "alternate", title: `${seed.title} (Official Audio)` };
+  const long = { ...recommendation("long", "Other"), duration: 7200 };
+  assert.equal(selectAutoplayTrack(seed, [seed, played, alternate, long], ["played"]), null);
+  const valid = recommendation("valid", "New singer");
+  assert.equal(selectAutoplayTrack(seed, [valid, valid], [], () => 0.99).id, "valid");
+});
+
+test("known musical matches outrank unrelated search results; empty pools stop safely", () => {
+  const seed = recommendation("seed", "Singer");
+  const match = recommendation("match", "Other"), unrelated = recommendation("unrelated", "DJ", "techno");
+  assert.equal(selectAutoplayTrack(seed, [unrelated, match], [], () => 0).id, "match");
+  assert.equal(selectAutoplayTrack(seed, [], []), null);
+  assert.equal(selectAutoplayTrack(seed, [match], [match.id]), null);
+});
+
+test("language hints preserve regional discovery and compact genre spellings normalize", () => {
+  const taste = musicTaste(["farsi", "hiphop", "chill"], []);
+  assert.equal(taste.language, "fa");
+  assert.deepEqual(taste.genres, ["hip hop"]);
+  const seed = { ...recommendation("seed", "Singer"), taste };
+  assert.ok(discoveryQueries(seed).every((query) => query.startsWith("Persian hip hop")));
+  assert.deepEqual(musicTaste(["kpop"], []).genres, ["k pop"]);
+});
+
+test("artists with many search results do not overwhelm other equally relevant artists", () => {
+  const seed = recommendation("seed", "Singer");
+  const candidates = [...Array.from({ length: 9 }, (_, i) => recommendation(`a${i}`, "Artist A")), recommendation("b", "Artist B")];
+  let artistB = 0;
+  for (let i = 0; i < 100; i++) if (selectAutoplayTrack(seed, candidates, [], () => (i + 0.5) / 100).id === "b") artistB++;
+  assert.equal(artistB, 50);
 });

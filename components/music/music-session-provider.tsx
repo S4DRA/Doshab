@@ -49,6 +49,7 @@ function ActiveMusicSession({ channelId, children }: { channelId: string; childr
     const old = current.current;
     if (old && old.session.roomId !== data.session.roomId && old.serverTime > data.serverTime) return;
     if (old && old.session.roomId === data.session.roomId && old.session.version > data.session.version) return;
+    if (old && old.session.roomId === data.session.roomId && old.session.version === data.session.version && old.serverTime > data.serverTime) return;
     current.current = data;
     offset.current = ((data.serverReceivedAt - started) + (data.serverTime - Date.now())) / 2;
     setClockOffset((previous) => Math.abs(previous - offset.current) > 25 ? offset.current : previous);
