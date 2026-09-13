@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getMusicProvider } from "./providers";
 import { applyCommand, MusicError, reconcileDJ, startTrack, type MusicParticipant } from "./state";
 import { emptySession, expectedPosition, type MusicCommand, type MusicSession, type QueueTrack } from "./types";
+import { selectAutoplayTrack } from "./recommendations";
 
 const metadataKey = "valMusicV1";
 
@@ -73,7 +74,7 @@ async function advance(session: MusicSession, now: number) {
   }
   if (next.autoplay && next.track) {
     const related = await getMusicProvider(next.track.provider).getRelatedTracks(next.track);
-    const track = related.find((t) => t.id !== next.track?.id && !next.recentlyPlayed.includes(t.id));
+    const track = selectAutoplayTrack(next.track, related, [...next.recentlyPlayed, ...next.queue.map((item) => item.id)]);
     if (track) return startTrack(next, { ...track, queueId: crypto.randomUUID(), addedBy: { id: "", name: "Autoplay" } }, Date.now());
   }
   return { ...next, state: "STOPPED" as const, position: 0, track: null, startedAt: now,

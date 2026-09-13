@@ -34,8 +34,20 @@ function ActiveYouTubePlayback() {
     let lastSample = 0;
     let lastAnchor = "";
     let lastEnded = "";
+    let ending = false;
+    let endRetryAt = 0;
     let inView = true;
     initializeMusicVolume();
+
+    const notifyEnded = () => {
+      const { session, command, clockOffset, busy, reconnecting } = latest.current.music;
+      const key = `${session?.track?.queueId}:${session?.version}`;
+      if (!session?.track || session.state !== "PLAYING" || ending || busy || reconnecting || key === lastEnded ||
+        localSeekHold.current || Date.now() < endRetryAt || expectedPosition(session, Date.now() + clockOffset) < session.track.duration - 0.5) return;
+      ending = true;
+      endRetryAt = Date.now() + 5000;
+      void command({ type: "ended" }).then((ok) => { if (ok) lastEnded = key; }).finally(() => { ending = false; });
+    };
 
     const pause = () => {
       lastPosition = null;
@@ -68,6 +80,7 @@ function ActiveYouTubePlayback() {
         return;
       }
       const state = p.getPlayerState();
+      if (state === 0) notifyEnded();
       const position = p.getCurrentTime();
       const sampleTime = performance.now();
       if (!changed && !force && state === 1 && lastPosition !== null && sampleTime > programmaticUntil &&
@@ -136,9 +149,7 @@ function ActiveYouTubePlayback() {
                 setMusicPlaybackStatus({ localPaused: true });
               }
               if (data === 0) {
-                const { session, command } = latest.current.music;
-                const key = `${session?.track?.queueId}:${session?.version}`;
-                if (session?.track && key !== lastEnded && !localSeekHold.current) { lastEnded = key; void command({ type: "ended" }); }
+                notifyEnded();
               }
             },
           },
