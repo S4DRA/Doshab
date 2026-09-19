@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { isCallExpired, markFriendCallMissed } from "@/lib/calls";
-import { createMediaCredential, mediaServerUrl } from "@/lib/media/credential";
+import { createMediaSignalingRoom } from "@/lib/media/credential";
 import { prisma } from "@/lib/prisma";
 import { auditSecurityEvent, requireAuth } from "@/lib/security/permissions";
 
@@ -102,10 +102,11 @@ export async function POST(request: NextRequest, { params }: CallTokenRouteProps
     });
   }
 
-  const credential = createMediaCredential({ roomId: `call:${call.id}`, userId: user.id, metadata: { name: user.name, email: user.email } });
+  const roomId = `call:${call.id}`;
+  const signalingRoomId = createMediaSignalingRoom(roomId);
 
-  if (!credential) {
-    return jsonError("Media credentials are not configured.", 500);
+  if (!signalingRoomId) {
+    return jsonError("Voice signaling is not configured.", 503);
   }
 
   const friend = isCaller ? call.receiver : call.caller;
@@ -119,9 +120,9 @@ export async function POST(request: NextRequest, { params }: CallTokenRouteProps
   );
 
   return NextResponse.json({
-    credential,
-    mediaServerUrl: mediaServerUrl(),
-    roomId: `call:${call.id}`,
+    roomId,
+    signalingRoomId,
+    participant: { id: user.id, name: user.name, email: user.email },
     call: {
       id: call.id,
       friend,

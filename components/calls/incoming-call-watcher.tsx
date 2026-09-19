@@ -20,9 +20,9 @@ type FriendCallTokenResponse = {
     id: string;
     status: string;
   };
-  credential: string;
-  mediaServerUrl: string;
+  signalingRoomId: string;
   roomId: string;
+  participant: { id: string; name: string; email: string };
 };
 
 const VISIBLE_POLL_INTERVAL_MS = 3000;
@@ -334,7 +334,7 @@ export function IncomingCallWatcher() {
         | (Partial<FriendCallTokenResponse> & { error?: string })
         | null;
 
-      if (!response.ok || !data?.credential || !data.mediaServerUrl || !data.roomId || !data.call) {
+      if (!response.ok || !data?.signalingRoomId || !data.participant || !data.roomId || !data.call) {
         throw new Error(data?.error ?? "Could not answer this call.");
       }
 
@@ -343,8 +343,8 @@ export function IncomingCallWatcher() {
         href: `/dashboard/calls/${call.id}`,
         id: `friend:${call.id}`,
         kind: "friend",
-        credential: data.credential,
-        mediaServerUrl: data.mediaServerUrl,
+        participant: data.participant,
+        signalingRoomId: data.signalingRoomId,
         roomId: data.roomId,
         statusUrl: `/api/friend-calls/${call.id}/status`,
         subtitle: "Private call",

@@ -9,8 +9,7 @@ import {
 import { loadVoiceSettingsForCall } from "@/lib/voice-settings.client";
 
 type MediaCredentialResponse = {
-  credential: string;
-  mediaServerUrl: string;
+  signalingRoomId: string;
   roomId: string;
   participant: {
     id: string;
@@ -54,7 +53,7 @@ export function VoiceRoom({ channelId, channelName, groupId }: VoiceRoomProps) {
         error?: string;
       };
 
-      if (!response.ok || !data.credential || !data.mediaServerUrl || !data.roomId) {
+      if (!response.ok || !data.signalingRoomId || !data.participant || !data.roomId) {
         throw new Error(data.error ?? "Could not join this voice room.");
       }
 
@@ -64,8 +63,8 @@ export function VoiceRoom({ channelId, channelName, groupId }: VoiceRoomProps) {
         href: groupId ? `/dashboard/groups/${groupId}/channels/${channelId}` : undefined,
         id: `group:${channelId}`,
         kind: "group",
-        credential: data.credential,
-        mediaServerUrl: data.mediaServerUrl,
+        participant: data.participant,
+        signalingRoomId: data.signalingRoomId,
         roomId: data.roomId,
         subtitle: channelName,
         title: channelName,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { createMediaCredential, mediaServerUrl } from "@/lib/media/credential";
+import { createMediaSignalingRoom } from "@/lib/media/credential";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
@@ -9,7 +9,8 @@ export async function POST(request: NextRequest) {
   if (!channelId) return NextResponse.json({ error: "channelId is required." }, { status: 400 });
   const channel = await prisma.channel.findFirst({ where: { id: channelId, type: "VOICE", group: { members: { some: { userId: user.id } } } }, select: { id: true, groupId: true } });
   if (!channel) return NextResponse.json({ error: "You do not have access to this voice room." }, { status: 403 });
-  const roomId = `space:${channel.groupId}:channel:${channel.id}`; const credential = createMediaCredential({ roomId, userId: user.id, metadata: { name: user.name, email: user.email } });
-  if (!credential) return NextResponse.json({ error: "Media credentials are not configured." }, { status: 503 });
-  return NextResponse.json({ credential, mediaServerUrl: mediaServerUrl(), roomId });
+  const roomId = `space:${channel.groupId}:channel:${channel.id}`;
+  const signalingRoomId = createMediaSignalingRoom(roomId);
+  if (!signalingRoomId) return NextResponse.json({ error: "Voice signaling is not configured." }, { status: 503 });
+  return NextResponse.json({ roomId, signalingRoomId, participant: { id: user.id, name: user.name, email: user.email } });
 }
