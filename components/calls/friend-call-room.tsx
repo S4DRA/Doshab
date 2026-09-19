@@ -12,9 +12,9 @@ import { loadVoiceSettingsForCall } from "@/lib/voice-settings.client";
 import type { FriendPerson } from "@/types";
 
 type FriendCallTokenResponse = {
-  token: string;
-  livekitUrl: string;
-  roomName: string;
+  credential: string;
+  mediaServerUrl: string;
+  roomId: string;
   call: {
     id: string;
     friend: FriendPerson;
@@ -89,7 +89,7 @@ export function FriendCallRoom({
         | (Partial<FriendCallTokenResponse> & { error?: string })
         | null;
 
-      if (!response.ok || !data?.token || !data.livekitUrl || !data.roomName || !data.call) {
+      if (!response.ok || !data?.credential || !data.mediaServerUrl || !data.roomId || !data.call) {
         const unavailableMessage =
           response.status === 410 || response.status === 409
             ? "Call no longer available."
@@ -106,12 +106,12 @@ export function FriendCallRoom({
         href: `/dashboard/calls/${callId}`,
         id: sessionId,
         kind: "friend",
-        livekitUrl: data.livekitUrl,
-        roomName: data.roomName,
+        credential: data.credential,
+        mediaServerUrl: data.mediaServerUrl,
+        roomId: data.roomId,
         statusUrl: `/api/friend-calls/${callId}/status`,
         subtitle: "Private call",
         title: data.call.friend.name || data.call.friend.email,
-        token: data.token,
         voiceSettings,
       });
     } catch {

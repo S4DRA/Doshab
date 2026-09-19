@@ -7,7 +7,7 @@ import { CreateGroupForm } from "@/components/groups/create-group-form";
 import { GroupMembersList } from "@/components/groups/group-members-list";
 import { Alert } from "@/components/ui/alert";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
-import { LazyLiveKitVoiceRoom } from "@/components/voice/lazy-livekit-voice-room";
+import { LazyVoiceRoom } from "@/components/voice/lazy-voice-room";
 import { formatReadableTimestamp, formatUserStatus } from "@/lib/utils";
 import type { ReactNode } from "react";
 import type {
@@ -610,7 +610,7 @@ function ChannelMain({
             ) : null}
           </div>
         </div>
-        <LazyLiveKitVoiceRoom
+        <LazyVoiceRoom
           channelId={channel.id}
           channelName={channel.name}
           groupId={groupId}

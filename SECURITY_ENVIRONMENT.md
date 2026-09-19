@@ -9,9 +9,7 @@ Use Vercel project environment variables for production, preview, and developmen
 - `DATABASE_URL`: Server-only Postgres connection string used by Prisma. Prefer the Supabase pooler for deployed Vercel environments.
 - `DIRECT_URL`: Optional server-only direct Postgres URL for local or migration workflows.
 - `SESSION_SECRET`: Server-only secret for legacy VAL JWT cookies. Use at least 32 random bytes.
-- `LIVEKIT_URL`: LiveKit server URL.
-- `LIVEKIT_API_KEY`: Server-only LiveKit API key.
-- `LIVEKIT_API_SECRET`: Server-only LiveKit API secret. Never prefix with `NEXT_PUBLIC_`.
+- `MEDIA_AUTH_SECRET`: server-only media credential signing secret. Never prefix it with `NEXT_PUBLIC_`.
 - `NEXT_PUBLIC_VAPID_PUBLIC_KEY`: Web Push public key. This is safe for the browser.
 - `VAPID_PUBLIC_KEY`: Optional server-side copy of the Web Push public key.
 - `VAPID_PRIVATE_KEY`: Server-only Web Push private key.
@@ -21,7 +19,7 @@ Use Vercel project environment variables for production, preview, and developmen
 ## Explicitly Forbidden In Client Bundles
 
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `LIVEKIT_API_SECRET`
+- `MEDIA_AUTH_SECRET`
 - `DATABASE_URL`
 - `DIRECT_URL`
 - `SESSION_SECRET`
@@ -29,14 +27,14 @@ Use Vercel project environment variables for production, preview, and developmen
 - `VAPID_PRIVATE_KEY`
 - SMTP passwords, Brevo API keys, or any mail-provider secrets
 
-Only variables prefixed with `NEXT_PUBLIC_` should be readable by browser code. Do not create `NEXT_PUBLIC_` variants for service-role keys, database URLs, LiveKit secrets, VAPID private keys, SMTP passwords, or Brevo keys.
+Only variables prefixed with `NEXT_PUBLIC_` should be readable by browser code. Do not create `NEXT_PUBLIC_` variants for service-role keys, database URLs, media signing secrets, VAPID private keys, SMTP passwords, or Brevo keys.
 
 ## Rotation Checklist
 
-- Rotate any database password, LiveKit secret, VAPID private key, SMTP password, Brevo key, or JWT/session secret that has ever appeared in a local file, shared log, screenshot, CI output, or chat transcript.
+- Rotate any database password, media signing secret, VAPID private key, SMTP password, Brevo key, or JWT/session secret that has ever appeared in a local file, shared log, screenshot, CI output, or chat transcript.
 - Update Vercel environment variables after rotation for Production, Preview, and Development scopes.
 - Update local developer machines through a private password manager or `vercel env pull`, not through committed files.
-- Revoke old credentials in Supabase, LiveKit, and mail-provider dashboards.
+- Revoke old credentials in Supabase and mail-provider dashboards.
 - Restart Vercel deployments after replacing credentials.
 
 ## GitHub Secret Scanning

@@ -20,9 +20,9 @@ type FriendCallTokenResponse = {
     id: string;
     status: string;
   };
-  livekitUrl: string;
-  roomName: string;
-  token: string;
+  credential: string;
+  mediaServerUrl: string;
+  roomId: string;
 };
 
 const VISIBLE_POLL_INTERVAL_MS = 3000;
@@ -334,7 +334,7 @@ export function IncomingCallWatcher() {
         | (Partial<FriendCallTokenResponse> & { error?: string })
         | null;
 
-      if (!response.ok || !data?.token || !data.livekitUrl || !data.roomName || !data.call) {
+      if (!response.ok || !data?.credential || !data.mediaServerUrl || !data.roomId || !data.call) {
         throw new Error(data?.error ?? "Could not answer this call.");
       }
 
@@ -343,12 +343,12 @@ export function IncomingCallWatcher() {
         href: `/dashboard/calls/${call.id}`,
         id: `friend:${call.id}`,
         kind: "friend",
-        livekitUrl: data.livekitUrl,
-        roomName: data.roomName,
+        credential: data.credential,
+        mediaServerUrl: data.mediaServerUrl,
+        roomId: data.roomId,
         statusUrl: `/api/friend-calls/${call.id}/status`,
         subtitle: "Private call",
         title: data.call.friend.name || data.call.friend.email,
-        token: data.token,
       });
       setCall(null);
       router.push(`/dashboard/calls/${call.id}`);

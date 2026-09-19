@@ -13,6 +13,7 @@ export type MusicTrack = {
 };
 
 export type QueueTrack = MusicTrack & { queueId: string; addedBy: { id: string; name: string } };
+export type MusicSearchPage = { tracks: MusicTrack[]; nextPageToken: string | null };
 export type MusicSession = {
   roomId: string;
   version: number;

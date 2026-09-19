@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { isCallExpired, markFriendCallMissed } from "@/lib/calls";
-import { createLiveKitToken } from "@/lib/livekit";
+import { createMediaCredential, mediaServerUrl } from "@/lib/media/credential";
 import { prisma } from "@/lib/prisma";
 import { auditSecurityEvent, requireAuth } from "@/lib/security/permissions";
 
@@ -102,17 +102,10 @@ export async function POST(request: NextRequest, { params }: CallTokenRouteProps
     });
   }
 
-  const tokenResponse = await createLiveKitToken({
-    roomName: call.roomName,
-    participant: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    },
-  });
+  const credential = createMediaCredential({ roomId: `call:${call.id}`, userId: user.id, metadata: { name: user.name, email: user.email } });
 
-  if (!tokenResponse) {
-    return jsonError("LiveKit is not configured.", 500);
+  if (!credential) {
+    return jsonError("Media credentials are not configured.", 500);
   }
 
   const friend = isCaller ? call.receiver : call.caller;
@@ -126,7 +119,9 @@ export async function POST(request: NextRequest, { params }: CallTokenRouteProps
   );
 
   return NextResponse.json({
-    ...tokenResponse,
+    credential,
+    mediaServerUrl: mediaServerUrl(),
+    roomId: `call:${call.id}`,
     call: {
       id: call.id,
       friend,

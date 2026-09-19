@@ -16,7 +16,7 @@ export function usePlayerPosition(anchor: RefObject<HTMLButtonElement | null>) {
     node.style.left = `${Math.max(x + 8, Math.min(left, x + width - node.offsetWidth - 8))}px`;
     node.style.top = `${Math.max(y + 8, Math.min(top, y + height - node.offsetHeight - 8))}px`;
     node.style.bottom = "auto";
-    node.style.maxHeight = `${Math.max(120, height - 16)}px`;
+    node.style.maxHeight = `${Math.min(760, Math.max(120, height - 16))}px`;
   };
   const placeRef = useRef(place);
   useEffect(() => { placeRef.current = place; });

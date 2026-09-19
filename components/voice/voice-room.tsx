@@ -8,10 +8,10 @@ import {
 } from "@/components/calls/persistent-call-provider";
 import { loadVoiceSettingsForCall } from "@/lib/voice-settings.client";
 
-type LiveKitTokenResponse = {
-  token: string;
-  livekitUrl: string;
-  roomName: string;
+type MediaCredentialResponse = {
+  credential: string;
+  mediaServerUrl: string;
+  roomId: string;
   participant: {
     id: string;
     name: string;
@@ -19,13 +19,13 @@ type LiveKitTokenResponse = {
   };
 };
 
-type LiveKitVoiceRoomProps = {
+type VoiceRoomProps = {
   channelId: string;
   channelName: string;
   groupId?: string;
 };
 
-export function LiveKitVoiceRoom({ channelId, channelName, groupId }: LiveKitVoiceRoomProps) {
+export function VoiceRoom({ channelId, channelName, groupId }: VoiceRoomProps) {
   const { activeCall, startCall } = usePersistentCall();
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +42,7 @@ export function LiveKitVoiceRoom({ channelId, channelName, groupId }: LiveKitVoi
     setError(null);
 
     try {
-      const response = await fetch("/api/livekit/token", {
+      const response = await fetch("/api/media/voice-token", {
         body: JSON.stringify({ channelId }),
         headers: {
           "content-type": "application/json",
@@ -50,11 +50,11 @@ export function LiveKitVoiceRoom({ channelId, channelName, groupId }: LiveKitVoi
         method: "POST",
       });
 
-      const data = (await response.json()) as Partial<LiveKitTokenResponse> & {
+      const data = (await response.json()) as Partial<MediaCredentialResponse> & {
         error?: string;
       };
 
-      if (!response.ok || !data.token || !data.livekitUrl || !data.roomName) {
+      if (!response.ok || !data.credential || !data.mediaServerUrl || !data.roomId) {
         throw new Error(data.error ?? "Could not join this voice room.");
       }
 
@@ -64,11 +64,11 @@ export function LiveKitVoiceRoom({ channelId, channelName, groupId }: LiveKitVoi
         href: groupId ? `/dashboard/groups/${groupId}/channels/${channelId}` : undefined,
         id: `group:${channelId}`,
         kind: "group",
-        livekitUrl: data.livekitUrl,
-        roomName: data.roomName,
-        subtitle: data.roomName,
+        credential: data.credential,
+        mediaServerUrl: data.mediaServerUrl,
+        roomId: data.roomId,
+        subtitle: channelName,
         title: channelName,
-        token: data.token,
         voiceSettings,
       });
       setJoinedOnce(true);

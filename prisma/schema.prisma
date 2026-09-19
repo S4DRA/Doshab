@@ -199,11 +199,25 @@ model Channel {
   messages       Message[]
   notifications  Notification[]
   messageReports MessageReport[]
+  musicSession   MusicSession?
 
   @@unique([groupId, name])
   @@index([groupId])
   @@index([type])
   @@map("channels")
+}
+
+model MusicSession {
+  id        String   @id @default(cuid())
+  channelId String   @unique
+  state     Json
+  version   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([updatedAt])
+  @@map("music_sessions")
 }
 
 model Message {

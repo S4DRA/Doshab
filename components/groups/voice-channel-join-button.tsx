@@ -7,10 +7,10 @@ import { useOptionalPersistentCall } from "@/components/calls/persistent-call-pr
 import { cn } from "@/lib/utils";
 import { loadVoiceSettingsForCall } from "@/lib/voice-settings.client";
 
-type LiveKitTokenResponse = {
-  token: string;
-  livekitUrl: string;
-  roomName: string;
+type MediaCredentialResponse = {
+  credential: string;
+  mediaServerUrl: string;
+  roomId: string;
 };
 
 type VoiceChannelJoinButtonProps = {
@@ -54,7 +54,7 @@ export function VoiceChannelJoinButton({
     setError(null);
 
     try {
-      const response = await fetch("/api/livekit/token", {
+      const response = await fetch("/api/media/voice-token", {
         body: JSON.stringify({ channelId }),
         headers: {
           "content-type": "application/json",
@@ -62,11 +62,11 @@ export function VoiceChannelJoinButton({
         method: "POST",
       });
 
-      const data = (await response.json()) as Partial<LiveKitTokenResponse> & {
+      const data = (await response.json()) as Partial<MediaCredentialResponse> & {
         error?: string;
       };
 
-      if (!response.ok || !data.token || !data.livekitUrl || !data.roomName) {
+      if (!response.ok || !data.credential || !data.mediaServerUrl || !data.roomId) {
         throw new Error(data.error ?? "Could not join this voice room.");
       }
 
@@ -76,11 +76,11 @@ export function VoiceChannelJoinButton({
         href,
         id: `group:${channelId}`,
         kind: "group",
-        livekitUrl: data.livekitUrl,
-        roomName: data.roomName,
-        subtitle: data.roomName,
+        credential: data.credential,
+        mediaServerUrl: data.mediaServerUrl,
+        roomId: data.roomId,
+        subtitle: channelName,
         title: channelName,
-        token: data.token,
         voiceSettings,
       });
       onNavigate?.();

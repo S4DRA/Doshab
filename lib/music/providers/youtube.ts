@@ -23,32 +23,35 @@ async function request(path: "search" | "videos", params: Record<string, string>
     if (response.status === 403 || response.status === 429) throw new MusicError("YouTube search is unavailable. The server API key or quota needs attention.", 503);
     throw new MusicError("YouTube music search is temporarily unavailable.", 503);
   }
-  return z.object({ items: z.array(z.unknown()) }).parse(await response.json()).items;
+  return z.object({ items: z.array(z.unknown()), nextPageToken: z.string().optional() }).parse(await response.json());
 }
 
 async function videos(ids: string[]) {
   if (!ids.length) return [];
   const data = await request("videos", { part: "snippet,contentDetails,status,topicDetails", id: ids.join(","), maxResults: "50" });
-  const tracks = data.map((video) => normalizeYouTubeVideo(video, region())).filter((track): track is MusicTrack => !!track);
+  const tracks = data.items.map((video) => normalizeYouTubeVideo(video, region())).filter((track): track is MusicTrack => !!track);
   return ids.map((id) => tracks.find((track) => track.id === id)).filter((track): track is MusicTrack => !!track);
 }
 
-async function searchIds(query: string, limit = 10, language?: string) {
-  const items = await request("search", { part: "snippet", type: "video", videoCategoryId: "10", videoEmbeddable: "true", videoSyndicated: "true",
-    maxResults: String(limit), q: query, ...(language ? { relevanceLanguage: language.split("-")[0] } : {}), ...(region() ? { regionCode: region()! } : {}) });
-  return items.map((item) => z.object({ id: z.object({ videoId: z.string().regex(youtubeIdPattern) }) }).safeParse(item))
+async function searchPageIds(query: string, limit: number, language?: string, pageToken?: string) {
+  const data = await request("search", { part: "snippet", type: "video", videoCategoryId: "10", videoEmbeddable: "true", videoSyndicated: "true",
+    maxResults: String(limit), q: query, ...(pageToken ? { pageToken } : {}), ...(language ? { relevanceLanguage: language.split("-")[0] } : {}), ...(region() ? { regionCode: region()! } : {}) });
+  const ids = data.items.map((item) => z.object({ id: z.object({ videoId: z.string().regex(youtubeIdPattern) }) }).safeParse(item))
     .flatMap((parsed) => parsed.success ? [parsed.data.id.videoId] : []);
+  return { ids, nextPageToken: data.nextPageToken ?? null };
 }
 
-async function search(query: string) {
+async function search(query: string, pageToken?: string) {
   const direct = youtubeVideoId(query);
-  return videos(direct ? [direct] : await searchIds(query));
+  if (direct) return { tracks: await videos([direct]), nextPageToken: null };
+  const page = await searchPageIds(query, 25, undefined, pageToken);
+  return { tracks: await videos(page.ids), nextPageToken: page.nextPageToken };
 }
 
-async function browse() {
-  const data = await request("videos", { part: "snippet,contentDetails,status,topicDetails", chart: "mostPopular", videoCategoryId: "10", maxResults: "10",
-    ...(region() ? { regionCode: region()! } : {}) });
-  return data.map((video) => normalizeYouTubeVideo(video, region())).filter((track): track is MusicTrack => !!track);
+async function browse(pageToken?: string) {
+  const data = await request("videos", { part: "snippet,contentDetails,status,topicDetails", chart: "mostPopular", videoCategoryId: "10", maxResults: "25",
+    ...(pageToken ? { pageToken } : {}), ...(region() ? { regionCode: region()! } : {}) });
+  return { tracks: data.items.map((video) => normalizeYouTubeVideo(video, region())).filter((track): track is MusicTrack => !!track), nextPageToken: data.nextPageToken ?? null };
 }
 
 export const youtubeProvider: MusicProvider = {
@@ -59,8 +62,8 @@ export const youtubeProvider: MusicProvider = {
   getRelatedTracks: async (track) => {
     // Refresh pre-deployment tracks that only carried the generic "Music" genre.
     const seed = track.taste ? track : (await videos([track.id]))[0] ?? track;
-    const results = await Promise.allSettled(discoveryQueries(seed).map((query) => searchIds(query, 25, seed.taste?.language)));
-    const ids = [...new Set(results.flatMap((result) => result.status === "fulfilled" ? result.value : []))];
+    const results = await Promise.allSettled(discoveryQueries(seed).map((query) => searchPageIds(query, 25, seed.taste?.language)));
+    const ids = [...new Set(results.flatMap((result) => result.status === "fulfilled" ? result.value.ids : []))];
     if (!ids.length) {
       const failure = results.find((result) => result.status === "rejected");
       if (failure?.status === "rejected") throw failure.reason;

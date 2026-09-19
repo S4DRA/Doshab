@@ -28,7 +28,7 @@ Keep these out of browser bundles and committed files:
 - `DIRECT_URL`
 - `SESSION_SECRET`
 - `AUTH_SECRET`
-- `LIVEKIT_API_SECRET`
+- `MEDIA_AUTH_SECRET`
 - `VAPID_PRIVATE_KEY`
 - `SUPABASE_BACKUP_DATABASE_URL`
 - any SMTP password, Brevo key, or Supabase service-role key
