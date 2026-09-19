@@ -3,7 +3,7 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 import { createSupabaseBrowserClientFromRuntimeConfig } from "@/lib/supabase/client";
-import type { MediaConnectionState, MediaParticipant, MediaSource, RemoteMedia } from "./types";
+import type { LocalMedia, MediaConnectionState, MediaParticipant, MediaSource, RemoteMedia } from "./types";
 
 type Credential = { participant: { email: string; id: string; name: string }; signalingRoomId: string };
 type Listener = () => void;
@@ -24,7 +24,7 @@ export class MediaClient {
   private state: MediaConnectionState = "disconnected";
 
   subscribe(listener: Listener) { this.listeners.add(listener); return () => this.listeners.delete(listener); }
-  snapshot() { return { state: this.state, participants: [...this.participants.values()], remote: [...this.remote.values()], micMuted: !this.localTracks.get("mic")?.enabled, cameraOn: this.localTracks.has("camera"), screenOn: this.localTracks.has("screen") }; }
+  snapshot() { const local: LocalMedia[] = [...this.localTracks.entries()].map(([source, track]) => ({ kind: track.kind as "audio" | "video", source, track })); return { state: this.state, participants: [...this.participants.values()], local, remote: [...this.remote.values()], micMuted: !this.localTracks.get("mic")?.enabled, cameraOn: this.localTracks.has("camera"), screenOn: this.localTracks.has("screen") }; }
   private changed() { this.listeners.forEach((listener) => listener()); }
 
   async connect(credential: Credential) {
