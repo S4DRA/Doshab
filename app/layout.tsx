@@ -86,8 +86,8 @@ export const viewport: Viewport = {
   themeColor: "#08090b",
 };
 
-const DARK_CHROME_COLOR = "#08090b";
-const LIGHT_CHROME_COLOR = "#f6f3ea";
+const DARK_CHROME_COLOR = "#090b0c";
+const LIGHT_CHROME_COLOR = "#f7f4ec";
 
 const themeBootScript = `try{var allowed=${JSON.stringify(
   DOSHAB_THEMES.map((theme) => theme.id),
