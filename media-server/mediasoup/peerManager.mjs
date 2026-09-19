@@ -1,2 +1,0 @@
-export function createPeer(socket) { return { socket, userId: socket.data.media.userId, metadata: socket.data.media.metadata ?? {}, transports: new Map(), producers: new Map(), consumers: new Map() }; }
-export function closePeer(room, peer) { for (const item of peer.consumers.values()) item.close(); for (const item of peer.producers.values()) item.close(); for (const item of peer.transports.values()) item.close(); peer.consumers.clear(); peer.producers.clear(); peer.transports.clear(); room.peers.delete(peer.socket.id); }
