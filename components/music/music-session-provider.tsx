@@ -1,11 +1,8 @@
 "use client";
 
-import { useRoomContext } from "@livekit/components-react";
-import { ConnectionState, RoomEvent } from "livekit-client";
 import { Component, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { type MusicCommand, type MusicSession } from "@/lib/music/types";
 import { coalesceMusicRefresh } from "@/lib/music/refresh";
-import { musicSessionFromMetadata } from "@/lib/music/metadata";
 export { useMusicVolume } from "./music-volume";
 
 type Snapshot = { session: MusicSession; serverTime: number; serverReceivedAt: number; source: string | null };
@@ -30,7 +27,6 @@ export function MusicSessionProvider({ channelId, children }: { channelId: strin
 }
 
 function ActiveMusicSession({ channelId, children }: { channelId: string; children: React.ReactNode }) {
-  const room = useRoomContext();
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [clockOffset, setClockOffset] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +55,6 @@ function ActiveMusicSession({ channelId, children }: { channelId: string; childr
   }, []);
 
   const refresh = useCallback(async () => {
-    if (room.state !== ConnectionState.Connected) return;
     const started = Date.now();
     const controller = new AbortController();
     requestController.current = controller;
@@ -74,31 +69,17 @@ function ActiveMusicSession({ channelId, children }: { channelId: string; childr
         setError(failure instanceof Error ? failure.message : "Reconnecting to room music…");
       }
     }
-  }, [accept, endpoint, room]);
+  }, [accept, endpoint]);
 
   useEffect(() => {
     alive.current = true;
     const coordinator = coalesceMusicRefresh(refresh);
     const update = () => { void coordinator.run(); };
     refreshTrigger.current = update;
-    const metadataChanged = (raw: string) => {
-      const session = musicSessionFromMetadata(raw);
-      if (!session) { update(); return; }
-      const previous = current.current;
-      if (!previous) { update(); return; } // Establish server clock alignment once before consuming events.
-      if (previous.session.roomId === session.roomId && previous.session.version >= session.version) return;
-      const data = { ...previous, session, source: session.track ? `https://www.youtube.com/embed/${encodeURIComponent(session.track.id)}` : null };
-      current.current = data;
-      setSnapshot(data);
-    };
-    const disconnected = () => { setReconnecting(true); };
     const timer = window.setInterval(() => {
       if (document.visibilityState === "visible" && (!current.current || current.current.session.track)) update();
     }, 60000);
     const initial = window.setTimeout(update, 0);
-    room.on(RoomEvent.Connected, update).on(RoomEvent.Reconnected, update)
-      .on(RoomEvent.RoomMetadataChanged, metadataChanged).on(RoomEvent.ParticipantDisconnected, update)
-      .on(RoomEvent.Reconnecting, disconnected).on(RoomEvent.Disconnected, disconnected);
     const visible = () => { if (document.visibilityState === "visible") update(); };
     document.addEventListener("visibilitychange", visible);
     window.addEventListener("online", update);
@@ -107,16 +88,13 @@ function ActiveMusicSession({ channelId, children }: { channelId: string; childr
       coordinator.dispose(); refreshTrigger.current = () => {};
       requestController.current?.abort();
       clearInterval(timer); clearTimeout(initial);
-      room.off(RoomEvent.Connected, update).off(RoomEvent.Reconnected, update)
-        .off(RoomEvent.RoomMetadataChanged, metadataChanged).off(RoomEvent.ParticipantDisconnected, update)
-        .off(RoomEvent.Reconnecting, disconnected).off(RoomEvent.Disconnected, disconnected);
       document.removeEventListener("visibilitychange", visible); window.removeEventListener("online", update);
     };
-  }, [refresh, room]);
+  }, [refresh]);
 
   const command = useCallback(async (action: MusicCommand) => {
     const state = current.current?.session;
-    if (!state || commandBusy.current || room.state !== ConnectionState.Connected) return false;
+    if (!state || commandBusy.current) return false;
     commandBusy.current = true;
     setBusy(true); setError(null);
     const started = Date.now();
@@ -132,13 +110,13 @@ function ActiveMusicSession({ channelId, children }: { channelId: string; childr
       if (alive.current) setError(failure instanceof Error ? failure.message : "Music command failed.");
       return false;
     } finally { commandBusy.current = false; if (alive.current) setBusy(false); }
-  }, [accept, endpoint, room]);
+  }, [accept, endpoint]);
   const refreshNow = useCallback(() => refreshTrigger.current(), []);
 
   const session = snapshot?.session ?? null;
   const value = useMemo(() => ({ channelId, session, source: snapshot?.source ?? null, clockOffset,
-    isDJ: session?.djUserId === room.localParticipant.identity, canStart: !!session && !session.djUserId,
-    busy, error, reconnecting, command, refreshNow }), [channelId, session, snapshot?.source, clockOffset, room.localParticipant.identity, busy, error, reconnecting, command, refreshNow]);
+    isDJ: false, canStart: !!session && !session.djUserId,
+    busy, error, reconnecting, command, refreshNow }), [channelId, session, snapshot?.source, clockOffset, busy, error, reconnecting, command, refreshNow]);
 
   return <MusicContext.Provider value={value}>{children}</MusicContext.Provider>;
 }

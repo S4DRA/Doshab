@@ -1,0 +1,3 @@
+const number = (value, fallback) => { const parsed = Number.parseInt(value ?? "", 10); return Number.isFinite(parsed) ? parsed : fallback; };
+export const config = { port: number(process.env.MEDIA_SERVER_PORT, 3001), allowedOrigin: process.env.MEDIA_SERVER_ALLOWED_ORIGIN ?? "http://localhost:3000", authSecret: process.env.MEDIA_AUTH_SECRET ?? "", listenIp: process.env.MEDIASOUP_LISTEN_IP ?? "127.0.0.1", announcedAddress: process.env.MEDIASOUP_ANNOUNCED_ADDRESS || undefined, rtcMinPort: number(process.env.MEDIASOUP_MIN_PORT, 40000), rtcMaxPort: number(process.env.MEDIASOUP_MAX_PORT, 40100) };
+export const mediaCodecs = [{ kind: "audio", mimeType: "audio/opus", clockRate: 48000, channels: 2 }, { kind: "video", mimeType: "video/VP8", clockRate: 90000, parameters: {} }];

@@ -25,7 +25,7 @@ export function VoiceAudioSettingsPanel() {
   const [micLevel, setMicLevel] = useState(0);
   const [diagnostics, setDiagnostics] = useState<Record<string, DiagnosticState>>({
     inputDevice: "not-checked",
-    livekit: "unavailable",
+    mediaService: "not-checked",
     microphone: "not-checked",
     network: "not-checked",
     outputDevice: "not-checked",
@@ -294,7 +294,7 @@ export function VoiceAudioSettingsPanel() {
   async function refreshDiagnostics() {
     const next: Record<string, DiagnosticState> = {
       inputDevice: inputDevices.length ? "ok" : "not-checked",
-      livekit: "unavailable",
+      mediaService: "not-checked",
       microphone: "not-checked",
       network: typeof navigator !== "undefined" && navigator.onLine ? "ok" : "missing",
       outputDevice: outputSelectionSupported ? (outputDevices.length ? "ok" : "not-checked") : "unavailable",
@@ -430,7 +430,7 @@ export function VoiceAudioSettingsPanel() {
           <div className="mt-4 grid gap-3">
             <ToggleRow
               checked={settings.autoSensitivity}
-              description="VAL lets the browser and LiveKit pick a stable threshold."
+              description="VAL lets the browser select a stable threshold."
               label="Automatically determine input sensitivity"
               onChange={(checked) => updateSetting("autoSensitivity", checked)}
             />
@@ -516,7 +516,7 @@ export function VoiceAudioSettingsPanel() {
         <SectionHeader
           eyebrow="Call behavior"
           title="Default call posture"
-          description="These defaults are applied before LiveKit connects when VAL can do so safely."
+          description="These defaults are applied before VAL connects when supported."
         />
         <div className="mt-4 grid gap-3">
           <SliderControl
@@ -552,7 +552,7 @@ export function VoiceAudioSettingsPanel() {
           <DiagnosticLine label="Input device detected" state={diagnostics.inputDevice} />
           <DiagnosticLine label="Output device detected" state={diagnostics.outputDevice} />
           <DiagnosticLine label="Network reachable" state={diagnostics.network} />
-          <DiagnosticLine label="LiveKit token/session" state={diagnostics.livekit} />
+          <DiagnosticLine label="Media service" state={diagnostics.mediaService} />
         </div>
       </section>
 
