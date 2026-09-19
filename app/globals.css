@@ -499,6 +499,346 @@ html[data-theme] .app-section-title {
   }
 }
 
+/*
+ * VAL / Spaces Foundation
+ * One restrained command-surface vocabulary for every authenticated route.
+ * This intentionally comes last: older theme experiments above remain available
+ * to the theme picker, but the foundation owns the default product silhouette.
+ */
+html[data-theme="signal-orange-dark"],
+html[data-theme="signal-orange-light"] {
+  --val-ink: #090b0c;
+  --val-ink-raised: #111416;
+  --val-paper: #f7f4ec;
+  --val-paper-muted: #ebe7dc;
+  --val-line: #171a1b;
+  --val-rule: rgba(23, 26, 27, 0.22);
+  --val-orange: #ff5a16;
+  --val-orange-deep: #dc3f08;
+  --val-green: #21c65d;
+  --background: var(--val-ink);
+  --foreground: var(--val-paper);
+  --surface-canvas: var(--val-ink);
+  --surface-sidebar: var(--val-ink);
+  --surface-panel: var(--val-paper);
+  --surface-raised: var(--val-paper-muted);
+  --surface-hover: #e4ded0;
+  --border-strong: var(--val-line);
+  --border-soft: var(--val-rule);
+  --text-high: #111314;
+  --text-body: #292d2f;
+  --text-muted: #62686a;
+  --text-faint: #83888a;
+  --accent: var(--val-orange);
+  --accent-hover: #ff6e31;
+  --accent-muted: rgba(255, 90, 22, 0.14);
+  --control: var(--val-orange);
+  --control-hover: #ff6e31;
+  --control-text: #111314;
+  --control-subtle: var(--val-ink);
+  --control-subtle-hover: #202426;
+  --control-subtle-text: var(--val-paper);
+  --success: var(--val-green);
+  --radius-card: 2px;
+  --radius-button: 2px;
+  --radius-control: 2px;
+}
+
+html[data-theme="signal-orange-dark"] body,
+html[data-theme="signal-orange-light"] body {
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
+    var(--val-ink) !important;
+  background-size: 64px 64px, 64px 64px !important;
+}
+
+html[data-theme^="signal-orange"] .dashboard-shell-root {
+  background: var(--val-ink) !important;
+  color: var(--val-paper) !important;
+}
+
+html[data-theme^="signal-orange"] .dashboard-content-frame {
+  padding-left: 0 !important;
+}
+
+html[data-theme^="signal-orange"] .dashboard-secondary-sidebar,
+html[data-theme^="signal-orange"] .dashboard-main-sidebar {
+  background: linear-gradient(180deg, #101416, #090b0c 72%) !important;
+  border-color: rgba(247,244,236,.22) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme^="signal-orange"] .dashboard-secondary-sidebar {
+  position: relative;
+}
+
+html[data-theme^="signal-orange"] .dashboard-secondary-sidebar::after {
+  position: absolute;
+  right: 0;
+  top: 1.2rem;
+  bottom: 1.2rem;
+  width: 2px;
+  background: var(--val-orange);
+  content: "";
+  opacity: .8;
+}
+
+html[data-theme^="signal-orange"] .dashboard-shell-header {
+  min-height: 3.65rem !important;
+  border-bottom: 1px solid var(--val-rule) !important;
+  background: var(--val-paper) !important;
+  color: var(--val-ink) !important;
+  box-shadow: inset 0 -3px 0 var(--val-ink) !important;
+}
+
+html[data-theme^="signal-orange"] .dashboard-shell-header .app-section-title,
+html[data-theme^="signal-orange"] .app-section-title {
+  color: var(--val-ink) !important;
+  font-family: var(--font-geist-mono), ui-monospace, monospace !important;
+  font-size: .65rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .16em !important;
+  text-transform: uppercase !important;
+}
+
+html[data-theme^="signal-orange"] .dashboard-shell-header .app-section-title::before,
+html[data-theme^="signal-orange"] .app-section-title::before {
+  color: var(--val-orange);
+  content: "// ";
+}
+
+html[data-theme^="signal-orange"] .dashboard-shell-header p:last-child {
+  color: #53585a !important;
+  font-family: var(--font-geist-mono), ui-monospace, monospace !important;
+  font-size: .64rem !important;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+html[data-theme^="signal-orange"] :is(.app-page-scroll, main.app-page-scroll) {
+  background: var(--val-paper) !important;
+  color: var(--val-ink) !important;
+}
+
+html[data-theme^="signal-orange"] .app-page-container {
+  max-width: 100rem !important;
+  padding: 1rem !important;
+}
+
+html[data-theme^="signal-orange"] :is(.app-page-header, .app-panel, .app-card, .app-surface) {
+  position: relative;
+  border: 1px solid var(--val-line) !important;
+  border-radius: 0 !important;
+  background: var(--val-paper) !important;
+  box-shadow: 4px 4px 0 var(--val-ink) !important;
+}
+
+html[data-theme^="signal-orange"] :is(.app-page-header, .app-panel, .app-card, .app-surface)::before {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-left: 1px solid var(--val-line);
+  border-bottom: 1px solid var(--val-line);
+  background: var(--val-paper-muted);
+  content: "";
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+html[data-theme^="signal-orange"] .app-page-header {
+  overflow: hidden;
+  padding: clamp(1.25rem, 3vw, 2.5rem) !important;
+  background:
+    linear-gradient(90deg, transparent 0 68%, rgba(9,11,12,.95) 68% 68.2%, transparent 68.2%),
+    var(--val-paper) !important;
+}
+
+html[data-theme^="signal-orange"] .app-page-header h1,
+html[data-theme^="signal-orange"] .app-page-header h2,
+html[data-theme^="signal-orange"] .dashboard-welcome-card h1 {
+  max-width: 14ch;
+  color: var(--val-ink) !important;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif !important;
+  font-size: clamp(2.75rem, 7vw, 6.4rem) !important;
+  font-weight: 900 !important;
+  letter-spacing: -.055em !important;
+  line-height: .86 !important;
+  text-transform: uppercase;
+}
+
+html[data-theme^="signal-orange"] .dashboard-welcome-card h1::first-line {
+  color: var(--val-ink);
+}
+
+html[data-theme^="signal-orange"] .app-page-header p:not(.app-section-title) {
+  color: #454a4c !important;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: .72rem !important;
+  line-height: 1.55 !important;
+}
+
+html[data-theme^="signal-orange"] .dashboard-welcome-card {
+  background:
+    linear-gradient(90deg, rgba(247,244,236,.98) 0 61%, transparent 61%),
+    url("/val-logo-dark-roomy.png") right 12% center / min(34vw, 28rem) auto no-repeat,
+    #111416 !important;
+}
+
+html[data-theme^="signal-orange"] :is(.app-row, .theme-choice-card, .theme-preview-card-surface) {
+  border: 1px solid var(--val-rule) !important;
+  border-radius: 0 !important;
+  background: var(--val-paper) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme^="signal-orange"] :is(.app-row, .app-card) h1,
+html[data-theme^="signal-orange"] :is(.app-row, .app-card) h2,
+html[data-theme^="signal-orange"] :is(.app-row, .app-card) h3,
+html[data-theme^="signal-orange"] .app-panel h2,
+html[data-theme^="signal-orange"] .app-panel h3 {
+  color: var(--val-ink) !important;
+}
+
+html[data-theme^="signal-orange"] :is(.app-row:hover, .app-card:hover) {
+  border-color: var(--val-orange) !important;
+  background: #fffaf0 !important;
+  box-shadow: 3px 3px 0 var(--val-orange) !important;
+  transform: translate(-1px, -1px);
+}
+
+html[data-theme^="signal-orange"] :is(.app-button-primary, .app-icon-button-primary) {
+  border: 1px solid var(--val-ink) !important;
+  border-radius: 0 !important;
+  background: var(--val-orange) !important;
+  color: var(--val-ink) !important;
+  box-shadow: 3px 3px 0 var(--val-ink) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme^="signal-orange"] :is(.app-button-secondary, .app-icon-button) {
+  border: 1px solid var(--val-ink) !important;
+  border-radius: 0 !important;
+  background: var(--val-ink) !important;
+  color: var(--val-paper) !important;
+  box-shadow: 3px 3px 0 rgba(9,11,12,.34) !important;
+}
+
+html[data-theme^="signal-orange"] :is(.app-button-primary, .app-button-secondary, .app-icon-button):hover {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 5px 5px 0 var(--val-ink) !important;
+}
+
+html[data-theme^="signal-orange"] :is(.app-button-primary, .app-button-secondary, .app-icon-button):active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 1px 1px 0 var(--val-ink) !important;
+}
+
+html[data-theme^="signal-orange"] :is(input, textarea, select) {
+  border: 1px solid var(--val-line) !important;
+  border-radius: 0 !important;
+  background: #fffdf7 !important;
+  color: var(--val-ink) !important;
+  box-shadow: inset 2px 2px 0 rgba(9,11,12,.08) !important;
+}
+
+html[data-theme^="signal-orange"] :is(input, textarea, select):focus {
+  border-color: var(--val-orange) !important;
+  box-shadow: 0 0 0 3px rgba(255,90,22,.2), inset 2px 2px 0 rgba(9,11,12,.08) !important;
+}
+
+html[data-theme^="signal-orange"] .dashboard-main-sidebar .dashboard-nav-icon {
+  border: 1px solid rgba(247,244,236,.22) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--val-paper) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme^="signal-orange"] .dashboard-main-sidebar .dashboard-nav-icon:hover {
+  border-color: var(--val-orange) !important;
+  background: rgba(255,90,22,.1) !important;
+  color: var(--val-orange) !important;
+  transform: none !important;
+}
+
+html[data-theme^="signal-orange"] .dashboard-main-sidebar .dashboard-nav-icon.dashboard-nav-icon-active,
+html[data-theme^="signal-orange"] .dashboard-main-sidebar .dashboard-nav-icon:active {
+  border-color: var(--val-orange) !important;
+  background: var(--val-orange) !important;
+  color: var(--val-ink) !important;
+  box-shadow: 3px 3px 0 rgba(247,244,236,.72) !important;
+  transform: translate(-1px, -1px) !important;
+}
+
+html[data-theme^="signal-orange"] .dashboard-main-sidebar .brand-logo-image {
+  filter: brightness(0) invert(1) !important;
+}
+
+html[data-theme^="signal-orange"] .channel-top-bar,
+html[data-theme^="signal-orange"] [data-tour-target="chat-panel"] {
+  box-shadow: 4px 4px 0 var(--val-ink) !important;
+}
+
+html[data-theme^="signal-orange"] .message-feed,
+html[data-theme^="signal-orange"] .chat-composer {
+  background: var(--val-paper) !important;
+  color: var(--val-ink) !important;
+}
+
+html[data-theme^="signal-orange"] .message-row.message-row {
+  border-bottom-color: var(--val-rule) !important;
+  color: var(--val-ink) !important;
+}
+
+html[data-theme^="signal-orange"] .message-row :is(p, span, time) {
+  color: inherit;
+}
+
+html[data-theme^="signal-orange"] .message-bubble {
+  color: var(--val-ink) !important;
+}
+
+html[data-theme^="signal-orange"] .chat-composer {
+  border-top: 1px solid var(--val-line) !important;
+  box-shadow: 0 -4px 0 var(--val-ink) !important;
+}
+
+html[data-theme^="signal-orange"] .app-badge {
+  border: 1px solid var(--val-line) !important;
+  border-radius: 0 !important;
+  background: var(--val-paper-muted) !important;
+  color: var(--val-ink) !important;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1179px) {
+  html[data-theme^="signal-orange"] .dashboard-main-sidebar {
+    background: var(--val-ink) !important;
+    border-top: 1px solid rgba(247,244,236,.26) !important;
+  }
+}
+
+@media (max-width: 639px) {
+  html[data-theme^="signal-orange"] .app-page-container {
+    padding: .7rem !important;
+  }
+
+  html[data-theme^="signal-orange"] .app-page-header {
+    padding: 1.15rem !important;
+    background: var(--val-paper) !important;
+  }
+
+  html[data-theme^="signal-orange"] .app-page-header h1,
+  html[data-theme^="signal-orange"] .app-page-header h2,
+  html[data-theme^="signal-orange"] .dashboard-welcome-card h1 {
+    font-size: clamp(2.5rem, 16vw, 4.25rem) !important;
+  }
+}
+
 .val-command-dock {
   position: fixed;
   left: 50%;
