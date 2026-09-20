@@ -5,7 +5,7 @@ import { type MusicCommand, type MusicSession } from "@/lib/music/types";
 import { coalesceMusicRefresh } from "@/lib/music/refresh";
 export { useMusicVolume } from "./music-volume";
 
-type Snapshot = { session: MusicSession; serverTime: number; serverReceivedAt: number; source: string | null };
+type Snapshot = { session: MusicSession; serverTime: number; serverReceivedAt: number; source: string | null; viewerId: string };
 type MusicContextValue = {
   channelId: string; session: MusicSession | null; source: string | null; clockOffset: number;
   isDJ: boolean; canStart: boolean; busy: boolean; error: string | null; reconnecting: boolean;
@@ -78,7 +78,7 @@ function ActiveMusicSession({ channelId, children }: { channelId: string; childr
     refreshTrigger.current = update;
     const timer = window.setInterval(() => {
       if (document.visibilityState === "visible" && (!current.current || current.current.session.track)) update();
-    }, 60000);
+    }, 3000);
     const initial = window.setTimeout(update, 0);
     const visible = () => { if (document.visibilityState === "visible") update(); };
     document.addEventListener("visibilitychange", visible);
@@ -115,8 +115,8 @@ function ActiveMusicSession({ channelId, children }: { channelId: string; childr
 
   const session = snapshot?.session ?? null;
   const value = useMemo(() => ({ channelId, session, source: snapshot?.source ?? null, clockOffset,
-    isDJ: false, canStart: !!session && !session.djUserId,
-    busy, error, reconnecting, command, refreshNow }), [channelId, session, snapshot?.source, clockOffset, busy, error, reconnecting, command, refreshNow]);
+    isDJ: !!session && session.djUserId === snapshot?.viewerId, canStart: !!session && !session.djUserId,
+    busy, error, reconnecting, command, refreshNow }), [channelId, session, snapshot?.source, snapshot?.viewerId, clockOffset, busy, error, reconnecting, command, refreshNow]);
 
   return <MusicContext.Provider value={value}>{children}</MusicContext.Provider>;
 }

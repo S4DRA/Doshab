@@ -1,4 +1,5 @@
 import "server-only";
+
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getMusicProvider } from "./providers";
@@ -8,10 +9,86 @@ import { emptySession, expectedPosition, type MusicCommand, type MusicSession, t
 
 type Context = { channelId: string; groupId: string; user: { id: string; name: string; email: string } };
 type CommandRequest = { command: MusicCommand; commandId: string; version: number; roomId: string };
-export async function authorizeMusic(channelId: string): Promise<Context> { const user = await getCurrentUser(); if (!user) throw new MusicError("Authentication required.", 401); const channel = await prisma.channel.findFirst({ where: { id: channelId, type: "VOICE", group: { members: { some: { userId: user.id } } } }, select: { id: true, groupId: true } }); if (!channel) throw new MusicError("You do not have access to this voice room.", 403); return { channelId: channel.id, groupId: channel.groupId, user }; }
-function fromRecord(value: unknown, channelId: string, version: number): MusicSession { if (!value || typeof value !== "object" || Array.isArray(value)) return emptySession(channelId); const session = value as MusicSession; return Number.isSafeInteger(session.version) && Array.isArray(session.queue) && Array.isArray(session.commandIds) ? { ...session, roomId: channelId, version } : emptySession(channelId); }
-async function load(context: Context) { const record = await prisma.musicSession.findUnique({ where: { channelId: context.channelId } }); return record ? fromRecord(record.state, context.channelId, record.version) : emptySession(context.channelId); }
-async function advance(session: MusicSession, now: number) { const next = { ...session, queue: [...session.queue] }; const queued = next.queue.shift(); if (queued) { const track = await getMusicProvider("youtube").getTrack(queued.id); if (track) return startTrack(next, { ...queued, ...track }, now); } if (next.autoplay && next.track) { const related = await getMusicProvider("youtube").getRelatedTracks(next.track); const track = selectAutoplayTrack(next.track, related, [...next.recentlyPlayed, ...next.queue.map((item) => item.id)]); if (track) return startTrack(next, { ...track, queueId: crypto.randomUUID(), addedBy: { id: "", name: "Autoplay" } }, now); } return { ...next, state: "STOPPED" as const, position: 0, startedAt: now, track: null }; }
-function responseFor(session: MusicSession) { return { session, serverTime: Date.now(), source: session.track ? getMusicProvider(session.track.provider).createPlaybackSource(session.track.id) : null }; }
-export async function roomMusic(context: Context, input?: CommandRequest) { const current = await load(context); if (!input) return responseFor(current); if (input.roomId !== current.roomId || (input.command.type !== "enqueue" && input.version !== current.version)) throw new MusicError("Room music changed. Your player is resynchronizing; try again.", 409); if (current.commandIds.includes(input.commandId)) return responseFor(current); let track: QueueTrack | undefined; if ("trackId" in input.command) { const resolved = await getMusicProvider(input.command.provider).getTrack(input.command.trackId); if (!resolved) throw new MusicError("This track cannot be played here."); track = { ...resolved, queueId: input.commandId, addedBy: { id: context.user.id, name: context.user.name } }; } const actor: MusicParticipant = { id: context.user.id, name: context.user.name, joinedAt: 0 }; let next = applyCommand(current, input.command, actor, Date.now(), track); if (!next.djUserId && (input.command.type === "playNow" || input.command.type === "play")) next = { ...next, djUserId: actor.id, djName: actor.name }; if (input.command.type === "next" || input.command.type === "ended" || (next.state === "PLAYING" && next.track && expectedPosition(next, Date.now()) >= next.track.duration)) next = await advance(next, Date.now()); next.commandIds = [...next.commandIds, input.commandId].slice(-40); const saved = await prisma.musicSession.upsert({ where: { channelId: context.channelId }, create: { channelId: context.channelId, state: next, version: 1 }, update: { state: next, version: { increment: 1 } }, select: { state: true, version: true } }); return responseFor(fromRecord(saved.state, context.channelId, saved.version)); }
-export async function requireActiveMusicParticipant(context: Context) { return context; }
+
+export async function authorizeMusic(channelId: string): Promise<Context> {
+  const user = await getCurrentUser();
+  if (!user) throw new MusicError("Authentication required.", 401);
+  const channel = await prisma.channel.findFirst({ where: { id: channelId, type: "VOICE", group: { members: { some: { userId: user.id } } } }, select: { id: true, groupId: true } });
+  if (!channel) throw new MusicError("You do not have access to this voice room.", 403);
+  return { channelId: channel.id, groupId: channel.groupId, user };
+}
+
+function fromRecord(value: unknown, channelId: string, version: number): MusicSession {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return emptySession(channelId);
+  const session = value as MusicSession;
+  return Number.isSafeInteger(session.version) && Array.isArray(session.queue) && Array.isArray(session.commandIds)
+    ? { ...session, roomId: channelId, version }
+    : emptySession(channelId);
+}
+
+async function load(context: Context) {
+  const record = await prisma.musicSession.findUnique({ where: { channelId: context.channelId } });
+  return record ? fromRecord(record.state, context.channelId, record.version) : emptySession(context.channelId);
+}
+
+async function advance(session: MusicSession, now: number) {
+  const next = { ...session, queue: [...session.queue] };
+  const queued = next.queue.shift();
+  if (queued) {
+    const track = await getMusicProvider("youtube").getTrack(queued.id);
+    if (track) return startTrack(next, { ...queued, ...track }, now);
+  }
+  if (next.autoplay && next.track) {
+    const related = await getMusicProvider("youtube").getRelatedTracks(next.track);
+    const track = selectAutoplayTrack(next.track, related, [...next.recentlyPlayed, ...next.queue.map((item) => item.id)]);
+    if (track) return startTrack(next, { ...track, queueId: crypto.randomUUID(), addedBy: { id: "", name: "Autoplay" } }, now);
+  }
+  return { ...next, state: "STOPPED" as const, position: 0, startedAt: now, track: null };
+}
+
+function responseFor(session: MusicSession, viewerId: string) {
+  return {
+    session,
+    serverTime: Date.now(),
+    source: session.track ? getMusicProvider(session.track.provider).createPlaybackSource(session.track.id) : null,
+    viewerId,
+  };
+}
+
+export async function roomMusic(context: Context, input?: CommandRequest) {
+  const current = await load(context);
+  if (!input) return responseFor(current, context.user.id);
+  if (input.roomId !== current.roomId || (input.command.type !== "enqueue" && input.version !== current.version)) {
+    throw new MusicError("Room music changed. Your player is resynchronizing; try again.", 409);
+  }
+  if (current.commandIds.includes(input.commandId)) return responseFor(current, context.user.id);
+
+  let track: QueueTrack | undefined;
+  if ("trackId" in input.command) {
+    const resolved = await getMusicProvider(input.command.provider).getTrack(input.command.trackId);
+    if (!resolved) throw new MusicError("This track cannot be played here.");
+    track = { ...resolved, queueId: input.commandId, addedBy: { id: context.user.id, name: context.user.name } };
+  }
+
+  const actor: MusicParticipant = { id: context.user.id, name: context.user.name, joinedAt: 0 };
+  let next = applyCommand(current, input.command, actor, Date.now(), track);
+  if (!next.djUserId && (input.command.type === "playNow" || input.command.type === "play")) {
+    next = { ...next, djUserId: actor.id, djName: actor.name };
+  }
+  if (input.command.type === "next" || input.command.type === "ended" || (next.state === "PLAYING" && next.track && expectedPosition(next, Date.now()) >= next.track.duration)) {
+    next = await advance(next, Date.now());
+  }
+
+  next.commandIds = [...next.commandIds, input.commandId].slice(-40);
+  const saved = await prisma.musicSession.upsert({
+    where: { channelId: context.channelId },
+    create: { channelId: context.channelId, state: next, version: 1 },
+    update: { state: next, version: { increment: 1 } },
+    select: { state: true, version: true },
+  });
+  return responseFor(fromRecord(saved.state, context.channelId, saved.version), context.user.id);
+}
+
+export async function requireActiveMusicParticipant(context: Context) {
+  return context;
+}

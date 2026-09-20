@@ -8,7 +8,7 @@ import type { LocalMedia, MediaConnectionState, MediaParticipant, MediaSource, R
 type Credential = { participant: { email: string; id: string; name: string }; signalingRoomId: string };
 type Listener = () => void;
 type Signal = { candidate?: RTCIceCandidateInit; description?: RTCSessionDescriptionInit; from: string; participant: Credential["participant"]; to?: string; type: "answer" | "candidate" | "hello" | "leave" | "offer" };
-type Peer = { candidates: RTCIceCandidateInit[]; connection: RTCPeerConnection; ignoreOffer: boolean; makingOffer: boolean; participant: Credential["participant"]; polite: boolean };
+type Peer = { candidates: RTCIceCandidateInit[]; connection: RTCPeerConnection; ignoreOffer: boolean; makingOffer: boolean; negotiationQueued: boolean; participant: Credential["participant"]; polite: boolean };
 
 const iceServers: RTCIceServer[] = [{ urls: "stun:stun.l.google.com:19302" }];
 
@@ -70,11 +70,11 @@ export class MediaClient {
 
   private createPeer(remoteId: string, participant: Credential["participant"]) {
     const connection = new RTCPeerConnection({ iceServers });
-    const peer: Peer = { candidates: [], connection, ignoreOffer: false, makingOffer: false, participant, polite: this.instanceId.localeCompare(remoteId) > 0 };
+    const peer: Peer = { candidates: [], connection, ignoreOffer: false, makingOffer: false, negotiationQueued: false, participant, polite: this.instanceId.localeCompare(remoteId) > 0 };
     this.peers.set(remoteId, peer); this.participants.set(remoteId, { userId: participant.id, metadata: participant, muted: false, speaking: false });
     for (const track of this.localTracks.values()) connection.addTrack(track, new MediaStream([track]));
     connection.onicecandidate = ({ candidate }) => { if (candidate) void this.send({ type: "candidate", to: remoteId, candidate: candidate.toJSON() }); };
-    connection.onnegotiationneeded = () => { void this.createOffer(remoteId, peer); };
+    connection.onnegotiationneeded = () => { void this.requestNegotiation(remoteId, peer); };
     connection.ontrack = ({ track }) => {
       const source: MediaSource = track.kind === "audio" ? "mic" : "camera"; const id = `${remoteId}:${track.id}`;
       this.remote.set(id, { consumerId: id, producerId: id, userId: participant.id, source, kind: track.kind as "audio" | "video", track });
@@ -90,7 +90,7 @@ export class MediaClient {
     let peer = this.peers.get(signal.from);
     if (signal.type === "hello") {
       if (!peer) peer = this.createPeer(signal.from, signal.participant);
-      if (this.instanceId.localeCompare(signal.from) > 0) await this.createOffer(signal.from, peer);
+      if (this.instanceId.localeCompare(signal.from) > 0) await this.requestNegotiation(signal.from, peer);
       return;
     }
     if (!peer) peer = this.createPeer(signal.from, signal.participant);
@@ -105,12 +105,17 @@ export class MediaClient {
     await peer.connection.setRemoteDescription(signal.description);
     for (const candidate of peer.candidates.splice(0)) await peer.connection.addIceCandidate(candidate);
     if (signal.description.type === "offer") { await peer.connection.setLocalDescription(); await this.send({ type: "answer", to: signal.from, description: peer.connection.localDescription ?? undefined }); }
+    await this.requestNegotiation(signal.from, peer);
   }
 
-  private async createOffer(remoteId: string, peer: Peer) {
+  private async requestNegotiation(remoteId: string, peer: Peer) {
+    peer.negotiationQueued = true;
     if (peer.makingOffer || peer.connection.signalingState !== "stable") return;
-    peer.makingOffer = true;
-    try { await peer.connection.setLocalDescription(); await this.send({ type: "offer", to: remoteId, description: peer.connection.localDescription ?? undefined }); } finally { peer.makingOffer = false; }
+    while (peer.negotiationQueued && peer.connection.signalingState === "stable") {
+      peer.negotiationQueued = false;
+      peer.makingOffer = true;
+      try { await peer.connection.setLocalDescription(); await this.send({ type: "offer", to: remoteId, description: peer.connection.localDescription ?? undefined }); } finally { peer.makingOffer = false; }
+    }
   }
 
   private closePeer(remoteId: string) {
