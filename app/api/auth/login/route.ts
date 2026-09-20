@@ -36,6 +36,14 @@ function isDashboardPath(path: string) {
   return path === "/dashboard" || path.startsWith("/dashboard/") || path.startsWith("/dashboard?");
 }
 
+function isDatabaseConnectionError(message: string) {
+  return (
+    message.includes("ECONNREFUSED") ||
+    message.includes("Can't reach database server") ||
+    message.includes("P1001")
+  );
+}
+
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const parsed = loginSchema.safeParse({
@@ -168,6 +176,14 @@ export async function POST(request: NextRequest) {
 
     if (message.includes("Missing NEXT_PUBLIC_SUPABASE_URL")) {
       return redirectWithError(request, "Supabase Auth is not configured on this server.", returnTo);
+    }
+
+    if (process.env.NODE_ENV !== "production" && isDatabaseConnectionError(message)) {
+      return redirectWithError(
+        request,
+        "Local database is unavailable. Start Supabase or Postgres and try again.",
+        returnTo,
+      );
     }
 
     console.error("Login failed", error);
