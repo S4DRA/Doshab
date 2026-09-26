@@ -1,3 +1,4 @@
+import { ValPageHero } from "@/components/layout/val-page-hero";
 import { redirect } from "next/navigation";
 
 import { ProfileForm } from "@/components/profile/profile-form";
@@ -24,15 +25,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   return (
     <main className="app-page-scroll bg-[#050705] text-slate-100">
       <div className="app-page-container grid gap-5">
-        <section className="app-page-header">
-          <p className="app-section-title">Profile settings</p>
-          <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
-            Your account and preferences
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-            Keep your identity, availability, alerts, and display settings in one predictable place.
-          </p>
-        </section>
+        <ValPageHero eyebrow="Settings / Your account" title="Your account" description="Your identity, your availability, your way of connecting. Make yourself at home." />
 
         <div className="grid w-full gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.75fr)]">
           <div className="space-y-5">

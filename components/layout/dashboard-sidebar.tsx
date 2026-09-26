@@ -22,6 +22,7 @@ const navItems = [
       </svg>
     ),
   },
+  { href: "/dashboard/channels", label: "Spaces", icon: <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5Z M3 12l9 5 9-5 M3 16l9 5 9-5" /></svg> },
   {
     href: "/dashboard/messages",
     label: "Messages",
@@ -1718,6 +1719,7 @@ export function DashboardSidebar({
         document.body,
       ) : null}
       <div className="flex w-full min-w-0 items-center justify-center sm:hidden" aria-label="VAL mobile command trigger" data-tour-target="mobile-command-button">
+        {navItems.filter((item) => item.label === "Home" || item.label === "Messages").map((item) => <Link className="val-mobile-link" href={item.href} key={item.href} aria-current={pathname === item.href ? "page" : undefined}>{item.icon}<span>{item.label}</span></Link>)}
         <button
           aria-expanded={commandOpen}
           aria-haspopup="menu"
@@ -1757,7 +1759,11 @@ export function DashboardSidebar({
           }}
           onPointerUp={(event) => {
             event.preventDefault();
+            const wasShortPress = commandHoldTimerRef.current !== null;
             cancelCommandHold();
+            if (wasShortPress) {
+              openCommandDock();
+            }
           }}
           ref={commandButtonRef}
           title="VAL command dock"
@@ -1765,6 +1771,7 @@ export function DashboardSidebar({
         >
           <span className="val-command-button-mark" aria-hidden="true" />
         </button>
+        {navItems.filter((item) => item.label === "Friends" || item.label === "Spaces").map((item) => <Link className="val-mobile-link" href={item.href} key={item.href} aria-current={pathname === item.href ? "page" : undefined}>{item.icon}<span>{item.label}</span></Link>)}
       </div>
       <Link
         aria-label="VAL dashboard home"
@@ -1772,7 +1779,7 @@ export function DashboardSidebar({
         href="/dashboard"
       >
         <span className="dashboard-brand-mark" aria-hidden="true" />
-        <span className="dashboard-brand-word">VAL</span>
+        <span className="dashboard-brand-word">VAL<span className="val-brand-caption">A more human internet</span></span>
       </Link>
       <nav
         className="hidden min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overscroll-contain px-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:flex sm:min-h-0 sm:flex-col sm:items-center sm:gap-2 sm:overflow-x-hidden sm:overflow-y-auto sm:px-0 sm:pb-2 sm:pt-3 [&::-webkit-scrollbar]:hidden"
@@ -1806,7 +1813,7 @@ export function DashboardSidebar({
                 title="Friends"
                 type="button"
               >
-                {item.icon}
+                {item.icon}<span className="val-nav-label">{item.label}</span>
               </button>
             );
           }
@@ -1824,7 +1831,7 @@ export function DashboardSidebar({
               key={item.href}
               title={item.label}
             >
-              {item.icon}
+              {item.icon}<span className="val-nav-label">{item.label}</span>
             </Link>
           );
         })}
@@ -1848,7 +1855,7 @@ export function DashboardSidebar({
             <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M12 5v14" />
               <path d="M5 12h14" />
-            </svg>
+            </svg><span className="val-nav-label">Create</span>
           </button>
         </div>
         {groups.length ? (
@@ -1861,7 +1868,7 @@ export function DashboardSidebar({
 
           return (
             <Link
-              aria-label={`${group.name} space`}
+              data-nav-label={group.name} aria-label={`${group.name} space`}
               className={`dashboard-nav-icon grid size-11 shrink-0 place-items-center rounded-lg border text-sm font-black transition sm:size-12 min-[1180px]:size-[3.25rem] min-[1180px]:text-base ${
                 active
                   ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
@@ -1900,7 +1907,7 @@ export function DashboardSidebar({
             <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
+            </svg><span className="val-nav-label">Notifications</span>
             {unreadCount ? (
               <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-[#FF5F25] px-1 text-[10px] font-black leading-5 text-black">
                 {unreadCount > 9 ? "9+" : unreadCount}
@@ -1937,6 +1944,7 @@ export function DashboardSidebar({
                 <path d="M4 21a8 8 0 0 1 16 0" />
               </svg>
             )}
+            <span className="val-nav-label">Profile / Settings</span>
           </button>
         </div>
       </div>

@@ -42,6 +42,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Media lifecycle tests
+        run: npm run test:media
+
       - name: Dependency audit
         run: |
           set +e

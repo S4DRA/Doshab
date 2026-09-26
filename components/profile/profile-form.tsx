@@ -131,7 +131,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
               </div>
 
               <div className="mt-4 grid gap-3">
-                <label className="block rounded-lg border border-white/10 bg-[#0b1020] px-4 py-3">
+                <label className="val-upload-field block rounded-lg border border-white/10 bg-[#0b1020] px-4 py-3">
                   <span className="text-sm font-semibold text-white">Choose photo</span>
                   <input
                     className="mt-3 w-full text-base text-slate-200 file:rounded-lg file:border file:border-white/10 file:bg-[#FF5F25]/20 file:px-3 file:py-2 file:text-sm file:text-slate-100 sm:text-sm"
@@ -143,7 +143,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 </label>
 
                 {user.image ? (
-                  <label className="flex items-center gap-3 rounded-lg border border-white/10 bg-[#0b1020] px-4 py-3 text-sm text-slate-400">
+                  <label className="val-upload-field flex items-center gap-3 rounded-lg border border-white/10 bg-[#0b1020] px-4 py-3 text-sm text-slate-400">
                     <input
                       checked={removeImage}
                       className="h-4 w-4 rounded border-white/10 bg-[#090d18] text-[#FF5F25]"
