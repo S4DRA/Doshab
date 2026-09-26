@@ -1,5 +1,4 @@
 import Link from "next/link";
-
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { formatReadableTimestamp } from "@/lib/utils";
@@ -16,7 +15,8 @@ type GroupInvitesListProps = {
 
 export function GroupInvitesList({ invites, emptyActions }: GroupInvitesListProps) {
   return (
-    <section className="app-panel p-5 xl:col-span-2">
+    <section className="app-panel val-request-panel p-5 xl:col-span-2">
+      <div className="val-section-label"><b>03</b><span>[ Space invites ]</span><i /></div>
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <span className="dashboard-glyph" aria-hidden="true">
@@ -26,12 +26,12 @@ export function GroupInvitesList({ invites, emptyActions }: GroupInvitesListProp
             </svg>
           </span>
           <span className="min-w-0">
-            <p className="app-section-title">Invites</p>
+
             <h2 className="mt-2 text-base font-bold text-white">Space invites</h2>
           </span>
         </div>
         <span className="app-badge px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]">
-          {invites.length} {invites.length === 1 ? "pending" : "pending"}
+          <b>{invites.length}</b> pending
         </span>
       </div>
       {invites.length ? (

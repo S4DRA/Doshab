@@ -1,3 +1,4 @@
+import { ValPageHero } from "@/components/layout/val-page-hero";
 import Link from "next/link";
 
 import { ChannelHeaderActions } from "@/components/chat/channel-header-actions";
@@ -67,7 +68,7 @@ export function DashboardShell({
     : null;
 
   return (
-    <main className="dashboard-shell-root flex h-full min-h-0 w-full min-w-0 overflow-hidden bg-[#070907]/95 text-slate-100">
+    <main data-context={selectedGroup ? "space" : "overview"} data-channel-type={selectedChannel?.type.toLowerCase()} className="dashboard-shell-root flex h-full min-h-0 w-full min-w-0 overflow-hidden bg-[#070907]/95 text-slate-100">
       <aside className="dashboard-secondary-sidebar hidden min-h-0 w-[292px] shrink-0 flex-col gap-3 overflow-hidden border-r border-white/10 bg-[#0d100e] p-3 min-[1180px]:flex min-[1500px]:w-[312px]">
         {activeSection === "messages" || selectedGroup?.isDirectMessage ? (
           <MessageThreadSidebar
@@ -150,7 +151,7 @@ export function DashboardShell({
         <header className="dashboard-shell-header sticky top-0 z-10 flex min-h-14 shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 sm:px-6 min-[1180px]:min-h-16 min-[1180px]:px-7">
           <div className="min-w-0">
             <p className="app-section-title">
-              {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Channels" : activeSection === "messages" ? "Messages" : "Dashboard"}
+              {selectedChannel ? selectedChannel.name : selectedGroup ? selectedGroup.name : activeSection === "channels" ? "Spaces" : activeSection === "messages" ? "Messages" : "Dashboard"}
             </p>
             <p className="mt-0.5 truncate text-sm text-slate-400 min-[1180px]:text-xs">
               {selectedChannel
@@ -444,15 +445,7 @@ function ChannelsHome({
   return (
     <div className="app-page-scroll">
       <div className="app-page-container space-y-4">
-        <section className="app-page-header">
-          <p className="app-section-title">
-            Channels
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">All channels in one place</h2>
-          <p className="mt-3 max-w-2xl text-xs leading-5 text-slate-300">
-            View every text and voice channel across your private spaces, then jump into the space you need.
-          </p>
-        </section>
+        <ValPageHero eyebrow="Spaces / Your communities" title="Bigger spaces" description="Your people, your channels. A place for every conversation." actions={<Link className="app-button-primary val-action" href="/dashboard#create-space">Create space +</Link>} />
 
         <section className="grid gap-4 xl:grid-cols-2">
           {groups.length ? (
@@ -614,6 +607,9 @@ function ChannelMain({
           channelId={channel.id}
           channelName={channel.name}
           groupId={groupId}
+          groupName={groupName}
+          canInvite={canInvite}
+          image={currentUser?.image}
         />
       </div>
     );
@@ -676,34 +672,9 @@ function DashboardHome({
   return (
     <div className="app-page-scroll">
       <div className="app-page-container dashboard-home-stack grid">
-        <section className="app-page-header dashboard-welcome-card">
-          <span className="dashboard-welcome-mark" aria-hidden="true" />
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <p className="app-section-title">Home</p>
-              <h1 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-5xl">
-                Welcome back{firstName ? `, ${firstName}` : ""}
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                Your spaces, requests, invites, and online friends are ready from one focused command center.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                className="app-button-secondary inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
-                href="/dashboard/friends?add=1"
-              >
-                Add friend
-              </Link>
-              <Link
-                className="app-button-primary inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold transition"
-                href="#create-space"
-              >
-                Create space
-              </Link>
-            </div>
-          </div>
-        </section>
+        <ValPageHero eyebrow="Home / Spaces foundation" title="Welcome back," accent={firstName || "friend"}
+          description="Your people, conversations, and spaces. One place to pick up where you left off."
+          />
 
         {data?.message ? (
           <Alert tone={data.messageTone ?? "neutral"}>{data.message}</Alert>
@@ -711,20 +682,19 @@ function DashboardHome({
 
         {data?.requestsPanel ? data.requestsPanel : null}
 
-        <section className="grid gap-3">
-          <div className="flex items-center justify-between gap-3">
+        <section className="val-home-section grid gap-3">
+          <div className="val-home-section-heading flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
-              <DashboardGlyph icon="space" />
+              <b className="val-section-number">04</b>
               <span className="min-w-0">
-                <p className="app-section-title">Spaces</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Your spaces</h2>
+                <h2 className="mt-2 text-xl font-semibold text-white">Your spaces</h2>
               </span>
             </div>
             <span className="app-badge px-3 py-1 text-xs font-semibold">
               {groups.length} total
             </span>
           </div>
-          <div className={`grid gap-4 md:grid-cols-2 ${groups.length === 1 ? "xl:grid-cols-1" : "xl:grid-cols-3"}`}>
+          <div className="val-home-spaces">
             {groups.length ? (
               groups.map((group) => (
                 <HomeGroupCard currentUserId={currentUserId} group={group} key={group.id} />
@@ -750,15 +720,15 @@ function DashboardHome({
                 </div>
               </div>
             )}
+            <Link href="#create-space" className="val-create-space-tile"><b>+</b><strong>Create a new space</strong><span>Build a space for your people,<br />ideas and what&apos;s next.</span></Link>
           </div>
         </section>
 
-        <section className="grid gap-3">
-          <div className="flex items-center justify-between gap-3">
+        <section className="val-home-section grid gap-3">
+          <div className="val-home-section-heading flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
-              <DashboardGlyph icon="friends" />
+              <b className="val-section-number">05</b>
               <span className="min-w-0">
-                <p className="app-section-title">Online friends</p>
                 <h2 className="mt-2 text-xl font-semibold text-white">Friends online</h2>
               </span>
             </div>
@@ -817,132 +787,24 @@ function DashboardHome({
   );
 }
 
-function HomeGroupCard({
-  currentUserId,
-  group,
-}: {
-  currentUserId?: string;
-  group: DashboardGroup;
-}) {
+function HomeGroupCard({ currentUserId, group }: { currentUserId?: string; group: DashboardGroup }) {
   const members = group.members ?? [];
   const channels = group.channels ?? [];
-  const visibleChannels = channels.slice(0, 3);
-  const visibleMembers = members.slice(0, 3);
   const currentMember = members.find((member) => member.user.id === currentUserId);
-  const canManageSpace =
-    currentMember?.role === "OWNER" || currentMember?.role === "ADMIN";
-  const defaultSpaceHref = getDefaultSpaceHref(group);
-
-  return (
-    <article className="app-card dashboard-space-card transition">
-      <div className="dashboard-space-identity flex min-w-0 items-start gap-4">
-        <AvatarInitials fallback="group" imageUrl={group.image} size="lg" value={group.name} />
-        <span className="min-w-0 flex-1">
-          <Link
-            className="block truncate text-lg font-black text-white transition hover:text-[#FFB199]"
-            href={defaultSpaceHref}
-          >
-            {group.name}
-          </Link>
-          <span className="mt-1 block text-xs font-bold text-slate-400">
-            {channels.length} {channels.length === 1 ? "channel" : "channels"} / {members.length} {members.length === 1 ? "member" : "members"}
-          </span>
-          {group.description ? (
-            <span className="mt-2 block line-clamp-2 text-xs leading-5 text-slate-500">
-              {group.description}
-            </span>
-          ) : null}
-          {visibleChannels.length ? (
-            <span className="dashboard-channel-pills mt-3 flex min-w-0 flex-wrap gap-2">
-              {visibleChannels.map((channel) => (
-                <Link
-                  className="dashboard-channel-pill"
-                  href={
-                    channel.type === "TEXT"
-                      ? `/dashboard/groups/${group.id}/channels/${channel.id}`
-                      : `/dashboard/groups/${group.id}`
-                  }
-                  key={channel.id}
-                >
-                  {channel.type === "TEXT" ? "# " : ""}
-                  {channel.name}
-                </Link>
-              ))}
-              {channels.length > visibleChannels.length ? (
-                <span className="dashboard-channel-pill dashboard-channel-pill-muted">
-                  +{channels.length - visibleChannels.length}
-                </span>
-              ) : null}
-            </span>
-          ) : null}
-        </span>
-      </div>
-
-      <div className="dashboard-space-people min-w-0">
-        <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-[#FF5F25]">
-          People
-        </span>
-        <span className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
-          {visibleMembers.length ? (
-            <>
-              {visibleMembers.map((member) => (
-                <span
-                  className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1"
-                  key={member.id}
-                >
-                  <AvatarInitials
-                    imageUrl={member.user.image}
-                    size="sm"
-                    value={member.user.name || member.user.email}
-                  />
-                  <span className="truncate text-xs font-semibold text-slate-200">
-                    {member.user.name || member.user.email}
-                  </span>
-                </span>
-              ))}
-              {members.length > 3 ? (
-                <span className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 text-xs font-bold text-slate-300">
-                  ....
-                </span>
-              ) : null}
-            </>
-          ) : (
-            <span className="text-sm text-slate-400">No people yet</span>
-          )}
-        </span>
-      </div>
-
-      <div className="dashboard-space-actions flex flex-wrap gap-2">
-        {currentMember?.role ? (
-          <span className="dashboard-space-role app-badge px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em]">
-            {currentMember.role.toLowerCase()}
-          </span>
-        ) : null}
-        <Link
-          className="app-button-primary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
-          href={defaultSpaceHref}
-        >
-          Open
-        </Link>
-        {canManageSpace ? (
-          <>
-            <Link
-              className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
-              href={`/dashboard/groups/${group.id}/settings#invite-friends`}
-            >
-              Invite
-            </Link>
-            <Link
-              className="app-button-secondary inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold transition"
-              href={`/dashboard/groups/${group.id}/settings`}
-            >
-              Settings
-            </Link>
-          </>
-        ) : null}
-      </div>
-    </article>
-  );
+  const canManageSpace = currentMember?.role === "OWNER" || currentMember?.role === "ADMIN";
+  const online = members.filter((member) => member.user.status === "ONLINE").length;
+  return <article className="val-space-card">
+    <Link className="val-space-cover" href={getDefaultSpaceHref(group)}>
+      {group.image ? <AvatarInitials fallback="group" imageUrl={group.image} size="lg" value={group.name} /> : null}
+      <span className="val-space-copy"><strong>{group.name}</strong>{group.description ? <span>{group.description}</span> : null}<small>{members.length} {members.length === 1 ? "member" : "members"}<i />{online ? `${online} online` : `${channels.length} channels`}</small></span>
+    </Link>
+    <details className="val-space-details"><summary aria-label={`${group.name} actions`}>Space actions <span>+</span></summary><div>
+      <Link href={getDefaultSpaceHref(group)}>Open space &rarr;</Link>
+      {channels.slice(0,3).map((channel) => <Link key={channel.id} href={`/dashboard/groups/${group.id}/channels/${channel.id}`}>{channel.type === "TEXT" ? "# " : "Voice: "}{channel.name}</Link>)}
+      {canManageSpace ? <><Link href={`/dashboard/groups/${group.id}/settings#invite-friends`}>Invite friends</Link><Link href={`/dashboard/groups/${group.id}/settings`}>Space settings</Link></> : null}
+      {currentMember ? <small>{currentMember.role.toLowerCase()}</small> : null}
+    </div></details>
+  </article>;
 }
 
 function OnlineFriendCard({ friend }: { friend: FriendPerson }) {

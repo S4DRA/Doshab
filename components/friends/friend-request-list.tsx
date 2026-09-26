@@ -25,7 +25,8 @@ export function FriendRequestList({
   emptyAction,
 }: FriendRequestListProps) {
   return (
-    <section className="app-panel p-5">
+    <section className={`app-panel val-request-panel val-request-${kind} p-5`}>
+      <div className="val-section-label"><b>{kind === "incoming" ? "01" : "02"}</b><span>[ {kind === "incoming" ? "Friend requests" : "Outgoing requests"} ]</span><i /></div>
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <span className="dashboard-glyph" aria-hidden="true">
@@ -48,7 +49,7 @@ export function FriendRequestList({
           <h2 className="min-w-0 text-base font-bold text-white">{title}</h2>
         </div>
         <span className="app-badge px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]">
-          {requests.length} {requests.length === 1 ? "request" : "requests"}
+          <b>{requests.length}</b> {requests.length === 1 ? "request" : "requests"}
         </span>
       </div>
       {requests.length ? (

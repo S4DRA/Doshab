@@ -54,6 +54,16 @@ export function ProfileSettingsPanel() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showPhoneSteps, setShowPhoneSteps] = useState(false);
   const loadedSettingsRef = useRef(false);
+  useEffect(() => {
+    const selectSection = () => {
+      const section = window.location.hash.slice(1);
+      if (["profile", "voice", "notifications", "appearance", "security", "account"].includes(section)) setActiveSection(section as SettingsSectionId);
+    };
+    const frame = requestAnimationFrame(selectSection);
+    window.addEventListener("hashchange", selectSection);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("hashchange", selectSection); };
+  }, []);
+
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {

@@ -1,35 +1,165 @@
-"use client";
+﻿"use client";
 
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { MusicButton } from "@/components/music/music-button";
+import { CallWorkspace, CallControls } from "@/components/calls/call-workspace";
 import { MediaClient } from "@/lib/media/media-client";
-import type { LocalMedia, MediaParticipant, RemoteMedia } from "@/lib/media/types";
+import type { MediaParticipant, RemoteMedia } from "@/lib/media/types";
 import type { VoiceSettings } from "@/lib/voice-settings";
 
-type PersistentCallSession = { href?: string; id: string; kind: "friend" | "group"; title: string; subtitle?: string; participant: { id: string; name: string; email: string }; signalingRoomId: string; roomId: string; endUrl?: string; statusUrl?: string; voiceSettings?: VoiceSettings };
-type Context = { activeCall: PersistentCallSession | null; endCall: () => void; endedCallIds: ReadonlySet<string>; poppedOut: boolean; setPoppedOut: (value: boolean) => void; startCall: (session: PersistentCallSession) => void; media: MediaClient | null; snapshot: ReturnType<MediaClient["snapshot"]> | null };
-const CallContext = createContext<Context | null>(null);
+export type PersistentCallSession = {
+  href?: string; id: string; kind: "friend" | "group"; title: string; subtitle?: string;
+  participant: { id: string; name: string; email: string; image?: string | null };
+  signalingRoomId: string; roomId: string; endUrl?: string; statusUrl?: string;
+  voiceSettings?: VoiceSettings; inviteHref?: string;
+};
+export type CallContextValue = {
+  activeCall: PersistentCallSession | null; endCall: () => void; endedCallIds: ReadonlySet<string>;
+  poppedOut: boolean; setPoppedOut: (value: boolean) => void; startCall: (session: PersistentCallSession) => void;
+  media: MediaClient | null; snapshot: ReturnType<MediaClient["snapshot"]> | null;
+  error: string | null; setError: (message: string | null) => void; connectedAt: number | null;
+  deafened: boolean; setDeafened: (value: boolean) => void;
+};
+const CallContext = createContext<CallContextValue | null>(null);
 const endedKey = "val:ended-media-sessions";
 const readEnded = () => { try { return new Set<string>(JSON.parse(sessionStorage.getItem(endedKey) ?? "[]")); } catch { return new Set<string>(); } };
 
 export function PersistentCallProvider({ children }: { children: React.ReactNode }) {
-  const [activeCall, setActiveCall] = useState<PersistentCallSession | null>(null); const [endedCallIds, setEnded] = useState<ReadonlySet<string>>(() => typeof window === "undefined" ? new Set() : readEnded()); const [poppedOut, setPoppedOut] = useState(false); const [snapshot, setSnapshot] = useState<ReturnType<MediaClient["snapshot"]> | null>(null); const [media, setMedia] = useState<MediaClient | null>(null); const clientRef = useRef<MediaClient | null>(null); const unsubscribeRef = useRef<(() => void) | null>(null); const pathname = usePathname(); const router = useRouter();
-  const remember = useCallback((id: string) => setEnded((current) => { const next = new Set(current); next.add(id); sessionStorage.setItem(endedKey, JSON.stringify([...next].slice(-50))); return next; }), []);
-  const endCall = useCallback(() => { const session = activeCall; if (!session) return; unsubscribeRef.current?.(); unsubscribeRef.current = null; void clientRef.current?.leave(); clientRef.current = null; setMedia(null); setSnapshot(null); if (session.endUrl) void fetch(session.endUrl, { method: "POST" }); remember(session.id); setActiveCall(null); setPoppedOut(false); if (session.kind === "friend" && pathname === session.href) router.replace("/dashboard/messages"); }, [activeCall, pathname, remember, router]);
-  const startCall = useCallback((session: PersistentCallSession) => { unsubscribeRef.current?.(); unsubscribeRef.current = null; void clientRef.current?.leave(); const client = new MediaClient(); clientRef.current = client; setMedia(client); unsubscribeRef.current = client.subscribe(() => setSnapshot(client.snapshot())); setSnapshot(client.snapshot()); setActiveCall(session); setPoppedOut(false); setEnded((current) => { const next = new Set(current); next.delete(session.id); return next; }); void client.connect({ participant: session.participant, signalingRoomId: session.signalingRoomId }).then(async () => { const settings = session.voiceSettings; if (!settings?.joinMuted) await client.start("mic", { autoGainControl: settings?.autoGainControl, deviceId: settings?.inputDeviceId ? { ideal: settings.inputDeviceId } : undefined, echoCancellation: settings?.echoCancellation, noiseSuppression: settings?.noiseSuppression }); }).catch((error) => { console.error("Media connection failed", error); void client.leave(); if (clientRef.current === client) { unsubscribeRef.current?.(); unsubscribeRef.current = null; clientRef.current = null; setMedia(null); setSnapshot(null); setActiveCall(null); } }); }, []);
-  useEffect(() => () => { unsubscribeRef.current?.(); void clientRef.current?.leave(); }, []);
-  useEffect(() => { if (!activeCall?.statusUrl) return; const timer = window.setInterval(async () => { const response = await fetch(activeCall.statusUrl!).catch(() => null); const data = await response?.json().catch(() => null) as { status?: string } | null; if (["DECLINED", "MISSED", "ENDED"].includes(data?.status ?? "")) endCall(); }, 3000); return () => clearInterval(timer); }, [activeCall?.statusUrl, endCall]);
-  const value = useMemo(() => ({ activeCall, endCall, endedCallIds, poppedOut, setPoppedOut, startCall, media, snapshot }), [activeCall, endCall, endedCallIds, media, poppedOut, snapshot, startCall]); return <CallContext.Provider value={value}>{children}</CallContext.Provider>;
+  const [activeCall, setActiveCall] = useState<PersistentCallSession | null>(null);
+  const [endedCallIds, setEnded] = useState<ReadonlySet<string>>(() => typeof window === "undefined" ? new Set() : readEnded());
+  const [poppedOut, setPoppedOut] = useState(false);
+  const [snapshot, setSnapshot] = useState<ReturnType<MediaClient["snapshot"]> | null>(null);
+  const [media, setMedia] = useState<MediaClient | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [connectedAt, setConnectedAt] = useState<number | null>(null);
+  const [deafened, setDeafened] = useState(false);
+  const clientRef = useRef<MediaClient | null>(null);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
+  const pathname = usePathname();
+  const router = useRouter();
+  const remember = useCallback((id: string) => setEnded((current) => {
+    const next = new Set(current); next.add(id);
+    try { sessionStorage.setItem(endedKey, JSON.stringify([...next].slice(-50))); }
+    catch (cause) { console.warn("Could not persist ended call history", cause); }
+    return next;
+  }), []);
+
+  const endCall = useCallback(() => {
+    const session = activeCall;
+    if (!session) return;
+    unsubscribeRef.current?.(); unsubscribeRef.current = null;
+    const client = clientRef.current; clientRef.current = null;
+    void client?.leave().catch((cause) => console.error("Could not finish media cleanup", cause));
+    setMedia(null); setSnapshot(null); setConnectedAt(null); setError(null);
+    if (session.endUrl) void fetch(session.endUrl, { method: "POST" }).then((response) => {
+      if (!response.ok) throw new Error("The server could not acknowledge the ended call.");
+    }).catch((cause) => { console.error(cause); setError("You left locally. The call status could not be updated on the server."); });
+    remember(session.id); setActiveCall(null); setPoppedOut(false);
+    if (session.kind === "friend" && pathname === session.href) router.replace("/dashboard/messages");
+  }, [activeCall, pathname, remember, router]);
+
+  const startCall = useCallback((session: PersistentCallSession) => {
+    unsubscribeRef.current?.(); unsubscribeRef.current = null;
+    const previous = clientRef.current;
+    const client = new MediaClient(); clientRef.current = client;
+    setMedia(client); setSnapshot(client.snapshot()); setActiveCall(session); setPoppedOut(false);
+    setConnectedAt(null); setError(null); setDeafened(session.voiceSettings?.joinDeafened ?? false);
+    unsubscribeRef.current = client.subscribe(() => { if (clientRef.current === client) setSnapshot(client.snapshot()); });
+    setEnded((current) => { const next = new Set(current); next.delete(session.id); return next; });
+    void (async () => {
+      await previous?.leave();
+      if (clientRef.current !== client) return;
+      await client.connect({ participant: session.participant, signalingRoomId: session.signalingRoomId });
+      if (clientRef.current !== client) { await client.leave(); return; }
+      setConnectedAt(Date.now());
+      const settings = session.voiceSettings;
+      if (!settings?.joinMuted) {
+        try {
+          await client.start("mic", microphoneConstraints(settings));
+          if (clientRef.current !== client) await client.leave();
+        } catch (cause) {
+          console.error("Microphone unavailable", cause);
+          if (clientRef.current === client) setError("Connected with microphone off. Allow microphone access or choose an available device, then unmute.");
+        }
+      }
+    })().catch((cause) => {
+      console.error("Media connection failed", cause);
+      if (clientRef.current === client) {
+        setError(cause instanceof Error ? cause.message : "Could not connect to this room.");
+        setSnapshot({ ...client.snapshot(), state: "failed" });
+        unsubscribeRef.current?.(); unsubscribeRef.current = null;
+        clientRef.current = null; setMedia(null);
+      }
+      void client.leave().catch((cleanupError) => console.error("Media cleanup failed", cleanupError));
+    });
+  }, []);
+
+  useEffect(() => () => {
+    unsubscribeRef.current?.();
+    const client = clientRef.current; clientRef.current = null;
+    void client?.leave().catch((cause) => console.error("Media cleanup failed", cause));
+  }, []);
+  useEffect(() => {
+    if (!activeCall?.statusUrl) return;
+    const statusUrl = activeCall.statusUrl;
+    const controller = new AbortController();
+    const timer = window.setInterval(async () => {
+      try {
+        const response = await fetch(statusUrl, { signal: controller.signal });
+        if (!response.ok) throw new Error("Call status unavailable");
+        const data = await response.json() as { status?: string };
+        if (["DECLINED", "MISSED", "ENDED"].includes(data.status ?? "")) endCall();
+      } catch (cause) { if (!controller.signal.aborted) console.warn("Could not refresh call status", cause); }
+    }, 3000);
+    return () => { clearInterval(timer); controller.abort(); };
+  }, [activeCall?.statusUrl, endCall]);
+
+  const value = useMemo(() => ({ activeCall, endCall, endedCallIds, poppedOut, setPoppedOut, startCall, media, snapshot, error, setError, connectedAt, deafened, setDeafened }), [activeCall, endCall, endedCallIds, media, poppedOut, snapshot, startCall, error, connectedAt, deafened]);
+  const floating = activeCall && (poppedOut || (activeCall.href && pathname !== activeCall.href.split("?")[0]));
+  return <CallContext.Provider value={value}>
+    {children}
+    {/* Audio belongs to the session, never to a route or a participant tile. */}
+    <div className="sr-only">{snapshot?.remote.filter((item) => item.kind === "audio").map((item) => <RemoteAudioElement key={item.consumerId} item={item} deafened={deafened} settings={activeCall?.voiceSettings} onError={setError} />)}</div>
+    {floating ? <aside className="val-floating-call" aria-label="Ongoing call">
+      <div className="val-floating-heading"><span><strong>{activeCall.title}</strong><small>{snapshot?.state ?? "connecting"}</small></span>
+        {activeCall.href ? <Link className="val-action app-button-secondary" href={activeCall.href} onClick={() => setPoppedOut(false)}>Return to call</Link> : <button type="button" onClick={() => setPoppedOut(false)}>Return</button>}
+      </div>
+      <CallControls call={value} compact />
+    </aside> : null}
+    {!activeCall && error ? <div className="val-call-notice" role="alert">{error}<button type="button" onClick={() => setError(null)}>Dismiss</button></div> : null}
+  </CallContext.Provider>;
 }
 export function usePersistentCall() { const value = useContext(CallContext); if (!value) throw new Error("usePersistentCall must be used within PersistentCallProvider."); return value; }
 export function useOptionalPersistentCall() { return useContext(CallContext); }
-
-export function PersistentCallSurface({ sessionId }: { sessionId: string }) { const call = usePersistentCall(); if (!call.activeCall || call.activeCall.id !== sessionId) return null; if (call.poppedOut) return <section className="grid min-h-0 flex-1 place-items-center px-5 py-8"><div className="app-panel p-6 text-center"><p className="text-xs font-semibold uppercase tracking-[.2em] text-[#FF5F25]">Call popped out</p><button className="app-button-primary mt-4 h-11 rounded-lg px-4" onClick={() => call.setPoppedOut(false)} type="button">Return to call</button></div></section>; return <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#050705] p-2 sm:p-4"><header className="mb-2 flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-[#0b0f0b] px-3 py-2"><div><p className="text-[11px] font-semibold uppercase tracking-[.2em] text-[#FF5F25]">{call.activeCall.kind === "friend" ? "Friend call" : "Voice room"}</p><h2 className="text-base font-semibold text-white">{call.activeCall.title}</h2></div><button className="app-button-secondary h-10 rounded-lg px-3 text-xs" onClick={() => call.setPoppedOut(true)} type="button">Pop out</button></header><div className="min-h-0 flex-1 overflow-auto rounded-lg border border-white/10 bg-black p-3"><MediaGrid local={call.snapshot?.local ?? []} participant={call.activeCall.participant} participants={call.snapshot?.participants ?? []} remote={call.snapshot?.remote ?? []} /></div><MediaControls /></section>; }
-function MediaGrid({ local, participant, participants, remote }: { local: LocalMedia[]; participant: PersistentCallSession["participant"]; participants: MediaParticipant[]; remote: RemoteMedia[] }) { const people = [{ id: participant.id, isLocal: true, name: participant.name }, ...participants.filter((item) => item.userId !== participant.id).map((item) => ({ id: item.userId, isLocal: false, name: item.metadata?.name || item.metadata?.email || "Participant" }))]; return <><div className="sr-only">{remote.filter((item) => item.kind === "audio").map((item) => <RemoteAudioElement key={item.consumerId} item={item} />)}</div><div className="grid min-h-full auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-3">{people.map((person) => <ParticipantTile key={person.id} isLocal={person.isLocal} localVideo={person.isLocal ? local.find((item) => item.kind === "video" && item.source === "screen") ?? local.find((item) => item.kind === "video") : undefined} name={person.name} remoteVideo={person.isLocal ? undefined : remote.find((item) => item.userId === person.id && item.kind === "video")} />)}</div></>; }
-function ParticipantTile({ isLocal, localVideo, name, remoteVideo }: { isLocal: boolean; localVideo?: LocalMedia; name: string; remoteVideo?: RemoteMedia }) { const video = localVideo ?? remoteVideo; if (video) return <VideoMediaElement item={video} label={`${isLocal ? "You" : name} · ${video.source === "screen" ? "Screen share" : "Camera"}`} muted={isLocal} />; const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "?"; return <article className="relative flex aspect-video min-h-44 flex-col items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-[radial-gradient(circle_at_50%_35%,#1a2b37_0%,#0b1020_52%,#07090f_100%)]"><div className="grid h-20 w-20 place-items-center rounded-full border border-[#FF5F25]/40 bg-[#FF5F25]/15 text-xl font-bold text-[#ffd6c7] shadow-[0_0_32px_rgba(255,95,37,0.16)]">{initials}</div><p className="mt-3 max-w-[85%] truncate text-sm font-semibold text-white">{isLocal ? "You" : name}</p><p className="mt-1 text-xs text-slate-400">{isLocal ? "Connected" : "In voice"}</p><span className="absolute bottom-2 left-2 h-2.5 w-2.5 rounded-full bg-[#44d27a] shadow-[0_0_0_3px_rgba(68,210,122,0.12)]" /></article>; }
-function RemoteAudioElement({ item }: { item: RemoteMedia }) { const audioRef = useRef<HTMLAudioElement>(null); useEffect(() => { if (!audioRef.current) return; audioRef.current.srcObject = new MediaStream([item.track]); void audioRef.current.play().catch(() => undefined); }, [item]); return <audio autoPlay ref={audioRef} />; }
-function VideoMediaElement({ item, label, muted = false }: { item: LocalMedia | RemoteMedia; label: string; muted?: boolean }) { const videoRef = useRef<HTMLVideoElement>(null); useEffect(() => { if (!videoRef.current) return; videoRef.current.srcObject = new MediaStream([item.track]); void videoRef.current.play().catch(() => undefined); }, [item]); return <div className="relative overflow-hidden rounded-lg border border-white/10 bg-[#0b1020]"><video autoPlay className="aspect-video h-full w-full object-contain" muted={muted} playsInline ref={videoRef} /><span className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-1 text-xs text-white">{label}</span></div>; }
-function MediaControls() { const { activeCall, endCall, media, snapshot } = usePersistentCall(); const [busy, setBusy] = useState(false); if (!activeCall || !media) return null; const run = (action: () => Promise<unknown>) => { setBusy(true); void action().catch(console.error).finally(() => setBusy(false)); }; return <footer className="mt-2 flex flex-wrap justify-center gap-2 rounded-lg border border-white/10 bg-[#0b0f0b] p-2"><button className="app-button-secondary h-10 rounded-lg px-3 text-xs" disabled={busy} onClick={() => run(() => snapshot?.micMuted ? media.setMicMuted(false) : media.setMicMuted(true))} type="button">{snapshot?.micMuted ? "Unmute" : "Mute"}</button>{activeCall.kind === "group" ? <button className="app-button-secondary h-10 rounded-lg px-3 text-xs" disabled={busy} onClick={() => run(() => snapshot?.cameraOn ? media.stop("camera") : media.start("camera", true))} type="button">{snapshot?.cameraOn ? "Stop camera" : "Camera"}</button> : null}<button className="app-button-secondary h-10 rounded-lg px-3 text-xs" disabled={busy} onClick={() => run(() => snapshot?.screenOn ? media.stop("screen") : media.start("screen", true))} type="button">{snapshot?.screenOn ? "Stop sharing" : "Share screen"}</button>{activeCall.kind === "group" ? <MusicButton /> : null}<button className="app-button-danger h-10 rounded-lg px-3 text-xs" onClick={endCall} type="button">Leave</button></footer>; }
-
-export function ParticipantVoiceControlsPanel({ onClose, participant }: { onClose: () => void; participant: MediaParticipant }) { return <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-white/10 bg-[#080b10] p-3 shadow-2xl"><div className="flex justify-between gap-2"><p className="truncate text-sm font-semibold text-white">{participant.metadata?.name || participant.userId}</p><button className="text-slate-400" onClick={onClose} type="button">Close</button></div><p className="mt-2 text-xs text-slate-400">Local participant controls are available from the call surface.</p></div>; }
+export function PersistentCallSurface({ sessionId }: { sessionId: string }) {
+  const call = usePersistentCall();
+  if (!call.activeCall || call.activeCall.id !== sessionId) return null;
+  if (call.poppedOut) return <section className="val-call-return"><h2>Your call is in the floating panel.</h2><p>Audio stays connected while you browse.</p><button className="app-button-primary val-action" onClick={() => call.setPoppedOut(false)} type="button">Return to call</button></section>;
+  return <CallWorkspace call={call} />;
+}
+export function microphoneConstraints(settings?: VoiceSettings): MediaTrackConstraints {
+  return { autoGainControl: settings?.autoGainControl, deviceId: settings?.inputDeviceId ? { ideal: settings.inputDeviceId } : undefined, echoCancellation: settings?.echoCancellation, noiseSuppression: settings?.noiseSuppression };
+}
+function RemoteAudioElement({ item, deafened, settings, onError }: { item: RemoteMedia; deafened: boolean; settings?: VoiceSettings; onError: (message: string) => void }) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  useEffect(() => {
+    const element = audioRef.current;
+    if (!element) return;
+    element.srcObject = new MediaStream([item.track]);
+    const play = () => { void element.play().catch((cause) => { console.warn("Remote audio playback blocked", cause); onError("Audio playback was blocked by your browser. Tap any call control to resume audio."); }); };
+    play();
+    document.addEventListener("pointerdown", play);
+    return () => { document.removeEventListener("pointerdown", play); element.srcObject = null; };
+  }, [item.track, onError]);
+  useEffect(() => {
+    const element = audioRef.current;
+    if (!element) return;
+    element.volume = Math.max(0, Math.min(1, (settings?.outputVolume ?? 100) / 100));
+    if (settings?.outputDeviceId && "setSinkId" in element) void element.setSinkId(settings.outputDeviceId).catch((cause) => { console.warn("Output device unavailable", cause); onError("The selected output device is unavailable. Using the default audio output."); });
+  }, [settings?.outputDeviceId, settings?.outputVolume, onError]);
+  return <audio autoPlay muted={deafened} ref={audioRef} />;
+}
+export function ParticipantVoiceControlsPanel({ onClose, participant }: { onClose: () => void; participant: MediaParticipant }) {
+  return <div className="app-panel absolute right-0 top-full z-50 mt-2 w-64 p-3"><div className="flex justify-between gap-2"><p className="truncate text-sm font-semibold">{participant.metadata?.name || "Participant"}</p><button className="min-h-11 px-2" onClick={onClose} type="button">Close</button></div><p className="mt-2 text-xs">Local participant controls are available from the call surface.</p></div>;
+}

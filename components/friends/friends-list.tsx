@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { formatUserStatus } from "@/lib/utils";
 import type { FriendPerson } from "@/types";
@@ -7,11 +10,23 @@ type FriendsListProps = {
 };
 
 export function FriendsList({ friends }: FriendsListProps) {
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+  const visibleFriends = friends.filter((friend) =>
+    `${friend.name} ${friend.email}`.toLowerCase().includes(query.trim().toLowerCase()) &&
+    (filter === "all" || (filter === "online" ? friend.status === "ONLINE" : friend.status !== "ONLINE")));
   return (
     <section className="grid gap-2">
-      {friends.length ? (
+      <div className="val-people-toolbar">
+        <label><span className="sr-only">Search your friends</span><input type="search" placeholder="Search your circle..." value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+        <div className="val-filter-tabs" role="group" aria-label="Filter friends">
+          {["all", "online", "offline"].map((value) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>{value}</button>)}
+        </div>
+        <span className="val-people-count">{visibleFriends.length} people</span>
+      </div>
+      {visibleFriends.length ? (
         <>
-          {friends.map((friend) => (
+          {visibleFriends.map((friend) => (
             <div
               className="app-row flex min-h-16 w-full min-w-0 items-center gap-3 px-3 py-3 transition"
               key={friend.id}
@@ -63,7 +78,7 @@ export function FriendsList({ friends }: FriendsListProps) {
         </>
       ) : (
         <p className="rounded-xl border border-dashed border-white/15 bg-white/[0.04] px-4 py-5 text-sm leading-6 text-slate-400">
-          No friends yet. Search by email to send your first request.
+          {friends.length ? "No friends match this search or filter." : "No friends yet. Search by email to send your first request."}
         </p>
       )}
     </section>

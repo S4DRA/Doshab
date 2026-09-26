@@ -22,9 +22,12 @@ type VoiceRoomProps = {
   channelId: string;
   channelName: string;
   groupId?: string;
+  groupName?: string;
+  canInvite?: boolean;
+  image?: string | null;
 };
 
-export function VoiceRoom({ channelId, channelName, groupId }: VoiceRoomProps) {
+export function VoiceRoom({ channelId, channelName, groupId, groupName, canInvite, image }: VoiceRoomProps) {
   const { activeCall, startCall } = usePersistentCall();
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,10 +66,11 @@ export function VoiceRoom({ channelId, channelName, groupId }: VoiceRoomProps) {
         href: groupId ? `/dashboard/groups/${groupId}/channels/${channelId}` : undefined,
         id: `group:${channelId}`,
         kind: "group",
-        participant: data.participant,
+        participant: { ...data.participant, image },
         signalingRoomId: data.signalingRoomId,
         roomId: data.roomId,
-        subtitle: channelName,
+        subtitle: groupName,
+        inviteHref: canInvite && groupId ? `/dashboard/groups/${groupId}/settings#invite-friends` : undefined,
         title: channelName,
         voiceSettings,
       });
@@ -80,13 +84,13 @@ export function VoiceRoom({ channelId, channelName, groupId }: VoiceRoomProps) {
     } finally {
       setIsJoining(false);
     }
-  }, [activeHere, channelId, channelName, groupId, isJoining, startCall]);
+  }, [activeHere, channelId, channelName, groupId, groupName, canInvite, image, isJoining, startCall]);
 
   return (
     activeHere ? (
       <PersistentCallSurface sessionId={`group:${channelId}`} />
     ) : (
-    <div className="grid min-h-0 flex-1 place-items-center px-5 py-8 min-[1180px]:place-items-start min-[1180px]:px-8 min-[1180px]:py-8">
+    <div className="val-voice-lobby grid min-h-0 flex-1 place-items-center px-5 py-8 min-[1180px]:place-items-start min-[1180px]:px-8 min-[1180px]:py-8">
       <section className="app-panel w-full max-w-2xl p-6 text-center min-[1180px]:max-w-4xl min-[1180px]:p-0 min-[1180px]:text-left">
         <div className="min-[1180px]:grid min-[1180px]:grid-cols-[minmax(0,1fr)_18rem] min-[1180px]:gap-0">
           <div className="p-6 min-[1180px]:p-8">

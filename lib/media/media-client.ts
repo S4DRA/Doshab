@@ -7,8 +7,8 @@ import type { LocalMedia, MediaConnectionState, MediaParticipant, MediaSource, R
 
 type Credential = { participant: { email: string; id: string; name: string }; signalingRoomId: string };
 type Listener = () => void;
-type Signal = { candidate?: RTCIceCandidateInit; description?: RTCSessionDescriptionInit; from: string; participant: Credential["participant"]; to?: string; type: "answer" | "candidate" | "hello" | "leave" | "offer" };
-type Peer = { candidates: RTCIceCandidateInit[]; connection: RTCPeerConnection; ignoreOffer: boolean; makingOffer: boolean; negotiationQueued: boolean; participant: Credential["participant"]; polite: boolean };
+type Signal = { candidate?: RTCIceCandidateInit; description?: RTCSessionDescriptionInit; from: string; participant: Credential["participant"]; sources?: Record<string, MediaSource>; to?: string; type: "answer" | "candidate" | "hello" | "leave" | "offer" };
+type Peer = { candidates: RTCIceCandidateInit[]; connection: RTCPeerConnection; ignoreOffer: boolean; makingOffer: boolean; negotiationQueued: boolean; participant: Credential["participant"]; polite: boolean; sources: Record<string, MediaSource> };
 
 const iceServers: RTCIceServer[] = [{ urls: "stun:stun.l.google.com:19302" }];
 
@@ -22,6 +22,7 @@ export class MediaClient {
   private peers = new Map<string, Peer>();
   private remote = new Map<string, RemoteMedia>();
   private state: MediaConnectionState = "disconnected";
+  private generation = 0;
 
   subscribe(listener: Listener) { this.listeners.add(listener); return () => this.listeners.delete(listener); }
   snapshot() { const local: LocalMedia[] = [...this.localTracks.entries()].map(([source, track]) => ({ kind: track.kind as "audio" | "video", source, track })); return { state: this.state, participants: [...this.participants.values()], local, remote: [...this.remote.values()], micMuted: !this.localTracks.get("mic")?.enabled, cameraOn: this.localTracks.has("camera"), screenOn: this.localTracks.has("screen") }; }
@@ -29,25 +30,33 @@ export class MediaClient {
 
   async connect(credential: Credential) {
     await this.leave(); this.state = "connecting"; this.credential = credential; this.changed();
+    const generation = this.generation;
     const supabase = await createSupabaseBrowserClientFromRuntimeConfig();
+    if (generation !== this.generation) throw new Error("Voice connection was cancelled.");
     if (!supabase) throw new Error("Supabase Realtime is not configured.");
     const channel = supabase.channel(`val-media:${credential.signalingRoomId}`, { config: { broadcast: { ack: true, self: false } } }).on("broadcast", { event: "signal" }, ({ payload }) => { void this.handleSignal(payload as Signal); });
     this.channel = channel;
     await new Promise<void>((resolve, reject) => {
-      const timeout = window.setTimeout(() => reject(new Error("Timed out connecting to voice signaling.")), 10_000);
+      const timeout = window.setTimeout(() => { if (this.channel === channel) { this.state = "failed"; this.changed(); } reject(new Error("Timed out connecting to voice signaling.")); }, 10_000);
       channel.subscribe((status) => {
-        if (status === "SUBSCRIBED") { window.clearTimeout(timeout); this.state = "connected"; this.changed(); void this.send({ type: "hello" }); resolve(); }
-        if (["CHANNEL_ERROR", "CLOSED", "TIMED_OUT"].includes(status)) { window.clearTimeout(timeout); reject(new Error("Could not connect to Supabase Realtime.")); }
+        if (generation !== this.generation || this.channel !== channel) { window.clearTimeout(timeout); reject(new Error("Voice connection was cancelled.")); return; }
+        if (status === "SUBSCRIBED") { window.clearTimeout(timeout); this.state = "connected"; this.changed(); void this.send({ type: "hello" }).catch((cause) => console.warn("Voice room announcement failed", cause)); resolve(); }
+        if (["CHANNEL_ERROR", "CLOSED", "TIMED_OUT"].includes(status)) { window.clearTimeout(timeout); this.state = "failed"; this.changed(); reject(new Error("Could not connect to voice signaling.")); }
       });
     });
   }
 
   async start(source: MediaSource, constraints: MediaTrackConstraints | boolean) {
     if (!this.channel || !this.credential) throw new Error("Join a media room first.");
+    const generation = this.generation;
     await this.stop(source);
     const stream = source === "screen" || source === "screen-audio" ? await navigator.mediaDevices.getDisplayMedia({ audio: source === "screen-audio", video: source === "screen" }) : await navigator.mediaDevices.getUserMedia({ [source === "mic" ? "audio" : "video"]: constraints });
     const track = source === "mic" || source === "screen-audio" ? stream.getAudioTracks()[0] : stream.getVideoTracks()[0];
-    if (!track) throw new Error("No requested media track is available.");
+    if (generation !== this.generation || !track) {
+      stream.getTracks().forEach((item) => item.stop());
+      throw new Error(track ? "Media request was cancelled because the call ended." : "No requested media track is available.");
+    }
+    stream.getTracks().filter((item) => item !== track).forEach((item) => item.stop());
     this.localTracks.set(source, track); track.onended = () => void this.stop(source);
     for (const peer of this.peers.values()) peer.connection.addTrack(track, stream);
     this.changed(); return track;
@@ -64,19 +73,22 @@ export class MediaClient {
 
   private async send(signal: Omit<Signal, "from" | "participant">) {
     if (!this.channel || !this.credential) return;
-    const result = await this.channel.send({ type: "broadcast", event: "signal", payload: { ...signal, from: this.instanceId, participant: this.credential.participant } });
+    const sources = Object.fromEntries([...this.localTracks].map(([source, track]) => [track.id, source]));
+    const result = await this.channel.send({ type: "broadcast", event: "signal", payload: { ...signal, sources, from: this.instanceId, participant: this.credential.participant } });
     if (result !== "ok") throw new Error("Voice signaling message was not delivered.");
   }
 
   private createPeer(remoteId: string, participant: Credential["participant"]) {
     const connection = new RTCPeerConnection({ iceServers });
-    const peer: Peer = { candidates: [], connection, ignoreOffer: false, makingOffer: false, negotiationQueued: false, participant, polite: this.instanceId.localeCompare(remoteId) > 0 };
+    const peer: Peer = { candidates: [], connection, ignoreOffer: false, makingOffer: false, negotiationQueued: false, participant, polite: this.instanceId.localeCompare(remoteId) > 0, sources: {} };
     this.peers.set(remoteId, peer); this.participants.set(remoteId, { userId: participant.id, metadata: participant, muted: false, speaking: false });
     for (const track of this.localTracks.values()) connection.addTrack(track, new MediaStream([track]));
     connection.onicecandidate = ({ candidate }) => { if (candidate) void this.send({ type: "candidate", to: remoteId, candidate: candidate.toJSON() }); };
     connection.onnegotiationneeded = () => { void this.requestNegotiation(remoteId, peer); };
     connection.ontrack = ({ track }) => {
-      const source: MediaSource = track.kind === "audio" ? "mic" : "camera"; const id = `${remoteId}:${track.id}`;
+      const declaredSource = peer.sources[track.id];
+      const source: MediaSource = track.kind === "audio" ? declaredSource === "screen-audio" ? "screen-audio" : "mic" : declaredSource === "screen" ? "screen" : "camera";
+      const id = `${remoteId}:${track.id}`;
       this.remote.set(id, { consumerId: id, producerId: id, userId: participant.id, source, kind: track.kind as "audio" | "video", track });
       track.onended = () => { this.remote.delete(id); this.changed(); }; this.changed();
     };
@@ -94,6 +106,7 @@ export class MediaClient {
       return;
     }
     if (!peer) peer = this.createPeer(signal.from, signal.participant);
+    peer.sources = signal.sources ?? peer.sources;
     if (signal.type === "candidate" && signal.candidate) {
       if (peer.connection.remoteDescription) await peer.connection.addIceCandidate(signal.candidate); else peer.candidates.push(signal.candidate);
       return;
@@ -126,8 +139,9 @@ export class MediaClient {
   }
 
   async leave() {
+    this.generation += 1;
     await Promise.all([...this.localTracks.keys()].map((source) => this.stop(source)));
-    await this.send({ type: "leave" }).catch(() => undefined);
+    await this.send({ type: "leave" }).catch((cause) => console.warn("Voice leave announcement failed", cause));
     for (const remoteId of [...this.peers.keys()]) this.closePeer(remoteId);
     if (this.channel) await this.channel.unsubscribe();
     this.channel = null; this.credential = null; this.participants.clear(); this.remote.clear(); this.state = "disconnected"; this.changed();
