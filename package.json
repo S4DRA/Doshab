@@ -8,6 +8,7 @@
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
+    "test:media": "node --test tests/media-client.test.mjs",
     "backup:db": "node scripts/backup-database.mjs",
     "backup:check-tools": "node scripts/backup-database.mjs --check-tools",
     "restore:smoke": "node scripts/restore-smoke-test.mjs",

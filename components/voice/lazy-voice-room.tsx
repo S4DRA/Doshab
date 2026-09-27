@@ -19,6 +19,9 @@ type LazyVoiceRoomProps = {
   channelId: string;
   channelName: string;
   groupId?: string;
+  groupName?: string;
+  canInvite?: boolean;
+  image?: string | null;
 };
 
 export function LazyVoiceRoom(props: LazyVoiceRoomProps) {

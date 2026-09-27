@@ -1,5 +1,7 @@
 "use client";
 
+import { ValPageHero } from "@/components/layout/val-page-hero";
+
 import Link from "next/link";
 import {
   useCallback,
@@ -32,6 +34,7 @@ export function MessagesPageClient({
   threads,
 }: MessagesPageClientProps) {
   const [chooserOpen, setChooserOpen] = useState(false);
+  const [sort, setSort] = useState("recent");
   const [searchQuery, setSearchQuery] = useState("");
   const [friendQuery, setFriendQuery] = useState("");
   const [previewsByThreadId, setPreviewsByThreadId] = useState<PreviewMap>({});
@@ -143,25 +146,9 @@ export function MessagesPageClient({
     <>
       <div className="app-page-scroll">
         <div className="app-page-container space-y-4">
-          <section className="app-page-header">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <p className="app-section-title">Messages</p>
-                <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-                  Messages
-                </h1>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-                  Pick up where you left off, or start a private conversation with a friend.
-                </p>
-              </div>
-              <button
-                className="app-button-primary inline-flex h-11 items-center justify-center rounded-lg px-4 text-sm font-bold transition"
-                onClick={() => setChooserOpen(true)}
-                type="button"
-              >
-                Start message
-              </button>
-            </div>
+          <ValPageHero eyebrow="Messages / Private conversations" title="Messages"
+            description="Real people. Real conversations. Pick up where you left off."
+            actions={<button className="app-button-primary val-action" onClick={() => setChooserOpen(true)} type="button">Start message +</button>}>
             <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <label className="block min-w-0">
                 <span className="sr-only">Search messages</span>
@@ -177,7 +164,7 @@ export function MessagesPageClient({
                 {threads.length} {threads.length === 1 ? "thread" : "threads"}
               </span>
             </div>
-          </section>
+          </ValPageHero>
 
           {error ? (
             <div className="rounded-lg border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm leading-6 text-red-200">
@@ -190,10 +177,11 @@ export function MessagesPageClient({
             </div>
           ) : null}
 
+          <div className="val-conversation-heading"><span>01 / Your conversations</span><label>Sort by <select value={sort} onChange={(event) => setSort(event.target.value)}><option value="recent">Recent activity</option><option value="name">Name</option></select></label></div>
           {threads.length ? (
             <section className="grid gap-3">
               {filteredThreads.length ? (
-                filteredThreads.map((thread) => {
+                [...filteredThreads].sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : new Date(b.lastActivityAt ?? 0).getTime() - new Date(a.lastActivityAt ?? 0).getTime()).map((thread) => {
                   const preview = previewsByThreadId[thread.id];
 
                   return (

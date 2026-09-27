@@ -34,7 +34,7 @@ export function CreateGroupForm({ compact = false }: CreateGroupFormProps) {
         </label>
       ) : null}
       <SubmitButton
-        className="h-12 w-full rounded-xl bg-[#FF5F25] text-sm font-bold text-black transition hover:bg-[#ff7847] sm:h-11"
+        className="app-button-primary h-12 w-full rounded-xl bg-[#FF5F25] text-sm font-bold text-black transition hover:bg-[#ff7847] sm:h-11"
         pendingText="Creating..."
       >
         Create space
