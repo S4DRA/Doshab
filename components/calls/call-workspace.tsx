@@ -91,11 +91,12 @@ function VideoMedia({ item }: { item: LocalMedia | RemoteMedia }) {
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
+    let active = true;
     element.srcObject = new MediaStream([item.track]);
-    void element.play().catch(() => setBlocked(true));
-    return () => { element.srcObject = null; };
+    void element.play().then(() => { if (active) setBlocked(false); }).catch(() => { if (active) setBlocked(true); });
+    return () => { active = false; element.srcObject = null; };
   }, [item.track]);
-  return <><video ref={ref} autoPlay muted playsInline className="val-stage-video" data-source={item.source} />{blocked ? <button className="val-video-resume app-button-secondary" type="button" onClick={() => { void ref.current?.play().then(() => setBlocked(false)).catch((cause) => console.warn("Video playback blocked", cause)); }}>Play video</button> : null}</>;
+  return <><video ref={ref} autoPlay muted playsInline onPlaying={() => setBlocked(false)} className="val-stage-video" data-source={item.source} />{blocked ? <button className="val-video-resume app-button-secondary" type="button" onClick={() => { void ref.current?.play().then(() => setBlocked(false)).catch((cause) => console.warn("Video playback blocked", cause)); }}>Play video</button> : null}</>;
 }
 export function CallControls({ call, compact = false }: { call: CallContextValue; compact?: boolean }) {
   const [busy, setBusy] = useState(false);

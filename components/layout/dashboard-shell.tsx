@@ -579,7 +579,7 @@ function ChannelMain({
   if (channel.type === "VOICE") {
     return (
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden min-[1180px]:h-full">
-        <div className="border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 min-[1180px]:hidden">
+        <div className="val-mobile-channel-header border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 min-[1180px]:hidden">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="app-section-title">

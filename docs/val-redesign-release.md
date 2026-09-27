@@ -21,21 +21,33 @@
 
 - `npm run lint`: passed.
 - `npx tsc --noEmit`: passed.
-- `npm run test:media`: 4 passed, 0 failed. Tests cancellation, mute and cleanup, signaling failure/recovery, and remote screen metadata using isolated media boundaries.
+- `npm run test:media`: 5 passed, 0 failed. Tests cancellation, mute and cleanup, signaling failure/recovery, remote screen start/stop metadata, and cleanup during signaling failure using isolated media boundaries.
 - `npm run build`: passed. Explicit display-font fallback resolves the earlier automatic fallback warning.
 - `npm audit --audit-level=moderate`: passed, zero vulnerabilities.
 - `git diff --check`: passed.
 - GitHub CI now runs the media tests in addition to existing lint, audit, and build. Security workflows and branch protections remain enabled.
 
-## Release gates
+## Browser verification
 
-- [ ] Final authenticated visual QA at 1440/1920, 768/1024, and 360/390/430 pixels plus short landscape.
-- [ ] Actual call control transitions, keyboard focus, pop-out/navigation continuity, and notification/settings overlays.
-- [ ] GitHub required checks on the final revision: CI, Trivy, Gitleaks.
-- [ ] Merge under existing main-branch protection.
-- [ ] Vercel production deployment matches the merged commit.
-- [ ] Production routes, assets, font loading, and runtime smoke test.
+Performed against the existing authenticated local account and its existing demo space on September 26, without adding sample users or groups:
 
-The browser extension disconnected during final QA on September 26. Earlier partial desktop inspection is not final acceptance. Multi-user media and physical mobile-device testing have not been performed. Usage-limit tooling is unavailable; no remaining allowance is claimed.
+| Check | Result |
+| --- | --- |
+| Voice: 1440x900 and 1920x1080 | Header, speaker stage, support column, lunar imagery, controls inspected against Image 10 |
+| Voice: 768x1024 and 1024x768 | No page-width overflow; secondary actions use the More sheet |
+| Voice: 360x800, 390x844, 430x932 | Mic and Leave remain visible above navigation; participant/details sections remain accessible |
+| Voice: 844x390 landscape | Sticky controls remain reachable; supporting panels can scroll |
+| Real local call | Signaling connected, microphone mute and activity, camera start/stop, and deafen state verified |
+| Persistence | Pop-out, Messages navigation, return, audio-settings navigation, and leaving verified |
+| Secondary controls | More sheet opens and closes with Escape; channel drawer opens and closes |
+| Other surfaces | Desktop home/text channel and mobile friends/messages/profile inspected; friend search/filter and quick-actions opening exercised |
+
+Visual fixes from this pass include mobile header contrast, avatar contrast, the quick-action icon mask, tablet control spacing, and desktop space labels. The final mobile quick-actions wiring also exposes the existing notification and profile menus, which were previously hidden with the desktop sidebar. Its browser retest and the final audio-settings scroll adjustment are pending browser reconnection.
+
+## Release tracking and limits
+
+[PR #30](https://github.com/S4DRA/Doshab/pull/30) tracks the latest revision, required CI/Trivy/Gitleaks results, and deployment status. The production target is the existing Vercel `doshab` project at `https://doshab.vercel.app`; publication uses protected `main` with no bypass.
+
+The browser reconnected for the checks above, then disconnected again on September 27. Multi-user audio/video, an actual screen-capture picker flow, real network interruption, physical mobile keyboards/safe areas, and text enlargement have not been verified. Signaling failures and remote screen metadata are covered by isolated tests, not a claim of end-to-end multi-user coverage. Usage-limit tooling is unavailable; no remaining allowance is claimed.
 
 GitHub code-scanning API returned no open alerts at preparation time. Dependabot alerts are disabled for this repository. The separate secret-scanning API is inaccessible with the CLI token's current scope; the required Gitleaks workflow remains the release check for committed secrets.

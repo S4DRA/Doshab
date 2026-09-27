@@ -64,6 +64,10 @@ export function ProfileSettingsPanel() {
     return () => { cancelAnimationFrame(frame); window.removeEventListener("hashchange", selectSection); };
   }, []);
 
+  useEffect(() => {
+    if (window.location.hash === `#${activeSection}`) document.getElementById(activeSection)?.scrollIntoView({ block: "start" });
+  }, [activeSection]);
+
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -219,7 +223,7 @@ export function ProfileSettingsPanel() {
   };
 
   return (
-    <section className="profile-settings-panel app-panel p-4 sm:p-6">
+    <section id={activeSection} className="profile-settings-panel app-panel p-4 sm:p-6">
       <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="app-section-title">

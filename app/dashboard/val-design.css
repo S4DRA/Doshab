@@ -189,7 +189,7 @@ html[data-theme] #val-app .val-people-toolbar { display:flex; flex-wrap:wrap; al
 .val-people-toolbar label { flex:1; min-width:180px; }
 .val-people-toolbar input { width:100%; min-height:44px; padding:0 12px; }
 .val-filter-tabs { display:flex; border:1px solid #acb6a6; padding:3px; gap:3px; }
-.val-filter-tabs button { padding:9px 14px; font:11px var(--font-geist-mono),monospace; text-transform:uppercase; }
+.val-filter-tabs button { min-height:44px; padding:9px 14px; font:11px var(--font-geist-mono),monospace; text-transform:uppercase; }
 .val-filter-tabs button[aria-pressed="true"] { background:#ff571c; color:#111515; }
 .val-people-count { font:11px var(--font-geist-mono),monospace; }
 .val-conversation-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:0 2px; font:11px/1.5 var(--font-geist-mono),monospace; text-transform:uppercase; }
@@ -318,8 +318,13 @@ html[data-theme] #val-app .dashboard-secondary-sidebar :is(h1,h2,h3,p,a) { color
 .val-speaker-person { position:absolute; inset:0; visibility:hidden; opacity:0; }
 .val-speaker-person[data-active='true'] { visibility:visible; opacity:1; }
 .val-speaker-avatar { height:100%; display:grid; place-items:center; padding:72px 20px 44px; }
-html[data-theme] #val-app .val-speaker-avatar .theme-avatar { width:clamp(100px,15vw,220px); height:clamp(100px,15vw,220px); background:#777d7752 !important; border:1px solid #a5aaa04d; border-radius:50%; color:#d2d4cf; box-shadow:none; }
+html[data-theme] #val-app .val-speaker-avatar .theme-avatar { width:clamp(100px,15vw,220px); height:clamp(100px,15vw,220px); background:#777d7752 !important; border:1px solid #a5aaa04d; border-radius:50% !important; color:#d2d4cf !important; box-shadow:none; }
 .val-speaker-avatar .theme-avatar svg { width:65%; height:65%; }
+html[data-theme] #val-app .val-speaker-avatar .theme-avatar svg { color:#d2d4cf !important; }
+html[data-theme] #val-app .val-mobile-channel-header :is(h2,button,a) { color:#faf8f3 !important; }
+html[data-theme] #val-app .val-mobile-channel-header :is(button,a) { min-height:44px; border-color:#6d7470; }
+html[data-theme] #val-app .val-command-button-mark { background:none !important; color:#111 !important; mask:none !important; -webkit-mask:none !important; }
+.val-command-button-mark svg { width:100%; height:100%; }
 .val-stage-video { width:100%; height:100%; object-fit:cover; background:#070909; }
 .val-stage-video[data-source='screen'] { object-fit:contain; }
 .val-stage-footer { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; position:absolute; bottom:12px; left:20px; right:20px; font:10px/1.3 var(--font-geist-mono),monospace; pointer-events:none; text-shadow:0 1px 4px #000; }
@@ -358,7 +363,7 @@ html[data-theme] #val-app .val-speaker-avatar .theme-avatar { width:clamp(100px,
 .val-call-quote > b { margin-left:auto; align-self:flex-end; }
 html[data-theme] #val-app .val-call-controls { flex-shrink:0; padding:12px 20px 8px; position:relative; clip-path:none; border-radius:0; }
 .val-call-control-row { display:flex; align-items:stretch; gap:10px; }
-.val-secondary-controls { display:flex; align-items:stretch; gap:10px; flex:1; }
+.val-secondary-controls { display:flex; align-items:stretch; gap:10px; flex:4; min-width:0; }
 .val-call-control { background:#111515; color:#faf8f3; border:1px solid #4c554a; border-radius:3px; box-shadow:inset 0 1px 0 #ffffff24,0 2px 0 #0003; display:flex; align-items:center; justify-content:center; gap:16px; min-height:58px; padding:10px 20px; min-width:110px; text-align:left; flex:1; }
 .val-call-control svg { width:26px; height:26px; flex-shrink:0; }
 .val-call-control span { font-size:12px; }
@@ -455,6 +460,7 @@ html[data-theme] #val-app .val-call-controls { flex-shrink:0; padding:12px 20px 
   .val-speaker-panel { height:220px; min-height:220px; }
   .val-call-support { display:grid; }
   .val-call-body { min-height:220px; }
+  html[data-theme] #val-app .val-call-controls { position:sticky; bottom:0; z-index:20; }
 }
 html[data-theme] #val-app :is(.val-lunar-banner,.val-world-image,.val-speaker-stage,.val-space-cover) { background-image:url('/brand/val-lunar.webp') !important; }
 html[data-theme] #val-app .val-hazard { background-image:repeating-linear-gradient(130deg,transparent 0 9px,var(--val-orange) 9px 21px) !important; }
@@ -498,3 +504,14 @@ html[data-theme] #val-app .val-home-section h2 { margin:0; text-transform:upperc
 .val-create-space-tile > span { font:11px/1.6 var(--font-geist-mono),monospace; }
 html[data-theme] #val-app .theme-avatar { box-shadow:none !important; border-width:1px !important; }
 @media(max-width:639px) { .val-space-details summary,.val-space-details a { min-height:44px; } .val-create-space-tile { min-height:160px; } }
+@media(min-width:640px) and (max-width:1179px) {
+  html[data-theme] #val-app .dashboard-brand-mark { width:40px !important; height:40px !important; }
+}
+@media(min-width:768px) and (max-width:1100px) {
+  .val-call-controls .val-secondary-controls { display:none; }
+  .val-call-controls .val-secondary-controls.is-open { display:grid; position:absolute; bottom:100%; left:0; right:0; grid-template-columns:1fr 1fr; gap:8px; padding:12px; border:1px solid #999f91; background:var(--val-paper); max-height:60dvh; overflow-y:auto; box-shadow:0 -8px 32px #0004; }
+  .val-more-control { display:flex; }
+  .val-close-more { display:block; min-height:48px; grid-column:1/-1; }
+  .val-call-leave { flex:1; margin-left:0; }
+  .val-controls-caption { display:none; }
+}

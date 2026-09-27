@@ -88,7 +88,7 @@ export function VoiceRoom({ channelId, channelName, groupId, groupName, canInvit
 
   return (
     activeHere ? (
-      <PersistentCallSurface sessionId={`group:${channelId}`} />
+      <PersistentCallSurface sessionId={`group:${channelId}`} presentation={{ subtitle: groupName, image, inviteHref: canInvite && groupId ? `/dashboard/groups/${groupId}/settings#invite-friends` : undefined }} />
     ) : (
     <div className="val-voice-lobby grid min-h-0 flex-1 place-items-center px-5 py-8 min-[1180px]:place-items-start min-[1180px]:px-8 min-[1180px]:py-8">
       <section className="app-panel w-full max-w-2xl p-6 text-center min-[1180px]:max-w-4xl min-[1180px]:p-0 min-[1180px]:text-left">

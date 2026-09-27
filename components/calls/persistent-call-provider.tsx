@@ -132,11 +132,12 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
 }
 export function usePersistentCall() { const value = useContext(CallContext); if (!value) throw new Error("usePersistentCall must be used within PersistentCallProvider."); return value; }
 export function useOptionalPersistentCall() { return useContext(CallContext); }
-export function PersistentCallSurface({ sessionId }: { sessionId: string }) {
+export function PersistentCallSurface({ sessionId, presentation }: { sessionId: string; presentation?: Pick<PersistentCallSession, "subtitle" | "inviteHref"> & { image?: string | null } }) {
   const call = usePersistentCall();
   if (!call.activeCall || call.activeCall.id !== sessionId) return null;
   if (call.poppedOut) return <section className="val-call-return"><h2>Your call is in the floating panel.</h2><p>Audio stays connected while you browse.</p><button className="app-button-primary val-action" onClick={() => call.setPoppedOut(false)} type="button">Return to call</button></section>;
-  return <CallWorkspace call={call} />;
+  const activeCall = presentation ? { ...call.activeCall, subtitle: presentation.subtitle, inviteHref: presentation.inviteHref, participant: { ...call.activeCall.participant, image: presentation.image } } : call.activeCall;
+  return <CallWorkspace call={{ ...call, activeCall }} />;
 }
 export function microphoneConstraints(settings?: VoiceSettings): MediaTrackConstraints {
   return { autoGainControl: settings?.autoGainControl, deviceId: settings?.inputDeviceId ? { ideal: settings.inputDeviceId } : undefined, echoCancellation: settings?.echoCancellation, noiseSuppression: settings?.noiseSuppression };

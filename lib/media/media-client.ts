@@ -7,7 +7,7 @@ import type { LocalMedia, MediaConnectionState, MediaParticipant, MediaSource, R
 
 type Credential = { participant: { email: string; id: string; name: string }; signalingRoomId: string };
 type Listener = () => void;
-type Signal = { candidate?: RTCIceCandidateInit; description?: RTCSessionDescriptionInit; from: string; participant: Credential["participant"]; sources?: Record<string, MediaSource>; to?: string; type: "answer" | "candidate" | "hello" | "leave" | "offer" };
+type Signal = { candidate?: RTCIceCandidateInit; description?: RTCSessionDescriptionInit; from: string; participant: Credential["participant"]; sources?: Record<string, MediaSource>; to?: string; type: "answer" | "candidate" | "hello" | "leave" | "media" | "offer" };
 type Peer = { candidates: RTCIceCandidateInit[]; connection: RTCPeerConnection; ignoreOffer: boolean; makingOffer: boolean; negotiationQueued: boolean; participant: Credential["participant"]; polite: boolean; sources: Record<string, MediaSource> };
 
 const iceServers: RTCIceServer[] = [{ urls: "stun:stun.l.google.com:19302" }];
@@ -57,7 +57,7 @@ export class MediaClient {
       throw new Error(track ? "Media request was cancelled because the call ended." : "No requested media track is available.");
     }
     stream.getTracks().filter((item) => item !== track).forEach((item) => item.stop());
-    this.localTracks.set(source, track); track.onended = () => void this.stop(source);
+    this.localTracks.set(source, track); track.onended = () => { void this.stop(source).catch((cause) => console.warn("Ended media announcement failed", cause)); };
     for (const peer of this.peers.values()) peer.connection.addTrack(track, stream);
     this.changed(); return track;
   }
@@ -67,6 +67,9 @@ export class MediaClient {
     this.localTracks.delete(source); track.onended = null; track.stop();
     for (const peer of this.peers.values()) for (const sender of peer.connection.getSenders()) if (sender.track === track) await sender.replaceTrack(null);
     this.changed();
+    // replaceTrack(null) does not end the receiver track or require a new offer.
+    // Tell peers which sources remain so a stopped screen cannot stay on stage.
+    await this.send({ type: "media" });
   }
 
   async setMicMuted(muted: boolean) { const track = this.localTracks.get("mic"); if (!track) return; track.enabled = !muted; this.changed(); }
@@ -99,6 +102,13 @@ export class MediaClient {
   private async handleSignal(signal: Signal) {
     if (!signal || signal.from === this.instanceId || (signal.to && signal.to !== this.instanceId)) return;
     if (signal.type === "leave") { this.closePeer(signal.from); return; }
+    if (signal.type === "media") {
+      for (const [id, item] of this.remote) {
+        if (id.startsWith(`${signal.from}:`) && !Object.hasOwn(signal.sources ?? {}, item.track.id)) this.remote.delete(id);
+      }
+      this.changed();
+      return;
+    }
     let peer = this.peers.get(signal.from);
     if (signal.type === "hello") {
       if (!peer) peer = this.createPeer(signal.from, signal.participant);
@@ -140,10 +150,10 @@ export class MediaClient {
 
   async leave() {
     this.generation += 1;
-    await Promise.all([...this.localTracks.keys()].map((source) => this.stop(source)));
+    await Promise.all([...this.localTracks.keys()].map((source) => this.stop(source).catch((cause) => console.warn("Media stop signaling failed during cleanup", cause))));
     await this.send({ type: "leave" }).catch((cause) => console.warn("Voice leave announcement failed", cause));
     for (const remoteId of [...this.peers.keys()]) this.closePeer(remoteId);
-    if (this.channel) await this.channel.unsubscribe();
-    this.channel = null; this.credential = null; this.participants.clear(); this.remote.clear(); this.state = "disconnected"; this.changed();
+    try { if (this.channel) await this.channel.unsubscribe(); }
+    finally { this.channel = null; this.credential = null; this.participants.clear(); this.remote.clear(); this.state = "disconnected"; this.changed(); }
   }
 }

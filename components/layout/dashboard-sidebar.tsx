@@ -76,7 +76,7 @@ type SidebarSnapshot = {
   unreadCount: number;
 };
 
-type MobileCommandAction = "home" | "friends" | "messages" | "create" | "groups";
+type MobileCommandAction = "home" | "friends" | "messages" | "create" | "groups" | "notifications" | "profile";
 
 const mobileChannelPinCacheKey = "doshab-mobile-channel-pin-v1";
 const sidebarCacheKey = "doshab-sidebar-v6";
@@ -85,10 +85,10 @@ const mobileCommandHoldDelayMs = 210;
 const mobileCommandDragThresholdPx = 10;
 const mobileCommandHitRadiusPx = 48;
 const mobileCommandActions = [
-  { action: "friends", label: "Friends", line: "M 0 0 C -28 -30 -66 -58 -112 -78" },
+  { action: "profile", label: "Profile", line: "M 0 0 C -28 -30 -66 -58 -112 -78" },
   { action: "messages", label: "Messages", line: "M 0 0 C -18 -46 -42 -100 -64 -136" },
   { action: "create", label: "Create", line: "M 0 0 C 0 -56 0 -112 0 -154" },
-  { action: "home", label: "Home", line: "M 0 0 C 18 -46 42 -100 64 -136" },
+  { action: "notifications", label: "Alerts", line: "M 0 0 C 18 -46 42 -100 64 -136" },
   { action: "groups", label: "Spaces", line: "M 0 0 C 28 -30 66 -58 112 -78" },
 ] satisfies { action: MobileCommandAction; label: string; line: string }[];
 
@@ -233,6 +233,18 @@ export function DashboardSidebar({
     commandOpenedAtRef.current = 0;
 
     switch (action) {
+      case "notifications":
+        setCommandOpen(false);
+        setGroupPickerOpen(false);
+        setProfileOpen(false);
+        setNotificationsOpen(true);
+        return;
+      case "profile":
+        setCommandOpen(false);
+        setGroupPickerOpen(false);
+        setNotificationsOpen(false);
+        setProfileOpen(true);
+        return;
       case "home":
         setCommandOpen(false);
         setGroupPickerOpen(false);
@@ -675,7 +687,7 @@ export function DashboardSidebar({
 
       const action = actionTarget.dataset.commandAction;
 
-      return action === "home" || action === "friends" || action === "messages" || action === "create" || action === "groups"
+      return action === "home" || action === "friends" || action === "messages" || action === "create" || action === "groups" || action === "notifications" || action === "profile"
         ? action
         : null;
     }
@@ -1632,39 +1644,34 @@ export function DashboardSidebar({
               </div>
             ) : null}
             <button
-              aria-label="Open home"
-              className={`val-command-action val-command-action-home${activeCommandAction === "home" ? " val-command-action-active" : ""}`}
-              data-command-action="home"
+              aria-label="Open notifications"
+              className={`val-command-action val-command-action-home${activeCommandAction === "notifications" ? " val-command-action-active" : ""}`}
+              data-command-action="notifications"
               onClick={() => {
-                runMobileCommandAction("home");
+                runMobileCommandAction("notifications");
               }}
               role="menuitem"
               type="button"
             >
               <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
-                <path d="m3 11 9-8 9 8" />
-                <path d="M5 10v10h14V10" />
-                <path d="M9 20v-6h6v6" />
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
               </svg>
-              <span>Home</span>
+              <span>Alerts{unreadCount ? ` (${unreadCount})` : ""}</span>
             </button>
             <button
-              aria-label="Open friends"
-              className={`val-command-action val-command-action-friends${activeCommandAction === "friends" ? " val-command-action-active" : ""}`}
-              data-command-action="friends"
+              aria-label="Open profile menu"
+              className={`val-command-action val-command-action-friends${activeCommandAction === "profile" ? " val-command-action-active" : ""}`}
+              data-command-action="profile"
               onClick={() => {
-                runMobileCommandAction("friends");
+                runMobileCommandAction("profile");
               }}
               role="menuitem"
               type="button"
             >
               <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                <circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" />
               </svg>
-              <span>Friends</span>
+              <span>Profile</span>
             </button>
             <button
               aria-label="Open messages"
@@ -1769,7 +1776,7 @@ export function DashboardSidebar({
           title="VAL command dock"
           type="button"
         >
-          <span className="val-command-button-mark" aria-hidden="true" />
+          <span className="val-command-button-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v18M3 12h18" /></svg></span>
         </button>
         {navItems.filter((item) => item.label === "Friends" || item.label === "Spaces").map((item) => <Link className="val-mobile-link" href={item.href} key={item.href} aria-current={pathname === item.href ? "page" : undefined}>{item.icon}<span>{item.label}</span></Link>)}
       </div>
@@ -1868,7 +1875,7 @@ export function DashboardSidebar({
 
           return (
             <Link
-              data-nav-label={group.name} aria-label={`${group.name} space`}
+              aria-label={`${group.name} space`}
               className={`dashboard-nav-icon grid size-11 shrink-0 place-items-center rounded-lg border text-sm font-black transition sm:size-12 min-[1180px]:size-[3.25rem] min-[1180px]:text-base ${
                 active
                   ? "dashboard-nav-icon-active border-[#FF5F25] text-[#FF5F25]"
@@ -1880,6 +1887,7 @@ export function DashboardSidebar({
               title={group.name}
             >
               <AvatarInitials fallback="group" imageUrl={group.image} value={group.name} />
+              <span className="val-nav-label truncate">{group.name}</span>
             </Link>
           );
         })}

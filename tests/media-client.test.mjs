@@ -13,9 +13,11 @@ function setup() {
   let status;
   let receive;
   let resolveCapture;
+  let deliveryFailed = false;
   const track = { id: "local-mic", kind: "audio", enabled: true, readyState: "live", stop() { this.readyState = "ended"; } };
   const remoteScreen = { id: "remote-screen", kind: "video" };
   const sent = [];
+  const warnings = [];
   class PeerConnection {
     signalingState = "stable";
     async setRemoteDescription(description) { this.remoteDescription = description; this.ontrack?.({ track: remoteScreen }); }
@@ -26,13 +28,13 @@ function setup() {
   const channel = {
     on(_event, _filter, callback) { receive = callback; return this; },
     subscribe(callback) { status = callback; queueMicrotask(() => callback("SUBSCRIBED")); },
-    async send(message) { sent.push(message.payload); return "ok"; },
+    async send(message) { sent.push(message.payload); return deliveryFailed ? "error" : "ok"; },
     async unsubscribe() { status?.("CLOSED"); },
   };
   const capture = new Promise((resolve) => { resolveCapture = () => resolve({ getAudioTracks: () => [track], getVideoTracks: () => [], getTracks: () => [track] }); });
   const exports = {};
   const context = vm.createContext({
-    exports, console, crypto, window: { setTimeout, clearTimeout }, RTCPeerConnection: PeerConnection,
+    exports, console: { ...console, warn: (...args) => warnings.push(args) }, crypto, window: { setTimeout, clearTimeout }, RTCPeerConnection: PeerConnection,
     navigator: { mediaDevices: { getUserMedia: () => capture } },
     require(name) {
       assert.equal(name, "@/lib/supabase/client");
@@ -40,7 +42,7 @@ function setup() {
     },
   });
   vm.runInContext(compiled, context);
-  return { client: new exports.MediaClient(), track, resolveCapture, sent, receive: (payload) => receive({ payload }), status: (value) => status(value) };
+  return { client: new exports.MediaClient(), track, resolveCapture, sent, warnings, failDelivery: () => { deliveryFailed = true; }, receive: (payload) => receive({ payload }), status: (value) => status(value) };
 }
 
 test("leaving during a permission prompt stops the late microphone track", async () => {
@@ -90,5 +92,21 @@ test("remote screen metadata reaches the stage instead of being treated as a cam
   assert.equal(client.snapshot().remote[0].source, "screen");
   assert.equal(client.snapshot().remote[0].userId, "remote");
   assert.ok(sent.some((signal) => signal.type === "answer"));
+  receive({ type: "media", from: "remote-instance", participant: { id: "remote" }, sources: {} });
+  assert.equal(client.snapshot().remote.length, 0, "stopping the share must remove the stage track");
+  assert.equal(client.snapshot().participants.length, 1, "stopping video must keep the participant in the room");
   await client.leave();
+});
+
+test("leaving releases capture even when signaling delivery fails", async () => {
+  const { client, track, resolveCapture, failDelivery, warnings } = setup();
+  await client.connect(credential);
+  resolveCapture();
+  await client.start("mic", true);
+  failDelivery();
+  await client.leave();
+  assert.equal(track.readyState, "ended");
+  assert.equal(client.snapshot().local.length, 0);
+  assert.equal(client.snapshot().state, "disconnected");
+  assert.equal(warnings.length, 2, "failed stop and leave announcements should be reported");
 });
