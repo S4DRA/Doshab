@@ -21,6 +21,7 @@ type FriendCallTokenResponse = {
     status: string;
   };
   signalingRoomId: string;
+  iceServers?: RTCIceServer[];
   roomId: string;
   participant: { id: string; name: string; email: string };
 };
@@ -345,6 +346,7 @@ export function IncomingCallWatcher() {
         kind: "friend",
         participant: data.participant,
         signalingRoomId: data.signalingRoomId,
+        iceServers: data.iceServers,
         roomId: data.roomId,
         statusUrl: `/api/friend-calls/${call.id}/status`,
         subtitle: "Private call",

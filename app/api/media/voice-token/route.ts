@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { createMediaSignalingRoom } from "@/lib/media/credential";
+import { createMediaIceServers, createMediaSignalingRoom } from "@/lib/media/credential";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
@@ -12,5 +12,5 @@ export async function POST(request: NextRequest) {
   const roomId = `space:${channel.groupId}:channel:${channel.id}`;
   const signalingRoomId = createMediaSignalingRoom(roomId);
   if (!signalingRoomId) return NextResponse.json({ error: "Voice signaling is not configured." }, { status: 503 });
-  return NextResponse.json({ roomId, signalingRoomId, participant: { id: user.id, name: user.name, email: user.email } });
+  return NextResponse.json({ roomId, signalingRoomId, iceServers: createMediaIceServers(user.id), participant: { id: user.id, name: user.name, email: user.email } }, { headers: { "Cache-Control": "no-store" } });
 }

@@ -2,6 +2,8 @@
 
 import { defaultVoiceSettings, type VoiceSettings } from "@/lib/voice-settings";
 
+export const voiceSettingsChangedEvent = "val:voice-settings-changed";
+
 export async function loadVoiceSettingsForCall(): Promise<VoiceSettings> {
   const cached = readCachedVoiceSettings();
 
@@ -64,4 +66,5 @@ export function cacheVoiceSettings(settings: VoiceSettings) {
   } catch {
     // Cache misses should never block joining a voice room.
   }
+  window.dispatchEvent(new CustomEvent(voiceSettingsChangedEvent, { detail: settings }));
 }

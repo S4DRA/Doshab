@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { loadVoiceSettingsForCall } from "@/lib/voice-settings.client";
 
 type MediaCredentialResponse = {
+  iceServers?: RTCIceServer[];
   signalingRoomId: string;
   roomId: string;
   participant: { id: string; name: string; email: string };
@@ -34,6 +35,8 @@ export function VoiceChannelJoinButton({
   const [error, setError] = useState<string | null>(null);
   const href = `/dashboard/groups/${groupId}/channels/${channelId}`;
   const activeHere = call?.activeCall?.id === `group:${channelId}`;
+  const connectedHere = activeHere && call?.snapshot?.state === "connected";
+  const connectionLabel = connectedHere ? "Connected" : call?.snapshot?.state === "failed" ? "Reconnect" : "Connecting";
 
   async function joinVoiceChannel() {
     if (isJoining) {
@@ -73,6 +76,7 @@ export function VoiceChannelJoinButton({
       const voiceSettings = await loadVoiceSettingsForCall();
 
       call.startCall({
+        iceServers: data.iceServers,
         href,
         id: `group:${channelId}`,
         kind: "group",
@@ -100,7 +104,7 @@ export function VoiceChannelJoinButton({
     <div className="min-w-0 flex-1">
       <button
         aria-busy={isJoining}
-        aria-label={`${activeHere ? "Connected to" : "Join"} ${channelName}`}
+        aria-label={`${connectedHere ? "Connected to" : activeHere ? "Open" : "Join"} ${channelName}`}
         aria-pressed={activeHere}
         className={cn(
           "flex w-full min-w-0 items-center justify-between gap-3 rounded-lg text-left outline-none transition focus-visible:ring-2 focus-visible:ring-[#FF5F25]/60",
@@ -139,7 +143,7 @@ export function VoiceChannelJoinButton({
               className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
             />
           ) : (
-            error ? "Retry" : activeHere ? "Connected" : "VOICE"
+            error ? "Retry" : activeHere ? connectionLabel : "VOICE"
           )}
         </span>
       </button>
