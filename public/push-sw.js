@@ -39,7 +39,7 @@ self.addEventListener("push", (event) => {
   const notificationOptions = {
     body,
     actions: isIncomingCall ? getIncomingCallActions(payload.actions) : safeActions(payload.actions),
-    badge: "/brand/val-echo-dark-256.png",
+    badge: "/val-icon-192.png",
     data: {
       ...(payload.data || {}),
       callId,
