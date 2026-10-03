@@ -8,17 +8,17 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     icons: [
       {
-        src: "/val-icon-192.png",
+        src: "/brand/val-echo-icon-192.png",
         sizes: "192x192",
         type: "image/png",
       },
       {
-        src: "/val-icon-512.png",
+        src: "/brand/val-echo-icon-512.png",
         sizes: "512x512",
         type: "image/png",
       },
       {
-        src: "/val-icon-maskable-512.png",
+        src: "/brand/val-echo-maskable-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

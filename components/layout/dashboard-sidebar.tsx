@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import { PushNotificationToggle } from "@/components/notifications/push-notification-toggle";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { NavigationPending } from "@/components/ui/navigation-pending";
+import { LogoMark } from "@/components/ui/logo-mark";
 import { useDashboardPeople } from "@/components/layout/dashboard-people-provider";
 import type { DashboardNotification, FriendPerson } from "@/types";
 
@@ -1783,7 +1784,7 @@ export function DashboardSidebar({
         className="dashboard-brand-lockup hidden shrink-0 flex-col items-center gap-2 rounded-xl border transition sm:flex"
         href="/dashboard"
       >
-        <span className="dashboard-brand-mark" aria-hidden="true" />
+        <LogoMark className="dashboard-brand-mark" preload sizes="64px" />
         <span className="dashboard-brand-word">VAL<span className="val-brand-caption">A more human internet</span></span>
       </Link>
       <nav

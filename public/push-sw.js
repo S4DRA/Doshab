@@ -47,7 +47,7 @@ self.addEventListener("push", (event) => {
       type: isIncomingCall ? incomingCallType : payload.data?.type,
       url: callUrl,
     },
-    icon: "/val-icon-512.png",
+    icon: "/brand/val-echo-icon-512.png",
     requireInteraction: Boolean(payload.requireInteraction || isIncomingCall),
     renotify: isIncomingCall,
     silent: false,

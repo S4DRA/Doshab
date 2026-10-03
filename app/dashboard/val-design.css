@@ -894,3 +894,111 @@ html[data-theme] #val-app .dashboard-secondary-sidebar a[aria-current='page'].va
   .val-people-panel .val-person-copy strong { font-size:14px; }
   .val-people-panel .val-person-copy small { font-size:12px; }
 }
+
+/* Reference-inspired navigation: a dark rail with clear, stable selected rows. */
+html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon {
+  border:1px solid transparent !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  color:#e4e6de !important;
+  box-shadow:none !important;
+  text-shadow:none !important;
+  transform:none !important;
+  filter:none !important;
+  font-weight:500 !important;
+  transition:background-color 140ms ease,color 140ms ease,border-color 140ms ease !important;
+}
+html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon::before,
+html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon::after { display:none !important; }
+html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon:hover {
+  background:#1a211f !important;
+  color:#faf8ef !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon.dashboard-nav-icon-active,
+html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon.dashboard-nav-icon-active:hover {
+  background:#ff5a1f !important;
+  border-color:transparent !important;
+  color:#0b1111 !important;
+  box-shadow:inset 0 1px #ff8958 !important;
+  transform:none !important;
+}
+html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon svg { color:currentColor !important; opacity:1; }
+html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon:active { box-shadow:inset 0 0 0 2px #ffffff20 !important; }
+html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon:focus-visible { outline:2px solid #fff2d7; outline-offset:-3px; }
+html[data-theme] #val-app .dashboard-main-sidebar .dashboard-brand-mark {
+  background:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+  filter:none !important;
+}
+/* Screen blending hides the supplied PNG's black tile without redrawing the mark. */
+html[data-theme] #val-app .dashboard-main-sidebar .dashboard-brand-lockup { mix-blend-mode:screen; }
+html[data-theme] #val-app .dashboard-main-sidebar .brand-logo-image { filter:none !important; opacity:1 !important; mix-blend-mode:normal !important; }
+html[data-theme] #val-app .dashboard-secondary-sidebar :is(.val-text-channel,.val-voice-channel).app-row {
+  border-radius:0 !important;
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%);
+}
+html[data-theme] #val-app .dashboard-secondary-sidebar .val-voice-channel.app-row { background:transparent !important; border-color:transparent !important; box-shadow:none !important; }
+html[data-theme] #val-app .dashboard-secondary-sidebar :is(.val-text-channel,.val-voice-channel).app-row:hover { background:#1a211f !important; transform:none !important; }
+html[data-theme] #val-app .dashboard-secondary-sidebar .val-text-channel:has(a[aria-current='page']),
+html[data-theme] #val-app .dashboard-secondary-sidebar .val-text-channel:has(a[aria-current='page']):hover,
+html[data-theme] #val-app .dashboard-secondary-sidebar .val-voice-channel[data-selected='true'],
+html[data-theme] #val-app .dashboard-secondary-sidebar .val-voice-channel[data-selected='true']:hover {
+  background:#ff5a1f !important;
+  border-color:transparent !important;
+  box-shadow:inset 0 1px #ff8958 !important;
+  filter:none !important;
+  transform:none !important;
+}
+html[data-theme] #val-app .dashboard-secondary-sidebar .val-voice-channel[data-selected='true'] :is(button,button span) { color:#0b1111 !important; }
+html[data-theme] #val-app .dashboard-secondary-sidebar .val-voice-channel[data-selected='true'] button:not([disabled]) { opacity:1; }
+html[data-theme] #val-app .dashboard-secondary-sidebar .val-space-overview-link { border-radius:0; }
+html[data-theme] #val-app .dashboard-secondary-sidebar .val-space-overview-link[aria-current='page'],
+html[data-theme] #val-app .dashboard-secondary-sidebar .val-space-overview-link[aria-current='page']:hover {
+  background:#ff5a1f !important; color:#0b1111 !important; box-shadow:inset 0 1px #ff8958 !important;
+}
+@media(min-width:640px) {
+  html[data-theme] #val-app .dashboard-main-sidebar.dashboard-main-sidebar {
+    background:linear-gradient(160deg,#101513,#080b0c 55%,#0c1110) !important;
+    border-right:1px solid #3d4741 !important;
+  }
+  html[data-theme] #val-app .dashboard-brand-lockup { background:transparent !important; border:0 !important; box-shadow:none !important; }
+  html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon { clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%); }
+}
+@media(min-width:1180px) {
+  html[data-theme] #val-app,
+  html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) { --dashboard-primary-sidebar-width:192px; }
+  html[data-theme] #val-app .dashboard-main-sidebar.dashboard-main-sidebar,
+  html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .dashboard-main-sidebar {
+    width:var(--dashboard-primary-sidebar-width) !important;
+    padding:14px 0 12px !important;
+    align-items:stretch !important;
+  }
+  html[data-theme] #val-app .dashboard-content-frame,
+  html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .dashboard-content-frame {
+    margin-left:var(--dashboard-primary-sidebar-width) !important;
+    width:calc(100% - var(--dashboard-primary-sidebar-width)) !important;
+  }
+  html[data-theme] #val-app .dashboard-brand-lockup,
+  html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .dashboard-brand-lockup { padding:0 18px 18px !important; gap:8px; }
+  html[data-theme] #val-app .dashboard-brand-mark { width:64px !important; height:64px !important; flex-shrink:0; }
+  html[data-theme] #val-app .dashboard-brand-word,
+  html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .dashboard-brand-word { display:block !important; font-size:32px !important; }
+  html[data-theme] #val-app .val-brand-caption,
+  html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .val-brand-caption { display:block !important; font-size:8px; max-width:76px; }
+  html[data-theme] #val-app .dashboard-main-sidebar nav[aria-label='Dashboard'] { gap:4px !important; padding-top:12px !important; border-top:1px solid #34403a; }
+  html[data-theme] #val-app .dashboard-main-sidebar nav[aria-label='Dashboard'] > div { width:100%; }
+  html[data-theme] #val-app .dashboard-main-sidebar nav[aria-label='Dashboard'] > div.bg-white\/50 { height:1px !important; width:calc(100% - 36px) !important; margin:14px 18px !important; background:#34403a; }
+  html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon,
+  html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .dashboard-main-sidebar .dashboard-nav-icon {
+    display:flex !important; justify-content:flex-start; width:100% !important; height:52px !important; padding:0 18px !important; gap:14px;
+  }
+  html[data-theme] #val-app .val-nav-label,
+  html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .val-nav-label { display:block !important; min-width:0; font-size:13px; line-height:1.4; }
+  html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon > svg { width:24px !important; height:24px !important; }
+  html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon > .theme-avatar { width:30px !important; height:30px !important; flex-shrink:0; border-radius:4px !important; box-shadow:none !important; }
+  html[data-theme] #val-app .dashboard-main-sidebar > div:last-child { padding-top:12px; border-top:1px solid #34403a; gap:4px; }
+  html[data-theme] #val-app .dashboard-main-sidebar > div:last-child > div { width:100%; }
+}
