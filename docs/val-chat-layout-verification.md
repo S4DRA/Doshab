@@ -29,7 +29,13 @@ Only the saved PDF research page covering text size and keyboard geometry was av
 - Local browser checks: sending and persisted acknowledgement; quoted reply with emoji; pin and pinned-list result; loaded-message search and return focus; poll creation with disabled pending controls and persisted vote; member search/empty results/self disclosure; channel collapse; notification access.
 - Responsive inspection: 320x568, 390x844, 820x600 and desktop. No horizontal overflow observed. At 820px, the content begins at the 72px primary rail edge; the composer remains within the viewport.
 
-Browser interactions were performed with the keyboard after Opera's mouse-command timeout. Screenshot/DOM inspection continued to work. Physical touch, installed iOS/Android behavior, offline failure injection, new-message arrival during reading and two-account call audio were not independently exercised in this change. The exact phone model/browser is still needed to verify the user's installed scaling report. Existing live voice behavior was previously reported working by the user.
+Most chat interactions were performed with the keyboard after Opera's mouse-command timeout. Screenshot/DOM inspection continued to work, and native accessibility actions subsequently worked for the profile popup check. Physical touch, installed iOS/Android behavior, offline failure injection, new-message arrival during reading and two-account call audio were not independently exercised in this change. The exact phone model/browser is still needed to verify the user's installed scaling report. Existing live voice behavior was previously reported working by the user.
+
+## Follow-up visual corrections
+
+Mobile sender headers reserve 44px for the message-actions touch target. Local and production geometry checks confirmed that text, quoted replies and polls start below the control rather than overlapping it.
+
+The profile popup had inherited `position: relative` from the shared `app-surface` styling. It became the first sidebar flex item, opened at the top and displaced navigation. A profile-specific fixed-position rule restores the existing bottom anchor without changing its settings or logout actions. The optimized local build was checked at 1440x900 and 390x844: the desktop popup sits to the right of the primary rail, the brand remains at its original top position, and the mobile popup ends above bottom navigation. Mobile opening and closing were exercised through the native accessibility controls.
 
 ## Files changed
 
@@ -41,6 +47,7 @@ Browser interactions were performed with the keyboard after Opera's mouse-comman
 - `components/chat/realtime-message-panel.tsx`
 - `components/groups/channel-list.tsx`
 - `components/layout/dashboard-shell.tsx`
+- `components/layout/dashboard-sidebar.tsx`
 - `components/layout/people-rail.tsx`
 - `components/layout/val-viewport.tsx`
 - `components/ui/dialog-surface.tsx`
