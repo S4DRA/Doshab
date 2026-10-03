@@ -4,6 +4,7 @@ import { memo, useEffect, useRef, useState } from "react";
 
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { reactionEmojis } from "@/lib/chat-constants";
+import { messageSegments } from "@/lib/chat-presentation";
 import { formatReadableTimestamp } from "@/lib/utils";
 import type { ChatMessage } from "@/types";
 
@@ -108,6 +109,7 @@ const MemoMessageRow = memo(function MessageRow({
   showDateSeparator,
 }: MessageRowProps) {
   const [busyAction, setBusyAction] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [actionsOpen, setActionsOpen] = useState(false);
   const actionsPanelRef = useRef<HTMLDivElement | null>(null);
   const actionsToggleRef = useRef<HTMLButtonElement | null>(null);
@@ -123,6 +125,7 @@ const MemoMessageRow = memo(function MessageRow({
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setActionsOpen(false);
+        actionsToggleRef.current?.focus();
       }
     }
 
@@ -164,6 +167,7 @@ const MemoMessageRow = memo(function MessageRow({
     }
 
     setBusyAction(`reaction:${emoji}`);
+    setActionError(null);
 
     try {
       await updateFromResponse(
@@ -176,7 +180,7 @@ const MemoMessageRow = memo(function MessageRow({
         }),
       );
     } catch {
-      // The next refresh will recover action state.
+      setActionError("Could not update this reaction. Please try again.");
     } finally {
       setBusyAction(null);
     }
@@ -188,6 +192,7 @@ const MemoMessageRow = memo(function MessageRow({
     }
 
     setBusyAction("pin");
+    setActionError(null);
 
     try {
       await updateFromResponse(
@@ -196,7 +201,7 @@ const MemoMessageRow = memo(function MessageRow({
         }),
       );
     } catch {
-      // Pin state will refresh from the server.
+      setActionError("Could not update this pin. Please try again.");
     } finally {
       setBusyAction(null);
     }
@@ -208,6 +213,7 @@ const MemoMessageRow = memo(function MessageRow({
     }
 
     setBusyAction(`poll:${optionId}`);
+    setActionError(null);
 
     try {
       await updateFromResponse(
@@ -220,7 +226,7 @@ const MemoMessageRow = memo(function MessageRow({
         }),
       );
     } catch {
-      // Poll state will refresh from the server.
+      setActionError("Could not save your vote. Please try again.");
     } finally {
       setBusyAction(null);
     }
@@ -278,11 +284,12 @@ const MemoMessageRow = memo(function MessageRow({
                 <p className="min-w-0 max-w-full truncate text-sm font-semibold text-white">
                   {senderLabel}
                 </p>
+                <span className="val-message-status app-status-dot" data-status={message.sender.status ?? "OFFLINE"} title={message.sender.status?.toLowerCase() ?? "offline"} />
                 <time className="text-[11px] text-slate-500 sm:text-xs">
                   {formatReadableTimestamp(message.createdAt)}
                 </time>
                 {message.pinnedAt ? (
-                  <span className="rounded-md border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#FFB199]">
+                  <span className="val-pinned-tag rounded-md border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]">
                     Pinned
                   </span>
                 ) : null}
@@ -292,7 +299,7 @@ const MemoMessageRow = memo(function MessageRow({
 
           {message.replyTo ? (
             <button
-              className="mt-2 block max-w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-left transition hover:border-[#FF5F25]/50"
+              className="val-message-reply mt-2 block max-w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-left transition hover:border-[#FF5F25]/50"
               onClick={() => scrollToMessage(message.replyTo?.id)}
               type="button"
             >
@@ -305,11 +312,12 @@ const MemoMessageRow = memo(function MessageRow({
             </button>
           ) : null}
 
-          <p className={`${isGrouped ? "mt-0" : "mt-1"} whitespace-pre-wrap break-words text-[0.95rem] leading-6 text-slate-200 [overflow-wrap:anywhere]`}>
-            {message.content}
-          </p>
+          {!message.poll && <p className={`${isGrouped ? "mt-0" : "mt-1"} whitespace-pre-wrap break-words text-[0.95rem] leading-6 text-slate-200 [overflow-wrap:anywhere]`}>
+            {messageSegments(message.content).map((segment, index) => segment.href ? <a key={index} href={segment.href} target="_blank" rel="noopener noreferrer nofollow">{segment.text}</a> : segment.text)}
+          </p>}
+          {actionError && <p className="val-chat-error" role="alert">{actionError}</p>}
 
-          {message.poll ? <PollCard message={message} onVote={vote} /> : null}
+          {message.poll ? <PollCard message={message} onVote={vote} pending={Boolean(busyAction)} canVote={Boolean(currentUserId)} /> : null}
 
           {visibleReactions.length ? (
             <div className="mt-3 flex min-w-0 flex-wrap items-center gap-1.5">
@@ -377,6 +385,7 @@ const MemoMessageRow = memo(function MessageRow({
                   disabled={busyAction === "pin"}
                   onClick={() => {
                     setActionsOpen(false);
+                    actionsToggleRef.current?.focus();
                     void togglePin();
                   }}
                   type="button"
@@ -406,9 +415,13 @@ const MemoMessageRow = memo(function MessageRow({
 function PollCard({
   message,
   onVote,
+  pending,
+  canVote,
 }: {
   message: ChatMessage;
   onVote: (optionId: string) => void;
+  pending: boolean;
+  canVote: boolean;
 }) {
   const poll = message.poll;
 
@@ -417,7 +430,7 @@ function PollCard({
   }
 
   return (
-    <div className="mt-3 max-w-xl rounded-lg border border-white/10 bg-white/[0.04] p-3">
+    <div className="val-poll-card mt-3 max-w-xl rounded-lg border border-white/10 bg-white/[0.04] p-3" aria-busy={pending}>
       <p className="text-sm font-semibold text-white">{poll.question}</p>
       <div className="mt-3 grid gap-2">
         {poll.options.map((option) => {
@@ -428,6 +441,8 @@ function PollCard({
 
           return (
             <button
+              aria-pressed={selected}
+              disabled={pending || !canVote}
               className={`relative min-h-11 overflow-hidden rounded-lg border px-3 py-2 text-left transition ${
                 selected
                   ? "border-[#FF5F25]/70 bg-[#FF5F25]/12"
@@ -438,6 +453,7 @@ function PollCard({
               type="button"
             >
               <span
+                data-poll-progress
                 aria-hidden="true"
                 className="absolute inset-y-0 left-0 bg-[#FF5F25]/15"
                 style={{ width: `${percentage}%` }}

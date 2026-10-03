@@ -454,7 +454,7 @@ html[data-theme] .app-section-title {
   letter-spacing: 0.16em;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] .dashboard-main-sidebar {
     left: max(0.85rem, env(safe-area-inset-left)) !important;
     right: max(0.85rem, env(safe-area-inset-right)) !important;
@@ -822,7 +822,7 @@ html[data-theme^="signal-orange"] .app-badge {
   }
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme^="signal-orange"] .app-page-container {
     padding: .7rem !important;
   }
@@ -1061,7 +1061,7 @@ html {
   scroll-behavior: smooth;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 640px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html {
     font-size: 13px;
   }
@@ -1421,7 +1421,7 @@ main.app-page-scroll {
   }
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   :root {
     --dashboard-bottom-nav-height: calc(6rem + env(safe-area-inset-bottom));
     --theme-page-padding: 0.75rem;
@@ -1555,7 +1555,7 @@ main.app-page-scroll {
     inset 0 1px 0 color-mix(in srgb, var(--text-high) 8%, transparent);
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   .dashboard-main-sidebar {
     left: max(0.72rem, env(safe-area-inset-left)) !important;
     right: max(0.72rem, env(safe-area-inset-right)) !important;
@@ -1698,7 +1698,7 @@ html[data-theme] .dashboard-sidebar-popover .hover\:text-white:hover {
   }
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   .dashboard-sidebar-popover {
     border-radius: 1.4rem;
     box-shadow:
@@ -2624,7 +2624,7 @@ a[aria-current="page"] {
 }
 
 /* Mobile message card improvements */
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   .message-feed article {
     padding: 0.625rem 0.75rem;
     gap: 0.5rem;
@@ -3285,7 +3285,7 @@ html[data-theme] :is(input, textarea, select):focus {
     0 0 0 3px color-mix(in srgb, var(--support-accent) 18%, transparent) !important;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] :is(input, textarea, select) {
     font-size: 16px;
   }
@@ -3451,7 +3451,7 @@ html[data-theme] [class*="ring-indigo"] {
   --tw-ring-color: var(--border-strong) !important;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   .message-shell {
     max-width: min(34rem, 84%);
   }
@@ -3701,7 +3701,7 @@ html .dashboard-main-sidebar.dashboard-main-sidebar .dashboard-nav-icon[class*="
   transform: translateY(1px);
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   .dashboard-main-sidebar {
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 44%),
@@ -4271,7 +4271,7 @@ html[data-theme] .landing-page [class*="text-[#f5dfab]"] {
   }
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] .dashboard-main-sidebar {
     border-radius: 1.6rem;
     background:
@@ -4516,7 +4516,7 @@ html[data-theme] :is(a, button, input, textarea, select):focus-visible {
     var(--shadow-soft) !important;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] .dashboard-main-sidebar {
     left: max(0.85rem, env(safe-area-inset-left)) !important;
     right: max(0.85rem, env(safe-area-inset-right)) !important;
@@ -4583,7 +4583,7 @@ html[data-theme] .dashboard-main-sidebar .dashboard-nav-icon[class*="border-[#FF
   background-color: var(--accent) !important;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] .dashboard-main-sidebar {
     height: 5.75rem !important;
   }
@@ -4854,7 +4854,7 @@ html[data-theme] .val-command-group-item:active {
   transform: translate(3px, 3px);
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] {
     --dashboard-bottom-nav-height: calc(1rem + env(safe-area-inset-bottom));
   }
@@ -5174,7 +5174,7 @@ html[data-theme] .val-command-backdrop {
   backdrop-filter: none !important;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] .app-page-container {
     max-width: 100%;
   }
@@ -6259,7 +6259,7 @@ html[data-theme] .dashboard-shell-root :is(.border-\[\#FF5F25\], .border-\[\#FF5
   border-color: var(--support-accent) !important;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] .dashboard-main-sidebar .val-command-button,
   html[data-theme] .dashboard-main-sidebar .val-command-button:hover,
   html[data-theme] .dashboard-main-sidebar .val-command-button:focus-visible,
@@ -6494,7 +6494,7 @@ html[data-theme] .dashboard-shell-root :is(.app-section-title, .text-\[\#FF5F25\
   color: var(--support-accent) !important;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] .app-page-container {
     max-width: 100%;
   }
@@ -7039,7 +7039,7 @@ html[data-theme] .dashboard-space-actions > .dashboard-space-role {
   }
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] .dashboard-welcome-card {
     min-height: 0;
   }
@@ -7544,7 +7544,7 @@ html[data-theme] .dashboard-shell-root section.app-surface {
     inset 4px 0 0 var(--val-brand-red) !important;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] :is(.dashboard-sidebar-popover, .app-panel[role="dialog"], [role="dialog"].app-panel) {
     border-radius: 12px !important;
     max-width: calc(100vw - 1rem) !important;
@@ -7616,7 +7616,7 @@ html[data-theme] .val-command-backdrop::after {
   opacity: 0.5;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] .val-command-dock {
     position: fixed !important;
     left: 50% !important;
@@ -8264,7 +8264,7 @@ html[data-theme] .dashboard-shell-root .message-composer-form textarea:focus {
     inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 639px), (display-mode: standalone) and (pointer: coarse) and (max-width: 1024px) {
   html[data-theme] .dashboard-shell-root .message-row.message-row {
     margin-inline: -0.2rem;
     padding: 0.45rem 0.35rem !important;

@@ -9,8 +9,11 @@ import {
   useRef,
   useState,
 } from "react";
+import { flushSync } from "react-dom";
 
 import { MessageList } from "@/components/chat/message-list";
+import { DialogSurface } from "@/components/ui/dialog-surface";
+import { reactionEmojis } from "@/lib/chat-constants";
 import {
   decryptMessageContent,
   encryptMessageContent,
@@ -48,9 +51,16 @@ export function RealtimeMessagePanel({
   const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [encryptionReady, setEncryptionReady] = useState(false);
+  const [encryptionError, setEncryptionError] = useState<string | null>(null);
+  const [encryptionAttempt, setEncryptionAttempt] = useState(0);
   const [pinnedMessages, setPinnedMessages] = useState<ChatMessage[]>([]);
   const [pinnedOpen, setPinnedOpen] = useState(false);
   const [pinnedLoading, setPinnedLoading] = useState(false);
+  const [pinnedError, setPinnedError] = useState<string | null>(null);
+  const [pollSending, setPollSending] = useState(false);
+  const pollSendingRef = useRef(false);
+  const [composerTools, setComposerTools] = useState<"tools" | "emoji" | null>(null);
+  const [newMessageCount, setNewMessageCount] = useState(0);
   const [pollOpen, setPollOpen] = useState(false);
   const [pollOptions, setPollOptions] = useState(["", ""]);
   const [pollQuestion, setPollQuestion] = useState("");
@@ -61,6 +71,10 @@ export function RealtimeMessagePanel({
   const [streamError, setStreamError] = useState<string | null>(null);
   const decryptedMessageCacheRef = useRef(new Map<string, DecryptedMessageCacheEntry>());
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const feedRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const followingLatestRef = useRef(true);
+  const previousCountRef = useRef(0);
   const streamCursorRef = useRef(newestCreatedAt(initialMessages));
   const displayedMessages = useMemo(
     () => mergeMessages(decryptedMessages, pendingMessages),
@@ -79,9 +93,16 @@ export function RealtimeMessagePanel({
       return message.content.toLowerCase().includes(query) || sender.includes(query);
     });
   }, [displayedMessages, searchQuery]);
+  const handleReply = useCallback((message: ChatMessage) => {
+    setReplyTarget(message);
+    textareaRef.current?.focus({ preventScroll: true });
+  }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ block: "end" });
+    const feed = feedRef.current;
+    if (followingLatestRef.current && feed) feed.scrollTop = feed.scrollHeight;
+    else setNewMessageCount((count) => count + Math.max(0, displayedMessages.length - previousCountRef.current));
+    previousCountRef.current = displayedMessages.length;
   }, [displayedMessages.length]);
 
   useEffect(() => {
@@ -129,10 +150,12 @@ export function RealtimeMessagePanel({
 
         if (!cancelled) {
           setEncryptionReady(true);
+          setEncryptionError(null);
         }
       } catch {
         if (!cancelled) {
           setEncryptionReady(false);
+          setEncryptionError("Could not prepare secure chat on this device. Please try again.");
         }
       }
     }
@@ -142,7 +165,7 @@ export function RealtimeMessagePanel({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [encryptionAttempt]);
 
   useEffect(() => {
     const eventSource = new EventSource(
@@ -194,6 +217,7 @@ export function RealtimeMessagePanel({
   async function loadPinnedMessages() {
     setPinnedOpen(true);
     setPinnedLoading(true);
+    setPinnedError(null);
 
     try {
       const response = await fetch(`/api/channels/${channelId}/pinned-messages`, {
@@ -210,7 +234,7 @@ export function RealtimeMessagePanel({
       const messages = await Promise.all((data.messages ?? []).map(decryptChatMessage));
       setPinnedMessages(messages);
     } catch {
-      setPinnedMessages([]);
+      setPinnedError("Could not load pinned messages. Please try again.");
     } finally {
       setPinnedLoading(false);
     }
@@ -220,7 +244,7 @@ export function RealtimeMessagePanel({
     event.preventDefault();
     const content = draft.trim();
 
-    if (!content || !encryptionReady || !currentUser) {
+    if (!content || content.length > 2000 || !encryptionReady || !currentUser) {
       return;
     }
 
@@ -240,6 +264,8 @@ export function RealtimeMessagePanel({
     };
 
     setDraft("");
+    followingLatestRef.current = true;
+    setNewMessageCount(0);
     setSendError(null);
     setReplyTarget(null);
     setPendingMessages((current) => [...current, pendingMessage]);
@@ -272,8 +298,8 @@ export function RealtimeMessagePanel({
       setPendingMessages((current) =>
         current.filter((pending) => pending.id !== pendingMessage.id),
       );
-      setDraft(content);
-      setReplyTarget(replyTarget);
+      setDraft((current) => current ? `${content}\n${current}` : content);
+      setReplyTarget((current) => current ?? replyTarget);
       setSendError("Could not send. Your message is back in the composer.");
     }
   }
@@ -285,11 +311,13 @@ export function RealtimeMessagePanel({
       .filter(Boolean)
       .slice(0, 5);
 
-    if (!question || options.length < 2 || !encryptionReady || !currentUser) {
+    if (!question || options.length < 2 || !encryptionReady || !currentUser || pollSendingRef.current) {
       return;
     }
 
     setSendError(null);
+    pollSendingRef.current = true;
+    setPollSending(true);
 
     try {
       const { devices } = await fetchChannelDeviceKeys(channelId);
@@ -316,6 +344,7 @@ export function RealtimeMessagePanel({
       }
 
       const message = (await response.json()) as ChatMessage;
+      followingLatestRef.current = true;
       setEncryptedMessages((current) => mergeMessages(current, [message]));
       setPollOpen(false);
       setPollQuestion("");
@@ -323,11 +352,14 @@ export function RealtimeMessagePanel({
       setReplyTarget(null);
     } catch {
       setSendError("Could not create poll. Try again in a moment.");
+    } finally {
+      pollSendingRef.current = false;
+      setPollSending(false);
     }
   }
 
   function submitOnEnter(event: ReactKeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key !== "Enter" || event.shiftKey) {
+    if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing || window.matchMedia("(pointer: coarse)").matches) {
       return;
     }
 
@@ -336,11 +368,12 @@ export function RealtimeMessagePanel({
   }
 
   return (
-    <div className="relative flex h-full min-h-0 w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden sm:min-h-[28rem]" data-tour-target="chat-panel">
+    <div className="val-chat-panel relative flex h-full min-h-0 w-full min-w-0 max-w-full flex-1 flex-col" data-tour-target="chat-panel">
       <div className="shrink-0 space-y-2">
         {!encryptionReady ? (
           <p className="app-card p-3 text-xs leading-5 text-slate-400">
-            Preparing encrypted chat for this device...
+            {encryptionError ?? "Preparing encrypted chat for this device…"}
+            {encryptionError && <button type="button" className="val-dialog-link mt-2" onClick={() => { setEncryptionError(null); setEncryptionAttempt((attempt) => attempt + 1); }}>Try again</button>}
           </p>
         ) : null}
 
@@ -351,11 +384,12 @@ export function RealtimeMessagePanel({
         ) : null}
       </div>
 
-      <div className="chat-toolbar mx-auto mt-2 flex w-full max-w-[min(100%,82rem)] min-w-0 shrink-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-2">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
+      <div className="chat-toolbar">
           <button
-            className="app-icon-button h-10 w-10"
+            className="val-chat-search"
             onClick={() => setSearchOpen(true)}
+            aria-label={`Search in #${channelName}`}
+            aria-haspopup="dialog"
             title="Search channel"
             type="button"
           >
@@ -363,27 +397,29 @@ export function RealtimeMessagePanel({
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.3-4.3" />
             </svg>
+            <span>Search in #{channelName}…</span>
           </button>
+        <div className="val-chat-toolbar-actions">
           <button
-            className="inline-flex h-10 items-center rounded-lg border border-white/10 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25]/60 hover:text-white"
+            className="val-chat-tool-button"
             onClick={() => void loadPinnedMessages()}
             title="Pinned messages"
             type="button"
           >
-            Pinned
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m15 3 6 6-3 1-3 6-3-3-6 6m0-9 6-3 1-3Z" /></svg> Pinned
           </button>
           <button
-            className="inline-flex h-10 items-center rounded-lg border border-white/10 px-3 text-xs font-semibold text-slate-200 transition hover:border-[#FF5F25]/60 hover:text-white"
-            onClick={() => setPollOpen(true)}
+            className="val-chat-tool-button"
+            onClick={() => { setSendError(null); setPollOpen(true); }}
             title="Create poll"
             type="button"
           >
-            Poll
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 20v-7m7 7V8m7 12V3" /></svg> Polls
           </button>
-        </div>
         <span className="message-load-status text-[11px] text-slate-500">
-          {displayedMessages.length} loaded
+          {displayedMessages.length} messages
         </span>
+        </div>
       </div>
 
       {searchOpen ? (
@@ -398,6 +434,8 @@ export function RealtimeMessagePanel({
       {pinnedOpen ? (
         <PinnedPanel
           loading={pinnedLoading}
+          error={pinnedError}
+          onRetry={() => void loadPinnedMessages()}
           messages={pinnedMessages}
           onClose={() => setPinnedOpen(false)}
         />
@@ -407,6 +445,8 @@ export function RealtimeMessagePanel({
         <PollDialog
           onClose={() => setPollOpen(false)}
           onCreate={() => void sendPoll()}
+          pending={pollSending}
+          error={sendError}
           options={pollOptions}
           question={pollQuestion}
           setOptions={setPollOptions}
@@ -414,16 +454,21 @@ export function RealtimeMessagePanel({
         />
       ) : null}
 
-      <div className="message-feed min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain pb-4 pr-1 pt-2 scroll-pb-[calc(var(--dashboard-bottom-nav-height,4rem)+11rem)] sm:pb-5 sm:pt-3 sm:scroll-pb-44">
+      <div className="message-feed min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain" ref={feedRef} onScroll={() => {
+        const feed = feedRef.current;
+        followingLatestRef.current = Boolean(feed && feed.scrollHeight - feed.clientHeight - feed.scrollTop < 80);
+        if (followingLatestRef.current) setNewMessageCount(0);
+      }}>
         <MessageList
           canPinMessages={canPinMessages}
           currentUserId={currentUser?.id}
           messages={displayedMessages}
           onMessageUpdate={handleMessageUpdate}
-          onReply={setReplyTarget}
+          onReply={handleReply}
         />
         <div ref={messagesEndRef} />
       </div>
+      {newMessageCount > 0 && <button className="val-jump-latest" type="button" onClick={() => { followingLatestRef.current = true; setNewMessageCount(0); feedRef.current?.scrollTo({ top: feedRef.current.scrollHeight, behavior: "smooth" }); }}>{newMessageCount} new {newMessageCount === 1 ? "message" : "messages"} · Jump to latest ↓</button>}
 
       <div className="chat-composer sticky bottom-0 z-10 min-w-0 shrink-0 overflow-hidden border-t border-white/10 bg-[#070907]/95 pb-[max(calc(var(--dashboard-bottom-nav-height,4rem)+0.25rem),0.25rem)] pt-3 backdrop-blur md:pb-[max(env(safe-area-inset-bottom),0.25rem)]">
         <div className="mx-auto w-full max-w-[min(100%,82rem)]">
@@ -451,7 +496,10 @@ export function RealtimeMessagePanel({
             </div>
           ) : null}
           <form className="message-composer-form flex w-full min-w-0 max-w-full items-end gap-2 sm:gap-3" data-tour-target="message-composer" onSubmit={sendMessage}>
+            <button type="button" className="app-icon-button val-composer-add" aria-label="Message tools" aria-haspopup="dialog" onClick={() => setComposerTools("tools")}><span aria-hidden="true">+</span></button>
             <textarea
+              ref={textareaRef}
+              aria-label={`Message #${channelName}`}
               className="max-h-28 min-h-12 min-w-0 max-w-full flex-1 resize-none overflow-y-auto rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-11 sm:max-h-36 sm:text-sm"
               disabled={!encryptionReady || !currentUser}
               maxLength={2000}
@@ -459,17 +507,18 @@ export function RealtimeMessagePanel({
               onKeyDown={submitOnEnter}
               placeholder={
                 encryptionReady
-                  ? `Encrypted message #${channelName}`
+                  ? `Message #${channelName}…`
                   : "Preparing encrypted chat..."
               }
               required
               rows={Math.min(5, Math.max(1, draft.split("\n").length))}
               value={draft}
             />
+            <button type="button" className="val-composer-emoji" aria-label="Add emoji" aria-haspopup="dialog" disabled={!encryptionReady || !currentUser} onClick={() => setComposerTools("emoji")}><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="12" cy="12" r="9" /><path d="M8 14a4 4 0 0 0 8 0M8 9h1m6 0h1" /></svg></button>
             <button
               aria-label="Send message"
               className="app-icon-button app-icon-button-primary h-12 w-12 shrink-0 disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:w-11"
-              disabled={!encryptionReady || !draft.trim() || !currentUser}
+              disabled={!encryptionReady || !draft.trim() || draft.length > 2000 || !currentUser}
               title="Send message"
               type="submit"
             >
@@ -480,13 +529,41 @@ export function RealtimeMessagePanel({
             </button>
           </form>
           <div className="mt-2 flex items-center justify-between gap-3 text-[11px] text-slate-500">
-            <span className="hidden sm:inline">Enter to send. Shift+Enter for a new line.</span>
-            <span className="sm:hidden">Encrypted chat</span>
+            <span className="val-composer-keyboard-hint hidden sm:inline">Enter to send. Shift+Enter for a new line.</span>
+            <span className="val-composer-touch-hint sm:hidden">Encrypted · Tap send</span>
             <span>{draft.length}/2000</span>
           </div>
-          {sendError ? <p className="mt-2 text-xs text-amber-200">{sendError}</p> : null}
+          {sendError && !pollOpen ? <p className="val-chat-error" role="alert">{sendError}</p> : null}
+          {draft.length > 2000 && <p className="val-chat-error" role="alert">Split this draft into messages of 2,000 characters or fewer.</p>}
         </div>
       </div>
+      {composerTools && <DialogSurface key={composerTools} title={composerTools === "emoji" ? "Add emoji" : "Message tools"} onClose={() => setComposerTools(null)}>
+        {composerTools === "emoji" ? <div className="val-emoji-grid">{[...reactionEmojis, "✨", "🎉", "👋", "🤔", "✅", "🙌", "☕"].map((emoji) => <button type="button" key={emoji} aria-label={`Insert ${emoji}`} onClick={() => {
+          const input = textareaRef.current;
+          const start = input?.selectionStart ?? draft.length;
+          const end = input?.selectionEnd ?? start;
+          const nextDraft = `${draft.slice(0, start)}${emoji}${draft.slice(end)}`;
+          if (nextDraft.length > 2000) {
+            flushSync(() => {
+              setSendError("Make room in your draft before adding an emoji.");
+              setComposerTools(null);
+            });
+            input?.focus({ preventScroll: true });
+            return;
+          }
+          flushSync(() => {
+            setDraft(nextDraft);
+            setComposerTools(null);
+          });
+          input?.focus({ preventScroll: true });
+          input?.setSelectionRange(start + emoji.length, start + emoji.length);
+        }}>{emoji}</button>)}</div> : <div className="val-dialog-links">
+          <button type="button" className="val-dialog-link" onClick={() => { setComposerTools(null); setPollOpen(true); setSendError(null); }}>Create a poll</button>
+          <button type="button" className="val-dialog-link" onClick={() => { setComposerTools(null); setSearchOpen(true); }}>Search this conversation</button>
+          <button type="button" className="val-dialog-link" onClick={() => { setComposerTools(null); void loadPinnedMessages(); }}>Pinned messages</button>
+        </div>}
+        {composerTools === "tools" && <button type="button" className="val-dialog-link mt-2" onClick={() => setComposerTools("emoji")}>Add emoji</button>}
+      </DialogSurface>}
     </div>
   );
 }
@@ -553,14 +630,11 @@ function SearchPanel({
   results: ChatMessage[];
   setQuery: (value: string) => void;
 }) {
-  useCloseOnEscape(onClose);
-
   return (
-    <div className="fixed inset-0 z-[70] flex items-end bg-black/45 sm:absolute sm:inset-0 sm:items-start sm:justify-end sm:bg-black/20" onClick={onClose}>
-      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:m-3 sm:max-w-md sm:rounded-lg" onClick={(event) => event.stopPropagation()}>
-        <PanelHeader onClose={onClose} overline="Search" title="Channel search" />
+    <DialogSurface title="Channel search" onClose={onClose}>
         <input
-          autoFocus
+          data-dialog-autofocus
+          aria-label="Search loaded messages"
           className="mt-4 h-11 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none focus:border-[#FF5F25] sm:text-sm"
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search loaded messages"
@@ -592,28 +666,27 @@ function SearchPanel({
             </p>
           )}
         </div>
-      </div>
-    </div>
+    </DialogSurface>
   );
 }
 
 function PinnedPanel({
+  error,
   loading,
   messages,
   onClose,
+  onRetry,
 }: {
+  error: string | null;
   loading: boolean;
   messages: ChatMessage[];
   onClose: () => void;
+  onRetry: () => void;
 }) {
-  useCloseOnEscape(onClose);
-
   return (
-    <div className="fixed inset-0 z-[70] flex items-end bg-black/45 sm:absolute sm:inset-0 sm:items-start sm:justify-end sm:bg-black/20" onClick={onClose}>
-      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:m-3 sm:max-w-md sm:rounded-lg" onClick={(event) => event.stopPropagation()}>
-        <PanelHeader onClose={onClose} overline="Pinned" title="Pinned messages" />
+    <DialogSurface title="Pinned messages" onClose={onClose}>
         <div className="mt-4 grid gap-2">
-          {loading ? (
+          {error ? <div role="alert"><p className="val-chat-error">{error}</p><button className="val-dialog-link" type="button" onClick={onRetry}>Try again</button></div> : loading ? (
             <div className="app-skeleton h-20 rounded-lg" />
           ) : messages.length ? (
             messages.map((message) => (
@@ -645,39 +718,40 @@ function PinnedPanel({
             </p>
           )}
         </div>
-      </div>
-    </div>
+    </DialogSurface>
   );
 }
 
 function PollDialog({
+  error,
   onClose,
   onCreate,
   options,
   question,
   setOptions,
   setQuestion,
+  pending,
 }: {
+  error: string | null;
   onClose: () => void;
   onCreate: () => void;
   options: string[];
   question: string;
   setOptions: (options: string[]) => void;
   setQuestion: (question: string) => void;
+  pending: boolean;
 }) {
   const validOptionCount = options.filter((option) => option.trim()).length;
 
-  useCloseOnEscape(onClose);
-
   return (
-    <div className="fixed inset-0 z-[75] flex items-end bg-black/50 sm:items-center sm:justify-center" onClick={onClose}>
-      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:max-w-lg sm:rounded-lg" onClick={(event) => event.stopPropagation()}>
-        <PanelHeader onClose={onClose} overline="Poll" title="Create poll" />
+    <DialogSurface title="Create poll" onClose={onClose}>
+        <fieldset disabled={pending}>
         <label className="mt-4 block">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
             Question
           </span>
           <input
+            data-dialog-autofocus
             className="mt-2 h-11 w-full rounded-lg border border-white/10 bg-[#050505] px-3 text-base text-white outline-none focus:border-[#FF5F25] sm:text-sm"
             maxLength={180}
             onChange={(event) => setQuestion(event.target.value)}
@@ -696,6 +770,7 @@ function PollDialog({
                 setOptions(nextOptions);
               }}
               placeholder={`Option ${index + 1}`}
+              aria-label={`Option ${index + 1}`}
               value={option}
             />
           ))}
@@ -722,44 +797,16 @@ function PollDialog({
         </div>
         <button
           className="app-button-primary mt-4 h-11 w-full rounded-lg text-sm font-bold disabled:opacity-60"
-          disabled={!question.trim() || validOptionCount < 2}
+          disabled={pending || !question.trim() || validOptionCount < 2}
+          aria-busy={pending}
           onClick={onCreate}
           type="button"
         >
-          Create poll
+          {pending ? "Creating…" : "Create poll"}
         </button>
-      </div>
-    </div>
-  );
-}
-
-function PanelHeader({
-  onClose,
-  overline,
-  title,
-}: {
-  onClose: () => void;
-  overline: string;
-  title: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <div>
-        <p className="app-section-title">{overline}</p>
-        <h2 className="mt-2 text-lg font-semibold text-white">{title}</h2>
-      </div>
-      <button
-        aria-label={`Close ${title}`}
-        className="app-icon-button h-10 w-10"
-        onClick={onClose}
-        type="button"
-      >
-        <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path d="M18 6 6 18" />
-          <path d="m6 6 12 12" />
-        </svg>
-      </button>
-    </div>
+        </fieldset>
+        {error && <p className="val-chat-error" role="alert">{error}</p>}
+    </DialogSurface>
   );
 }
 
@@ -779,20 +826,4 @@ function formatMessageDate(value: Date | string | null | undefined) {
     dateStyle: "short",
     timeStyle: "short",
   }).format(new Date(value));
-}
-
-function useCloseOnEscape(onClose: () => void) {
-  useEffect(() => {
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", closeOnEscape);
-
-    return () => {
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [onClose]);
 }

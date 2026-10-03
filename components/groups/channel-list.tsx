@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
+import { NavigationPending } from "@/components/ui/navigation-pending";
 
 import { ChannelRoutePrefetcher } from "@/components/groups/channel-route-prefetcher";
 import { VoiceChannelJoinButton } from "@/components/groups/voice-channel-join-button";
@@ -36,7 +37,7 @@ export function ChannelList({
   );
 
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-col gap-5 overflow-y-auto px-0 py-2 pr-1 min-[1180px]:gap-4" data-tour-target="channels-list">
+    <div className="val-channel-list flex h-full min-h-0 min-w-0 flex-col gap-5 overflow-y-auto px-0 py-2 pr-1 min-[1180px]:gap-4" data-tour-target="channels-list">
       <ChannelRoutePrefetcher hrefs={channelHrefs} />
       <ChannelSection
         channels={textChannels}
@@ -85,11 +86,15 @@ function ChannelSection({
   selectedChannelId?: string;
   showManagementActions: boolean;
 }) {
+  const [expanded, setExpanded] = useState(true);
+  const listId = useId();
   return (
     <section data-tour-target={label === "Voice rooms" ? "voice-channels" : undefined}>
-      <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400 min-[1180px]:text-[10px] min-[1180px]:tracking-[0.18em]">
-        {label}
-      </p>
+      <div className="val-channel-section-heading">
+        <button type="button" aria-expanded={expanded} aria-controls={listId} onClick={() => setExpanded((current) => !current)}><span aria-hidden="true">{prefix === "#" ? "#" : "◖"}</span>{label}<ChevronIcon expanded={expanded} /></button>
+        {canManageChannels && <Link href={`/dashboard/groups/${groupId}/settings`} aria-label={`Manage ${label.toLowerCase()}`} title={`Add or manage ${label.toLowerCase()}`} onClick={onNavigate}><span aria-hidden="true">+</span><NavigationPending /></Link>}
+      </div>
+      <div id={listId} hidden={!expanded}>
       {channels.length ? (
         <div className="space-y-1">
           {channels.map((channel) => (
@@ -125,6 +130,7 @@ function ChannelSection({
           No {label.toLowerCase()} yet. Add one from space settings when you are ready.
         </p>
       )}
+      </div>
     </section>
   );
 }
@@ -134,7 +140,6 @@ function TextChannelItem({
   channel,
   groupId,
   onNavigate,
-  prefix,
   returnToSettings,
   selected,
   showManagementActions,
@@ -144,7 +149,7 @@ function TextChannelItem({
   return (
     <div
       className={cn(
-        "app-row flex w-full min-w-0 items-center justify-between gap-2.5 px-3 py-3 text-left text-sm font-medium text-slate-300 transition hover:border-white/20 min-[1180px]:px-2.5 min-[1180px]:py-2.5",
+        "val-text-channel app-row flex w-full min-w-0 items-center justify-between gap-2.5 px-3 py-3 text-left text-sm font-medium text-slate-300 transition hover:border-white/20 min-[1180px]:px-2.5 min-[1180px]:py-2.5",
         selected && "border-[#FF5F25]/60 bg-[#FF5F25]/12 text-white shadow-[inset_3px_0_0_#FF5F25]",
       )}
     >
@@ -160,10 +165,10 @@ function TextChannelItem({
               #
             </span>
             <span className="truncate text-[13px] min-[1180px]:text-xs">
-              {prefix} {channel.name}
+              {channel.name}
             </span>
           </span>
-          <span className="hidden rounded-md bg-white/7 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 min-[1180px]:inline-flex">
+          <span className="sr-only">
             {selected ? "Selected" : channel.type}
           </span>
         </Link>

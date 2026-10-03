@@ -45,6 +45,9 @@ jobs:
       - name: Media lifecycle tests
         run: npm run test:media
 
+      - name: Chat links and viewport tests
+        run: npm run test:chat
+
       - name: Dependency audit
         run: |
           npm run test:audit
