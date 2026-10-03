@@ -39,7 +39,7 @@ self.addEventListener("push", (event) => {
   const notificationOptions = {
     body,
     actions: isIncomingCall ? getIncomingCallActions(payload.actions) : safeActions(payload.actions),
-    badge: "/val-icon-192.png",
+    badge: "/brand/val-echo-dark-256.png",
     data: {
       ...(payload.data || {}),
       callId,
@@ -47,7 +47,7 @@ self.addEventListener("push", (event) => {
       type: isIncomingCall ? incomingCallType : payload.data?.type,
       url: callUrl,
     },
-    icon: "/val-icon-512.png",
+    icon: "/brand/val-echo-icon-512.png",
     requireInteraction: Boolean(payload.requireInteraction || isIncomingCall),
     renotify: isIncomingCall,
     silent: false,

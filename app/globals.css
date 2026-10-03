@@ -682,7 +682,7 @@ html[data-theme^="signal-orange"] .app-page-header p:not(.app-section-title) {
 html[data-theme^="signal-orange"] .dashboard-welcome-card {
   background:
     linear-gradient(90deg, rgba(247,244,236,.98) 0 61%, transparent 61%),
-    url("/val-logo-dark-roomy.png") right 12% center / min(34vw, 28rem) auto no-repeat,
+    url("/brand/val-echo-dark.png") right 12% center / min(34vw, 28rem) auto no-repeat,
     #111416 !important;
 }
 
@@ -1051,8 +1051,8 @@ body * {
 }
 
 .brand-logo-image {
-  filter: brightness(0) invert(1);
-  mix-blend-mode: difference;
+  filter: none;
+  mix-blend-mode: normal;
 }
 
 html {

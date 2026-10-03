@@ -33,10 +33,10 @@ export const metadata: Metadata = {
     description: valDescription,
     images: [
       {
-        url: "/val-logo-social.jpg",
-        width: 4096,
-        height: 4096,
-        alt: "VAL whale logo on a light background",
+        url: "/brand/val-echo-dark.png",
+        width: 1254,
+        height: 1254,
+        alt: "VAL Echo Sonar logo",
       },
     ],
   },
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "VAL",
     description: valDescription,
-    images: ["/val-logo-social.jpg"],
+    images: ["/brand/val-echo-dark.png"],
   },
   appleWebApp: {
     capable: true,
@@ -55,24 +55,29 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/val-icon-192.png",
+        url: "/brand/val-echo-icon-32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: "/brand/val-echo-icon-192.png",
         sizes: "192x192",
         type: "image/png",
       },
       {
-        url: "/val-icon-512.png",
+        url: "/brand/val-echo-icon-512.png",
         sizes: "512x512",
         type: "image/png",
       },
     ],
     apple: [
       {
-        url: "/val-icon-512.png",
-        sizes: "512x512",
+        url: "/brand/val-echo-apple-180.png",
+        sizes: "180x180",
         type: "image/png",
       },
     ],
-    shortcut: ["/val-icon-192.png"],
+    shortcut: ["/brand/val-echo-icon-32.png"],
   },
   manifest: "/manifest.webmanifest",
 };

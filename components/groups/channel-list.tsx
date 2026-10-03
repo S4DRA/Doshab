@@ -206,9 +206,10 @@ function VoiceRoomItem({
   return (
     <div
       className={cn(
-        "app-row flex w-full min-w-0 flex-col items-stretch gap-2.5 px-3 py-3 text-left text-sm font-medium text-slate-300 transition hover:border-white/20 min-[1180px]:px-2.5 min-[1180px]:py-2.5",
+        "val-voice-channel app-row flex w-full min-w-0 flex-col items-stretch gap-2.5 px-3 py-3 text-left text-sm font-medium text-slate-300 transition hover:border-white/20 min-[1180px]:px-2.5 min-[1180px]:py-2.5",
         selected && "border-[#FF5F25]/60 bg-[#FF5F25]/12 text-white shadow-[inset_3px_0_0_#FF5F25]",
       )}
+      data-selected={selected}
     >
       <div className="flex w-full min-w-0 items-center justify-between gap-2.5">
         <button
