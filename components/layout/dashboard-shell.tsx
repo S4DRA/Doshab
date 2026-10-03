@@ -1,4 +1,5 @@
 import { ValPageHero } from "@/components/layout/val-page-hero";
+import { PeopleRail } from "@/components/layout/people-rail";
 import Link from "next/link";
 
 import { ChannelHeaderActions } from "@/components/chat/channel-header-actions";
@@ -233,6 +234,9 @@ export function DashboardShell({
           <DashboardHome currentUser={currentUser} data={homeData} groups={groups} />
         )}
       </section>
+      {selectedGroup && !selectedGroup.isDirectMessage && selectedChannel?.type !== "VOICE" ? (
+        <PeopleRail key={selectedGroup.id} members={selectedGroup.members ?? []} groupName={selectedGroup.name} />
+      ) : null}
     </main>
   );
 }

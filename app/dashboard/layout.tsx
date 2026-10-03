@@ -6,6 +6,8 @@ import { DashboardOnboardingCoordinator } from "@/components/onboarding/dashboar
 import { IncomingCallWatcher } from "@/components/calls/incoming-call-watcher";
 import { PersistentCallProvider } from "@/components/calls/persistent-call-provider";
 import { ValViewport } from "@/components/layout/val-viewport";
+import { DashboardPeopleProvider } from "@/components/layout/dashboard-people-provider";
+import { PeopleRail } from "@/components/layout/people-rail";
 import { getDashboardSidebarGroups } from "@/lib/dashboard-data";
 import { friendFromPair } from "@/lib/friends";
 import { getAuthState } from "@/lib/auth";
@@ -42,28 +44,24 @@ export default async function DashboardLayout({
   return (
     <div id="val-app" className={`val-app ${editorial.variable}`}>
       <ValViewport />
-      <DashboardSidebar
-        initialCurrentUser={sidebarData?.currentUser}
-        initialFriends={sidebarData?.friends}
-        initialGroups={sidebarData?.groups}
-        initialNotifications={sidebarData?.notifications}
-        initialUnreadCount={sidebarData?.unreadCount}
-      />
-      <PersistentCallProvider>
-        <div className="dashboard-content-frame dashboard-density min-h-0 w-full min-w-0 overflow-hidden">
-          <div className="val-route-content">{children}</div>
-          <aside className="val-world-rail" aria-hidden="true">
-            <div className="val-hazard" />
-            <p>Spaces // Human connections</p>
-            <div className="val-world-image" />
-            <ol><li>Conversation</li><li>Collaboration</li><li>Communities</li><li>Beyond</li></ol>
-            <p className="val-world-motto">A more<br />human internet<span /></p>
-          </aside>
-        </div>
-        <DashboardHashAnchorScroller />
-        <DashboardOnboardingCoordinator />
-        <IncomingCallWatcher />
-      </PersistentCallProvider>
+      <DashboardPeopleProvider currentUserId={auth.user.id} initialFriends={sidebarData.friends}>
+        <DashboardSidebar
+          initialCurrentUser={sidebarData.currentUser}
+          initialFriends={sidebarData.friends}
+          initialGroups={sidebarData.groups}
+          initialNotifications={sidebarData.notifications}
+          initialUnreadCount={sidebarData.unreadCount}
+        />
+        <PersistentCallProvider>
+          <div className="dashboard-content-frame dashboard-density min-h-0 w-full min-w-0 overflow-hidden">
+            <div className="val-route-content">{children}</div>
+            <PeopleRail />
+          </div>
+          <DashboardHashAnchorScroller />
+          <DashboardOnboardingCoordinator />
+          <IncomingCallWatcher />
+        </PersistentCallProvider>
+      </DashboardPeopleProvider>
     </div>
   );
 }

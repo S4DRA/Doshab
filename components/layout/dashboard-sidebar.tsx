@@ -8,7 +8,9 @@ import { createPortal } from "react-dom";
 
 import { PushNotificationToggle } from "@/components/notifications/push-notification-toggle";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
-import type { DashboardNotification } from "@/types";
+import { NavigationPending } from "@/components/ui/navigation-pending";
+import { useDashboardPeople } from "@/components/layout/dashboard-people-provider";
+import type { DashboardNotification, FriendPerson } from "@/types";
 
 const navItems = [
   {
@@ -54,12 +56,7 @@ type SidebarGroup = {
   name: string;
 };
 
-type SidebarFriend = {
-  id: string;
-  email: string;
-  image?: string | null;
-  name: string;
-};
+type SidebarFriend = FriendPerson;
 
 type SidebarUser = {
   id: string;
@@ -156,6 +153,7 @@ export function DashboardSidebar({
   initialNotifications = [],
   initialUnreadCount = 0,
 }: DashboardSidebarProps) {
+  const { updateFriends } = useDashboardPeople();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -285,13 +283,14 @@ export function DashboardSidebar({
   const applySidebarSnapshot = useCallback((snapshot: SidebarSnapshot) => {
     setCurrentUser(snapshot.currentUser);
     setFriends(snapshot.friends);
+    updateFriends(snapshot.friends);
     setGroups(snapshot.groups);
     setNotifications(snapshot.notifications);
     setUnreadCount(snapshot.unreadCount);
     snapshot.notifications.forEach((notification) => {
       seenNotificationIdsRef.current.add(notification.id);
     });
-  }, [setCurrentUser, setFriends, setGroups, setNotifications, setUnreadCount]);
+  }, [setCurrentUser, setFriends, setGroups, setNotifications, setUnreadCount, updateFriends]);
 
   const persistSidebarSnapshot = useCallback((snapshot: SidebarSnapshot) => {
     writeStoredSidebarSnapshot(snapshot);
@@ -807,7 +806,6 @@ export function DashboardSidebar({
         "/dashboard/channels",
         "/dashboard/messages",
         "/dashboard/profile",
-        "/dashboard/profile/themes",
         ...groups.slice(0, 8).map((group) => getGroupHref(group)),
       ];
 
@@ -1838,7 +1836,7 @@ export function DashboardSidebar({
               key={item.href}
               title={item.label}
             >
-              {item.icon}<span className="val-nav-label">{item.label}</span>
+              {item.icon}<span className="val-nav-label">{item.label}</span><NavigationPending />
             </Link>
           );
         })}
@@ -1888,6 +1886,7 @@ export function DashboardSidebar({
             >
               <AvatarInitials fallback="group" imageUrl={group.image} value={group.name} />
               <span className="val-nav-label truncate">{group.name}</span>
+              <NavigationPending />
             </Link>
           );
         })}

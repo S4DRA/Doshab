@@ -5,11 +5,6 @@ import {
   DEFAULT_DOSHAB_PALETTE_ID,
   DEFAULT_DOSHAB_THEME_ID,
   DEFAULT_DOSHAB_THEME_MODE,
-  DOSHAB_MODE_STORAGE_KEY,
-  DOSHAB_PALETTE_IDS,
-  DOSHAB_PALETTE_STORAGE_KEY,
-  DOSHAB_THEMES,
-  DOSHAB_THEME_STORAGE_KEY,
 } from "@/lib/themes";
 
 const geistSans = Geist({
@@ -90,15 +85,6 @@ export const viewport: Viewport = {
   interactiveWidget: "resizes-content",
 };
 
-const DARK_CHROME_COLOR = "#090b0c";
-const LIGHT_CHROME_COLOR = "#f7f4ec";
-
-const themeBootScript = `try{var allowed=${JSON.stringify(
-  DOSHAB_THEMES.map((theme) => theme.id),
-)};var palettes=${JSON.stringify(
-  DOSHAB_PALETTE_IDS,
-)};var modes=["dark","light"];var storedTheme=localStorage.getItem("${DOSHAB_THEME_STORAGE_KEY}");var storedPalette=localStorage.getItem("${DOSHAB_PALETTE_STORAGE_KEY}");var storedMode=localStorage.getItem("${DOSHAB_MODE_STORAGE_KEY}");var legacyMode=storedTheme==="light"||storedTheme==="dark"?storedTheme:null;var validTheme=allowed.includes(storedTheme);var palette=palettes.includes(storedPalette)?storedPalette:(validTheme?storedTheme.replace(/-(dark|light)$/,""):"${DEFAULT_DOSHAB_PALETTE_ID}");var mode=modes.includes(storedMode)?storedMode:(legacyMode||(validTheme&&storedTheme.endsWith("-light")?"light":"${DEFAULT_DOSHAB_THEME_MODE}"));var resolved=palettes.includes(palette)&&modes.includes(mode)?palette+"-"+mode:"${DEFAULT_DOSHAB_THEME_ID}";if(!allowed.includes(resolved)){resolved="${DEFAULT_DOSHAB_THEME_ID}";palette="${DEFAULT_DOSHAB_PALETTE_ID}";mode="${DEFAULT_DOSHAB_THEME_MODE}"}localStorage.setItem("${DOSHAB_THEME_STORAGE_KEY}",resolved);localStorage.setItem("${DOSHAB_PALETTE_STORAGE_KEY}",palette);localStorage.setItem("${DOSHAB_MODE_STORAGE_KEY}",mode);document.documentElement.dataset.theme=resolved;document.documentElement.dataset.palette=palette;document.documentElement.dataset.mode=mode;var meta=document.querySelector('meta[name="theme-color"]');if(meta){meta.setAttribute("content",mode==="light"?"${LIGHT_CHROME_COLOR}":"${DARK_CHROME_COLOR}")}}catch{document.documentElement.dataset.theme="${DEFAULT_DOSHAB_THEME_ID}";document.documentElement.dataset.palette="${DEFAULT_DOSHAB_PALETTE_ID}";document.documentElement.dataset.mode="${DEFAULT_DOSHAB_THEME_MODE}";var meta=document.querySelector('meta[name="theme-color"]');if(meta){meta.setAttribute("content","${DARK_CHROME_COLOR}")}}`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -114,13 +100,6 @@ export default function RootLayout({
       data-theme={DEFAULT_DOSHAB_THEME_ID}
       suppressHydrationWarning
     >
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: themeBootScript,
-          }}
-        />
-      </head>
       <body
         className="h-screen overflow-hidden bg-background text-foreground"
         suppressHydrationWarning

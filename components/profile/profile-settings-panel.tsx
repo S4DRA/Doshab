@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 
 import { VoiceAudioSettingsPanel } from "@/components/profile/voice-audio-settings-panel";
 import {
@@ -35,7 +34,6 @@ type SettingsSectionId =
   | "profile"
   | "voice"
   | "notifications"
-  | "appearance"
   | "security"
   | "account";
 
@@ -57,7 +55,7 @@ export function ProfileSettingsPanel() {
   useEffect(() => {
     const selectSection = () => {
       const section = window.location.hash.slice(1);
-      if (["profile", "voice", "notifications", "appearance", "security", "account"].includes(section)) setActiveSection(section as SettingsSectionId);
+      if (["profile", "voice", "notifications", "security", "account"].includes(section)) setActiveSection(section as SettingsSectionId);
     };
     const frame = requestAnimationFrame(selectSection);
     window.addEventListener("hashchange", selectSection);
@@ -244,7 +242,6 @@ export function ProfileSettingsPanel() {
           { id: "profile", label: "Profile" },
           { id: "voice", label: "Voice & Audio" },
           { id: "notifications", label: "Notifications" },
-          { id: "appearance", label: "Appearance" },
           { id: "security", label: "Security" },
           { id: "account", label: "Account" },
         ].map((section) => (
@@ -437,31 +434,6 @@ export function ProfileSettingsPanel() {
             >
               Restart platform tour
             </button>
-          </div>
-        </div>
-      ) : null}
-
-      {activeSection === "appearance" ? (
-        <div className="grid gap-3">
-          <div className="settings-shortcut-row app-row flex flex-col items-stretch gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between" data-tour-target="themes-settings">
-            <span className="min-w-0">
-              <span className="block text-sm font-semibold text-white">Themes</span>
-              <span className="block text-sm leading-5 text-slate-400">
-                Open the appearance gallery and choose dark or light mode for VAL.
-              </span>
-            </span>
-            <Link
-              className="settings-shortcut-button app-button-primary inline-flex h-11 shrink-0 items-center justify-center rounded-lg px-4 text-sm font-bold transition sm:h-10"
-              href="/dashboard/profile/themes"
-            >
-              Theme settings
-            </Link>
-          </div>
-          <div className="app-row p-4">
-            <p className="text-sm leading-6 text-slate-400">
-              Theme changes apply across VAL and keep the same premium high-contrast
-              system on desktop and mobile.
-            </p>
           </div>
         </div>
       ) : null}

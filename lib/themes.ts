@@ -60,7 +60,7 @@ export type DoshabThemeConfig = Omit<DoshabPaletteConfig, "colors" | "id"> & {
 };
 
 // VAL's default is deliberately narrow: warm ivory work surfaces, ink structure,
-// and signal orange for actions. The other palettes remain selectable preferences.
+// and signal orange for actions. VAL uses this identity throughout the app.
 export const DEFAULT_DOSHAB_PALETTE_ID: DoshabPaletteId = "signal-orange";
 export const DEFAULT_DOSHAB_THEME_MODE: DoshabThemeMode = "dark";
 export const DEFAULT_DOSHAB_THEME_ID: DoshabThemeId = `${DEFAULT_DOSHAB_PALETTE_ID}-${DEFAULT_DOSHAB_THEME_MODE}`;

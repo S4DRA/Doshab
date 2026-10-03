@@ -67,7 +67,13 @@ export default async function GroupSettingsPage({
           },
           members: {
             select: {
+              id: true,
+              role: true,
+              createdAt: true,
               userId: true,
+              user: {
+                select: { id: true, name: true, email: true, image: true, status: true },
+              },
             },
           },
         },
@@ -93,6 +99,7 @@ export default async function GroupSettingsPage({
     image: membership.group.image,
     isDirectMessage: membership.group.isDirectMessage,
     name: membership.group.name,
+    members: membership.group.members,
     ownerId: membership.group.ownerId,
   };
 
