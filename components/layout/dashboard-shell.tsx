@@ -69,7 +69,7 @@ export function DashboardShell({
     : null;
 
   return (
-    <main data-context={selectedGroup ? "space" : "overview"} data-channel-type={selectedChannel?.type.toLowerCase()} className="dashboard-shell-root flex h-full min-h-0 w-full min-w-0 overflow-hidden bg-[#070907]/95 text-slate-100">
+    <main data-context={selectedGroup ? "space" : "overview"} data-chat-kind={selectedGroup?.isDirectMessage ? "direct" : "channel"} data-channel-type={selectedChannel?.type.toLowerCase()} className="dashboard-shell-root flex h-full min-h-0 w-full min-w-0 overflow-hidden bg-[#070907]/95 text-slate-100">
       <aside className="dashboard-secondary-sidebar hidden min-h-0 w-[292px] shrink-0 flex-col gap-3 overflow-hidden border-r border-white/10 bg-[#0d100e] p-3 min-[1180px]:flex min-[1500px]:w-[312px]">
         {activeSection === "messages" || selectedGroup?.isDirectMessage ? (
           <MessageThreadSidebar
@@ -78,17 +78,23 @@ export function DashboardShell({
           />
         ) : selectedGroup ? (
           <div className="flex min-h-0 flex-1 flex-col gap-3">
-            <div className="app-card shrink-0 p-4 min-[1180px]:p-3.5">
+            <div className="val-space-sidebar-heading shrink-0">
               <p className="app-section-title">
                 Space
               </p>
               <h1 className="mt-2 break-words text-lg font-semibold text-white min-[1180px]:text-base">{selectedGroup.name}</h1>
+              <p className="val-space-member-count">{selectedGroup.members?.length ?? 0} {selectedGroup.members?.length === 1 ? "member" : "members"}</p>
               {selectedGroup.description ? (
                 <p className="mt-2 break-words text-sm leading-6 text-slate-400 min-[1180px]:text-xs min-[1180px]:leading-5">
                   {selectedGroup.description}
                 </p>
               ) : null}
             </div>
+            <div className="val-sidebar-cover">
+              {selectedGroup.image && <AvatarInitials imageUrl={selectedGroup.image} value={selectedGroup.name} fallback="group" size="lg" />}
+              <span>Same people.<br />Bigger spaces. <b>{"// VAL"}</b></span>
+            </div>
+            <Link className="val-space-overview-link" aria-current={!selectedChannel && !groupSettingsPanel ? "page" : undefined} href={`/dashboard/groups/${selectedGroup.id}`}><span aria-hidden="true">⊞</span> Overview</Link>
             <div className="min-h-0 flex-1">
               <ChannelList
                 canManageChannels={canCreateChannels}
@@ -101,6 +107,7 @@ export function DashboardShell({
               <Link
                 className="mt-auto shrink-0 rounded-lg border border-white/10 bg-[#181818] px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/70 hover:bg-[#242424] hover:text-white min-[1180px]:text-xs"
                 href={`/dashboard/groups/${selectedGroup.id}/settings`}
+                aria-current={groupSettingsPanel ? "page" : undefined}
               >
                 Space settings
               </Link>
@@ -274,7 +281,7 @@ function MessageThreadSidebar({
           <div className="space-y-1">
             {threads.map((thread) => (
               <div
-                className={`group flex items-center gap-2 rounded-xl border px-2.5 py-2.5 transition ${
+                className={`val-private-thread group flex items-center gap-2 rounded-xl border px-2.5 py-2.5 transition ${
                   selectedGroupId === thread.id
                     ? "border-[#6B5BFF] bg-[#1A1D22] shadow-[5px_5px_0_#000]"
                     : "border-transparent bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.06]"
@@ -284,6 +291,7 @@ function MessageThreadSidebar({
                 <Link
                   className="flex min-w-0 flex-1 items-center gap-3"
                   href={getDirectMessageHref(thread.id, thread.channelId)}
+                  aria-current={selectedGroupId === thread.id ? "page" : undefined}
                 >
                   <AvatarInitials
                     imageUrl={thread.friend?.image}
@@ -620,17 +628,12 @@ function ChannelMain({
   }
 
   return (
-    <div className="dashboard-shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-2.5 py-2.5 sm:px-4 sm:py-4 min-[1180px]:px-6 min-[1180px]:py-4">
-      <section className="channel-top-bar shrink-0 app-surface rounded-xl px-3 py-2.5 sm:px-4 min-[1180px]:rounded-lg min-[1180px]:px-4 min-[1180px]:py-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="app-section-title">
-              {groupName ?? "Channel"}
-            </p>
-            <h2 className="mt-0.5 truncate text-lg font-semibold text-white sm:text-xl min-[1180px]:text-xl">
-              # {channel.name}
-            </h2>
-          </div>
+    <div className="dashboard-shell-main val-chat-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <section className="channel-top-bar val-chat-header shrink-0">
+        <div className="val-chat-overline"><span>Spaces / {groupName ?? "Conversation"}</span><span>{members.length} {members.length === 1 ? "member" : "members"}</span></div>
+        <div className="val-chat-title-row">
+          <h2 title={channel.name}># {channel.name}</h2>
+          <div className="val-chat-description"><span>Text channel</span><p>Messages, ideas, and conversation in {groupName ?? "your space"}.</p></div>
           {groupId ? (
             <ChannelHeaderActions
               canInvite={canInvite}
@@ -645,7 +648,7 @@ function ChannelMain({
           ) : null}
         </div>
       </section>
-      <div className="mt-2 flex min-h-0 min-w-0 flex-1 flex-col sm:mt-3">
+      <div className="val-chat-body flex min-h-0 min-w-0 flex-1 flex-col">
         <RealtimeMessagePanel
           canPinMessages={canPinMessages}
           channelId={channel.id}

@@ -12,7 +12,7 @@ import type { GroupMemberItem, UserStatus } from "@/types";
 
 const statusOrder: Record<UserStatus, number> = { ONLINE: 0, IDLE: 1, DO_NOT_DISTURB: 2, OFFLINE: 3 };
 
-export function PeopleRail({ members, groupName }: { members?: GroupMemberItem[]; groupName?: string }) {
+export function PeopleRail({ members, groupName, mode = "rail" }: { members?: GroupMemberItem[]; groupName?: string; mode?: "rail" | "panel" }) {
   const { currentUserId, friends } = useDashboardPeople();
   const pathname = usePathname();
   const listId = useId();
@@ -31,7 +31,7 @@ export function PeopleRail({ members, groupName }: { members?: GroupMemberItem[]
   const title = members ? "Members" : "Friends";
 
   return (
-    <aside className={`val-world-rail val-people-rail${members ? " val-space-people-rail" : ""}`} aria-label={members ? `${groupName} members` : "Your friends"}>
+    <aside className={`${mode === "rail" ? "val-world-rail" : "val-people-panel"} val-people-rail${members ? " val-space-people-rail" : ""}`} aria-label={members ? `${groupName} members` : "Your friends"}>
       <div className="val-hazard" aria-hidden="true" />
       <header className="val-people-heading"><h2>{title}<span>{people.length}</span></h2><p title={groupName}>{groupName ?? "Your people"}</p></header>
       <div className="val-people-tools">

@@ -11,6 +11,7 @@
     "audit:dependencies": "node scripts/audit-dependencies.mjs",
     "test:audit": "node --test tests/dependency-audit.test.mjs",
     "test:media": "node --test tests/media-client.test.mjs",
+    "test:chat": "node --test tests/chat-presentation.test.mjs",
     "backup:db": "node scripts/backup-database.mjs",
     "backup:check-tools": "node scripts/backup-database.mjs --check-tools",
     "restore:smoke": "node scripts/restore-smoke-test.mjs",
