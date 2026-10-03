@@ -2,6 +2,26 @@ import type { LocalMedia, MediaParticipant, RemoteMedia } from "./types";
 
 export type CallPerson = { id: string; name: string; image?: string | null; isLocal: boolean; muted: boolean; connectionState: string };
 export type CallView = { id: string; person: CallPerson; source: "camera" | "screen"; media?: LocalMedia | RemoteMedia };
+export type CallLayoutMode = "auto" | "gallery" | "focus";
+
+/** Only visible pages mount video players; audio stays with the persistent session. */
+export function pageCallViews(views: CallView[], requestedPage: number, pageSize = 6) {
+  const pages = Math.max(1, Math.ceil(views.length / pageSize));
+  const page = Math.max(0, Math.min(requestedPage, pages - 1));
+  return { page, pages, items: views.slice(page * pageSize, (page + 1) * pageSize) };
+}
+
+export function selectCallLayout(views: CallView[], mode: CallLayoutMode, pinnedId: string | null, speakingIds: string[]) {
+  const pinned = views.find((view) => view.id === pinnedId);
+  // A departed participant or stopped share must not leave an invisible pin behind.
+  const effectiveMode = pinnedId && !pinned ? "auto" : mode;
+  const screen = views.find((view) => view.source === "screen");
+  const activeView = pinned ?? screen
+    ?? views.find((view) => !view.person.isLocal && speakingIds.includes(view.person.id)) ?? views[0];
+  const gallery = effectiveMode === "gallery" || (effectiveMode === "auto" && !screen && views.length > 1);
+  const galleryViews = [...views.filter((view) => view.source === "screen"), ...views.filter((view) => view.source === "camera")];
+  return { mode: effectiveMode, gallery, activeView, galleryViews };
+}
 
 export function buildCallViews(
   participant: { id: string; name: string; image?: string | null },
@@ -9,9 +29,16 @@ export function buildCallViews(
 ) {
   const people: CallPerson[] = [{ ...participant, isLocal: true, muted: micMuted, connectionState: "connected" }];
   for (const other of participants) {
-    if (people.some((person) => person.id === other.userId)) continue;
+    const existing = people.find((person) => person.id === other.userId);
+    if (existing) {
+      if (!existing.isLocal) {
+        existing.muted = existing.muted && other.muted;
+        if (other.connectionState === "connected") existing.connectionState = "connected";
+      }
+      continue;
+    }
     people.push({ id: other.userId, name: other.metadata?.name || "Participant", isLocal: false,
-      muted: other.muted, connectionState: other.connectionState ?? "connecting" });
+      image: other.metadata?.image, muted: other.muted, connectionState: other.connectionState ?? "connecting" });
   }
   const views: CallView[] = people.map((person) => ({
     id: `camera:${person.id}`, person, source: "camera",
