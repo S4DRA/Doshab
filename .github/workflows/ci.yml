@@ -47,17 +47,8 @@ jobs:
 
       - name: Dependency audit
         run: |
-          set +e
-          audit_output="$(npm audit --audit-level=moderate 2>&1)"
-          audit_status=$?
-          printf '%s\n' "$audit_output"
-
-          if [ "$audit_status" -ne 0 ] && printf '%s' "$audit_output" | grep -q "Invalid package tree"; then
-            echo "::warning::npm audit's legacy endpoint rejected the tree after npm ci validated it."
-            exit 0
-          fi
-
-          exit "$audit_status"
+          npm run test:audit
+          npm run audit:dependencies
 
       - name: Build
         run: npm run build

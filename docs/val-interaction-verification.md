@@ -14,7 +14,7 @@
 - Local HTTP checks passed for public pages, protected dashboard routes, manifest, stylesheet/font requests, and unchanged brand asset hashes.
 - Local read-only database check confirmed complete member profiles for the space-settings selection. No migration or database writes were needed.
 - Production dependency audit reports zero vulnerabilities after updating Next.js and its ESLint configuration to 16.3.8.
-- Full dependency audit reports five high-severity entries tracing to the development-only `braces@3.0.3` dependency under `eslint-config-next`. The upstream advisory has no patched release: https://github.com/advisories/GHSA-vfj7-8cjw-p6xm. Existing audit/security checks remain enabled.
+- Full dependency audit reports five high-severity entries tracing to the development-only `braces@3.0.3` dependency under `eslint-config-next`. The upstream advisory has no patched release: https://github.com/advisories/GHSA-vfj7-8cjw-p6xm. The exact development-only chain has a documented exception through 2026-10-17; production findings and all other advisories still fail. Six audit-guard tests pass. See `dependency-audit-exceptions.md`.
 
 ## Browser verification pending
 
