@@ -1003,56 +1003,45 @@ html[data-theme] #val-app .dashboard-secondary-sidebar .val-space-overview-link[
   html[data-theme] #val-app .dashboard-main-sidebar > .val-sidebar-utilities > div { width:100%; }
 }
 
-/* Clip the material, not the sidebar: fixed popups must remain outside the rail. */
-.val-sidebar-material,.val-sidebar-signature { display:none; pointer-events:none; }
+/* Keep the rail continuous and unclipped so labels and fixed popups stay clear. */
+.val-sidebar-signature { display:none; pointer-events:none; }
 @media(min-width:1180px) {
-  html[data-theme] #val-app { --val-sidebar-cut-depth:120px; }
-  html[data-theme] #val-app,
-  html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) { --dashboard-primary-sidebar-width:184px; }
   html[data-theme] #val-app .dashboard-main-sidebar.dashboard-main-sidebar,
   html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .dashboard-main-sidebar {
     padding:0 !important;
     border:0 !important;
-    background:var(--val-paper) !important;
+    border-right:1px solid #34403a !important;
+    background:linear-gradient(160deg,#101513,#080b0c 55%,#0c1110) !important;
     box-shadow:none !important;
     overflow:visible !important;
     gap:0 !important;
   }
   html[data-theme] #val-app .dashboard-main-sidebar::before { display:none !important; }
-  html[data-theme] #val-app .val-sidebar-material {
-    display:block;
-    position:absolute;
-    inset:0;
-    z-index:-1;
-    background:linear-gradient(140deg,#111312,#080909 55%,#060808) !important;
-    box-shadow:inset 1px 0 #78817755;
-    clip-path:polygon(0 0,calc(100% - 72px) 0,calc(100% - 72px) 62px,100% 134px,100% 42%,calc(100% - 28px) calc(42% + 28px),100% calc(42% + 56px),100% 58%,calc(100% - 36px) calc(58% + 36px),calc(100% - 36px) calc(100% - var(--val-sidebar-cut-depth)),8px 100%,0 100%);
-  }
   html[data-theme] #val-app .dashboard-brand-lockup,
   html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .dashboard-brand-lockup {
-    min-height:114px;
-    height:114px;
-    padding:22px 20px 20px !important;
-    gap:6px;
-    flex-direction:column;
-    align-items:flex-start;
+    min-height:88px;
+    height:88px;
+    padding:16px 20px !important;
+    gap:12px;
+    flex-direction:row;
+    align-items:center;
     justify-content:flex-start;
   }
-  html[data-theme] #val-app .dashboard-brand-mark { width:38px !important; height:38px !important; outline:1px solid #848b80; outline-offset:0; }
+  html[data-theme] #val-app .dashboard-brand-mark { width:44px !important; height:44px !important; }
   html[data-theme] #val-app .dashboard-brand-word,
-  html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .dashboard-brand-word { font:10px/1.4 var(--font-geist-mono),monospace !important; letter-spacing:.08em; }
+  html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .dashboard-brand-word { font:800 32px/1 var(--font-val-display),sans-serif !important; letter-spacing:0; }
   html[data-theme] #val-app .val-brand-caption,
   html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .val-brand-caption { display:none !important; }
-  html[data-theme] #val-app .dashboard-main-sidebar nav[aria-label='Dashboard'] { flex:0 1 auto; gap:4px !important; padding:0 0 8px !important; border:0; }
+  html[data-theme] #val-app .dashboard-main-sidebar nav[aria-label='Dashboard'] { flex:1 1 0; min-height:0; gap:4px !important; padding:0 8px 8px !important; border:0; }
   html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon,
   html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .dashboard-main-sidebar .dashboard-nav-icon {
-    min-height:54px !important;
-    height:54px !important;
-    padding:0 36px 0 18px !important;
+    min-height:48px !important;
+    height:48px !important;
+    padding:0 12px !important;
     gap:14px;
   }
   html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon > .theme-avatar { width:24px !important; height:24px !important; }
-  html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon { clip-path:polygon(0 0,calc(100% - 30px) 0,100% 30px,100% 100%,0 100%); }
+  html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon { clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%); }
   html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon.dashboard-nav-icon-active,
   html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon.dashboard-nav-icon-active:hover {
     background:#ff5917 !important;
@@ -1062,51 +1051,45 @@ html[data-theme] #val-app .dashboard-secondary-sidebar .val-space-overview-link[
   html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon-active > .theme-avatar-person:has(svg) { background:transparent !important; border-color:transparent !important; }
   html[data-theme] #val-app .val-nav-label,
   html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .val-nav-label { font-size:14px; font-weight:400; }
-  html[data-theme] #val-app .dashboard-main-sidebar nav[aria-label='Dashboard'] > div.bg-white\/50 { width:calc(100% - 36px) !important; margin:16px 18px !important; background:#7d837a55; }
+  html[data-theme] #val-app .dashboard-main-sidebar nav[aria-label='Dashboard'] > div.bg-white\/50 { width:calc(100% - 24px) !important; margin:12px !important; background:#34403a; }
   html[data-theme] #val-app .val-sidebar-utilities {
     width:100%;
     align-items:stretch;
     gap:4px;
-    border-top:1px solid #7d837a55;
-    padding:14px 0 10px;
+    border-top:1px solid #34403a;
+    padding:12px 8px;
   }
   html[data-theme] #val-app .val-sidebar-utilities > div { width:100%; }
-  html[data-theme] #val-app .val-sidebar-utilities .dashboard-nav-icon { gap:12px !important; }
-  html[data-theme] #val-app .dashboard-main-sidebar .val-sidebar-utilities .val-nav-label { font-size:12px; white-space:nowrap; text-align:left; }
+  html[data-theme] #val-app .val-sidebar-utilities .dashboard-nav-icon { gap:14px !important; }
+  html[data-theme] #val-app .dashboard-main-sidebar .val-sidebar-utilities .val-nav-label { font-size:13px; white-space:nowrap; text-align:left; }
   html[data-theme] #val-app .val-sidebar-signature {
     display:block;
     position:relative;
-    flex:1 0 180px;
-    min-height:180px;
-    height:180px;
+    flex:0 0 144px;
+    min-height:144px;
+    height:144px;
     width:100%;
     padding:0;
     border:0;
-    clip-path:polygon(0 0,calc(100% - 36px) 0,calc(100% - 36px) calc(100% - var(--val-sidebar-cut-depth)),8px 100%,0 100%);
   }
   html[data-theme] #val-app .val-sidebar-signature::before {
     content:'';
     position:absolute;
     inset:0;
-    background:linear-gradient(#080909,transparent 25%,#060808a6 70%,#060808),url('/brand/val-lunar.webp') 94% top / auto 340px no-repeat !important;
-    opacity:.85;
+    background:linear-gradient(#080b0c,transparent 35%,#080b0cb3),url('/brand/val-lunar.webp') 94% top / auto 260px no-repeat !important;
+    opacity:.5;
   }
-  .val-sidebar-signature p { position:absolute; left:24px; bottom:128px; width:112px; color:#e8ebe0; font:10px/1.6 var(--font-geist-mono),monospace; letter-spacing:.12em; text-transform:uppercase; }
-  .val-sidebar-signature > span { position:absolute; left:24px; bottom:110px; width:26px; height:2px; background:#ff5917; }
+  .val-sidebar-signature p { position:absolute; left:20px; bottom:36px; width:144px; color:#e8ebe0; font:10px/1.6 var(--font-geist-mono),monospace; letter-spacing:.12em; text-transform:uppercase; }
+  .val-sidebar-signature > span { position:absolute; left:20px; bottom:24px; width:26px; height:2px; background:#ff5917; }
 }
 @media(min-width:1180px) and (max-height:799px) {
-  html[data-theme] #val-app { --val-sidebar-cut-depth:56px; }
-  html[data-theme] #val-app .val-sidebar-signature { height:88px; min-height:88px; flex-basis:88px; }
-  .val-sidebar-signature p { bottom:52px; }
-  .val-sidebar-signature > span { bottom:36px; }
+  html[data-theme] #val-app .val-sidebar-signature { height:96px; min-height:96px; flex-basis:96px; }
 }
 @media(min-width:1180px) and (max-height:740px) {
-  html[data-theme] #val-app { --val-sidebar-cut-depth:32px; }
   html[data-theme] #val-app .val-sidebar-signature { height:64px; min-height:64px; flex-basis:64px; }
   .val-sidebar-signature p { bottom:28px; font-size:9px; }
   .val-sidebar-signature > span { bottom:16px; }
 }
 @media(min-width:1180px) and (max-height:599px) {
-  html[data-theme] #val-app { --val-sidebar-cut-depth:0px; }
   html[data-theme] #val-app .val-sidebar-signature { display:none; }
 }
