@@ -1053,6 +1053,7 @@ html[data-theme] #val-app .dashboard-secondary-sidebar .val-space-overview-link[
     box-shadow:inset 2px 0 #ffb18b,inset 0 1px #ff8958 !important;
   }
   html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon:not(.dashboard-nav-icon-active):hover { background:#ffffff0d !important; }
+  html[data-theme] #val-app .dashboard-main-sidebar .dashboard-nav-icon-active > .theme-avatar-person:has(svg) { background:transparent !important; border-color:transparent !important; }
   html[data-theme] #val-app .val-nav-label,
   html[data-theme] #val-app:has(.dashboard-shell-root[data-context='space']) .val-nav-label { font-size:14px; font-weight:400; }
   html[data-theme] #val-app .dashboard-main-sidebar nav[aria-label='Dashboard'] > div.bg-white\/50 { width:calc(100% - 48px) !important; margin:16px 24px !important; background:#7d837a55; }
