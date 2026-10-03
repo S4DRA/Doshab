@@ -882,8 +882,8 @@ html[data-theme] #val-app .val-chat-panel .message-bubble button[aria-label^='Re
   html[data-theme] #val-app .val-chat-panel .message-row-grouped .message-bubble > p { padding-right:44px; }
 }
 html[data-theme] #val-app .val-chat-panel .chat-toolbar .val-chat-search { font-weight:400; }
-/* The shared app-surface rule must not put the profile popup into sidebar flow. */
-html[data-theme] #val-app .val-profile-popover { position:fixed !important; }
+/* Shared surface styling must not put sidebar popups into navigation flow. */
+html[data-theme] #val-app .dashboard-sidebar-popover { position:fixed !important; }
 html[data-theme] #val-app .dashboard-secondary-sidebar .val-private-thread { border-color:#34423a; background:#111a17; border-radius:6px; box-shadow:none; }
 html[data-theme] #val-app .dashboard-secondary-sidebar .val-private-thread:has(a[aria-current='page']) { border-color:#f56b30 !important; background:#2c211a !important; box-shadow:inset 3px 0 #ff5a1f !important; }
 html[data-theme] #val-app .dashboard-secondary-sidebar .val-private-thread .text-white { color:#eef0e5 !important; }
