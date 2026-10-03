@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import {
   PersistentCallSurface,
@@ -31,16 +31,18 @@ type VoiceRoomProps = {
 export function VoiceRoom({ channelId, channelName, groupId, groupName, canInvite, image }: VoiceRoomProps) {
   const { activeCall, startCall } = usePersistentCall();
   const [isJoining, setIsJoining] = useState(false);
+  const joining = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [joinedOnce, setJoinedOnce] = useState(false);
   const activeHere = activeCall?.id === `group:${channelId}`;
   const leftRoom = joinedOnce && !activeHere && !isJoining;
 
-  const joinRoom = useCallback(async () => {
-    if (isJoining || activeHere) {
+  const joinRoom = useCallback(async (joinMuted = false) => {
+    if (joining.current || activeHere) {
       return;
     }
 
+    joining.current = true;
     setIsJoining(true);
     setError(null);
 
@@ -74,7 +76,7 @@ export function VoiceRoom({ channelId, channelName, groupId, groupName, canInvit
         subtitle: groupName,
         inviteHref: canInvite && groupId ? `/dashboard/groups/${groupId}/settings#invite-friends` : undefined,
         title: channelName,
-        voiceSettings,
+        voiceSettings: joinMuted ? { ...voiceSettings, joinMuted: true } : voiceSettings,
       });
       setJoinedOnce(true);
     } catch (joinError) {
@@ -84,9 +86,10 @@ export function VoiceRoom({ channelId, channelName, groupId, groupName, canInvit
           : "Could not join this voice room.",
       );
     } finally {
+      joining.current = false;
       setIsJoining(false);
     }
-  }, [activeHere, channelId, channelName, groupId, groupName, canInvite, image, isJoining, startCall]);
+  }, [activeHere, channelId, channelName, groupId, groupName, canInvite, image, startCall]);
 
   return (
     activeHere ? (
@@ -123,14 +126,18 @@ export function VoiceRoom({ channelId, channelName, groupId, groupName, canInvit
               </p>
             ) : null}
 
+            <div className="mt-6 flex flex-wrap justify-center gap-3 min-[1180px]:justify-start">
             <button
-              className="app-button-primary mt-6 h-11 rounded-lg px-5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 min-[1180px]:h-10 min-[1180px]:px-4 min-[1180px]:text-xs"
+              className="app-button-primary h-11 rounded-lg px-5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 min-[1180px]:h-10 min-[1180px]:px-4 min-[1180px]:text-xs"
               disabled={isJoining}
-              onClick={joinRoom}
+              onClick={() => void joinRoom()}
               type="button"
             >
               {isJoining ? "Joining..." : leftRoom ? "Rejoin voice room" : "Join voice room"}
             </button>
+            <button className="app-button-secondary h-11 rounded-lg px-5 text-sm font-semibold disabled:opacity-60 min-[1180px]:h-10 min-[1180px]:text-xs" disabled={isJoining} onClick={() => void joinRoom(true)} type="button">Join muted</button>
+            </div>
+            <p className="mt-3 text-xs text-slate-400">Camera and screen sharing start off.</p>
           </div>
           <div className="hidden border-l border-white/10 bg-[#0d100e]/70 p-6 min-[1180px]:block">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF5F25]">

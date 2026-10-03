@@ -257,3 +257,50 @@ test("the call view retains camera and screen as separate selectable views", () 
   assert.equal(views.filter((item) => item.source === "screen").length, 2);
   assert.equal(new Set(views.map((item) => item.id)).size, 4);
 });
+
+const callViews = () => {
+  const exports = {}; vm.runInNewContext(compile("../lib/media/call-view.ts"), { exports });
+  const { views } = exports.buildCallViews(identity("Alice"), [], [], [{ userId: "Bob", metadata: identity("Bob"), muted: false, connectionState: "connected" }], true);
+  return { ...exports, views };
+};
+test("auto layout shows both participants and focuses a newly shared screen", () => {
+  const { selectCallLayout, views } = callViews();
+  assert.equal(selectCallLayout(views, "auto", null, []).gallery, true);
+  views.push({ id: "screen:Bob", person: views[1].person, source: "screen" });
+  const layout = selectCallLayout(views, "auto", null, []);
+  assert.equal(layout.gallery, false); assert.equal(layout.activeView.id, "screen:Bob");
+});
+test("manual gallery keeps both camera and screen visible, and focus keeps its pin", () => {
+  const { selectCallLayout, views } = callViews();
+  views.push({ id: "screen:Bob", person: views[1].person, source: "screen" });
+  const gallery = selectCallLayout(views, "gallery", null, ["Bob"]);
+  assert.equal(gallery.gallery, true); assert.equal(gallery.galleryViews[0].source, "screen");
+  assert.equal(gallery.galleryViews.length, 3);
+  const focus = selectCallLayout(views, "focus", views[0].id, ["Bob"]);
+  assert.equal(focus.gallery, false); assert.equal(focus.activeView.id, views[0].id);
+});
+test("a stopped pinned share restores automatic participant visibility", () => {
+  const { selectCallLayout, views } = callViews();
+  const layout = selectCallLayout(views, "focus", "screen:stopped", ["Alice", "Bob"]);
+  assert.equal(layout.mode, "auto"); assert.equal(layout.gallery, true);
+  assert.equal(layout.activeView.person.id, "Bob");
+});
+test("large rooms page video views and clamp after participants leave", () => {
+  const { pageCallViews, views } = callViews();
+  const many = Array.from({ length: 19 }, (_, i) => ({ ...views[0], id: `camera:${i}` }));
+  const page = pageCallViews(many, 2);
+  assert.equal(page.items.length, 6); assert.equal(page.items[0].id, "camera:12"); assert.equal(page.pages, 4);
+  const remaining = pageCallViews(many.slice(0, 4), 2);
+  assert.equal(remaining.page, 0); assert.equal(remaining.items.length, 4);
+});
+test("multiple sessions for one person show their connected and unmuted state", () => {
+  const { buildCallViews } = callViews();
+  const participants = [
+    { userId: "Bob", metadata: { ...identity("Bob"), image: "/avatar.png" }, muted: true, connectionState: "connecting" },
+    { userId: "Bob", metadata: identity("Bob"), muted: false, connectionState: "connected" },
+  ];
+  const { people, views } = buildCallViews(identity("Alice"), [], [], participants, true);
+  assert.equal(people.length, 2); assert.equal(views.length, 2);
+  assert.equal(people[1].connectionState, "connected"); assert.equal(people[1].muted, false);
+  assert.equal(people[1].image, "/avatar.png");
+});
