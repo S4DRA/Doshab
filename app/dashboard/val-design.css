@@ -878,7 +878,7 @@ html[data-theme] #val-app .val-chat-panel .message-bubble button[aria-label^='Re
 }
 @media(max-width:639px), (display-mode:standalone) and (pointer:coarse) and (max-width:1024px) {
   html[data-theme] #val-app .val-chat-panel .message-bubble .message-action-toggle { width:44px; min-width:44px; height:44px; min-height:44px; }
-  html[data-theme] #val-app .val-chat-panel .message-meta { padding-right:44px; }
+  html[data-theme] #val-app .val-chat-panel .message-meta { padding-right:44px; min-height:44px; }
   html[data-theme] #val-app .val-chat-panel .message-row-grouped .message-bubble > p { padding-right:44px; }
 }
 html[data-theme] #val-app .val-chat-panel .chat-toolbar .val-chat-search { font-weight:400; }
