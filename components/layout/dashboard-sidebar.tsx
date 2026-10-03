@@ -1592,6 +1592,7 @@ export function DashboardSidebar({
       </div>
     ) : null}
     <aside className={`dashboard-main-sidebar fixed inset-x-0 bottom-0 z-50 flex h-[var(--dashboard-bottom-nav-height)] items-center border-t border-white/10 bg-[#0d100e]/95 px-2 pb-[env(safe-area-inset-bottom)] text-white shadow-[0_-12px_48px_-36px_rgba(0,0,0,0.9)] rounded-t-2xl sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:h-auto sm:w-24 sm:flex-col sm:border-r sm:border-t-0 sm:px-3 sm:py-4 sm:shadow-[12px_0_48px_-36px_rgba(0,0,0,0.9)] sm:rounded-t-none min-[1180px]:w-[6.5rem]${commandOpen ? " val-command-sidebar-open" : ""}`} data-tour-target="groups-sidebar" ref={sidebarRef}>
+      <div aria-hidden="true" className="val-sidebar-material" />
       {createMenu}
       {friendsMenu}
       {channelMenu}
@@ -1893,7 +1894,7 @@ export function DashboardSidebar({
         })}
       </nav>
 
-      <div className="hidden shrink-0 items-center gap-1.5 sm:flex sm:flex-col sm:gap-2">
+      <div className="val-sidebar-utilities hidden shrink-0 items-center gap-1.5 sm:flex sm:flex-col sm:gap-2">
         <div className="relative">
           <button
             aria-expanded={notificationsOpen}
@@ -1955,6 +1956,10 @@ export function DashboardSidebar({
             <span className="val-nav-label">Profile / Settings</span>
           </button>
         </div>
+      </div>
+      <div aria-hidden="true" className="val-sidebar-signature">
+        <p>A more human internet</p>
+        <span />
       </div>
     </aside>
     </>
