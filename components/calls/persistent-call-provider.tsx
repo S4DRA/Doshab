@@ -7,11 +7,13 @@ import { CallWorkspace, CallControls } from "@/components/calls/call-workspace";
 import { MediaClient } from "@/lib/media/media-client";
 import type { MediaParticipant, RemoteMedia } from "@/lib/media/types";
 import type { VoiceSettings } from "@/lib/voice-settings";
+import { voiceSettingsChangedEvent } from "@/lib/voice-settings.client";
 
 export type PersistentCallSession = {
   href?: string; id: string; kind: "friend" | "group"; title: string; subtitle?: string;
   participant: { id: string; name: string; email: string; image?: string | null };
   signalingRoomId: string; roomId: string; endUrl?: string; statusUrl?: string;
+  iceServers?: RTCIceServer[];
   voiceSettings?: VoiceSettings; inviteHref?: string;
 };
 export type CallContextValue = {
@@ -20,6 +22,7 @@ export type CallContextValue = {
   media: MediaClient | null; snapshot: ReturnType<MediaClient["snapshot"]> | null;
   error: string | null; setError: (message: string | null) => void; connectedAt: number | null;
   deafened: boolean; setDeafened: (value: boolean) => void;
+  audioBlocked: boolean; resumeAudio: () => void;
 };
 const CallContext = createContext<CallContextValue | null>(null);
 const endedKey = "val:ended-media-sessions";
@@ -34,6 +37,12 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
   const [error, setError] = useState<string | null>(null);
   const [connectedAt, setConnectedAt] = useState<number | null>(null);
   const [deafened, setDeafened] = useState(false);
+  const [blockedAudio, setBlockedAudio] = useState<ReadonlySet<string>>(new Set());
+  const playbackChanged = useCallback((id: string, blocked: boolean) => setBlockedAudio((previous) => {
+    if (previous.has(id) === blocked) return previous;
+    const next = new Set(previous); if (blocked) next.add(id); else next.delete(id); return next;
+  }), []);
+  const resumeAudio = useCallback(() => window.dispatchEvent(new Event("val:resume-call-audio")), []);
   const clientRef = useRef<MediaClient | null>(null);
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const pathname = usePathname();
@@ -70,10 +79,11 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
     void (async () => {
       await previous?.leave();
       if (clientRef.current !== client) return;
-      await client.connect({ participant: session.participant, signalingRoomId: session.signalingRoomId });
+      await client.connect({ participant: session.participant, signalingRoomId: session.signalingRoomId, iceServers: session.iceServers });
       if (clientRef.current !== client) { await client.leave(); return; }
       setConnectedAt(Date.now());
       const settings = session.voiceSettings;
+      await client.setMicMuted(Boolean(settings?.joinMuted || settings?.inputMode === "push_to_talk"));
       if (!settings?.joinMuted) {
         try {
           await client.start("mic", microphoneConstraints(settings));
@@ -101,6 +111,28 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
     void client?.leave().catch((cause) => console.error("Media cleanup failed", cause));
   }, []);
   useEffect(() => {
+    const update = (event: Event) => {
+      const settings = (event as CustomEvent<VoiceSettings>).detail;
+      if (!settings) return;
+      setActiveCall((session) => session ? { ...session, voiceSettings: settings } : session);
+      const client = clientRef.current;
+      const mic = client?.snapshot().local.find((item) => item.source === "mic")?.track;
+      if (!client || !mic) return;
+      const changeInput = settings.inputDeviceId !== activeCall?.voiceSettings?.inputDeviceId;
+      const apply = async () => {
+        if (settings.inputMode !== activeCall?.voiceSettings?.inputMode) await client.setMicMuted(settings.inputMode === "push_to_talk");
+        if (changeInput) await client.start("mic", microphoneConstraints(settings));
+        else await mic.applyConstraints(microphoneConstraints(settings));
+      };
+      void apply().catch((cause) => {
+        console.warn("Could not apply microphone settings", cause);
+        if (clientRef.current === client) setError("Could not apply the selected microphone. Choose another input device.");
+      });
+    };
+    window.addEventListener(voiceSettingsChangedEvent, update);
+    return () => window.removeEventListener(voiceSettingsChangedEvent, update);
+  }, [activeCall?.voiceSettings]);
+  useEffect(() => {
     if (!activeCall?.statusUrl) return;
     const statusUrl = activeCall.statusUrl;
     const controller = new AbortController();
@@ -115,12 +147,12 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
     return () => { clearInterval(timer); controller.abort(); };
   }, [activeCall?.statusUrl, endCall]);
 
-  const value = useMemo(() => ({ activeCall, endCall, endedCallIds, poppedOut, setPoppedOut, startCall, media, snapshot, error, setError, connectedAt, deafened, setDeafened }), [activeCall, endCall, endedCallIds, media, poppedOut, snapshot, startCall, error, connectedAt, deafened]);
+  const value = useMemo(() => ({ activeCall, endCall, endedCallIds, poppedOut, setPoppedOut, startCall, media, snapshot, error, setError, connectedAt, deafened, setDeafened, audioBlocked: blockedAudio.size > 0, resumeAudio }), [activeCall, endCall, endedCallIds, media, poppedOut, snapshot, startCall, error, connectedAt, deafened, blockedAudio, resumeAudio]);
   const floating = activeCall && (poppedOut || (activeCall.href && pathname !== activeCall.href.split("?")[0]));
   return <CallContext.Provider value={value}>
     {children}
     {/* Audio belongs to the session, never to a route or a participant tile. */}
-    <div className="sr-only">{snapshot?.remote.filter((item) => item.kind === "audio").map((item) => <RemoteAudioElement key={item.consumerId} item={item} deafened={deafened} settings={activeCall?.voiceSettings} onError={setError} />)}</div>
+    <div className="sr-only">{snapshot?.remote.filter((item) => item.kind === "audio").map((item) => <RemoteAudioElement key={item.consumerId} item={item} deafened={deafened} settings={activeCall?.voiceSettings} onError={setError} onPlaybackChange={playbackChanged} />)}</div>
     {floating ? <aside className="val-floating-call" aria-label="Ongoing call">
       <div className="val-floating-heading"><span><strong>{activeCall.title}</strong><small>{snapshot?.state ?? "connecting"}</small></span>
         {activeCall.href ? <Link className="val-action app-button-secondary" href={activeCall.href} onClick={() => setPoppedOut(false)}>Return to call</Link> : <button type="button" onClick={() => setPoppedOut(false)}>Return</button>}
@@ -142,22 +174,31 @@ export function PersistentCallSurface({ sessionId, presentation }: { sessionId: 
 export function microphoneConstraints(settings?: VoiceSettings): MediaTrackConstraints {
   return { autoGainControl: settings?.autoGainControl, deviceId: settings?.inputDeviceId ? { ideal: settings.inputDeviceId } : undefined, echoCancellation: settings?.echoCancellation, noiseSuppression: settings?.noiseSuppression };
 }
-function RemoteAudioElement({ item, deafened, settings, onError }: { item: RemoteMedia; deafened: boolean; settings?: VoiceSettings; onError: (message: string) => void }) {
+function RemoteAudioElement({ item, deafened, settings, onError, onPlaybackChange }: { item: RemoteMedia; deafened: boolean; settings?: VoiceSettings; onError: (message: string) => void; onPlaybackChange: (id: string, blocked: boolean) => void }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   useEffect(() => {
     const element = audioRef.current;
     if (!element) return;
+    let active = true;
     element.srcObject = new MediaStream([item.track]);
-    const play = () => { void element.play().catch((cause) => { console.warn("Remote audio playback blocked", cause); onError("Audio playback was blocked by your browser. Tap any call control to resume audio."); }); };
+    const play = () => { void element.play().then(() => { if (active) onPlaybackChange(item.consumerId, false); }).catch((cause) => {
+      if (!active) return;
+      console.warn("Remote audio playback blocked", cause); onPlaybackChange(item.consumerId, true);
+    }); };
     play();
     document.addEventListener("pointerdown", play);
-    return () => { document.removeEventListener("pointerdown", play); element.srcObject = null; };
-  }, [item.track, onError]);
+    window.addEventListener("val:resume-call-audio", play);
+    return () => { active = false; document.removeEventListener("pointerdown", play); window.removeEventListener("val:resume-call-audio", play); element.srcObject = null; onPlaybackChange(item.consumerId, false); };
+  }, [item.track, item.consumerId, onPlaybackChange]);
   useEffect(() => {
     const element = audioRef.current;
     if (!element) return;
     element.volume = Math.max(0, Math.min(1, (settings?.outputVolume ?? 100) / 100));
-    if (settings?.outputDeviceId && "setSinkId" in element) void element.setSinkId(settings.outputDeviceId).catch((cause) => { console.warn("Output device unavailable", cause); onError("The selected output device is unavailable. Using the default audio output."); });
+    if ("setSinkId" in element) void element.setSinkId(settings?.outputDeviceId ?? "").catch(async (cause) => {
+      console.warn("Output device unavailable", cause);
+      try { await element.setSinkId(""); onError("The selected output device is unavailable. Using the default audio output."); }
+      catch (fallbackError) { console.warn("Default output unavailable", fallbackError); onError("Audio output is unavailable. Choose an available output device."); }
+    });
   }, [settings?.outputDeviceId, settings?.outputVolume, onError]);
   return <audio autoPlay muted={deafened} ref={audioRef} />;
 }

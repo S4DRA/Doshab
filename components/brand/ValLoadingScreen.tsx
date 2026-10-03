@@ -16,35 +16,19 @@ export function ValLoadingScreen({
     <section
       aria-busy="true"
       aria-label={label}
-      className={cn("doshab-loader grid justify-items-center text-center", className)}
+      role="status"
+      className={cn("val-loader", size === "sm" && "val-loader-compact", className)}
     >
-      <div
-        aria-hidden="true"
-        className={cn("doshab-loader-orbit", size === "sm" && "doshab-loader-orbit-sm")}
-      >
-        <span className="doshab-loader-halo" />
-        <span className="doshab-loader-pulse" />
-        <span className="doshab-loader-ring" />
-        <span className="doshab-loader-ring doshab-loader-ring-delay" />
-        <span className="doshab-loader-ripple doshab-loader-ripple-one" />
-        <span className="doshab-loader-ripple doshab-loader-ripple-two" />
-        <span className="doshab-loader-particle-track doshab-loader-particle-track-one">
-          <span className="doshab-loader-dot" />
-        </span>
-        <span className="doshab-loader-particle-track doshab-loader-particle-track-two">
-          <span className="doshab-loader-dot doshab-loader-dot-secondary" />
-        </span>
-        <span className="doshab-loader-particle-track doshab-loader-particle-track-three">
-          <span className="doshab-loader-dot doshab-loader-dot-tertiary" />
-        </span>
+      <div className="val-loader-brand" aria-hidden="true">
         <LogoMark
-          className="doshab-loader-logo"
+          className="val-loader-logo"
           preload={size === "lg"}
-          sizes={size === "sm" ? "112px" : "160px"}
+          sizes={size === "sm" ? "64px" : "88px"}
         />
+        <span>VAL<small>A more human internet</small></span>
       </div>
-      <span className="doshab-loader-eyebrow">VAL</span>
-      <p className="doshab-loader-label">{label}</p>
+      <div className="val-loader-track" aria-hidden="true"><span /></div>
+      <p className="val-loader-label">{label}<span aria-hidden="true">Please wait</span></p>
     </section>
   );
 }

@@ -13,6 +13,7 @@ import type { FriendPerson } from "@/types";
 
 type FriendCallTokenResponse = {
   signalingRoomId: string;
+  iceServers?: RTCIceServer[];
   roomId: string;
   participant: { id: string; name: string; email: string };
   call: {
@@ -108,6 +109,7 @@ export function FriendCallRoom({
         kind: "friend",
         participant: data.participant,
         signalingRoomId: data.signalingRoomId,
+        iceServers: data.iceServers,
         roomId: data.roomId,
         statusUrl: `/api/friend-calls/${callId}/status`,
         subtitle: "Private call",

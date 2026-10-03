@@ -3,10 +3,16 @@
 import { useEffect, useState } from "react";
 import { ParticipantVoiceControlsPanel, useOptionalPersistentCall } from "@/components/calls/persistent-call-provider";
 import type { MediaParticipant } from "@/lib/media/types";
+import { buildCallViews } from "@/lib/media/call-view";
 import { cn, getInitials } from "@/lib/utils";
 
 export function VoiceChannelPresence({ channelId, expanded = true, onParticipantCountChange }: { channelId: string; expanded?: boolean; onParticipantCountChange?: (count: number) => void }) {
-  const call = useOptionalPersistentCall(); const participants = call?.activeCall?.id === `group:${channelId}` ? call.snapshot?.participants ?? [] : [];
+  const call = useOptionalPersistentCall();
+  const active = call?.activeCall?.id === `group:${channelId}` ? call.activeCall : null;
+  const participants: MediaParticipant[] = active ? buildCallViews(active.participant, [], [], call?.snapshot?.participants ?? [], call?.snapshot?.micMuted ?? true).people.map((person) => ({
+    userId: person.id, metadata: { name: person.name }, muted: person.muted,
+    speaking: call?.snapshot?.participants.some((participant) => participant.userId === person.id && participant.speaking) ?? false,
+  })) : [];
   useEffect(() => onParticipantCountChange?.(participants.length), [onParticipantCountChange, participants.length]);
   if (!participants.length) return null;
   return <div aria-label={`${participants.length} people connected`} className={cn("grid transition-[grid-template-rows,opacity] duration-200", expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}><div className="min-h-0 overflow-hidden"><div className="relative ml-[2.05rem] mt-0.5 space-y-1 border-l border-[#FFD400]/15 pl-3">{participants.map((participant) => <VoiceRoomParticipantRow key={participant.userId} participant={participant} />)}</div></div></div>;

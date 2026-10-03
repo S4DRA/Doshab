@@ -10,6 +10,7 @@ import { loadVoiceSettingsForCall } from "@/lib/voice-settings.client";
 
 type MediaCredentialResponse = {
   signalingRoomId: string;
+  iceServers?: RTCIceServer[];
   roomId: string;
   participant: {
     id: string;
@@ -68,6 +69,7 @@ export function VoiceRoom({ channelId, channelName, groupId, groupName, canInvit
         kind: "group",
         participant: { ...data.participant, image },
         signalingRoomId: data.signalingRoomId,
+        iceServers: data.iceServers,
         roomId: data.roomId,
         subtitle: groupName,
         inviteHref: canInvite && groupId ? `/dashboard/groups/${groupId}/settings#invite-friends` : undefined,

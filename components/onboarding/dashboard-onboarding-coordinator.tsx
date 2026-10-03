@@ -83,12 +83,6 @@ const desktopTourSteps: TourStep[] = [
     title: "Never miss calls or messages",
   },
   {
-    icon: <PaletteIcon />,
-    target: "themes-settings",
-    text: "Choose the VAL mode that fits your environment: high-contrast dark or high-contrast light.",
-    title: "Make VAL feel personal",
-  },
-  {
     icon: <CheckIcon />,
     text: "Create a space, join a voice channel, or invite your friends to start using VAL.",
     title: "You're ready",
@@ -137,12 +131,6 @@ const mobileTourSteps: TourStep[] = [
     target: "notifications-nav",
     text: "Mobile alerts help VAL reach you for incoming calls, missed calls, messages, and invites.",
     title: "Mobile notifications and calls",
-  },
-  {
-    icon: <PaletteIcon />,
-    target: "themes-settings",
-    text: "Dark and light mode carry across mobile and desktop, so VAL stays consistent everywhere.",
-    title: "Themes",
   },
   {
     icon: <CheckIcon />,
@@ -989,18 +977,6 @@ function BellIcon({ className = "h-5 w-5" }: { className?: string }) {
     <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
       <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
       <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </svg>
-  );
-}
-
-function PaletteIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-      <path d="M12 22a10 10 0 1 1 10-10 3 3 0 0 1-3 3h-1.5a2 2 0 0 0-1.8 2.9l.3.6A2.4 2.4 0 0 1 13.8 22H12Z" />
-      <circle cx="7.5" cy="10.5" r=".8" />
-      <circle cx="10.5" cy="7.5" r=".8" />
-      <circle cx="14" cy="7.5" r=".8" />
-      <circle cx="16.5" cy="10.5" r=".8" />
     </svg>
   );
 }

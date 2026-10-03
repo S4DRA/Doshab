@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { isCallExpired, markFriendCallMissed } from "@/lib/calls";
-import { createMediaSignalingRoom } from "@/lib/media/credential";
+import { createMediaIceServers, createMediaSignalingRoom } from "@/lib/media/credential";
 import { prisma } from "@/lib/prisma";
 import { auditSecurityEvent, requireAuth } from "@/lib/security/permissions";
 
@@ -122,11 +122,12 @@ export async function POST(request: NextRequest, { params }: CallTokenRouteProps
   return NextResponse.json({
     roomId,
     signalingRoomId,
+    iceServers: createMediaIceServers(user.id),
     participant: { id: user.id, name: user.name, email: user.email },
     call: {
       id: call.id,
       friend,
       status: isReceiver ? "ACCEPTED" : call.status,
     },
-  });
+  }, { headers: { "Cache-Control": "no-store" } });
 }
