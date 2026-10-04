@@ -1,4 +1,5 @@
 import { ValLoadingScreen } from "@/components/brand/ValLoadingScreen";
+import { DelayedMobileLoading } from "@/components/mobile/mobile-page-loading";
 
 type BrandLoaderProps = {
   label?: string;
@@ -19,9 +20,9 @@ export function AppLoadingScreen({ label = "Loading" }: { label?: string }) {
 
 export function DashboardLoadingShell() {
   return (
-    <main className="loading-canvas val-dashboard-loading" aria-busy="true">
+    <DelayedMobileLoading label="Opening your space"><main className="loading-canvas val-dashboard-loading" aria-busy="true">
       <BrandLoader label="Opening your space" />
-    </main>
+    </main></DelayedMobileLoading>
   );
 }
 

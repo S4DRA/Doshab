@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState, type RefObject } from "react";
+import { useEffect, useId, useLayoutEffect, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import { MusicErrorBoundary, useMusicSession } from "./music-session-provider";
@@ -30,6 +30,17 @@ export function ListenTogetherPopover({ minimized, onExpand, onMinimize, onClose
   const disabled = !isDJ || busy || music.reconnecting;
   const searchMode = searching || !track;
   const status = music.reconnecting ? "Connecting" : audio.playbackError ? "Playback unavailable" : audio.blocked ? "Join to listen" : audio.localPaused ? "Locally paused" : session?.state === "PLAYING" ? "Playing together" : track ? "Paused" : "Ready to listen";
+
+  useLayoutEffect(() => {
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const node = panel.current;
+    const trigger = anchor.current;
+    return () => {
+      if (!node?.contains(document.activeElement)) return;
+      const target = trigger?.isConnected ? trigger : previous?.isConnected ? previous : null;
+      target?.focus({ preventScroll: true });
+    };
+  }, [anchor, panel]);
 
   useEffect(() => {
     panel.current?.focus();

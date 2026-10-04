@@ -7,6 +7,9 @@ import { reactionEmojis } from "@/lib/chat-constants";
 import { messageSegments } from "@/lib/chat-presentation";
 import { formatReadableTimestamp } from "@/lib/utils";
 import type { ChatMessage } from "@/types";
+import { DialogSurface } from "@/components/ui/dialog-surface";
+import { useMobileLayout } from "@/components/mobile/mobile-shell";
+import { isReplySwipe } from "@/lib/mobile-navigation";
 
 type MessageListProps = {
   canPinMessages?: boolean;
@@ -111,6 +114,8 @@ const MemoMessageRow = memo(function MessageRow({
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const mobile = useMobileLayout();
+  const gesture = useRef<{ x: number; y: number; dx: number; dy: number; long: boolean; timer: ReturnType<typeof setTimeout> } | null>(null);
   const actionsPanelRef = useRef<HTMLDivElement | null>(null);
   const actionsToggleRef = useRef<HTMLButtonElement | null>(null);
   const senderLabel = message.sender.name || message.sender.email;
@@ -118,7 +123,7 @@ const MemoMessageRow = memo(function MessageRow({
   const visibleReactions = (message.reactions ?? []).filter((item) => item.count > 0);
 
   useEffect(() => {
-    if (!actionsOpen) {
+    if (!actionsOpen || mobile) {
       return;
     }
 
@@ -150,7 +155,8 @@ const MemoMessageRow = memo(function MessageRow({
       document.removeEventListener("keydown", closeOnEscape);
       document.removeEventListener("pointerdown", closeOnOutsidePointer);
     };
-  }, [actionsOpen]);
+  }, [actionsOpen, mobile]);
+  useEffect(() => () => { if (gesture.current) clearTimeout(gesture.current.timer); }, []);
 
   async function updateFromResponse(response: Response) {
     if (!response.ok) {
@@ -248,6 +254,26 @@ const MemoMessageRow = memo(function MessageRow({
           isOwnMessage ? "message-row-own" : "message-row-friend"
         }`}
         id={`message-${message.id}`}
+        onPointerDown={(event) => {
+          if (!mobile || event.pointerType !== "touch" || message.id.startsWith("pending:") || event.clientX <= 24 || event.clientX >= window.innerWidth - 24 || (event.target instanceof Element && event.target.closest("a,button,input,textarea,select"))) return;
+          const timer = setTimeout(() => { if (gesture.current && !window.getSelection()?.toString()) { gesture.current.long = true; setActionsOpen(true); } }, 450);
+          gesture.current = { x:event.clientX, y:event.clientY, dx:0, dy:0, long:false, timer };
+        }}
+        onPointerMove={(event) => {
+          const start = gesture.current;
+          if (!start) return;
+          start.dx = event.clientX - start.x; start.dy = event.clientY - start.y;
+          if (Math.abs(start.dx) > 8 || Math.abs(start.dy) > 8) clearTimeout(start.timer);
+          if (Math.abs(start.dy) < 24 && start.dx < -10) { if (!event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.setPointerCapture(event.pointerId); event.currentTarget.dataset.replyGesture = "true"; event.currentTarget.style.setProperty("--val-message-drag", `${Math.max(-72, start.dx)}px`); }
+        }}
+        onPointerUp={(event) => {
+          const start = gesture.current;
+          if (!start) return;
+          clearTimeout(start.timer); gesture.current = null;
+          delete event.currentTarget.dataset.replyGesture; event.currentTarget.style.removeProperty("--val-message-drag");
+          if (!start.long && isReplySwipe(start.x, window.innerWidth, start.dx, start.dy)) onReply?.(message);
+        }}
+        onPointerCancel={(event) => { if (gesture.current) clearTimeout(gesture.current.timer); gesture.current = null; delete event.currentTarget.dataset.replyGesture; event.currentTarget.style.removeProperty("--val-message-drag"); }}
       >
         <div className="message-avatar-slot shrink-0">
           {isGrouped ? (
@@ -342,6 +368,7 @@ const MemoMessageRow = memo(function MessageRow({
           ) : null}
 
           {actionsOpen ? (
+            <MessageActionSurface mobile={mobile} onClose={() => setActionsOpen(false)}>
             <div
               className="message-actions mt-3 flex min-w-0 flex-wrap items-center justify-end gap-1.5 rounded-xl border border-white/10 bg-black/15 p-2 shadow-[0_14px_28px_-24px_rgba(0,0,0,0.9)]"
               ref={actionsPanelRef}
@@ -403,7 +430,7 @@ const MemoMessageRow = memo(function MessageRow({
               >
                 Report
               </button>
-            </div>
+            </div></MessageActionSurface>
           ) : null}
           </div>
       </div>
@@ -411,6 +438,10 @@ const MemoMessageRow = memo(function MessageRow({
     </>
   );
 }, areMessageRowPropsEqual);
+
+function MessageActionSurface({ mobile, onClose, children }: { mobile: boolean; onClose: () => void; children: React.ReactNode }) {
+  return mobile ? <DialogSurface title="Message actions" onClose={onClose}>{children}</DialogSurface> : children;
+}
 
 function PollCard({
   message,
@@ -489,10 +520,12 @@ function ReportDialog({
   const [status, setStatus] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  const mobile = useMobileLayout();
 
-  useCloseOnEscape(onClose);
+  useCloseOnEscape(onClose, !mobile);
 
   useEffect(() => {
+    if (mobile) return;
     function closeOnOutsidePointer(event: PointerEvent) {
       const target = event.target;
 
@@ -508,7 +541,7 @@ function ReportDialog({
     return () => {
       document.removeEventListener("pointerdown", closeOnOutsidePointer);
     };
-  }, [onClose]);
+  }, [onClose, mobile]);
 
   async function submitReport() {
     setSubmitting(true);
@@ -539,17 +572,16 @@ function ReportDialog({
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-[80] grid place-items-end bg-black/50 p-0 sm:place-items-center sm:p-4">
-      <div className="app-panel max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:max-w-md sm:rounded-lg sm:p-5" ref={panelRef}>
+  const content = (
+      <div className="app-panel val-message-report max-h-[85dvh] w-full overflow-y-auto rounded-b-none p-4 sm:max-w-md sm:rounded-lg sm:p-5" ref={panelRef}>
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="app-section-title">Report</p>
             <h2 className="mt-2 text-lg font-semibold text-white">Report message</h2>
           </div>
           <button
-            aria-label="Close report dialog"
             className="app-icon-button h-10 w-10"
+            aria-label="Close report dialog"
             onClick={onClose}
             type="button"
           >
@@ -575,6 +607,7 @@ function ReportDialog({
           ))}
         </div>
         <textarea
+          aria-label="Optional report details"
           className="mt-3 min-h-24 w-full resize-none rounded-lg border border-white/10 bg-[#050505] px-3 py-2 text-sm text-white outline-none focus:border-[#FF5F25]"
           maxLength={600}
           onChange={(event) => setDetails(event.target.value)}
@@ -589,10 +622,11 @@ function ReportDialog({
         >
           {submitting ? "Sending..." : "Send report"}
         </button>
-        {status ? <p className="mt-2 text-sm text-slate-300">{status}</p> : null}
+        {status ? <p className="mt-2 text-sm text-slate-300" role="status">{status}</p> : null}
       </div>
-    </div>
   );
+  return mobile ? <DialogSurface title="Report message" onClose={onClose}>{content}</DialogSurface>
+    : <div className="fixed inset-0 z-[80] grid place-items-end bg-black/50 p-0 sm:place-items-center sm:p-4">{content}</div>;
 }
 
 function scrollToMessage(messageId?: string) {
@@ -673,8 +707,9 @@ function formatMessageTime(value: Date | string) {
   }).format(new Date(value));
 }
 
-function useCloseOnEscape(onClose: () => void) {
+function useCloseOnEscape(onClose: () => void, enabled = true) {
   useEffect(() => {
+    if (!enabled) return;
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
         onClose();
@@ -686,7 +721,7 @@ function useCloseOnEscape(onClose: () => void) {
     return () => {
       document.removeEventListener("keydown", closeOnEscape);
     };
-  }, [onClose]);
+  }, [onClose, enabled]);
 }
 
 function areMessageRowPropsEqual(

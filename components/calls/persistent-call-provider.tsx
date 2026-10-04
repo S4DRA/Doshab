@@ -4,6 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { CallWorkspace, CallControls } from "@/components/calls/call-workspace";
+import { MobileCallMiniControls } from "./mobile-call-controls";
+import { useCallWakeLock } from "./use-call-wake-lock";
+import { MusicSessionProvider } from "@/components/music/music-session-provider";
+import { PersistentMusicPlayer } from "@/components/music/music-button";
 import { MediaClient } from "@/lib/media/media-client";
 import type { MediaParticipant, RemoteMedia } from "@/lib/media/types";
 import type { VoiceSettings } from "@/lib/voice-settings";
@@ -23,6 +27,7 @@ export type CallContextValue = {
   error: string | null; setError: (message: string | null) => void; connectedAt: number | null;
   deafened: boolean; setDeafened: (value: boolean) => void;
   audioBlocked: boolean; resumeAudio: () => void;
+  screenAwake: ReturnType<typeof useCallWakeLock>;
 };
 const CallContext = createContext<CallContextValue | null>(null);
 const endedKey = "val:ended-media-sessions";
@@ -38,6 +43,7 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
   const [connectedAt, setConnectedAt] = useState<number | null>(null);
   const [deafened, setDeafened] = useState(false);
   const [blockedAudio, setBlockedAudio] = useState<ReadonlySet<string>>(new Set());
+  const screenAwake = useCallWakeLock(snapshot?.state === "connected", setError);
   const playbackChanged = useCallback((id: string, blocked: boolean) => setBlockedAudio((previous) => {
     if (previous.has(id) === blocked) return previous;
     const next = new Set(previous); if (blocked) next.add(id); else next.delete(id); return next;
@@ -147,20 +153,24 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
     return () => { clearInterval(timer); controller.abort(); };
   }, [activeCall?.statusUrl, endCall]);
 
-  const value = useMemo(() => ({ activeCall, endCall, endedCallIds, poppedOut, setPoppedOut, startCall, media, snapshot, error, setError, connectedAt, deafened, setDeafened, audioBlocked: blockedAudio.size > 0, resumeAudio }), [activeCall, endCall, endedCallIds, media, poppedOut, snapshot, startCall, error, connectedAt, deafened, blockedAudio, resumeAudio]);
+  const value = useMemo(() => ({ activeCall, endCall, endedCallIds, poppedOut, setPoppedOut, startCall, media, snapshot, error, setError, connectedAt, deafened, setDeafened, audioBlocked: blockedAudio.size > 0, resumeAudio, screenAwake }), [activeCall, endCall, endedCallIds, media, poppedOut, snapshot, startCall, error, connectedAt, deafened, blockedAudio, resumeAudio, screenAwake]);
   const floating = activeCall && (poppedOut || (activeCall.href && pathname !== activeCall.href.split("?")[0]));
-  return <CallContext.Provider value={value}>
+  return <CallContext.Provider value={value}><MusicSessionProvider channelId={activeCall?.kind === "group" ? activeCall.id.replace(/^group:/, "") : null}>
     {children}
     {/* Audio belongs to the session, never to a route or a participant tile. */}
     <div className="sr-only">{snapshot?.remote.filter((item) => item.kind === "audio").map((item) => <RemoteAudioElement key={item.consumerId} item={item} deafened={deafened} settings={activeCall?.voiceSettings} onError={setError} onPlaybackChange={playbackChanged} />)}</div>
     {floating ? <aside className="val-floating-call" aria-label="Ongoing call">
       <div className="val-floating-heading"><span><strong>{activeCall.title}</strong><small>{snapshot?.state ?? "connecting"}</small></span>
-        {activeCall.href ? <Link className="val-action app-button-secondary" href={activeCall.href} onClick={() => setPoppedOut(false)}>Return to call</Link> : <button type="button" onClick={() => setPoppedOut(false)}>Return</button>}
+        {activeCall.href ? <Link className="val-action app-button-secondary" href={activeCall.href} onClick={() => setPoppedOut(false)}><span className="val-desktop-only">Return to call</span><span className="val-mobile-only val-mobile-call-title"><strong>{activeCall.title}</strong><small>{snapshot?.state ?? "Connecting"} · Return to room</small></span></Link> : <button type="button" onClick={() => setPoppedOut(false)}>Return</button>}
       </div>
-      <CallControls call={value} compact />
+      <div className="val-desktop-only"><CallControls call={value} compact /></div>
+      <MobileCallMiniControls call={value} />
+      {blockedAudio.size > 0 && <button className="val-mobile-text-button val-mobile-only" type="button" onClick={resumeAudio}>Enable audio</button>}
+      {error && <p className="val-mobile-only" role="alert">{error}</p>}
     </aside> : null}
     {!activeCall && error ? <div className="val-call-notice" role="alert">{error}<button type="button" onClick={() => setError(null)}>Dismiss</button></div> : null}
-  </CallContext.Provider>;
+    <PersistentMusicPlayer />
+  </MusicSessionProvider></CallContext.Provider>;
 }
 export function usePersistentCall() { const value = useContext(CallContext); if (!value) throw new Error("usePersistentCall must be used within PersistentCallProvider."); return value; }
 export function useOptionalPersistentCall() { return useContext(CallContext); }

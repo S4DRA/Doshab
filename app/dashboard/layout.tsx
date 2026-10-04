@@ -1,5 +1,9 @@
 import { Big_Shoulders } from "next/font/google";
 import "./val-design.css";
+import "./mobile.css";
+import { MobileNavigationProvider, MobileShell } from "@/components/mobile/mobile-shell";
+import { MobileNavbarPreferencesProvider } from "@/components/mobile/mobile-navbar-preferences";
+import { MessageDraftsProvider } from "@/components/chat/message-drafts-provider";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { DashboardHashAnchorScroller } from "@/components/layout/dashboard-hash-anchor-scroller";
 import { DashboardOnboardingCoordinator } from "@/components/onboarding/dashboard-onboarding-coordinator";
@@ -18,7 +22,7 @@ import { redirect } from "next/navigation";
 
 const editorial = Big_Shoulders({
   variable: "--font-val-display",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   weight: ["700", "900"],
   display: "swap",
   adjustFontFallback: false,
@@ -45,22 +49,29 @@ export default async function DashboardLayout({
     <div id="val-app" className={`val-app ${editorial.variable}`}>
       <ValViewport />
       <DashboardPeopleProvider currentUserId={auth.user.id} initialFriends={sidebarData.friends}>
-        <DashboardSidebar
-          initialCurrentUser={sidebarData.currentUser}
-          initialFriends={sidebarData.friends}
-          initialGroups={sidebarData.groups}
-          initialNotifications={sidebarData.notifications}
-          initialUnreadCount={sidebarData.unreadCount}
-        />
-        <PersistentCallProvider>
-          <div className="dashboard-content-frame dashboard-density min-h-0 w-full min-w-0 overflow-hidden">
-            <div className="val-route-content">{children}</div>
-            <PeopleRail />
-          </div>
-          <DashboardHashAnchorScroller />
-          <DashboardOnboardingCoordinator />
-          <IncomingCallWatcher />
-        </PersistentCallProvider>
+        <MessageDraftsProvider>
+          <MobileNavigationProvider>
+            <MobileNavbarPreferencesProvider key={auth.user.id} userId={auth.user.id}>
+            <DashboardSidebar
+              initialCurrentUser={sidebarData.currentUser}
+              initialFriends={sidebarData.friends}
+              initialGroups={sidebarData.groups}
+              initialNotifications={sidebarData.notifications}
+              initialUnreadCount={sidebarData.unreadCount}
+            />
+            <PersistentCallProvider>
+              <MobileShell image={auth.user.image} name={auth.user.name} />
+              <div className="dashboard-content-frame dashboard-density min-h-0 w-full min-w-0 overflow-hidden">
+                <div className="val-route-content">{children}</div>
+                <PeopleRail />
+              </div>
+              <DashboardHashAnchorScroller />
+              <DashboardOnboardingCoordinator />
+              <IncomingCallWatcher />
+            </PersistentCallProvider>
+            </MobileNavbarPreferencesProvider>
+          </MobileNavigationProvider>
+        </MessageDraftsProvider>
       </DashboardPeopleProvider>
     </div>
   );
