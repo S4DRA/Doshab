@@ -60,7 +60,18 @@ export function ListenTogetherPopover({ minimized, onExpand, onMinimize, onClose
     {minimized && <div className="music-mini-summary">
       <button type="button" className="music-mini-track" onClick={onExpand} title={track?.title} aria-label="Expand track details">{track && <MusicArtwork track={track} />}<span><strong>{track?.title ?? "Pick your next song"}</strong><small>{track?.artist ?? "Open search to start listening"}</small></span></button>
       <span className="music-mini-state">{status}</span>
+      {track && <button type="button" className="music-mini-mobile-queue val-mobile-only" aria-label={`Open music queue, ${session?.queue.length ?? 0} songs`} onClick={() => { setSearching(true); onExpand(); }}><MusicIcon name="plus" /><span>{session?.queue.length ?? 0}</span></button>}
     </div>}    {track && <MusicErrorBoundary><YouTubePlayback /></MusicErrorBoundary>}
+    {minimized && track && <div className="music-mini-mobile-controls val-mobile-only" role="group" aria-label="Music playback controls">
+      <button type="button" className="music-play-button" disabled={disabled} aria-label={audio.blocked || audio.localPaused ? "Join room music" : session?.state === "PLAYING" ? "Pause music" : "Play music"} onClick={() => { if (audio.blocked || audio.localPaused) audio.join(); else void command({ type: session?.state === "PLAYING" ? "pause" : "play" }); }}><MusicIcon name={!audio.blocked && !audio.localPaused && session?.state === "PLAYING" ? "pause" : "play"} /></button>
+      <button type="button" className="music-icon-button" disabled={disabled} aria-label="Next track" onClick={() => void command({ type: "next" })}><MusicIcon name="next" /></button>
+      <button type="button" className="music-icon-button" aria-label="Expand music player" onClick={onExpand}><MusicIcon name="expand" /></button>
+      <button type="button" className="music-icon-button" aria-label="Close music player and stop audio for you only" onClick={onClose}><MusicIcon name="close" /></button>
+    </div>}
+    {minimized && track && (music.error || session?.notice) && <div className="music-mini-mobile-messages val-mobile-only">
+      {music.error && <p className="music-error" role="alert">{music.error}</p>}
+      {session?.notice && <p className="music-notice" role="status">{session.notice}</p>}
+    </div>}
     {minimized && <div className="music-mini-tools">
       {session?.track && <MusicProgress session={session} clockOffset={music.clockOffset} disabled={disabled} command={command} active={minimized} />}
       <MusicMiniControls disabled={disabled || !track} playing={session?.state === "PLAYING"} command={command} onAdd={() => { setSearching(true); onExpand(); }} queueCount={session?.queue.length ?? 0} />

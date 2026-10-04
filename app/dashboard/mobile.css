@@ -550,6 +550,32 @@ html[data-theme] #val-app .val-mobile-search input::placeholder { color:#b0b7b3 
   html[data-theme][data-val-keyboard='open'] #val-app .val-chat-header { padding-top:env(safe-area-inset-top) !important; }
   html[data-theme][data-val-keyboard='open']:has(#val-app):has(.val-mobile-nav) .music-popover { left:8px !important; right:8px !important; width:calc(100% - 16px) !important; bottom:8px !important; max-height:calc(var(--val-viewport-height,100dvh) - 16px) !important; }
 
+  /* Keep the provider's 200px video visible; put compact controls beside it. */
+  html:has(#val-app) .music-popover.music-mini:has(.music-mini-mobile-controls) { display:grid; grid-template-columns:200px minmax(0,1fr); grid-template-rows:minmax(200px,auto) 48px; gap:0; padding:0; overflow-x:hidden; }
+  html:has(#val-app) .music-mini:has(.music-mini-mobile-controls) .music-mini-header,
+  html:has(#val-app) .music-mini:has(.music-mini-mobile-controls) .music-mini-tools { display:none; }
+  html:has(#val-app) .music-mini .music-youtube-inline { grid-column:1; grid-row:1; width:200px; }
+  html:has(#val-app) .music-mini > .music-video-loading { grid-column:1; grid-row:1; width:200px; }
+  html:has(#val-app) .music-mini .music-youtube-inline > .music-youtube-join { display:none; }
+  html:has(#val-app) .music-mini .music-mini-mobile-controls { display:grid; grid-column:2; grid-row:1; grid-template-rows:repeat(4,48px); justify-content:center; align-content:center; gap:2px; min-width:0; padding:0 4px; }
+  html:has(#val-app) .music-mini .music-mini-mobile-controls :is(.music-icon-button,.music-play-button) { width:48px; height:48px; min-width:48px; min-height:48px; padding:10px; border-radius:6px; }
+  html:has(#val-app) .music-mini:has(.music-mini-mobile-controls) .music-mini-summary { grid-column:1 / -1; grid-row:2; min-width:0; padding:0 8px; gap:8px; border-top:1px solid #536659; }
+  html:has(#val-app) .music-mini:has(.music-mini-mobile-controls) .music-mini-track { min-width:0; min-height:44px; }
+  html:has(#val-app) .music-mini:has(.music-mini-mobile-controls) .music-mini-track > span:last-child { flex:1; }
+  html:has(#val-app) .music-mini:has(.music-mini-mobile-controls) .music-mini-track .music-artwork { display:none; }
+  html:has(#val-app) .music-mini .music-mini-mobile-queue { display:flex; align-items:center; justify-content:center; flex-shrink:0; gap:4px; min-width:48px; height:44px; min-height:44px; padding:4px; border:0; background:none; color:inherit; }
+  html:has(#val-app) .music-mini .music-mini-mobile-queue span { font-size:12px; font-variant-numeric:tabular-nums; }
+  html:has(#val-app) .music-mini .music-error,
+  html:has(#val-app) .music-mini .music-notice { grid-column:1 / -1; margin:0; }
+  html:has(#val-app) .music-mini .music-mini-mobile-messages { grid-column:1 / -1; flex-direction:column; }
+
+  /* A side navbar can leave too little width for the video and button column. */
+  @media(max-width:343px) {
+    html:has(#val-app):has(.val-mobile-nav:is([data-position='left'],[data-position='right']):not([data-empty='true'])) .music-popover.music-mini:has(.music-mini-mobile-controls) { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(200px,auto) 48px 52px; }
+    html:has(#val-app):has(.val-mobile-nav:is([data-position='left'],[data-position='right']):not([data-empty='true'])) .music-mini .music-youtube-inline { justify-self:center; }
+    html:has(#val-app):has(.val-mobile-nav:is([data-position='left'],[data-position='right']):not([data-empty='true'])) .music-mini .music-mini-mobile-controls { grid-column:1; grid-row:3; grid-template-columns:repeat(4,48px); grid-template-rows:48px; gap:2px; }
+  }
+
   .val-navbar-settings { display:grid; gap:20px; min-width:0; }
   html[data-theme] #val-app .val-navbar-settings :is(legend,label,label span,label strong) { color:#111817 !important; }
   html[data-theme] #val-app .val-navbar-settings :is(p,label small) { color:#57655c !important; }
