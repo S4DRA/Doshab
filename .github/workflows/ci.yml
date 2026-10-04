@@ -48,6 +48,9 @@ jobs:
       - name: Chat links and viewport tests
         run: npm run test:chat
 
+      - name: Mobile navigation and preference tests
+        run: npm run test:mobile
+
       - name: Dependency audit
         run: |
           npm run test:audit

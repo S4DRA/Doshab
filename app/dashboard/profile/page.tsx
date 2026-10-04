@@ -5,11 +5,13 @@ import { ProfileForm } from "@/components/profile/profile-form";
 import { ProfileSettingsPanel } from "@/components/profile/profile-settings-panel";
 import { Alert } from "@/components/ui/alert";
 import { getCurrentUser } from "@/lib/auth";
+import { MobileProfile } from "@/components/mobile/mobile-profile";
 
 type ProfilePageProps = {
   searchParams?: Promise<{
     error?: string;
     message?: string;
+    view?: string;
   }>;
 };
 
@@ -24,7 +26,10 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
 
   return (
     <main className="app-page-scroll bg-[#050705] text-slate-100">
-      <div className="app-page-container grid gap-5">
+      {params?.error && <div className="val-mobile-only"><Alert tone="error">{params.error}</Alert></div>}
+      {params?.message && <div className="val-mobile-only"><Alert tone="success">{params.message}</Alert></div>}
+      <MobileProfile user={{ email:user.email, image:user.image ?? null, name:user.name, status:user.status }} view={params?.view} />
+      <div className="val-desktop-only"><div className="app-page-container grid gap-5">
         <ValPageHero eyebrow="Settings / Your account" title="Your account" description="Your identity, your availability, your way of connecting. Make yourself at home." />
 
         <div className="grid w-full gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.75fr)]">
@@ -42,7 +47,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
           </div>
           <ProfileSettingsPanel />
         </div>
-      </div>
+      </div></div>
     </main>
   );
 }

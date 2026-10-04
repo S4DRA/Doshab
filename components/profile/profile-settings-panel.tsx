@@ -1,7 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { VoiceAudioSettingsPanel } from "@/components/profile/voice-audio-settings-panel";
+import { MobileNavbarSettings } from "@/components/mobile/mobile-navbar-settings";
+import { mobileLayoutQuery } from "@/lib/mobile-navigation";
 import {
   getBrowserPushDiagnostics,
   getPushRegistrationMessage,
@@ -35,11 +38,14 @@ type SettingsSectionId =
   | "voice"
   | "notifications"
   | "security"
-  | "account";
+  | "account"
+  | "navigation";
 
-export function ProfileSettingsPanel() {
+export function ProfileSettingsPanel({ mobile = false }: { mobile?: boolean }) {
+  const router = useRouter();
   const [settings, setSettings] = useState(defaultSettings);
   const [activeSection, setActiveSection] = useState<SettingsSectionId>("notifications");
+  const [categories, setCategories] = useState(mobile);
   const [saved, setSaved] = useState(false);
   const [notificationStatus, setNotificationStatus] = useState<
     "idle" | "saving" | "enabled" | "testing" | "tested" | "error"
@@ -55,12 +61,14 @@ export function ProfileSettingsPanel() {
   useEffect(() => {
     const selectSection = () => {
       const section = window.location.hash.slice(1);
-      if (["profile", "voice", "notifications", "security", "account"].includes(section)) setActiveSection(section as SettingsSectionId);
+      if (["profile", "voice", "notifications", "security", "account", ...(mobile ? ["navigation"] : [])].includes(section)) { setActiveSection(section as SettingsSectionId); setCategories(false); }
+      else if (mobile) setCategories(true);
     };
     const frame = requestAnimationFrame(selectSection);
     window.addEventListener("hashchange", selectSection);
-    return () => { cancelAnimationFrame(frame); window.removeEventListener("hashchange", selectSection); };
-  }, []);
+    window.addEventListener("popstate", selectSection);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("hashchange", selectSection); window.removeEventListener("popstate", selectSection); };
+  }, [mobile]);
 
   useEffect(() => {
     if (window.location.hash === `#${activeSection}`) document.getElementById(activeSection)?.scrollIntoView({ block: "start" });
@@ -204,7 +212,7 @@ export function ProfileSettingsPanel() {
   }
 
   const restartPlatformTour = () => {
-    const isMobile = window.innerWidth < 768;
+    const isMobile = window.matchMedia(mobileLayoutQuery).matches;
     const variantCompletedKey = isMobile
       ? "doshabTourVariantCompletedMobile"
       : "doshabTourVariantCompletedDesktop";
@@ -221,8 +229,12 @@ export function ProfileSettingsPanel() {
   };
 
   return (
-    <section id={activeSection} className="profile-settings-panel app-panel p-4 sm:p-6">
-      <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+    <section id={mobile ? undefined : activeSection} className="profile-settings-panel app-panel p-4 sm:p-6">
+      {mobile && !categories && <button className="val-mobile-text-button mb-4" type="button" onClick={() => {
+        if (history.state?.valSettings === `${location.pathname}${location.search}`) history.back();
+        else { setCategories(true); router.replace("/dashboard/profile?view=settings"); }
+      }}>← All settings</button>}
+      <div className="val-settings-intro mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="app-section-title">
             Preferences
@@ -237,13 +249,14 @@ export function ProfileSettingsPanel() {
         </span>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className={`mb-4 flex flex-wrap gap-2${mobile ? " val-settings-categories" : ""}`} hidden={mobile && !categories}>
         {[
           { id: "profile", label: "Profile" },
           { id: "voice", label: "Voice & Audio" },
           { id: "notifications", label: "Notifications" },
           { id: "security", label: "Security" },
           { id: "account", label: "Account" },
+          ...(mobile ? [{ id: "navigation", label: "Navigation bar" }] : []),
         ].map((section) => (
           <button
             className={`inline-flex min-h-11 items-center rounded-lg px-4 text-sm font-semibold transition ${
@@ -253,7 +266,14 @@ export function ProfileSettingsPanel() {
             }`}
             data-settings-tab
             key={section.id}
-            onClick={() => setActiveSection(section.id as SettingsSectionId)}
+            onClick={() => {
+              if (mobile && location.hash !== `#${section.id}`) {
+                const target = new URL(location.href); target.hash = section.id;
+                history.pushState({ valSettings: `${location.pathname}${location.search}` }, "", target);
+                window.dispatchEvent(new HashChangeEvent("hashchange"));
+              }
+              setActiveSection(section.id as SettingsSectionId); setCategories(false);
+            }}
             type="button"
           >
             {section.label}
@@ -265,7 +285,9 @@ export function ProfileSettingsPanel() {
         <p className="mb-4 text-sm text-emerald-300">Local settings saved on this device.</p>
       ) : null}
 
-      {activeSection === "notifications" ? (
+      {mobile && !categories && activeSection === "navigation" && <MobileNavbarSettings />}
+
+      {!categories && activeSection === "notifications" ? (
         <div className="grid gap-3">
           <div className="app-row p-4" data-tour-target="notifications-settings">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -398,11 +420,11 @@ export function ProfileSettingsPanel() {
         </div>
       ) : null}
 
-      {activeSection === "voice" ? (
+      {!categories && activeSection === "voice" ? (
         <VoiceAudioSettingsPanel />
       ) : null}
 
-      {activeSection === "profile" ? (
+      {!categories && activeSection === "profile" ? (
         <div className="grid gap-3">
           <label className="app-row flex items-center justify-between gap-4 px-4 py-4">
             <span className="min-w-0">
@@ -438,7 +460,7 @@ export function ProfileSettingsPanel() {
         </div>
       ) : null}
 
-      {activeSection === "security" ? (
+      {!categories && activeSection === "security" ? (
         <div className="app-row p-4 text-sm text-slate-400">
           <div className="grid w-full gap-5">
             <div>
@@ -504,7 +526,7 @@ export function ProfileSettingsPanel() {
         </div>
       ) : null}
 
-      {activeSection === "account" ? (
+      {!categories && activeSection === "account" ? (
         <div className="grid gap-3">
           <div className="app-row p-4 text-sm leading-6 text-slate-400">
             Local notification and presence choices stay on this device. Account actions below affect your current VAL session.

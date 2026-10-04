@@ -27,7 +27,7 @@ export function ChannelHeaderActions({ canInvite = false, canManageSpace = false
   return <>
     <div className="val-channel-actions">
       <button className="val-channel-action val-channels-action" type="button" aria-haspopup="dialog" aria-expanded={openPanel === "channels"} onClick={() => toggle("channels")}>
-        <ActionIcon kind="channels" /><span>Channels<small>Switch room</small></span>
+        <ActionIcon kind="channels" /><span><span className="val-desktop-only">Channels</span><span className="val-mobile-only">{channels.find((channel) => channel.id === selectedChannelId)?.name ?? "Channels"} ⌄</span><small>Switch room</small></span>
       </button>
       <button className="val-channel-action" type="button" aria-haspopup="dialog" aria-expanded={openPanel === "members"} onClick={() => toggle("members")}>
         <ActionIcon kind="members" /><span>Members<small>{onlineCount} online</small></span>

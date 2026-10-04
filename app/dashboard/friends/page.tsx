@@ -8,6 +8,8 @@ import { Alert } from "@/components/ui/alert";
 import { getAuthState } from "@/lib/auth";
 import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
+import { MobileFriends } from "@/components/mobile/mobile-friends";
+import { FriendRequestList } from "@/components/friends/friend-request-list";
 
 type FriendsPageProps = {
   searchParams?: Promise<{
@@ -79,10 +81,12 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
     friendFromPair(friendship, userId),
   );
   const addOpen = params?.add === "1" || Boolean(params?.found || params?.query);
+  const requests = await prisma.friendRequest.findMany({ where: { status: "PENDING", OR: [{ receiverId:userId }, { senderId:userId }] }, orderBy: { createdAt: "desc" }, include: { sender: { select: { id:true, name:true, email:true, image:true, status:true } }, receiver: { select: { id:true, name:true, email:true, image:true, status:true } } } });
 
   return (
     <main className="app-page-scroll bg-[#050705] text-slate-100">
-      <div className="app-page-container grid gap-5">
+      {!addOpen && <MobileFriends requests={<><FriendRequestList title="Friend requests" emptyText="No incoming requests." kind="incoming" requests={requests.filter((item) => item.receiverId === userId)} /><FriendRequestList title="Sent requests" emptyText="No outgoing requests." kind="outgoing" requests={requests.filter((item) => item.senderId === userId)} /></>} />}
+      <div className={addOpen ? "app-page-container grid gap-5" : "val-desktop-only"}><div className={addOpen ? "contents" : "app-page-container grid gap-5"}>
         <ValPageHero eyebrow="People / Your circle" title="Friends" description="Same people. More possibilities. Keep your circle close."
           actions={<Link className="app-button-primary val-action" href="/dashboard/friends?add=1">Add friend +</Link>} />
 
@@ -104,7 +108,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
         <section className="app-panel p-5">
           <FriendsList friends={friends} />
         </section>
-      </div>
+      </div></div>
     </main>
   );
 }

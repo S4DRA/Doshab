@@ -8,7 +8,6 @@ import {
   useDeferredValue,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 
@@ -17,6 +16,7 @@ import { decryptMessageContent } from "@/lib/e2ee-message.client";
 import { isEncryptedMessageContent } from "@/lib/e2ee-message";
 import { formatReadableTimestamp } from "@/lib/utils";
 import type { FriendPerson, MessageThread } from "@/types";
+import { DialogSurface } from "@/components/ui/dialog-surface";
 
 type MessagesPageClientProps = {
   error?: string;
@@ -38,7 +38,6 @@ export function MessagesPageClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [friendQuery, setFriendQuery] = useState("");
   const [previewsByThreadId, setPreviewsByThreadId] = useState<PreviewMap>({});
-  const chooserPanelRef = useRef<HTMLDivElement | null>(null);
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const deferredFriendQuery = useDeferredValue(friendQuery);
   const normalizedSearchQuery = deferredSearchQuery.trim().toLowerCase();
@@ -82,36 +81,6 @@ export function MessagesPageClient({
     };
   }, [threads]);
 
-  useEffect(() => {
-    if (!chooserOpen) {
-      return;
-    }
-
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        closeChooser();
-      }
-    }
-
-    function closeOnOutsidePointer(event: PointerEvent) {
-      const target = event.target;
-
-      if (!(target instanceof Node) || chooserPanelRef.current?.contains(target)) {
-        return;
-      }
-
-      closeChooser();
-    }
-
-    document.addEventListener("keydown", closeOnEscape);
-    document.addEventListener("pointerdown", closeOnOutsidePointer);
-
-    return () => {
-      document.removeEventListener("keydown", closeOnEscape);
-      document.removeEventListener("pointerdown", closeOnOutsidePointer);
-    };
-  }, [chooserOpen, closeChooser]);
-
   const filteredThreads = useMemo(() => {
     if (!normalizedSearchQuery) {
       return threads;
@@ -147,7 +116,7 @@ export function MessagesPageClient({
       <div className="app-page-scroll">
         <div className="app-page-container space-y-4">
           <ValPageHero eyebrow="Messages / Private conversations" title="Messages"
-            description="Real people. Real conversations. Pick up where you left off."
+            description="Friends Chat"
             actions={<button className="app-button-primary val-action" onClick={() => setChooserOpen(true)} type="button">Start message +</button>}>
             <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <label className="block min-w-0">
@@ -179,14 +148,14 @@ export function MessagesPageClient({
 
           <div className="val-conversation-heading"><span>01 / Your conversations</span><label>Sort by <select value={sort} onChange={(event) => setSort(event.target.value)}><option value="recent">Recent activity</option><option value="name">Name</option></select></label></div>
           {threads.length ? (
-            <section className="grid gap-3">
+            <section className="val-conversation-list grid gap-3">
               {filteredThreads.length ? (
                 [...filteredThreads].sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : new Date(b.lastActivityAt ?? 0).getTime() - new Date(a.lastActivityAt ?? 0).getTime()).map((thread) => {
                   const preview = previewsByThreadId[thread.id];
 
                   return (
                     <article
-                      className="app-card flex min-w-0 flex-col gap-3 p-4 transition hover:border-[#FF5F25]/70 sm:flex-row sm:items-center sm:justify-between"
+                      className="val-conversation-row app-card flex min-w-0 flex-col gap-3 p-4 transition hover:border-[#FF5F25]/70 sm:flex-row sm:items-center sm:justify-between"
                       key={thread.id}
                     >
                       <Link
@@ -199,17 +168,17 @@ export function MessagesPageClient({
                         />
                         <span className="min-w-0 flex-1">
                           <span className="flex min-w-0 items-center justify-between gap-3">
-                            <span className="truncate text-sm font-semibold text-white">
+                            <span className="val-thread-name truncate text-sm font-semibold text-white">
                               {thread.name}
                             </span>
-                            <span className="shrink-0 text-[11px] text-slate-500">
+                            <span className="val-thread-time shrink-0 text-[11px] text-slate-500">
                               {formatConversationTime(thread.lastActivityAt)}
                             </span>
                           </span>
-                          <span className="mt-1 block truncate text-xs text-slate-400">
+                          <span className="val-thread-email mt-1 block truncate text-xs text-slate-400">
                             {thread.friend?.email ?? "Private message"}
                           </span>
-                          <span className="mt-2 block line-clamp-2 text-sm leading-6 text-slate-300">
+                          <span className="val-thread-preview mt-2 block line-clamp-2 text-sm leading-6 text-slate-300">
                             {preview ?? "Decrypting latest message..."}
                           </span>
                         </span>
@@ -263,11 +232,9 @@ export function MessagesPageClient({
       </div>
 
       {chooserOpen ? (
-        <div className="fixed inset-0 z-[90] flex items-end bg-black/50 sm:items-center sm:justify-center">
+        <DialogSurface title="New message" onClose={closeChooser}>
           <div
-            className="app-panel mx-3 mb-[calc(var(--dashboard-bottom-nav-height)+0.5rem)] max-h-[72dvh] w-full max-w-xl overflow-y-auto rounded-[1.4rem] p-4 sm:mb-0 sm:rounded-lg sm:p-5"
-            ref={chooserPanelRef}
-            role="dialog"
+            className="app-panel val-message-chooser mx-3 mb-[calc(var(--dashboard-bottom-nav-height)+0.5rem)] max-h-[72dvh] w-full max-w-xl overflow-y-auto rounded-[1.4rem] p-4 sm:mb-0 sm:rounded-lg sm:p-5"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -341,7 +308,7 @@ export function MessagesPageClient({
               )}
             </div>
           </div>
-        </div>
+        </DialogSurface>
       ) : null}
     </>
   );

@@ -1,4 +1,7 @@
 import { ValPageHero } from "@/components/layout/val-page-hero";
+import { MobileHome } from "@/components/mobile/mobile-home";
+import { MobileGroups } from "@/components/mobile/mobile-groups";
+import { MobileSpace, ChannelHistory } from "@/components/mobile/mobile-space";
 import { PeopleRail } from "@/components/layout/people-rail";
 import Link from "next/link";
 
@@ -26,6 +29,7 @@ type DashboardHomeData = {
   message?: string;
   messageTone?: "neutral" | "success" | "error" | "warning";
   requestsPanel?: ReactNode;
+  threads?: MessageThread[];
 };
 
 type DashboardShellProps = {
@@ -46,6 +50,7 @@ type DashboardShellProps = {
   invitePanel?: React.ReactNode;
   messageThreads?: MessageThread[];
   messagesPageContent?: React.ReactNode;
+  invitationsPanel?: ReactNode;
 };
 
 export function DashboardShell({
@@ -59,6 +64,7 @@ export function DashboardShell({
   invitePanel,
   messageThreads = [],
   messagesPageContent,
+  invitationsPanel,
 }: DashboardShellProps) {
   const canCreateChannels =
     !selectedGroup?.isDirectMessage &&
@@ -221,9 +227,11 @@ export function DashboardShell({
             groupName={selectedGroup?.name}
             messages={selectedChannel.messages ?? []}
             members={selectedGroup?.members ?? []}
+            directPeer={selectedMessageThread?.friend ?? undefined}
+            direct={selectedGroup?.isDirectMessage}
           />
         ) : selectedGroup ? (
-          <GroupMain
+          <><MobileSpace group={selectedGroup} canManage={canCreateChannels} invite={invitePanel} notice={selectedGroup.notice} /><div className="val-desktop-only"><GroupMain
             canInvite={canCreateChannels}
             canDeleteGroup={
               !selectedGroup.isDirectMessage &&
@@ -232,13 +240,13 @@ export function DashboardShell({
             currentUserId={currentUser?.id}
             group={selectedGroup}
             invitePanel={invitePanel}
-          />
+          /></div></>
         ) : activeSection === "channels" ? (
-          <ChannelsHome groups={groups} />
+          <><MobileGroups groups={groups} invitations={invitationsPanel} /><div className="val-desktop-only"><ChannelsHome groups={groups} /></div></>
         ) : activeSection === "messages" ? (
           messagesPageContent ?? <MessagesHome threads={messageThreads} />
         ) : (
-          <DashboardHome currentUser={currentUser} data={homeData} groups={groups} />
+          <><MobileHome name={currentUser?.name ?? "Welcome"} groups={groups} threads={homeData?.threads ?? []} requests={homeData?.requestsPanel} message={homeData?.message} messageTone={homeData?.messageTone} /><div className="val-desktop-only"><DashboardHome currentUser={currentUser} data={homeData} groups={groups} /></div></>
         )}
       </section>
       {selectedGroup && !selectedGroup.isDirectMessage && selectedChannel?.type !== "VOICE" ? (
@@ -575,6 +583,8 @@ function ChannelMain({
   groupName,
   messages,
   members,
+  directPeer,
+  direct = false,
 }: {
   canInvite?: boolean;
   canManageSpace?: boolean;
@@ -587,13 +597,21 @@ function ChannelMain({
   groupName?: string;
   messages: ChatMessage[];
   members: GroupMemberItem[];
+  directPeer?: FriendPerson;
+  direct?: boolean;
 }) {
   if (channel.type === "VOICE") {
     return (
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden min-[1180px]:h-full">
+        <ChannelHistory groupId={groupId} channelId={channel.id} />
         <div className="val-mobile-channel-header border-b border-white/10 bg-[#090c0a]/92 px-3 py-2 min-[1180px]:hidden">
+          <div className="val-mobile-only val-mobile-voice-context">
+            <Link className="val-mobile-icon-button" href="/dashboard/channels" aria-label="Back to spaces"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="m14 4-8 8 8 8" /></svg></Link>
+            <AvatarInitials value={groupName ?? channel.name} fallback="group" />
+            <div><strong>{channel.name}</strong><small>{groupName} · Voice room</small></div>
+          </div>
           <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
+            <div className="val-voice-desktop-context min-w-0">
               <p className="app-section-title">
                 {groupName ?? "Voice"}
               </p>
@@ -629,7 +647,14 @@ function ChannelMain({
 
   return (
     <div className="dashboard-shell-main val-chat-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <ChannelHistory groupId={groupId} channelId={channel.id} direct={direct} />
       <section className="channel-top-bar val-chat-header shrink-0">
+        <div className="val-mobile-only val-mobile-chat-context">
+          <Link className="val-mobile-icon-button" href={direct ? "/dashboard/messages" : "/dashboard/channels"} aria-label={direct ? "Back to messages" : "Back to spaces"}><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="m14 4-8 8 8 8" /></svg></Link>
+          <AvatarInitials imageUrl={directPeer?.image} value={directPeer?.name ?? groupName ?? channel.name} fallback={direct ? "person" : "group"} />
+          <div><strong>{directPeer?.name ?? groupName}</strong><small>{direct ? formatUserStatus(directPeer?.status ?? "OFFLINE") : `${members.length} members · #${channel.name}`}</small></div>
+          {directPeer && <form action="/api/friend-calls/start" method="post"><input name="friendId" type="hidden" value={directPeer.id} /><button className="val-mobile-icon-button" type="submit" aria-label={`Call ${directPeer.name}`}><PhoneIcon className="h-6 w-6" /></button></form>}
+        </div>
         <div className="val-chat-overline"><span>Spaces / {groupName ?? "Conversation"}</span><span>{members.length} {members.length === 1 ? "member" : "members"}</span></div>
         <div className="val-chat-title-row">
           <h2 title={channel.name}># {channel.name}</h2>
@@ -650,6 +675,7 @@ function ChannelMain({
       </section>
       <div className="val-chat-body flex min-h-0 min-w-0 flex-1 flex-col">
         <RealtimeMessagePanel
+          direct={direct}
           canPinMessages={canPinMessages}
           channelId={channel.id}
           channelName={channel.name}

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getAuthState } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { GroupInvitesList } from "@/components/groups/group-invites-list";
 
 export default async function ChannelsPage() {
   const auth = await getAuthState();
@@ -54,6 +55,7 @@ export default async function ChannelsPage() {
               id: true,
               name: true,
               email: true,
+              image: true,
               status: true,
             },
           },
@@ -62,5 +64,6 @@ export default async function ChannelsPage() {
     },
   });
 
-  return <DashboardShell groups={groups} activeSection="channels" />;
+  const invites = await prisma.groupInvite.findMany({ where: { receiverId: userId, status: "PENDING" }, orderBy: { createdAt: "desc" }, include: { group: { select: { id: true, name: true, description: true, image: true } }, inviter: { select: { id: true, name: true, email: true, image: true, status: true } } } });
+  return <DashboardShell groups={groups} activeSection="channels" invitationsPanel={<GroupInvitesList invites={invites} />} />;
 }

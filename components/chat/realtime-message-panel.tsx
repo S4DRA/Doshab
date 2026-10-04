@@ -12,6 +12,7 @@ import {
 import { flushSync } from "react-dom";
 
 import { MessageList } from "@/components/chat/message-list";
+import { useMessageDraft } from "@/components/chat/message-drafts-provider";
 import { DialogSurface } from "@/components/ui/dialog-surface";
 import { reactionEmojis } from "@/lib/chat-constants";
 import {
@@ -28,6 +29,7 @@ type RealtimeMessagePanelProps = {
   channelName: string;
   currentUser?: ChatMessage["sender"];
   initialMessages: ChatMessage[];
+  direct?: boolean;
 };
 
 type PendingMessage = ChatMessage & {
@@ -45,11 +47,12 @@ export function RealtimeMessagePanel({
   channelName,
   currentUser,
   initialMessages,
+  direct = false,
 }: RealtimeMessagePanelProps) {
   const [encryptedMessages, setEncryptedMessages] = useState(initialMessages);
   const [decryptedMessages, setDecryptedMessages] = useState<ChatMessage[]>([]);
   const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useMessageDraft(`${currentUser?.id ?? ""}:${channelId}`);
   const [encryptionReady, setEncryptionReady] = useState(false);
   const [encryptionError, setEncryptionError] = useState<string | null>(null);
   const [encryptionAttempt, setEncryptionAttempt] = useState(0);
@@ -94,7 +97,8 @@ export function RealtimeMessagePanel({
     });
   }, [displayedMessages, searchQuery]);
   const handleReply = useCallback((message: ChatMessage) => {
-    setReplyTarget(message);
+    // Commit the closed actions sheet before its focus trap releases the composer.
+    flushSync(() => setReplyTarget(message));
     textareaRef.current?.focus({ preventScroll: true });
   }, []);
 
@@ -473,7 +477,7 @@ export function RealtimeMessagePanel({
       <div className="chat-composer sticky bottom-0 z-10 min-w-0 shrink-0 overflow-hidden border-t border-white/10 bg-[#070907]/95 pb-[max(calc(var(--dashboard-bottom-nav-height,4rem)+0.25rem),0.25rem)] pt-3 backdrop-blur md:pb-[max(env(safe-area-inset-bottom),0.25rem)]">
         <div className="mx-auto w-full max-w-[min(100%,82rem)]">
           {replyTarget ? (
-            <div className="mb-2 flex items-start justify-between gap-3 rounded-lg border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-3 py-2">
+            <div className="val-composer-reply mb-2 flex items-start justify-between gap-3 rounded-lg border border-[#FF5F25]/30 bg-[#FF5F25]/10 px-3 py-2">
               <div className="min-w-0">
                 <p className="truncate text-xs font-semibold text-[#FFB199]">
                   Replying to {replyTarget.sender.name || replyTarget.sender.email}
@@ -499,7 +503,7 @@ export function RealtimeMessagePanel({
             <button type="button" className="app-icon-button val-composer-add" aria-label="Message tools" aria-haspopup="dialog" onClick={() => setComposerTools("tools")}><span aria-hidden="true">+</span></button>
             <textarea
               ref={textareaRef}
-              aria-label={`Message #${channelName}`}
+              aria-label={direct ? "Message" : `Message #${channelName}`}
               className="max-h-28 min-h-12 min-w-0 max-w-full flex-1 resize-none overflow-y-auto rounded-lg border border-white/10 bg-[#050505] px-3 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-11 sm:max-h-36 sm:text-sm"
               disabled={!encryptionReady || !currentUser}
               maxLength={2000}
@@ -507,7 +511,7 @@ export function RealtimeMessagePanel({
               onKeyDown={submitOnEnter}
               placeholder={
                 encryptionReady
-                  ? `Message #${channelName}…`
+                  ? direct ? "Type a message…" : `Message #${channelName}…`
                   : "Preparing encrypted chat..."
               }
               required
@@ -537,7 +541,7 @@ export function RealtimeMessagePanel({
           {draft.length > 2000 && <p className="val-chat-error" role="alert">Split this draft into messages of 2,000 characters or fewer.</p>}
         </div>
       </div>
-      {composerTools && <DialogSurface key={composerTools} title={composerTools === "emoji" ? "Add emoji" : "Message tools"} onClose={() => setComposerTools(null)}>
+      {composerTools && <DialogSurface title={composerTools === "emoji" ? "Add emoji" : "Message tools"} onClose={() => setComposerTools(null)}>
         {composerTools === "emoji" ? <div className="val-emoji-grid">{[...reactionEmojis, "✨", "🎉", "👋", "🤔", "✅", "🙌", "☕"].map((emoji) => <button type="button" key={emoji} aria-label={`Insert ${emoji}`} onClick={() => {
           const input = textareaRef.current;
           const start = input?.selectionStart ?? draft.length;

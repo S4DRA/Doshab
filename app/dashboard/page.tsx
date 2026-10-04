@@ -4,7 +4,7 @@ import { FriendRequestList } from "@/components/friends/friend-request-list";
 import { GroupInvitesList } from "@/components/groups/group-invites-list";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getAuthState } from "@/lib/auth";
-import { getDashboardGroups } from "@/lib/dashboard-data";
+import { getDashboardGroups, getDashboardMessageThreads } from "@/lib/dashboard-data";
 import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
 
@@ -31,6 +31,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     incomingRequests,
     outgoingRequests,
     groupInvites,
+    threads,
   ] = await Promise.all([
     getDashboardGroups(userId),
 
@@ -153,6 +154,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         },
       },
     }),
+    getDashboardMessageThreads(userId),
   ]);
 
   const friends = friendships.map((friendship) =>
@@ -167,8 +169,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         message: params?.error ?? params?.message,
         messageTone: params?.error ? "error" : undefined,
         friends,
+        threads: threads.slice(0, 4),
         requestsPanel: (
-          <section className="grid gap-4 xl:grid-cols-2" id="requests-and-invites">
+          <section className="grid gap-4 xl:grid-cols-2" id="requests-and-invites" key="requests-and-invites">
             <FriendRequestList
               title="Incoming friend requests"
               emptyText="No incoming friend requests."

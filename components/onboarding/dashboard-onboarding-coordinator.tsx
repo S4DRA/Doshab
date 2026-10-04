@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useOptionalPersistentCall } from "@/components/calls/persistent-call-provider";
+import { mobileLayoutQuery } from "@/lib/mobile-navigation";
 import {
   getBrowserPushDiagnostics,
   getPushRegistrationMessage,
@@ -42,7 +43,7 @@ const desktopTourSteps: TourStep[] = [
   {
     icon: <SparkIcon />,
     primaryLabel: "Start tour",
-    text: "VAL is your private space for spaces, voice channels, messages, friends, and focused dark or light modes.",
+    text: "VAL is your private space for communities, voice channels, messages, and friends.",
     title: "Welcome to VAL",
   },
   {
@@ -93,20 +94,20 @@ const mobileTourSteps: TourStep[] = [
   {
     icon: <SparkIcon />,
     primaryLabel: "Start tour",
-    text: "VAL keeps your spaces, calls, friends, and dark or light mode close while leaving room for the conversation.",
+    text: "VAL keeps your spaces, calls, and friends close while leaving room for the conversation.",
     title: "Welcome to VAL",
   },
   {
     icon: <ChannelIcon />,
-    target: "mobile-bottom-nav",
-    text: "Use the bottom bar to jump between friends, create actions, spaces, notifications, and your profile.",
+    target: "mobile-main-nav",
+    text: "Home, Spaces, Messages, and Profile stay in the same place. Open Messages for conversations and Profile for friends.",
     title: "Bottom navigation",
   },
   {
     icon: <GroupIcon />,
-    target: "mobile-channel-drawer",
-    text: "Tap the channel shortcut to pin a space or open the full channels view when you need more room.",
-    title: "Groups and channels drawer",
+    target: "groups-nav",
+    text: "Open Spaces to find your communities. Inside a conversation, tap the channel name to choose another text or voice room.",
+    title: "Your spaces and channels",
   },
   {
     icon: <MicIcon />,
@@ -122,8 +123,8 @@ const mobileTourSteps: TourStep[] = [
   },
   {
     icon: <FriendsIcon />,
-    target: "friends-nav",
-    text: "Open friends to add people, answer requests, start messages, or invite them into spaces.",
+    target: "profile-nav",
+    text: "Open Profile, then Friends & requests to add people, answer requests, and start messages.",
     title: "Friends and invites",
   },
   {
@@ -151,7 +152,7 @@ export function DashboardOnboardingCoordinator() {
   const [showPhoneSteps, setShowPhoneSteps] = useState(false);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.innerWidth < 768,
+    () => typeof window !== "undefined" && window.matchMedia(mobileLayoutQuery).matches,
   );
   const [activeTourVariant, setActiveTourVariant] = useState<TourVariant>("desktop");
   const dialogRef = useRef<HTMLElement | null>(null);
@@ -230,12 +231,14 @@ export function DashboardOnboardingCoordinator() {
 
   useEffect(() => {
     const updateViewport = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.matchMedia(mobileLayoutQuery).matches);
     };
 
     window.addEventListener("resize", updateViewport);
+    const media = window.matchMedia(mobileLayoutQuery);
+    media.addEventListener("change", updateViewport);
 
-    return () => window.removeEventListener("resize", updateViewport);
+    return () => { window.removeEventListener("resize", updateViewport); media.removeEventListener("change", updateViewport); };
   }, []);
 
   useEffect(() => {
@@ -244,7 +247,7 @@ export function DashboardOnboardingCoordinator() {
         return;
       }
 
-      const variant = window.innerWidth < 768 ? "mobile" : "desktop";
+      const variant = window.matchMedia(mobileLayoutQuery).matches ? "mobile" : "desktop";
       const steps = variant === "mobile" ? mobileTourSteps : desktopTourSteps;
       const storedStep = readStorage(getTourStepKey(variant)) ?? readStorage(tourStepKey);
       const completed = readStorage(getTourCompletionKey(variant)) === "true";
@@ -282,7 +285,7 @@ export function DashboardOnboardingCoordinator() {
 
   useEffect(() => {
     const handleRestart = () => {
-      const variant: TourVariant = window.innerWidth < 768 ? "mobile" : "desktop";
+      const variant: TourVariant = window.matchMedia(mobileLayoutQuery).matches ? "mobile" : "desktop";
 
       removeStorage(tourCompletedKey);
       removeStorage(getTourCompletionKey(variant));
@@ -340,6 +343,13 @@ export function DashboardOnboardingCoordinator() {
 
     const previousActiveElement =
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const overlay = dialogRef.current?.parentElement;
+    const background = isMobile && overlay?.parentElement
+      ? Array.from(overlay.parentElement.children).filter(
+          (element): element is HTMLElement => element instanceof HTMLElement && element !== overlay,
+        ).map((element) => ({ element, inert: element.inert }))
+      : [];
+    background.forEach(({ element }) => { element.inert = true; });
     const focusTimer = window.setTimeout(() => {
       const focusTarget = dialogRef.current?.querySelector<HTMLElement>(
         "button, a, input, textarea, select, [tabindex]:not([tabindex='-1'])",
@@ -348,6 +358,21 @@ export function DashboardOnboardingCoordinator() {
     }, 0);
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (isMobile && event.key === "Tab" && dialogRef.current) {
+        const dialog = dialogRef.current;
+        const controls = Array.from(dialog.querySelectorAll<HTMLElement>(
+          "button:not(:disabled), a[href], input:not(:disabled), textarea:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex='-1'])",
+        )).filter((element) => element.getClientRects().length > 0);
+        const first = controls[0];
+        const last = controls.at(-1);
+        if (first && last && (!dialog.contains(document.activeElement)
+          || (event.shiftKey && document.activeElement === first)
+          || (!event.shiftKey && document.activeElement === last))) {
+          event.preventDefault();
+          (event.shiftKey ? last : first).focus();
+        }
+        return;
+      }
       if (event.key !== "Escape") {
         return;
       }
@@ -366,9 +391,10 @@ export function DashboardOnboardingCoordinator() {
     return () => {
       window.clearTimeout(focusTimer);
       window.removeEventListener("keydown", handleKeyDown);
+      background.forEach(({ element, inert }) => { element.inert = inert; });
       previousActiveElement?.focus();
     };
-  }, [closeNotificationFlow, mode, skipTour]);
+  }, [closeNotificationFlow, isMobile, mode, skipTour]);
 
   async function enableNotifications() {
     setNotificationStatus("saving");
@@ -423,7 +449,7 @@ export function DashboardOnboardingCoordinator() {
   }
 
   return (
-    <div className="fixed inset-0 z-[80] text-slate-100" aria-live="polite">
+    <div className="val-onboarding-overlay fixed inset-0 z-[80] text-slate-100" aria-live="polite">
       {mode === "tour" ? (
         <TourOverlay
           canGoBack={stepIndex > 0}
@@ -572,14 +598,14 @@ function TourOverlay({
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <Link
               className="app-button-secondary inline-flex h-12 items-center justify-center rounded-lg px-4 text-sm font-semibold"
-              href="/dashboard/profile"
+              href={isMobile ? "/dashboard/profile?view=settings" : "/dashboard/profile"}
               onClick={onFinish}
             >
               Open settings
             </Link>
             <Link
               className="inline-flex h-12 items-center justify-center rounded-lg border border-white/15 px-4 text-sm font-semibold text-slate-200 transition hover:border-[#FF5F25]/60 hover:text-white"
-              href="/dashboard"
+              href={isMobile ? "/dashboard/create" : "/dashboard"}
               onClick={onFinish}
             >
               Create space

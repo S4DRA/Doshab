@@ -9,12 +9,15 @@ import { useCallActivity } from "./use-call-activity";
 import type { LocalMedia, RemoteMedia } from "@/lib/media/types";
 import { buildCallViews, pageCallViews, selectCallLayout, type CallLayoutMode, type CallView } from "@/lib/media/call-view";
 import { usePushToTalk } from "./use-push-to-talk";
+import { useMobileLayout } from "@/components/mobile/mobile-shell";
+import { DialogSurface } from "@/components/ui/dialog-surface";
 
 const emptyLocal: LocalMedia[] = [];
 const emptyRemote: RemoteMedia[] = [];
 
 export function CallWorkspace({ call }: { call: CallContextValue }) {
   const { activeCall: session, snapshot } = call;
+  const mobile = useMobileLayout();
   const local = snapshot?.local ?? emptyLocal;
   const remote = snapshot?.remote ?? emptyRemote;
   const localUserId = session?.participant.id ?? "";
@@ -26,7 +29,8 @@ export function CallWorkspace({ call }: { call: CallContextValue }) {
   const [selection, setSelection] = useState<{ mode: CallLayoutMode; pinnedId: string | null; page: number }>({ mode: "auto", pinnedId: null, page: 0 });
   if (!session) return null;
   const { people, views } = buildCallViews(session.participant, local, remote, snapshot?.participants ?? [], snapshot?.micMuted ?? true);
-  const { mode, gallery, activeView, galleryViews } = selectCallLayout(views, selection.mode, selection.pinnedId, speakingIds);
+  const automaticMode = mobile && selection.mode === "auto" && !views.some((view) => view.source === "screen") ? "gallery" : selection.mode;
+  const { mode, gallery, activeView, galleryViews } = selectCallLayout(views, automaticMode, selection.pinnedId, speakingIds);
   const page = pageCallViews(gallery ? galleryViews : views, selection.page);
   const focus = (id: string) => setSelection({ mode: "focus", pinnedId: id, page: 0 });
   const changeMode = (next: CallLayoutMode) => setSelection({ mode: next, pinnedId: next === "focus" ? activeView.id : null, page: 0 });
@@ -37,7 +41,7 @@ export function CallWorkspace({ call }: { call: CallContextValue }) {
   return <section className="val-call-workspace" aria-label={`${session.title} ${session.kind === "group" ? "voice room" : "call"}`}>
     <header className="val-call-header val-cut-panel">
       <div className="val-call-overline"><span>{session.kind === "group" ? "Spaces" : "Messages"} / {session.subtitle ?? session.title}</span><span className="val-call-state" data-connected={connected} role="status">{state}</span></div>
-      <div className="val-call-title-row"><h1>{session.title}</h1><p>{session.kind === "group" ? "Voice room" : "Private call"}<span>{session.subtitle}</span></p><div className="val-call-brand" aria-hidden="true">Same people.<br />Bigger spaces.<br />Further together.<b>{"// VAL"}</b></div><div className="val-lunar-banner" aria-hidden="true"><span>A more<br />human<br />internet <b>—</b></span></div></div>
+      <div className="val-call-title-row"><h1>{session.title}</h1><p>{session.kind === "group" ? "Voice room" : "Private call"}<span>{session.subtitle}</span></p><div className="val-call-brand" aria-hidden="true">Same people.<br />Bigger spaces.<br />:)<b>{"// VAL"}</b></div><div className="val-lunar-banner" aria-hidden="true"><span>A more<br />human<br />internet <b>—</b></span></div></div>
     </header>
     <div className="val-call-body">
       <section className="val-speaker-panel val-cut-panel">
@@ -106,6 +110,9 @@ function SessionDuration({ startedAt }: { startedAt: number | null }) {
 function VideoMedia({ item, thumbnail = false }: { item: LocalMedia | RemoteMedia; thumbnail?: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [blocked, setBlocked] = useState(false);
+  const [pipSupported, setPipSupported] = useState(false);
+  const [videoError, setVideoError] = useState("");
+  useEffect(() => { const frame = requestAnimationFrame(() => setPipSupported(Boolean(document.pictureInPictureEnabled && ref.current?.requestPictureInPicture))); return () => cancelAnimationFrame(frame); }, []);
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
@@ -114,9 +121,13 @@ function VideoMedia({ item, thumbnail = false }: { item: LocalMedia | RemoteMedi
     void element.play().then(() => { if (active) setBlocked(false); }).catch(() => { if (active) setBlocked(true); });
     return () => { active = false; element.srcObject = null; };
   }, [item.track]);
-  return <><video ref={ref} autoPlay muted playsInline onPlaying={() => setBlocked(false)} className="val-stage-video" data-source={item.source} data-local={!("consumerId" in item)} aria-label={item.source === "screen" ? "Shared screen video" : "Camera video"} />{blocked && !thumbnail ? <button className="val-video-resume app-button-secondary" type="button" onClick={() => { void ref.current?.play().then(() => setBlocked(false)).catch((cause) => console.warn("Video playback blocked", cause)); }}>Play video</button> : null}</>;
+  return <><video ref={ref} autoPlay muted playsInline onPlaying={() => setBlocked(false)} className="val-stage-video" data-source={item.source} data-local={!("consumerId" in item)} aria-label={item.source === "screen" ? "Shared screen video" : "Camera video"} />{blocked && !thumbnail ? <button className="val-video-resume app-button-secondary" type="button" onClick={() => { void ref.current?.play().then(() => setBlocked(false)).catch((cause) => console.warn("Video playback blocked", cause)); }}>Play video</button> : null}
+    {!thumbnail && pipSupported && <div className="val-mobile-only val-video-actions"><button className="val-mobile-icon-button" type="button" aria-label="Picture in picture" onClick={() => { setVideoError(""); void ref.current?.requestPictureInPicture().catch((error) => { console.warn("Picture in picture unavailable", error); setVideoError("Picture in picture is unavailable for this video right now."); }); }}><CallIcon name="expand" /></button></div>}
+    {videoError && <p className="val-video-error" role="alert">{videoError}</p>}
+  </>;
 }
 export function CallControls({ call, compact = false }: { call: CallContextValue; compact?: boolean }) {
+  const mobile = useMobileLayout();
   const pushToTalk = usePushToTalk(call.media, call.activeCall?.voiceSettings, call.setError);
   const [pending, setPending] = useState({ mic: false, camera: false, screen: false });
   const pendingRef = useRef(new Set<"mic" | "camera" | "screen">());
@@ -126,12 +137,12 @@ export function CallControls({ call, compact = false }: { call: CallContextValue
   const toggleRef = useRef<HTMLButtonElement>(null);
   useEffect(() => { const frame = requestAnimationFrame(() => setCanShare(Boolean(navigator.mediaDevices?.getDisplayMedia))); return () => cancelAnimationFrame(frame); }, []);
   useEffect(() => {
-    if (!more) return;
+    if (!more || mobile) return;
     function close(event: KeyboardEvent) { if (event.key === "Escape") { setMore(false); toggleRef.current?.focus(); } }
     function outside(event: PointerEvent) { if (!moreRef.current?.contains(event.target as Node) && !toggleRef.current?.contains(event.target as Node)) setMore(false); }
     document.addEventListener("keydown", close); document.addEventListener("pointerdown", outside);
     return () => { document.removeEventListener("keydown", close); document.removeEventListener("pointerdown", outside); };
-  }, [more]);
+  }, [more, mobile]);
   const { activeCall, media, snapshot } = call;
   if (!activeCall) return null;
   const run = (source: "mic" | "camera" | "screen", action: () => Promise<unknown>) => {
@@ -160,20 +171,24 @@ export function CallControls({ call, compact = false }: { call: CallContextValue
         onKeyDown={(event) => { if (pushToTalk.enabled && [" ", "Enter"].includes(event.key)) { event.preventDefault(); pushToTalk.press(); } }}
         onKeyUp={(event) => { if (pushToTalk.enabled && [" ", "Enter"].includes(event.key)) pushToTalk.release(); }}
         type="button"><CallIcon name={snapshot?.micMuted ? "mic-off" : "mic"} /><span>{pushToTalk.enabled ? "Hold to talk" : "Mic"}<small>{pending.mic ? "Updating…" : snapshot?.micMuted ? pushToTalk.enabled ? settingsKey(activeCall.voiceSettings?.pushToTalkKey) : "Off" : "On"}</small></span></button>
-      <div className={`val-secondary-controls${more ? " is-open" : ""}`} ref={moreRef}>
+      <CallMoreSurface mobile={mobile} open={more} onClose={() => setMore(false)}><div className={`val-secondary-controls${more ? " is-open" : ""}`} ref={moreRef}>
+        {call.screenAwake.supported && <div className="val-mobile-only"><button className="val-call-control" type="button" aria-pressed={call.screenAwake.enabled} onClick={() => call.screenAwake.setEnabled(!call.screenAwake.enabled)}><CallIcon name="screen" /><span>Keep screen on<small>{call.screenAwake.active ? "Active" : call.screenAwake.enabled ? "Waiting" : "Off"}</small></span></button></div>}
         {activeCall.kind === "group" ? <button className="val-call-control" disabled={disabled || pending.camera} aria-busy={pending.camera} aria-pressed={snapshot?.cameraOn ?? false} aria-label={snapshot?.cameraOn ? "Turn camera off" : "Turn camera on"} onClick={() => { if (media) run("camera", () => snapshot?.cameraOn ? media.stop("camera") : media.start("camera", true)); }} type="button"><CallIcon name="camera" /><span>Camera<small>{pending.camera ? "Updating…" : snapshot?.cameraOn ? "On" : "Off"}</small></span></button> : null}
         <button className="val-call-control" disabled={disabled || pending.screen || (!canShare && !snapshot?.screenOn)} aria-busy={pending.screen} aria-pressed={snapshot?.screenOn ?? false} aria-label={snapshot?.screenOn ? "Stop screen sharing" : "Share screen"} title={canShare ? "Share your screen" : "Screen sharing is unavailable in this browser"} onClick={() => { if (media) run("screen", () => snapshot?.screenOn ? media.stop("screen") : media.start("screen", true)); }} type="button"><CallIcon name="screen" /><span>Share<small>{pending.screen ? "Updating…" : snapshot?.screenOn ? "Sharing" : canShare ? "Screen" : "Unavailable"}</small></span></button>
         <button className="val-call-control" aria-pressed={call.deafened} onClick={() => call.setDeafened(!call.deafened)} type="button"><CallIcon name="headphones" /><span>Deafen<small>{call.deafened ? "On" : "Off"}</small></span></button>
         <Link className="val-device-settings" href="/dashboard/profile#voice">Audio devices <CallIcon name="chevron" /></Link>
-        {activeCall.kind === "group" ? <MusicButton /> : null}
+        {activeCall.kind === "group" ? <MusicButton onOpen={() => setMore(false)} /> : null}
         {!compact ? <button className="val-popout-button" type="button" onClick={() => call.setPoppedOut(true)} aria-label="Pop out call"><CallIcon name="expand" /><span>Pop out</span></button> : null}
         <button className="val-close-more" type="button" onClick={() => { setMore(false); toggleRef.current?.focus(); }}>Close controls</button>
-      </div>
+      </div></CallMoreSurface>
       <button className="val-more-control val-call-control" aria-expanded={more} ref={toggleRef} onClick={() => setMore(!more)} type="button"><CallIcon name="more" /><span>More</span></button>
       <button className="val-call-leave" onClick={call.endCall} type="button"><CallIcon name="phone" /><span>Leave</span></button>
     </div>
     {!compact ? <div className="val-controls-caption" aria-hidden="true"><span>Spaces foundation</span><span>A more human internet</span><b>{"// VAL"}</b></div> : null}
   </footer>;
+}
+function CallMoreSurface({ mobile, open, onClose, children }: { mobile: boolean; open: boolean; onClose: () => void; children: React.ReactNode }) {
+  return mobile && open ? <DialogSurface title="Call controls" onClose={onClose}>{children}</DialogSurface> : children;
 }
 function mediaControlError(cause: unknown, name: string, source: "mic" | "camera" | "screen") {
   const device = source === "mic" ? "microphone" : source === "camera" ? "camera" : "screen";

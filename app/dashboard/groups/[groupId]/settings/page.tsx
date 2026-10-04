@@ -155,7 +155,7 @@ function GroupSettingsPanel({
   const memberIds = group.members.map((member) => member.userId);
 
   return (
-    <div className="app-page-scroll">
+    <div className="app-page-scroll val-space-settings">
       <div className="app-page-container grid min-w-0 gap-5">
         <section className="app-page-header">
           <p className="app-section-title">

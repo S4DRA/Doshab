@@ -1,5 +1,28 @@
 const incomingCallType = "INCOMING_CALL";
 const missedCallType = "MISSED_CALL";
+const offlineCache = "val-offline-v1";
+const offlineAssets = ["/offline.html", "/brand/val-echo-dark-256.png", "/brand/val-echo-icon-192.png"];
+
+// Cache only the public fallback and brand assets, never account pages or API responses.
+self.addEventListener("install", (event) => {
+  event.waitUntil(caches.open(offlineCache).then((cache) => cache.addAll(offlineAssets)));
+});
+self.addEventListener("activate", (event) => {
+  event.waitUntil(Promise.all([
+    caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith("val-offline-") && key !== offlineCache).map((key) => caches.delete(key)))),
+    self.clients.claim(),
+  ]));
+});
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin || request.method !== "GET") return;
+  if (request.mode === "navigate") {
+    event.respondWith(fetch(request).catch(async () => (await caches.match("/offline.html")) ?? Response.error()));
+  } else if (offlineAssets.includes(url.pathname)) {
+    event.respondWith(caches.match(request).then((cached) => cached ?? fetch(request)));
+  }
+});
 
 self.addEventListener("push", (event) => {
   let payload = {

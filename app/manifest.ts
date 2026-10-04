@@ -29,6 +29,11 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     short_name: "VAL",
     start_url: "/dashboard",
+    shortcuts: [
+      { name: "Messages", short_name: "Messages", url: "/dashboard/messages" },
+      { name: "Your spaces", short_name: "Groups", url: "/dashboard/channels" },
+      { name: "Search", short_name: "Search", url: "/dashboard/search" },
+    ],
     theme_color: "#0f1115",
   };
 }
