@@ -6,14 +6,15 @@ import { coalesceMusicRefresh } from "@/lib/music/refresh";
 export { useMusicVolume } from "./music-volume";
 
 type Snapshot = { session: MusicSession; serverTime: number; serverReceivedAt: number; source: string | null; viewerId: string };
+type PlayerView = "closed" | "expanded" | "minimized";
 type MusicContextValue = {
   channelId: string; session: MusicSession | null; source: string | null; clockOffset: number;
-  isDJ: boolean; canStart: boolean; busy: boolean; error: string | null; reconnecting: boolean;
+  isDJ: boolean; canControl: boolean; canStart: boolean; busy: boolean; error: string | null; reconnecting: boolean;
   command: (command: MusicCommand) => Promise<boolean>;
   refreshNow: () => void;
-  playerView: "closed" | "expanded" | "minimized";
+  playerView: PlayerView;
   playerAnchor: RefObject<HTMLButtonElement | null>;
-  setPlayerView: (view: "closed" | "expanded" | "minimized") => void;
+  setPlayerView: (view: PlayerView) => void;
 };
 const MusicContext = createContext<MusicContextValue | null>(null);
 export function useMusicSession() { return useContext(MusicContext); }
@@ -30,7 +31,8 @@ export function MusicSessionProvider({ channelId, children }: { channelId: strin
 }
 
 function ActiveMusicSession({ channelId, children }: { channelId: string | null; children: React.ReactNode }) {
-  const [playerView, setPlayerView] = useState<"closed" | "expanded" | "minimized">("closed");
+  const [playerChoice, setPlayerChoice] = useState<{ roomId: string | null; view: PlayerView } | null>(null);
+  const setPlayerView = useCallback((view: PlayerView) => setPlayerChoice({ roomId: channelId, view }), [channelId]);
   const playerAnchor = useRef<HTMLButtonElement>(null);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [clockOffset, setClockOffset] = useState(0);
@@ -58,6 +60,9 @@ function ActiveMusicSession({ channelId, children }: { channelId: string | null;
     offset.current = ((data.serverReceivedAt - started) + (data.serverTime - Date.now())) / 2;
     setClockOffset((previous) => Math.abs(previous - offset.current) > 25 ? offset.current : previous);
     setSnapshot((previous) => previous?.session.roomId === data.session.roomId && previous.session.version === data.session.version ? previous : data);
+    if (data.session.track && data.session.state === "PLAYING") {
+      setPlayerChoice((previous) => previous?.roomId === data.session.roomId ? previous : { roomId: data.session.roomId, view: "minimized" });
+    }
     setReconnecting(false);
     setError(null);
   }, [setError]);
@@ -86,15 +91,8 @@ function ActiveMusicSession({ channelId, children }: { channelId: string | null;
     const coordinator = coalesceMusicRefresh(refresh);
     const update = () => { void coordinator.run(); };
     refreshTrigger.current = update;
-    let idleTicks = 0;
-    const timer = window.setInterval(() => {
-      if (document.visibilityState !== "visible") return;
-      const session = current.current?.session;
-      if (!session || session.roomId !== channelId || session.track || ++idleTicks >= 5) {
-        idleTicks = 0;
-        update();
-      }
-    }, 3000);
+    // Discover another person's first song as promptly as later playback changes.
+    const timer = window.setInterval(() => { if (document.visibilityState === "visible") update(); }, 3000);
     const initial = window.setTimeout(update, 0);
     const visible = () => { if (document.visibilityState === "visible") update(); };
     document.addEventListener("visibilitychange", visible);
@@ -130,9 +128,12 @@ function ActiveMusicSession({ channelId, children }: { channelId: string | null;
   const refreshNow = useCallback(() => refreshTrigger.current(), []);
 
   const session = snapshot?.session.roomId === channelId ? snapshot.session : null;
+  // Room playback needs a visible player for each listener. An explicit close
+  // still stops listening locally and remains closed for that room.
+  const playerView = playerChoice?.roomId === channelId ? playerChoice.view : "closed";
   const value = useMemo(() => channelId ? ({ channelId, session, source: session ? snapshot?.source ?? null : null, clockOffset,
-    isDJ: !!session && session.djUserId === snapshot?.viewerId, canStart: !!session && !session.djUserId,
-    busy, error, reconnecting: reconnecting || !session, command, refreshNow, playerView, playerAnchor, setPlayerView }) : null, [channelId, session, snapshot?.source, snapshot?.viewerId, clockOffset, busy, error, reconnecting, command, refreshNow, playerView]);
+    isDJ: !!session && session.djUserId === snapshot?.viewerId, canControl: !!session, canStart: !!session && !session.track,
+    busy, error, reconnecting: reconnecting || !session, command, refreshNow, playerView, playerAnchor, setPlayerView }) : null, [channelId, session, snapshot?.source, snapshot?.viewerId, clockOffset, busy, error, reconnecting, command, refreshNow, playerView, setPlayerView]);
 
   return <MusicContext.Provider value={value}>{children}</MusicContext.Provider>;
 }

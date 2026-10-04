@@ -25,9 +25,9 @@ export function ListenTogetherPopover({ minimized, onExpand, onMinimize, onClose
   const autoplayHelpId = useId();
 
   const { panel, ...dragHandle } = usePlayerPosition(anchor);
-  const { session, isDJ, busy, command } = music;
+  const { session, isDJ, canControl, busy, command } = music;
   const track = session?.track;
-  const disabled = !isDJ || busy || music.reconnecting;
+  const disabled = !canControl || busy || music.reconnecting;
   const searchMode = searching || !track;
   const status = music.reconnecting ? "Connecting" : audio.playbackError ? "Playback unavailable" : audio.blocked ? "Join to listen" : audio.localPaused ? "Locally paused" : session?.state === "PLAYING" ? "Playing together" : track ? "Paused" : "Ready to listen";
 
@@ -43,7 +43,7 @@ export function ListenTogetherPopover({ minimized, onExpand, onMinimize, onClose
   }, [anchor, panel]);
 
   useEffect(() => {
-    panel.current?.focus();
+    if (!minimized) panel.current?.focus();
   }, [minimized, panel]);
 
   const send = async (action: MusicCommand) => { const ok = await command(action); if (ok && action.type === "playNow") setSearching(false); return ok; };
@@ -64,7 +64,7 @@ export function ListenTogetherPopover({ minimized, onExpand, onMinimize, onClose
     {minimized && <div className="music-mini-tools">
       {session?.track && <MusicProgress session={session} clockOffset={music.clockOffset} disabled={disabled} command={command} active={minimized} />}
       <MusicMiniControls disabled={disabled || !track} playing={session?.state === "PLAYING"} command={command} onAdd={() => { setSearching(true); onExpand(); }} queueCount={session?.queue.length ?? 0} />
-      {!isDJ && session?.djName && <p className="music-control-hint">{session.djName} controls playback. You can add songs and adjust your volume.</p>}
+      {session && <p className="music-control-hint">Room controls are shared. Volume is just for you.</p>}
       {music.error && <p className="music-error" role="alert">{music.error}</p>}
       {session?.notice && <p className="music-notice" role="status">{session.notice}</p>}
     </div>}
@@ -73,11 +73,11 @@ export function ListenTogetherPopover({ minimized, onExpand, onMinimize, onClose
         {music.reconnecting && <p className="music-notice" role="status">Reconnecting to room music…</p>}
         {music.error && <p className="music-error" role="alert">{music.error}</p>}
         {session?.notice && <p className="music-notice" role="status">{session.notice}</p>}
-        {audio.playbackError && <p className="music-error" role="alert">{audio.playbackError} {isDJ ? "Try the next track." : "The DJ can choose another track."}</p>}
+        {audio.playbackError && <p className="music-error" role="alert">{audio.playbackError} Try the next track.</p>}
         {(audio.blocked || audio.localPaused) && <button type="button" className="music-join" onClick={audio.join}>{audio.blocked ? "Click to join the music" : "Rejoin synchronized music"}</button>}
         {searchMode ? <>
           {track && <button type="button" className="music-back" onClick={() => setSearching(false)}>← Back to now playing</button>}
-          <MusicSearch channelId={music.channelId} canControl={isDJ} canStart={music.canStart} busy={busy || music.reconnecting} onCommand={send} active={!minimized} />
+          <MusicSearch channelId={music.channelId} canControl={canControl} canStart={music.canStart} busy={busy || music.reconnecting} onCommand={send} active={!minimized} />
           {!track && session && session.queue.length > 0 && <MusicQueue session={session} disabled={disabled} command={command} />}
         </> : <>
           <div className="music-playback-status" role="status"><span className={session?.state === "PLAYING" ? "music-status-dot is-playing" : "music-status-dot"} />{status}{busy && <span className="music-saving">Updating…</span>}</div>
@@ -87,11 +87,11 @@ export function ListenTogetherPopover({ minimized, onExpand, onMinimize, onClose
             <button type="button" className="music-play-button" disabled={disabled} aria-label={session?.state === "PLAYING" ? "Pause music" : "Play music"} onClick={() => void command({ type: session?.state === "PLAYING" ? "pause" : "play" })}><MusicIcon name={session?.state === "PLAYING" ? "pause" : "play"} /></button>
             <button type="button" className="music-icon-button" disabled={disabled} aria-label="Next track" onClick={() => void command({ type: "next" })}><MusicIcon name="next" /></button></div>
           <MusicVolumeControl />
-          {!isDJ && <p className="music-control-hint">{session?.djName ?? "The DJ"} controls playback. You can add songs and adjust your volume.</p>}
+          <p className="music-control-hint">Room controls are shared. Volume is just for you.</p>
           <MusicQueue session={session!} disabled={disabled} command={command} />
           <button type="button" className="music-add-song" onClick={() => setSearching(true)}><MusicIcon name="plus" />Add song to queue</button>
         </>}
-        {session && <footer className="music-footer"><span>{session.djName ? `${isDJ ? "You are" : session.djName + " is"} the room DJ` : "First to play becomes the room DJ"}</span>
+        {session && <footer className="music-footer"><span>{session.djName ? `Started by ${isDJ ? "you" : session.djName}` : "Choose a song for the room"}</span>
           <div className={`music-autoplay${session.autoplay ? " is-enabled" : ""}`}><label><input type="checkbox" role="switch" aria-describedby={autoplayHelpId} checked={session.autoplay} disabled={disabled} onChange={(event) => void command({ type: "autoplay", enabled: event.target.checked })} /><strong>Autoplay discovery</strong><span>{session.autoplay ? "On" : "Off"}</span></label>
           <p id={autoplayHelpId}>Keep the same vibe with a shuffled mix of artists. Starts after your queue finishes.</p></div></footer>}
       </div>

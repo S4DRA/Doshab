@@ -51,6 +51,9 @@ jobs:
       - name: Mobile navigation and preference tests
         run: npm run test:mobile
 
+      - name: Shared music session tests
+        run: npm run test:music
+
       - name: Dependency audit
         run: |
           npm run test:audit

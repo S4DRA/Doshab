@@ -58,10 +58,11 @@ function responseFor(session: MusicSession, viewerId: string) {
 export async function roomMusic(context: Context, input?: CommandRequest) {
   const current = await load(context);
   if (!input) return responseFor(current, context.user.id);
-  if (input.roomId !== current.roomId || (input.command.type !== "enqueue" && input.version !== current.version)) {
+  if (input.roomId !== current.roomId) throw new MusicError("Room music changed. Your player is resynchronizing; try again.", 409);
+  if (current.commandIds.includes(input.commandId)) return responseFor(current, context.user.id);
+  if (input.command.type !== "enqueue" && input.version !== current.version) {
     throw new MusicError("Room music changed. Your player is resynchronizing; try again.", 409);
   }
-  if (current.commandIds.includes(input.commandId)) return responseFor(current, context.user.id);
 
   let track: QueueTrack | undefined;
   if ("trackId" in input.command) {
@@ -80,13 +81,25 @@ export async function roomMusic(context: Context, input?: CommandRequest) {
   }
 
   next.commandIds = [...next.commandIds, input.commandId].slice(-40);
-  const saved = await prisma.musicSession.upsert({
-    where: { channelId: context.channelId },
-    create: { channelId: context.channelId, state: next, version: 1 },
-    update: { state: next, version: { increment: 1 } },
-    select: { state: true, version: true },
-  });
-  return responseFor(fromRecord(saved.state, context.channelId, saved.version), context.user.id);
+  // Checking a version before provider requests is not enough: another member
+  // can save while those requests are pending. Compare it in the write itself.
+  if (current.version === 0) {
+    try {
+      await prisma.musicSession.create({ data: { channelId: context.channelId, state: next, version: 1 } });
+    } catch (error) {
+      if (error && typeof error === "object" && "code" in error && error.code === "P2002") {
+        throw new MusicError("Room music changed. Your player is resynchronizing; try again.", 409);
+      }
+      throw error;
+    }
+  } else {
+    const saved = await prisma.musicSession.updateMany({
+      where: { channelId: context.channelId, version: current.version },
+      data: { state: next, version: { increment: 1 } },
+    });
+    if (saved.count !== 1) throw new MusicError("Room music changed. Your player is resynchronizing; try again.", 409);
+  }
+  return responseFor({ ...next, version: current.version + 1 }, context.user.id);
 }
 
 export async function requireActiveMusicParticipant(context: Context) {
