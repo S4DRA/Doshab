@@ -19,11 +19,8 @@ export function startTrack(session: MusicSession, track: QueueTrack, now: number
 }
 
 export function applyCommand(session: MusicSession, command: MusicCommand, actor: MusicParticipant, now: number, track?: QueueTrack): MusicSession {
-  const isDJ = session.djUserId === actor.id;
-  if (command.type !== "enqueue" && command.type !== "ended" && !isDJ &&
-      !(command.type === "playNow" && !session.djUserId)) {
-    throw new MusicError("Only the room DJ can control playback.", 403);
-  }
+  // The API authorizes room membership before resolving any command. Playback
+  // and queue controls are shared; the original starter is attribution only.
   let next: MusicSession = { ...session, queue: [...session.queue], notice: null };
   switch (command.type) {
     case "enqueue": case "addNext": case "playNow": {

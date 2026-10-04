@@ -28,7 +28,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     <main className="app-page-scroll bg-[#050705] text-slate-100">
       {params?.error && <div className="val-mobile-only"><Alert tone="error">{params.error}</Alert></div>}
       {params?.message && <div className="val-mobile-only"><Alert tone="success">{params.message}</Alert></div>}
-      <MobileProfile user={{ email:user.email, image:user.image ?? null, name:user.name, status:user.status }} view={params?.view} />
+      <MobileProfile user={{ email:user.email, image:user.image ?? null, name:user.name, status:user.status }} />
       <div className="val-desktop-only"><div className="app-page-container grid gap-5">
         <ValPageHero eyebrow="Settings / Your account" title="Your account" description="Your identity, your availability, your way of connecting. Make yourself at home." />
 

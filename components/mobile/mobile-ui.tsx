@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { MouseEventHandler, ReactNode } from "react";
 
 export function MobileIcon({ name }: { name: "home" | "spaces" | "groups" | "friends" | "search" | "profile" | "bell" | "back" | "next" | "plus" | "chat" | "voice" | "close" | "settings" }) {
   return <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -20,8 +20,8 @@ export function MobileIcon({ name }: { name: "home" | "spaces" | "groups" | "fri
   </svg>;
 }
 
-export function MobileHeading({ title, back, action }: { title: string; back?: string; action?: ReactNode }) {
-  return <header className="val-mobile-heading">{back && <Link className="val-mobile-icon-button" href={back} aria-label="Back"><MobileIcon name="back" /></Link>}<h1>{title}</h1>{action}</header>;
+export function MobileHeading({ title, back, action, onBack }: { title: string; back?: string; action?: ReactNode; onBack?: MouseEventHandler<HTMLAnchorElement> }) {
+  return <header className="val-mobile-heading">{back && <Link className="val-mobile-icon-button" href={back} onClick={onBack} aria-label="Back"><MobileIcon name="back" /></Link>}<h1>{title}</h1>{action}</header>;
 }
 
 export function MobileSection({ title, href, action, children }: { title: string; href?: string; action?: ReactNode; children: ReactNode }) {

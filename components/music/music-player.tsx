@@ -64,9 +64,9 @@ export function MusicMiniControls({ disabled, playing, command, onAdd, queueCoun
   const audio = useMusicVolume();
   return <>
     <div className="music-mini-transport">
-      <button type="button" className="music-icon-button" disabled={disabled} aria-label="Restart track" title="Restart track (DJ)" onClick={() => void command({ type: "restart" })}><MusicIcon name="restart" /></button>
-      <button type="button" className="music-play-button" disabled={disabled} aria-label={playing ? "Pause music" : "Play music"} title={playing ? "Pause (DJ)" : "Play (DJ)"} onClick={() => void command({ type: playing ? "pause" : "play" })}><MusicIcon name={playing ? "pause" : "play"} /></button>
-      <button type="button" className="music-icon-button" disabled={disabled} aria-label="Next track" title="Next track (DJ)" onClick={() => void command({ type: "next" })}><MusicIcon name="next" /></button>
+      <button type="button" className="music-icon-button" disabled={disabled} aria-label="Restart track" title="Restart track" onClick={() => void command({ type: "restart" })}><MusicIcon name="restart" /></button>
+      <button type="button" className="music-play-button" disabled={disabled} aria-label={playing ? "Pause music" : "Play music"} title={playing ? "Pause" : "Play"} onClick={() => void command({ type: playing ? "pause" : "play" })}><MusicIcon name={playing ? "pause" : "play"} /></button>
+      <button type="button" className="music-icon-button" disabled={disabled} aria-label="Next track" title="Next track" onClick={() => void command({ type: "next" })}><MusicIcon name="next" /></button>
       <button type="button" className="music-mini-add" onClick={onAdd} title="Search and add music"><MusicIcon name="plus" /><span>Queue <small>{queueCount}</small></span></button>
     </div>
     <div className="music-mini-volume">
