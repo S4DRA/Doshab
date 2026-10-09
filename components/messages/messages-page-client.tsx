@@ -17,6 +17,10 @@ import { isEncryptedMessageContent } from "@/lib/e2ee-message";
 import { formatReadableTimestamp } from "@/lib/utils";
 import type { FriendPerson, MessageThread } from "@/types";
 import { DialogSurface } from "@/components/ui/dialog-surface";
+import { getControlInteractionStyle } from "@/lib/interaction/recipes";
+import "@/app/interaction-physics.css";
+
+const startMessageInteractionStyle = getControlInteractionStyle("control.standard");
 
 type MessagesPageClientProps = {
   error?: string;
@@ -117,7 +121,7 @@ export function MessagesPageClient({
         <div className="app-page-container space-y-4">
           <ValPageHero eyebrow="Messages / Private conversations" title="Messages"
             description="Friends Chat"
-            actions={<button className="app-button-primary val-action" onClick={() => setChooserOpen(true)} type="button">Start message +</button>}>
+            actions={<button className="app-button-primary val-action" data-interaction-recipe="control.standard" style={startMessageInteractionStyle} onClick={() => setChooserOpen(true)} type="button">Start message +</button>}>
             <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <label className="block min-w-0">
                 <span className="sr-only">Search messages</span>

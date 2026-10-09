@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 
 import { VoiceAudioSettingsPanel } from "@/components/profile/voice-audio-settings-panel";
 import { MobileNavbarSettings } from "@/components/mobile/mobile-navbar-settings";
+import { SidebarArtworkSettings } from "@/components/profile/sidebar-artwork-settings";
 import { mobileLayoutQuery } from "@/lib/mobile-navigation";
 import {
   getBrowserPushDiagnostics,
@@ -35,6 +36,7 @@ const defaultSettings: ProfileSettings = {
 
 type SettingsSectionId =
   | "profile"
+  | "appearance"
   | "voice"
   | "notifications"
   | "security"
@@ -61,7 +63,7 @@ export function ProfileSettingsPanel({ mobile = false }: { mobile?: boolean }) {
   useEffect(() => {
     const selectSection = () => {
       const section = window.location.hash.slice(1);
-      if (["profile", "voice", "notifications", "security", "account", ...(mobile ? ["navigation"] : [])].includes(section)) { setActiveSection(section as SettingsSectionId); setCategories(false); }
+      if (["profile", "appearance", "voice", "notifications", "security", "account", ...(mobile ? ["navigation"] : [])].includes(section)) { setActiveSection(section as SettingsSectionId); setCategories(false); }
       else if (mobile) setCategories(true);
     };
     const frame = requestAnimationFrame(selectSection);
@@ -252,6 +254,7 @@ export function ProfileSettingsPanel({ mobile = false }: { mobile?: boolean }) {
       <div className={`mb-4 flex flex-wrap gap-2${mobile ? " val-settings-categories" : ""}`} hidden={mobile && !categories}>
         {[
           { id: "profile", label: "Profile" },
+          { id: "appearance", label: "Appearance" },
           { id: "voice", label: "Voice & Audio" },
           { id: "notifications", label: "Notifications" },
           { id: "security", label: "Security" },
@@ -286,6 +289,8 @@ export function ProfileSettingsPanel({ mobile = false }: { mobile?: boolean }) {
       ) : null}
 
       {mobile && !categories && activeSection === "navigation" && <MobileNavbarSettings />}
+
+      {!categories && activeSection === "appearance" && <SidebarArtworkSettings />}
 
       {!categories && activeSection === "notifications" ? (
         <div className="grid gap-3">

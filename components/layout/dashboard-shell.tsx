@@ -707,6 +707,7 @@ function DashboardHome({
       <div className="app-page-container dashboard-home-stack grid">
         <ValPageHero eyebrow="Home / Spaces foundation" title="Welcome back," accent={firstName || "friend"}
           description="Your people, conversations, and spaces. One place to pick up where you left off."
+          imageUrl={currentUser?.image}
           />
 
         {data?.message ? (

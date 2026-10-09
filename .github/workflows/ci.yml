@@ -54,6 +54,12 @@ jobs:
       - name: Shared music session tests
         run: npm run test:music
 
+      - name: Interaction foundation tests
+        run: npm run test:interaction
+
+      - name: Appearance preference tests
+        run: npm run test:appearance
+
       - name: Dependency audit
         run: |
           npm run test:audit

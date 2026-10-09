@@ -25,7 +25,7 @@ export function MobileProfile({ user }: { user: { name: string; email: string; i
     window.history.pushState(null, "", event.currentTarget.href);
   };
   if (!mobile) return null;
-  const settings = view === "settings" || ["#profile", "#voice", "#notifications", "#security", "#account", "#navigation"].includes(hash);
+  const settings = view === "settings" || ["#profile", "#appearance", "#voice", "#notifications", "#security", "#account", "#navigation"].includes(hash);
   return <div className="val-mobile-only val-mobile-page val-mobile-profile">
     {view === "edit" ? <><MobileHeading title="Edit profile" back="/dashboard/profile" onBack={openView} /><ProfileForm user={user} /></> : settings ? <><MobileHeading title="Settings" back="/dashboard/profile" onBack={openView} /><div className="val-mobile-settings"><ProfileSettingsPanel mobile /></div></> : <>
       <section className="val-mobile-section val-mobile-profile-card"><AvatarInitials imageUrl={user.image} value={user.name} size="lg" /><h1>{user.name}</h1><p>{user.email}</p><small>{formatUserStatus(user.status)}</small><Link className="val-mobile-text-button" href="/dashboard/profile?view=edit" onClick={openView}>Edit profile</Link></section>
