@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// Preserve saved links while keeping VAL on its approved visual identity.
+// Keep saved theme links pointing to the appearance section.
 export default function ProfileThemesPage() {
-  redirect("/dashboard/profile");
+  redirect("/dashboard/profile#appearance");
 }

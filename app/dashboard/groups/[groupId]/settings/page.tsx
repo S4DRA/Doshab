@@ -9,6 +9,7 @@ import { ModerationReportsPanel } from "@/components/groups/moderation-reports-p
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { Alert } from "@/components/ui/alert";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
+import { SettingsImageField } from "@/components/profile/settings-image-field";
 import { getAuthState } from "@/lib/auth";
 import { friendFromPair } from "@/lib/friends";
 import { prisma } from "@/lib/prisma";
@@ -198,38 +199,8 @@ function GroupSettingsPanel({
               />
             </label>
 
-            <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
-                Space picture / sidebar cover URL
-              </span>
-              <input
-                className="mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
-                defaultValue={group.image ?? ""}
-                disabled={!canManage}
-                name="image"
-                placeholder="https://... or /uploads/groups/..."
-                type="text"
-              />
-              <span className="mt-2 block text-xs leading-5 text-slate-500">
-                Shared with all members. Also used for the Space picture.
-              </span>
-            </label>
-
-            <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
-                Upload Space picture / sidebar cover
-              </span>
-              <input
-                accept="image/gif,image/jpeg,image/png,image/svg+xml,image/webp"
-                className="mt-2 block w-full rounded-xl border border-white/10 bg-[#050505] px-3 py-3 text-sm text-slate-200 outline-none transition file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:bg-white/15 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={!canManage}
-                name="imageUpload"
-                type="file"
-              />
-              <span className="mt-2 block text-xs leading-5 text-slate-500">
-                PNG, JPG, WebP, GIF, or SVG. Max 2 MB.
-              </span>
-            </label>
+            <SettingsImageField name="imageUpload" urlName="image" label="Space picture / sidebar cover" currentImage={group.image} disabled={!canManage} accept="image/gif,image/jpeg,image/png,image/svg+xml,image/webp" />
+            <p className="text-xs text-slate-500">Shared with all members. PNG, JPG, WebP, GIF or SVG.</p>
 
             <label className="block">
               <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">

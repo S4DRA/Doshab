@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { SettingsImageField } from "@/components/profile/settings-image-field";
 import type { UserStatus } from "@/types";
 
 type ProfileFormProps = {
@@ -24,46 +25,15 @@ const statuses: Array<{
   { label: "Offline", value: "OFFLINE" },
 ];
 
-const maxProfileImageBytes = 262_144;
-
 export function ProfileForm({ user }: ProfileFormProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(user.image);
   const [removeImage, setRemoveImage] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUploadError(null);
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      setPreviewUrl(user.image);
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      setUploadError("Please choose a valid image file.");
-      event.target.value = "";
-      return;
-    }
-
-    if (file.size > maxProfileImageBytes) {
-      setUploadError("Image must be under 256 KB.");
-      event.target.value = "";
-      return;
-    }
-
-    setRemoveImage(false);
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPreviewUrl(typeof reader.result === "string" ? reader.result : user.image);
-    };
-    reader.readAsDataURL(file);
-  };
+  const [photoFieldVersion, setPhotoFieldVersion] = useState(0);
 
   const handleReset = () => {
     setPreviewUrl(user.image);
     setRemoveImage(false);
-    setUploadError(null);
+    setPhotoFieldVersion(current => current + 1);
   };
 
   return (
@@ -131,16 +101,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
               </div>
 
               <div className="mt-4 grid gap-3">
-                <label className="val-upload-field block rounded-lg border border-white/10 bg-[#0b1020] px-4 py-3">
-                  <span className="text-sm font-semibold text-white">Choose photo</span>
-                  <input
-                    className="mt-3 w-full text-base text-slate-200 file:rounded-lg file:border file:border-white/10 file:bg-[#FF5F25]/20 file:px-3 file:py-2 file:text-sm file:text-slate-100 sm:text-sm"
-                    accept="image/*"
-                    name="profileImage"
-                    onChange={handleFileChange}
-                    type="file"
-                  />
-                </label>
+                <SettingsImageField key={photoFieldVersion} name="profileImage" label="Profile photo" currentImage={removeImage ? null : user.image} square onPreview={source => { setPreviewUrl(source); setRemoveImage(false); }} />
 
                 {user.image ? (
                   <label className="val-upload-field flex items-center gap-3 rounded-lg border border-white/10 bg-[#0b1020] px-4 py-3 text-sm text-slate-400">
@@ -149,6 +110,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                       className="h-4 w-4 rounded border-white/10 bg-[#090d18] text-[#FF5F25]"
                       name="removeImage"
                       onChange={(event) => {
+                        setPhotoFieldVersion(current => current + 1);
                         setRemoveImage(event.target.checked);
                         if (event.target.checked) {
                           setPreviewUrl(null);
@@ -162,13 +124,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   </label>
                 ) : null}
 
-                {uploadError ? (
-                  <p className="text-sm text-red-300">{uploadError}</p>
-                ) : (
-                  <p className="text-sm leading-6 text-slate-500">
-                    Keep images under 256 KB to protect monthly database egress.
-                  </p>
-                )}
               </div>
             </div>
 

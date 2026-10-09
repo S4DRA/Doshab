@@ -15,7 +15,7 @@
     "test:mobile": "node --test tests/mobile-experience.test.mjs",
     "test:music": "node --test tests/music-session.test.mjs",
     "test:interaction": "node --test tests/interaction-physics.test.mjs",
-    "test:appearance": "node --test tests/sidebar-artwork.test.mjs",
+    "test:appearance": "node --test tests/sidebar-artwork.test.mjs tests/settings-media.test.mjs",
     "backup:db": "node scripts/backup-database.mjs",
     "backup:check-tools": "node scripts/backup-database.mjs --check-tools",
     "restore:smoke": "node scripts/restore-smoke-test.mjs",

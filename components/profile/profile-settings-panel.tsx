@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { VoiceAudioSettingsPanel } from "@/components/profile/voice-audio-settings-panel";
 import { MobileNavbarSettings } from "@/components/mobile/mobile-navbar-settings";
 import { SidebarArtworkSettings } from "@/components/profile/sidebar-artwork-settings";
+import { ThemeSelector } from "@/components/theme/theme-selector";
 import { mobileLayoutQuery } from "@/lib/mobile-navigation";
 import {
   getBrowserPushDiagnostics,
@@ -290,7 +291,7 @@ export function ProfileSettingsPanel({ mobile = false }: { mobile?: boolean }) {
 
       {mobile && !categories && activeSection === "navigation" && <MobileNavbarSettings />}
 
-      {!categories && activeSection === "appearance" && <SidebarArtworkSettings />}
+      {!categories && activeSection === "appearance" && <div className="grid min-w-0 gap-6"><ThemeSelector /><SidebarArtworkSettings /></div>}
 
       {!categories && activeSection === "notifications" ? (
         <div className="grid gap-3">

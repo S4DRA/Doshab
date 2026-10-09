@@ -11,6 +11,7 @@ import { buildCallViews, pageCallViews, selectCallLayout, type CallLayoutMode, t
 import { usePushToTalk } from "./use-push-to-talk";
 import { useMobileLayout } from "@/components/mobile/mobile-shell";
 import { DialogSurface } from "@/components/ui/dialog-surface";
+import { enterMediaFullscreen, exitMediaFullscreen } from "@/lib/media/fullscreen";
 
 const emptyLocal: LocalMedia[] = [];
 const emptyRemote: RemoteMedia[] = [];
@@ -27,8 +28,11 @@ export function CallWorkspace({ call }: { call: CallContextValue }) {
   ], [local, remote, localUserId]);
   const { localCanvas, roomCanvas, speakingIds, unavailable } = useCallActivity(tracks, snapshot?.state === "connected", call.deafened);
   const [selection, setSelection] = useState<{ mode: CallLayoutMode; pinnedId: string | null; page: number }>({ mode: "auto", pinnedId: null, page: 0 });
+  const [expanded, setExpanded] = useState<{ sessionId: string; viewId: string; trackId: string } | null>(null);
   if (!session) return null;
   const { people, views } = buildCallViews(session.participant, local, remote, snapshot?.participants ?? [], snapshot?.micMuted ?? true);
+  const expandedView = expanded?.sessionId === session.id ? views.find(view => view.id === expanded.viewId && view.media?.track.id === expanded.trackId && view.media.track.readyState !== "ended") : undefined;
+  const expand = (view: CallView) => { if (view.media) setExpanded({ sessionId: session.id, viewId: view.id, trackId: view.media.track.id }); };
   const automaticMode = mobile && selection.mode === "auto" && !views.some((view) => view.source === "screen") ? "gallery" : selection.mode;
   const { mode, gallery, activeView, galleryViews } = selectCallLayout(views, automaticMode, selection.pinnedId, speakingIds);
   const page = pageCallViews(gallery ? galleryViews : views, selection.page);
@@ -48,15 +52,15 @@ export function CallWorkspace({ call }: { call: CallContextValue }) {
         <div className="val-room-view-heading"><SectionLabel number="01" title={gallery ? "Room gallery" : activeView.source === "screen" ? "Shared screen" : "Focus view"} /><div className="val-room-layout-switch" role="group" aria-label="Room layout">{(["auto", "gallery", "focus"] as const).map((option) => <button type="button" key={option} aria-pressed={mode === option} onClick={() => changeMode(option)}>{option}</button>)}</div></div>
         {gallery ? <div className="val-room-gallery" data-count={page.items.length} aria-label="Visible room views">
           {page.items.map((view) => <article className="val-room-tile" key={view.id} data-speaking={speakingIds.includes(view.person.id) && !view.person.muted}>
-            <div className="val-room-tile-media">{view.media ? <VideoMedia item={view.media} /> : <div className="val-room-tile-avatar"><AvatarInitials imageUrl={view.person.image} size="lg" value={view.person.name} /></div>}</div>
-            <button className="val-room-tile-focus" type="button" onClick={() => focus(view.id)} aria-label={`Focus ${view.person.name}'s ${view.source === "screen" ? "screen" : "camera"}`}><CallIcon name={view.source === "screen" ? "screen" : view.person.muted ? "mic-off" : "mic"} /><span><strong>{view.person.name}{view.person.isLocal ? " (you)" : ""}</strong><small>{viewStatus(view, speakingIds)}</small></span><CallIcon name="expand" /></button>
+            <div className="val-room-tile-media">{view.media ? <VideoMedia item={view.media} onExpand={() => expand(view)} expandLabel={`Enlarge ${view.person.name}'s ${view.source === "screen" ? "screen" : "camera"}`} /> : <div className="val-room-tile-avatar"><AvatarInitials imageUrl={view.person.image} size="lg" value={view.person.name} /></div>}</div>
+            <button className="val-room-tile-focus" type="button" onClick={() => view.media ? expand(view) : focus(view.id)} aria-label={`${view.media ? "Enlarge" : "Focus"} ${view.person.name}'s ${view.source === "screen" ? "screen" : "camera"}`}><CallIcon name={view.source === "screen" ? "screen" : view.person.muted ? "mic-off" : "mic"} /><span><strong>{view.person.name}{view.person.isLocal ? " (you)" : ""}</strong><small>{viewStatus(view, speakingIds)}</small></span><CallIcon name="expand" /></button>
           </article>)}
         </div> : <>
         <div className="val-speaker-stage" data-has-media={Boolean(activeView.media)}>
           <div className="val-stage-status"><div><strong>{activePerson.name}</strong><span>{activeView.source === "screen" ? "Sharing screen" : speakingIds.includes(activePerson.id) ? "Speaking" : activePerson.muted ? "Microphone off" : connected ? "In room" : state}</span></div><div className="val-live-badge"><b>{connected ? "LIVE" : state.toUpperCase()}</b><SessionDuration startedAt={call.connectedAt} /><small>{connected ? "IN ROOM" : "CONNECTION"}</small></div></div>
           <div className="val-speaker-media">
             <div className="val-speaker-person" data-active="true" key={activeView.id}>
-              {activeView.media ? <VideoMedia item={activeView.media} /> : <div className="val-speaker-avatar"><AvatarInitials imageUrl={activePerson.image} size="lg" value={activePerson.name} /></div>}
+              {activeView.media ? <VideoMedia item={activeView.media} onExpand={() => expand(activeView)} expandLabel={`Enlarge ${activePerson.name}'s ${activeView.source === "screen" ? "screen" : "camera"}`} /> : <div className="val-speaker-avatar"><AvatarInitials imageUrl={activePerson.image} size="lg" value={activePerson.name} /></div>}
             </div>
           </div>
           <div className="val-stage-footer"><span><CallIcon name="signal" />{activePerson.name}{activePerson.isLocal ? <b>YOU</b> : null}</span>{!activeView.media ? <span aria-hidden="true">Voices<br />Ideas<br />People<br />Further_</span> : null}</div>
@@ -93,6 +97,7 @@ export function CallWorkspace({ call }: { call: CallContextValue }) {
       <aside className="val-call-quote" aria-hidden="true"><span>—</span><p>Better<br />conversations<br />build<br />brighter worlds.</p><b>{"// VAL"}</b></aside>
     </div>
     <CallControls call={call} />
+    {expandedView?.media && <ExpandedMediaViewer key={expandedView.id} view={expandedView} item={expandedView.media} onClose={() => setExpanded(null)} />}
   </section>;
 }
 function viewStatus(view: CallView, speakingIds: string[]) {
@@ -107,7 +112,50 @@ function SessionDuration({ startedAt }: { startedAt: number | null }) {
   const elapsed = startedAt && now > startedAt ? Math.floor((now - startedAt) / 1000) : 0;
   return <time aria-label="Session duration">{Math.floor(elapsed / 3600).toString().padStart(2,"0")}:{Math.floor(elapsed / 60 % 60).toString().padStart(2,"0")}:{(elapsed % 60).toString().padStart(2,"0")}</time>;
 }
-function VideoMedia({ item, thumbnail = false }: { item: LocalMedia | RemoteMedia; thumbnail?: boolean }) {
+function ExpandedMediaViewer({ view, item, onClose }: { view: CallView; item: LocalMedia | RemoteMedia; onClose: () => void }) {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [error, setError] = useState("");
+  const active = useRef(true);
+  const closeRef = useRef(onClose);
+  useEffect(() => { closeRef.current = onClose; }, [onClose]);
+  useEffect(() => {
+    active.current = true;
+    const stage = stageRef.current;
+    const surface = stage?.closest<HTMLElement>(".val-dialog-surface") ?? stage;
+    function update() { setFullscreen(document.fullscreenElement === surface); }
+    function ended() { closeRef.current(); }
+    document.addEventListener("fullscreenchange", update);
+    item.track.addEventListener("ended", ended);
+    return () => {
+      active.current = false;
+      document.removeEventListener("fullscreenchange", update);
+      item.track.removeEventListener("ended", ended);
+      if (surface) void exitMediaFullscreen(surface).catch(cause => console.warn("Could not exit media fullscreen", cause));
+    };
+  }, [item.track]);
+  async function toggleFullscreen() {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const surface = stage.closest<HTMLElement>(".val-dialog-surface") ?? stage;
+    setError("");
+    try {
+      if (document.fullscreenElement === surface) await exitMediaFullscreen(surface);
+      else await enterMediaFullscreen(surface, stage.querySelector("video"));
+    } catch (cause) { if (active.current) setError(cause instanceof Error ? cause.message : "Could not open fullscreen. The enlarged view is still available."); }
+  }
+  return <DialogSurface title={`${view.person.name}'s ${view.source === "screen" ? "screen" : "camera"}`} onClose={onClose} className="val-media-viewer">
+    <div ref={stageRef} className="val-media-viewer-stage">
+      <div className="val-media-viewer-video"><VideoMedia item={item} /></div>
+      <div className="val-media-viewer-controls">
+        <button type="button" className="app-button-secondary min-h-11 px-4 text-sm" onClick={() => void toggleFullscreen()}><CallIcon name="expand" />{fullscreen ? "Exit fullscreen" : "Fullscreen"}</button>
+        <button type="button" className="app-button-secondary min-h-11 px-4 text-sm" onClick={onClose}>Close enlarged view</button>
+      </div>
+      {error && <p role="alert" className="val-media-viewer-error">{error}</p>}
+    </div>
+  </DialogSurface>;
+}
+function VideoMedia({ item, thumbnail = false, onExpand, expandLabel }: { item: LocalMedia | RemoteMedia; thumbnail?: boolean; onExpand?: () => void; expandLabel?: string }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [blocked, setBlocked] = useState(false);
   const [pipSupported, setPipSupported] = useState(false);
@@ -122,6 +170,7 @@ function VideoMedia({ item, thumbnail = false }: { item: LocalMedia | RemoteMedi
     return () => { active = false; element.srcObject = null; };
   }, [item.track]);
   return <><video ref={ref} autoPlay muted playsInline onPlaying={() => setBlocked(false)} className="val-stage-video" data-source={item.source} data-local={!("consumerId" in item)} aria-label={item.source === "screen" ? "Shared screen video" : "Camera video"} />{blocked && !thumbnail ? <button className="val-video-resume app-button-secondary" type="button" onClick={() => { void ref.current?.play().then(() => setBlocked(false)).catch((cause) => console.warn("Video playback blocked", cause)); }}>Play video</button> : null}
+    {onExpand && <button type="button" className="val-video-open" aria-label={expandLabel ?? "Enlarge video"} onClick={onExpand}><span><CallIcon name="expand" />Enlarge</span></button>}
     {!thumbnail && pipSupported && <div className="val-mobile-only val-video-actions"><button className="val-mobile-icon-button" type="button" aria-label="Picture in picture" onClick={() => { setVideoError(""); void ref.current?.requestPictureInPicture().catch((error) => { console.warn("Picture in picture unavailable", error); setVideoError("Picture in picture is unavailable for this video right now."); }); }}><CallIcon name="expand" /></button></div>}
     {videoError && <p className="val-video-error" role="alert">{videoError}</p>}
   </>;

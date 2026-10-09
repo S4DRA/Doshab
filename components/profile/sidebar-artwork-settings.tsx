@@ -2,6 +2,8 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useSidebarArtworkPreferences } from "@/components/profile/sidebar-artwork-preferences";
+import { ImageAdjustmentDialog } from "@/components/ui/image-adjustment-dialog";
+import { imageDataUrl } from "@/lib/image-adjustment";
 import { defaultSidebarArtworkImage, maxSidebarArtworkBytes, maxSidebarArtworkUploadBytes, normalizeSidebarArtworkImage, sidebarArtworkImageTypes, type SidebarArtworkSlot } from "@/lib/sidebar-artwork";
 
 const slots: { id: SidebarArtworkSlot; label: string; description: string }[] = [
@@ -33,6 +35,7 @@ function ArtworkControl({ id, label, description, image, update }: {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [imageUrl, setImageUrl] = useState(image?.startsWith("data:") ? "" : image ?? "");
+  const [candidate, setCandidate] = useState<{ source: string; canKeepOriginal: boolean } | null>(null);
 
   async function saveImage(source: string) {
     setError(null);
@@ -65,19 +68,11 @@ function ArtworkControl({ id, label, description, image, update }: {
     }
     setBusy(true);
     try {
-      const original = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onerror = () => reject(new Error("Could not read this image. Choose it again."));
-        reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Could not read this image."));
-        reader.readAsDataURL(file);
-      });
-      const source = file.size <= maxSidebarArtworkBytes ? original : await resizeUpload(original);
-      if (!normalizeSidebarArtworkImage(source)) throw new Error("Could not prepare this image. Try another image.");
-      if (await saveImage(source)) setImageUrl("");
+      const original = await imageDataUrl(file);
+      setCandidate({ source: original, canKeepOriginal: file.size <= maxSidebarArtworkBytes });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not read this image.");
-      setBusy(false);
-    }
+    } finally { setBusy(false); }
   }
 
   function applyUrl(event: FormEvent<HTMLFormElement>) {
@@ -88,7 +83,8 @@ function ArtworkControl({ id, label, description, image, update }: {
       setStatus("");
       return;
     }
-    void saveImage(source);
+    setError(null); setStatus("");
+    setCandidate({ source, canKeepOriginal: true });
   }
 
   function restore() {
@@ -120,6 +116,15 @@ function ArtworkControl({ id, label, description, image, update }: {
     </form>
     <p role="status" aria-atomic="true" className="min-h-4 text-xs text-slate-400">{status}</p>
     {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
+    {candidate && <ImageAdjustmentDialog title={label.toLowerCase()} source={candidate.source} maxBytes={maxSidebarArtworkBytes} onCancel={() => setCandidate(null)} onApply={async blob => {
+      const source = await imageDataUrl(blob);
+      if (!normalizeSidebarArtworkImage(source)) throw new Error("Could not prepare this image. Try another image.");
+      if (await saveImage(source)) { setImageUrl(""); setCandidate(null); }
+      else throw new Error("Image was not saved. Your previous image is unchanged.");
+    }} onOriginal={candidate.canKeepOriginal ? async () => {
+      if (await saveImage(candidate.source)) setCandidate(null);
+      else throw new Error("Image was not saved. Your previous image is unchanged.");
+    } : undefined} />}
   </section>;
 }
 
@@ -131,21 +136,4 @@ function checkImage(source: string): Promise<HTMLImageElement> {
     image.onerror = () => reject(new Error("This image could not be loaded. Choose another image."));
     image.src = source;
   });
-}
-
-async function resizeUpload(source: string) {
-  const image = await checkImage(source);
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Your browser could not prepare this image.");
-  let scale = Math.min(1, 1280 / Math.max(image.naturalWidth, image.naturalHeight));
-  for (let attempt = 0; attempt < 6; attempt++) {
-    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    const result = canvas.toDataURL("image/webp", 0.85);
-    if (normalizeSidebarArtworkImage(result)) return result;
-    scale *= 0.75;
-  }
-  throw new Error("This image is too large to save on this device. Try a smaller image.");
 }
