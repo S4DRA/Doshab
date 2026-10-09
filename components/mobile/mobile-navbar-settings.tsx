@@ -22,7 +22,7 @@ export function MobileNavbarSettings() {
     </label>
     <fieldset disabled={!ready}>
       <legend>Buttons</legend>
-      <p>Swipe the bar if your buttons need more room. Settings stays available when Profile is hidden.</p>
+      <p>Buttons become more compact as you add them. Settings stays available when Profile is hidden.</p>
       <div className="val-navbar-button-options">{mobileNavbarButtons.map(button => <label key={button.id}>
         <MobileIcon name={button.icon} /><span>{button.label}</span>
         <input type="checkbox" aria-label={`Show ${button.label} in navbar`} checked={preferences.buttons.includes(button.id)} onChange={event => update({ ...preferences, buttons: event.target.checked ? [...preferences.buttons, button.id] : preferences.buttons.filter(id => id !== button.id) })} />
