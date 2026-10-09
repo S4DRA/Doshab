@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { UserStatus } from "@/types";
+import { settingsImageError } from "@/lib/image-upload";
 
 const allowedStatuses: UserStatus[] = [
   "ONLINE",
@@ -11,7 +12,6 @@ const allowedStatuses: UserStatus[] = [
   "OFFLINE",
 ];
 
-const maxProfileImageBytes = 262_144;
 
 function redirectWithMessage(
   request: NextRequest,
@@ -52,13 +52,8 @@ export async function POST(request: NextRequest) {
   let image: string | null = user.image ?? null;
 
   if (imageFile instanceof File && imageFile.size > 0) {
-    if (!imageFile.type.startsWith("image/")) {
-      return redirectWithMessage(request, "error", "Please upload a valid image file.");
-    }
-
-    if (imageFile.size > maxProfileImageBytes) {
-      return redirectWithMessage(request, "error", "Image must be under 256 KB.");
-    }
+    const imageError = settingsImageError(imageFile);
+    if (imageError) return redirectWithMessage(request, "error", imageError);
 
     const arrayBuffer = await imageFile.arrayBuffer();
     const base64 = Buffer.from(arrayBuffer).toString("base64");

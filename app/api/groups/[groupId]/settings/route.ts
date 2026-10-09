@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { randomUUID } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
-import { extname, join } from "node:path";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
+import { maxSettingsImageBytes } from "@/lib/image-upload";
 import {
   auditSecurityEvent,
   requireAuth,
@@ -12,7 +10,7 @@ import {
   SecurityError,
 } from "@/lib/security/permissions";
 
-const maxGroupImageBytes = 2 * 1024 * 1024;
+const maxGroupImageBytes = maxSettingsImageBytes;
 const allowedGroupImageTypes = new Map([
   ["image/jpeg", ".jpg"],
   ["image/png", ".png"],
@@ -55,6 +53,11 @@ function normalizeImageUrl(value: string) {
     return null;
   }
 
+  if (/^data:image\/(?:jpeg|png|webp|gif|svg\+xml);base64,[A-Za-z0-9+/]+={0,2}$/.test(image)) {
+    const bytes = Buffer.from(image.slice(image.indexOf(",") + 1), "base64").byteLength;
+    return bytes <= maxGroupImageBytes ? image : undefined;
+  }
+
   if (image.startsWith("/uploads/groups/")) {
     return image;
   }
@@ -72,7 +75,7 @@ function normalizeImageUrl(value: string) {
   }
 }
 
-async function saveGroupImageUpload(file: File, groupId: string) {
+async function saveGroupImageUpload(file: File) {
   if (!file.size) {
     return null;
   }
@@ -84,25 +87,17 @@ async function saveGroupImageUpload(file: File, groupId: string) {
     };
   }
 
-  const extension =
-    allowedGroupImageTypes.get(file.type) || extname(file.name).toLowerCase();
-
-  if (!allowedGroupImageTypes.has(file.type) || !extension) {
+  if (!allowedGroupImageTypes.has(file.type)) {
     return {
       error: "Upload a PNG, JPG, WebP, GIF, or SVG image.",
       image: null,
     };
   }
 
-  const uploadsDir = join(process.cwd(), "public", "uploads", "groups");
-  const filename = `${groupId}-${randomUUID()}${extension}`;
-
-  await mkdir(uploadsDir, { recursive: true });
-  await writeFile(join(uploadsDir, filename), Buffer.from(await file.arrayBuffer()));
-
   return {
     error: null,
-    image: `/uploads/groups/${filename}`,
+    // The existing image column survives serverless restarts, unlike public/ writes.
+    image: `data:${file.type};base64,${Buffer.from(await file.arrayBuffer()).toString("base64")}`,
   };
 }
 
@@ -163,7 +158,7 @@ export async function POST(
   let image = imageUrl;
 
   if (imageUpload instanceof File && imageUpload.size > 0) {
-    const uploadResult = await saveGroupImageUpload(imageUpload, groupId);
+    const uploadResult = await saveGroupImageUpload(imageUpload);
 
     if (uploadResult?.error) {
       return redirectToSettings(request, groupId, "error", uploadResult.error);
