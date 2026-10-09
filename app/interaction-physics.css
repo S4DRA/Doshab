@@ -1,0 +1,15 @@
+/* Opt-in only. Values arrive from tokens.json through getControlInteractionStyle.
+ * Keep the existing property allowlist, colors, geometry and normal transforms.
+ * Specificity intentionally exceeds the dashboard's important shorthand.
+ */
+html[data-theme] #val-app button.app-button-primary[data-interaction-recipe="control.standard"] {
+  transition-duration: var(--interaction-state-duration) !important;
+  transition-timing-function: var(--interaction-state-easing) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme] #val-app button.app-button-primary[data-interaction-recipe="control.standard"] {
+    transition: var(--interaction-reduced-transition) !important;
+    transform: var(--interaction-reduced-transform) !important;
+  }
+}

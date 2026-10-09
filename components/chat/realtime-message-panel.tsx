@@ -12,7 +12,7 @@ import {
 import { flushSync } from "react-dom";
 
 import { MessageList } from "@/components/chat/message-list";
-import { useMessageDraft } from "@/components/chat/message-drafts-provider";
+import { useMessageDraft, useMessageSend } from "@/components/chat/message-drafts-provider";
 import { DialogSurface } from "@/components/ui/dialog-surface";
 import { reactionEmojis } from "@/lib/chat-constants";
 import {
@@ -22,6 +22,7 @@ import {
   registerDeviceKey,
 } from "@/lib/e2ee-message.client";
 import type { ChatMessage } from "@/types";
+import { createMessagePresentation, establishMessage } from "@/lib/message-send";
 
 type RealtimeMessagePanelProps = {
   canPinMessages?: boolean;
@@ -30,10 +31,6 @@ type RealtimeMessagePanelProps = {
   currentUser?: ChatMessage["sender"];
   initialMessages: ChatMessage[];
   direct?: boolean;
-};
-
-type PendingMessage = ChatMessage & {
-  pending: true;
 };
 
 type DecryptedMessageCacheEntry = {
@@ -51,8 +48,11 @@ export function RealtimeMessagePanel({
 }: RealtimeMessagePanelProps) {
   const [encryptedMessages, setEncryptedMessages] = useState(initialMessages);
   const [decryptedMessages, setDecryptedMessages] = useState<ChatMessage[]>([]);
-  const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
-  const [draft, setDraft] = useMessageDraft(`${currentUser?.id ?? ""}:${channelId}`);
+  const draftKey = `${currentUser?.id ?? ""}:${channelId}`;
+  const [draft, setDraft] = useMessageDraft(draftKey);
+  const { drafts, sends, snapshot } = useMessageSend(draftKey);
+  const [presentMessages] = useState(createMessagePresentation);
+  const [initialAnnouncement] = useState(snapshot.announcement.sequence);
   const [encryptionReady, setEncryptionReady] = useState(false);
   const [encryptionError, setEncryptionError] = useState<string | null>(null);
   const [encryptionAttempt, setEncryptionAttempt] = useState(0);
@@ -67,7 +67,8 @@ export function RealtimeMessagePanel({
   const [pollOpen, setPollOpen] = useState(false);
   const [pollOptions, setPollOptions] = useState(["", ""]);
   const [pollQuestion, setPollQuestion] = useState("");
-  const [replyTarget, setReplyTarget] = useState<ChatMessage | null>(null);
+  const replyTarget = snapshot.replyTarget;
+  const setReplyTarget = useCallback((message: ChatMessage | null) => sends.setReply(draftKey, message), [sends, draftKey]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sendError, setSendError] = useState<string | null>(null);
@@ -80,8 +81,8 @@ export function RealtimeMessagePanel({
   const previousCountRef = useRef(0);
   const streamCursorRef = useRef(newestCreatedAt(initialMessages));
   const displayedMessages = useMemo(
-    () => mergeMessages(decryptedMessages, pendingMessages),
-    [decryptedMessages, pendingMessages],
+    () => presentMessages(decryptedMessages, snapshot.operations, currentUser?.id),
+    [decryptedMessages, snapshot.operations, currentUser?.id, presentMessages],
   );
   const searchResults = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -100,7 +101,7 @@ export function RealtimeMessagePanel({
     // Commit the closed actions sheet before its focus trap releases the composer.
     flushSync(() => setReplyTarget(message));
     textareaRef.current?.focus({ preventScroll: true });
-  }, []);
+  }, [setReplyTarget]);
 
   useEffect(() => {
     const feed = feedRef.current;
@@ -246,66 +247,34 @@ export function RealtimeMessagePanel({
 
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const content = draft.trim();
+    // Consume current memory synchronously; repeated submits cannot reuse a stale render's draft.
+    const content = drafts.get(draftKey).trim();
 
-    if (!content || content.length > 2000 || !encryptionReady || !currentUser) {
+    if (!content || content.length > 2000 || !encryptionReady || !currentUser?.id) {
       return;
     }
 
-    const pendingMessage: PendingMessage = {
-      content,
-      createdAt: new Date().toISOString(),
-      id: `pending:${crypto.randomUUID()}`,
-      pending: true,
-      replyTo: replyTarget
-        ? {
-            content: replyTarget.content,
-            id: replyTarget.id,
-            sender: replyTarget.sender,
-          }
-        : null,
-      sender: currentUser,
-    };
-
-    setDraft("");
+    const localId = `pending:${crypto.randomUUID()}`;
+    const createdAt = new Date().toISOString();
     followingLatestRef.current = true;
+    drafts.set(draftKey, "");
+    const operation = sends.begin(draftKey, content, currentUser, localId,
+      createdAt, encryptedMessages.map((message) => message.id));
     setNewMessageCount(0);
     setSendError(null);
-    setReplyTarget(null);
-    setPendingMessages((current) => [...current, pendingMessage]);
-
-    try {
-      const { devices } = await fetchChannelDeviceKeys(channelId);
-      const encryptedContent = await encryptMessageContent(content, devices);
-      const response = await fetch(`/api/channels/${channelId}/messages`, {
-        body: JSON.stringify({
-          encryptedContent,
-          notificationPreview: content,
-          replyToMessageId: replyTarget?.id,
-        }),
-        headers: {
-          "content-type": "application/json",
-        },
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        throw new Error("Message send failed.");
-      }
-
-      const message = (await response.json()) as ChatMessage;
-      setEncryptedMessages((current) => mergeMessages(current, [message]));
-      setPendingMessages((current) =>
-        current.filter((pending) => pending.id !== pendingMessage.id),
-      );
-    } catch {
-      setPendingMessages((current) =>
-        current.filter((pending) => pending.id !== pendingMessage.id),
-      );
-      setDraft((current) => current ? `${content}\n${current}` : content);
-      setReplyTarget((current) => current ?? replyTarget);
-      setSendError("Could not send. Your message is back in the composer.");
-    }
+    // Captured account/channel ownership survives this panel's unmount.
+    await establishMessage(sends, draftKey, operation, {
+      async encrypt(text) {
+        const { devices } = await fetchChannelDeviceKeys(channelId);
+        return encryptMessageContent(text, devices);
+      },
+      post(encryptedContent, replyToMessageId) {
+        return fetch(`/api/channels/${channelId}/messages`, {
+          body: JSON.stringify({ encryptedContent, notificationPreview: content, replyToMessageId }),
+          headers: { "content-type": "application/json" }, method: "POST",
+        });
+      },
+    });
   }
 
   async function sendPoll() {
@@ -373,6 +342,10 @@ export function RealtimeMessagePanel({
 
   return (
     <div className="val-chat-panel relative flex h-full min-h-0 w-full min-w-0 max-w-full flex-1 flex-col" data-tour-target="chat-panel">
+      <div className="sr-only" role="status" aria-atomic="true">
+        {snapshot.announcement.sequence > initialAnnouncement ?
+          <span key={snapshot.announcement.sequence}>{snapshot.announcement.text}</span> : null}
+      </div>
       <div className="shrink-0 space-y-2">
         {!encryptionReady ? (
           <p className="app-card p-3 text-xs leading-5 text-slate-400">

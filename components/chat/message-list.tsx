@@ -7,6 +7,7 @@ import { reactionEmojis } from "@/lib/chat-constants";
 import { messageSegments } from "@/lib/chat-presentation";
 import { formatReadableTimestamp } from "@/lib/utils";
 import type { ChatMessage } from "@/types";
+import type { PresentedMessage } from "@/lib/message-send";
 import { DialogSurface } from "@/components/ui/dialog-surface";
 import { useMobileLayout } from "@/components/mobile/mobile-shell";
 import { isReplySwipe } from "@/lib/mobile-navigation";
@@ -14,7 +15,7 @@ import { isReplySwipe } from "@/lib/mobile-navigation";
 type MessageListProps = {
   canPinMessages?: boolean;
   currentUserId?: string;
-  messages: ChatMessage[];
+  messages: PresentedMessage[];
   onMessageUpdate?: (message: ChatMessage) => void;
   onReply?: (message: ChatMessage) => void;
 };
@@ -23,7 +24,7 @@ type MessageRowProps = {
   canPinMessages: boolean;
   currentUserId?: string;
   isGrouped: boolean;
-  message: ChatMessage;
+  message: PresentedMessage;
   onMessageUpdate?: (message: ChatMessage) => void;
   onReport: () => void;
   onReply?: (message: ChatMessage) => void;
@@ -71,7 +72,7 @@ function MessageListComponent({
               canPinMessages={canPinMessages}
               currentUserId={currentUserId}
               isGrouped={isGrouped}
-              key={message.id}
+              key={message.visualId ?? message.id}
               message={message}
               onMessageUpdate={onMessageUpdate}
               onReport={() => setReportingMessage(message)}
@@ -121,6 +122,7 @@ const MemoMessageRow = memo(function MessageRow({
   const senderLabel = message.sender.name || message.sender.email;
   const isOwnMessage = Boolean(currentUserId && message.sender.id === currentUserId);
   const visibleReactions = (message.reactions ?? []).filter((item) => item.count > 0);
+  const established = !message.sendState || message.sendState === "confirmed";
 
   useEffect(() => {
     if (!actionsOpen || mobile) {
@@ -254,8 +256,9 @@ const MemoMessageRow = memo(function MessageRow({
           isOwnMessage ? "message-row-own" : "message-row-friend"
         }`}
         id={`message-${message.id}`}
+        data-send-state={message.sendState}
         onPointerDown={(event) => {
-          if (!mobile || event.pointerType !== "touch" || message.id.startsWith("pending:") || event.clientX <= 24 || event.clientX >= window.innerWidth - 24 || (event.target instanceof Element && event.target.closest("a,button,input,textarea,select"))) return;
+          if (!mobile || event.pointerType !== "touch" || !established || event.clientX <= 24 || event.clientX >= window.innerWidth - 24 || (event.target instanceof Element && event.target.closest("a,button,input,textarea,select"))) return;
           const timer = setTimeout(() => { if (gesture.current && !window.getSelection()?.toString()) { gesture.current.long = true; setActionsOpen(true); } }, 450);
           gesture.current = { x:event.clientX, y:event.clientY, dx:0, dy:0, long:false, timer };
         }}
@@ -289,7 +292,7 @@ const MemoMessageRow = memo(function MessageRow({
         </div>
         <div className="message-shell min-w-0 flex-1">
           <div className="message-bubble relative pr-12 sm:pr-14">
-          <button
+          {established ? <button
             aria-expanded={actionsOpen}
             aria-label={`More actions for ${senderLabel}`}
             className={`message-action-toggle app-icon-button absolute right-3 top-3 z-10 h-8 w-8 rounded-full border border-white/10 bg-black/15 text-slate-400 shadow-[0_10px_18px_-16px_rgba(0,0,0,0.95)] transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white focus-visible:border-[#FF5F25]/60 focus-visible:text-white ${
@@ -302,7 +305,7 @@ const MemoMessageRow = memo(function MessageRow({
             type="button"
           >
             <span aria-hidden="true" className="text-sm leading-none">...</span>
-          </button>
+          </button> : null}
 
           {!isGrouped ? (
             <div className="message-meta flex min-w-0 items-start gap-2">
@@ -341,6 +344,12 @@ const MemoMessageRow = memo(function MessageRow({
           {!message.poll && <p className={`${isGrouped ? "mt-0" : "mt-1"} whitespace-pre-wrap break-words text-[0.95rem] leading-6 text-slate-200 [overflow-wrap:anywhere]`}>
             {messageSegments(message.content).map((segment, index) => segment.href ? <a key={index} href={segment.href} target="_blank" rel="noopener noreferrer nofollow">{segment.text}</a> : segment.text)}
           </p>}
+          {message.sendState ? (
+            <div className="val-message-send-status min-h-4 text-[11px] leading-4 opacity-70" title={sendStateDescriptions[message.sendState]}>
+              <span aria-hidden="true">{sendStateLabels[message.sendState]}</span>
+              <span className="sr-only">{sendStateDescriptions[message.sendState]}</span>
+            </div>
+          ) : null}
           {actionError && <p className="val-chat-error" role="alert">{actionError}</p>}
 
           {message.poll ? <PollCard message={message} onVote={vote} pending={Boolean(busyAction)} canVote={Boolean(currentUserId)} /> : null}
@@ -438,6 +447,19 @@ const MemoMessageRow = memo(function MessageRow({
     </>
   );
 }, areMessageRowPropsEqual);
+
+const sendStateLabels = {
+  pending: "Sending...",
+  confirmed: "Saved",
+  failed: "Not sent · Text kept",
+  unknown: "Unconfirmed · Don't resend",
+};
+const sendStateDescriptions = {
+  pending: "Sending message. Server storage is not yet confirmed.",
+  confirmed: "Saved on server. This is not a delivery or read receipt.",
+  failed: "Message not sent. Text and reply are kept here; newer drafts are unchanged.",
+  unknown: "Send not confirmed. This message may already be saved. Do not resend: it could create a duplicate.",
+};
 
 function MessageActionSurface({ mobile, onClose, children }: { mobile: boolean; onClose: () => void; children: React.ReactNode }) {
   return mobile ? <DialogSurface title="Message actions" onClose={onClose}>{children}</DialogSurface> : children;

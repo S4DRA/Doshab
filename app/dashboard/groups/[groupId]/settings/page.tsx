@@ -200,7 +200,7 @@ function GroupSettingsPanel({
 
             <label className="block">
               <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
-                Picture URL
+                Space picture / sidebar cover URL
               </span>
               <input
                 className="mt-2 h-12 w-full rounded-xl border border-white/10 bg-[#050505] px-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-[#FF5F25] focus:ring-2 focus:ring-[#FF5F25]/20 sm:h-11 sm:text-sm"
@@ -210,11 +210,14 @@ function GroupSettingsPanel({
                 placeholder="https://... or /uploads/groups/..."
                 type="text"
               />
+              <span className="mt-2 block text-xs leading-5 text-slate-500">
+                Shared with all members. Also used for the Space picture.
+              </span>
             </label>
 
             <label className="block">
               <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
-                Upload picture
+                Upload Space picture / sidebar cover
               </span>
               <input
                 accept="image/gif,image/jpeg,image/png,image/svg+xml,image/webp"

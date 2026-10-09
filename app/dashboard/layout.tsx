@@ -4,6 +4,7 @@ import "./mobile.css";
 import { MobileNavigationProvider, MobileShell } from "@/components/mobile/mobile-shell";
 import { MobileNavbarPreferencesProvider } from "@/components/mobile/mobile-navbar-preferences";
 import { MessageDraftsProvider } from "@/components/chat/message-drafts-provider";
+import { SidebarArtworkPreferences } from "@/components/profile/sidebar-artwork-preferences";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { DashboardHashAnchorScroller } from "@/components/layout/dashboard-hash-anchor-scroller";
 import { DashboardOnboardingCoordinator } from "@/components/onboarding/dashboard-onboarding-coordinator";
@@ -49,7 +50,8 @@ export default async function DashboardLayout({
     <div id="val-app" className={`val-app ${editorial.variable}`}>
       <ValViewport />
       <DashboardPeopleProvider currentUserId={auth.user.id} initialFriends={sidebarData.friends}>
-        <MessageDraftsProvider>
+        <SidebarArtworkPreferences />
+        <MessageDraftsProvider key={auth.user.id}>
           <MobileNavigationProvider>
             <MobileNavbarPreferencesProvider key={auth.user.id} userId={auth.user.id}>
             <DashboardSidebar

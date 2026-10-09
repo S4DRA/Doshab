@@ -16,7 +16,7 @@ type DashboardPageProps = {
 };
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
-  const auth = await getAuthState();
+  const auth = await getAuthState({ includeImage: true });
 
   if (auth.status !== "authenticated") {
     redirect("/login");
