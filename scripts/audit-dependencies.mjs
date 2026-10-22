@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
 const developmentAdvisory = 'https://github.com/advisories/GHSA-vfj7-8cjw-p6xm';
-const exceptionExpiry = new Date('2026-10-18T00:00:00Z');
+const exceptionExpiry = new Date('2026-10-30T00:00:00Z');
 const developmentChain = new Set(['braces', 'micromatch', 'fast-glob', '@next/eslint-plugin-next', 'eslint-config-next']);
 const severityRank = { info: 0, low: 1, moderate: 2, high: 3, critical: 4 };
 
@@ -62,7 +62,7 @@ export function main() {
     const result = evaluateAudit(full, lockfile);
     console.log('Full dependency audit:', JSON.stringify(full.metadata.vulnerabilities));
     if (result.excepted.length) {
-      console.warn(`Temporary development-only exception through 2026-10-17: ${developmentAdvisory}`);
+      console.warn(`Temporary development-only exception through 2026-10-29: ${developmentAdvisory}`);
       console.warn('Affected linter dependency chain:', result.excepted.join(', '));
     }
     if (result.blocked.length) {

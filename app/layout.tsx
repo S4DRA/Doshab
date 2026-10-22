@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./public-design.css";
 import {
   DEFAULT_DOSHAB_PALETTE_ID,
   DEFAULT_DOSHAB_THEME_ID,
@@ -110,7 +111,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <div className="h-screen overflow-hidden">
-          <main className="h-screen overflow-hidden">{children}</main>
+          <div className="h-screen overflow-hidden">{children}</div>
         </div>
       </body>
     </html>

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:download": "node --test tests/desktop-download.test.mjs",
     "dev": "next dev",
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
@@ -11,6 +12,7 @@
     "audit:dependencies": "node scripts/audit-dependencies.mjs",
     "test:audit": "node --test tests/dependency-audit.test.mjs",
     "test:media": "node --test tests/media-client.test.mjs",
+    "test:session": "node --test tests/session-token.test.mjs",
     "test:chat": "node --test tests/chat-presentation.test.mjs tests/message-send.test.mjs",
     "test:mobile": "node --test tests/mobile-experience.test.mjs",
     "test:music": "node --test tests/music-session.test.mjs",
@@ -33,7 +35,7 @@
     "@types/web-push": "^3.6.4",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.3",
-    "next": "16.3.8",
+    "next": "16.4.2",
     "pg": "^8.21.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -47,7 +49,7 @@
     "@types/react-dom": "^19",
     "dotenv": "^17.4.2",
     "eslint": "^9",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.2",
     "prisma": "7.10.0",
     "tailwindcss": "^4",
     "typescript": "^5"

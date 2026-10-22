@@ -1,0 +1,80 @@
+name: Windows desktop installer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags: ['v[0-9]*']
+    paths:
+      - 'desktop/**'
+      - 'public/brand/val-echo-dark.png'
+      - '.github/workflows/windows-desktop.yml'
+  pull_request:
+    paths:
+      - 'desktop/**'
+      - 'public/brand/val-echo-dark.png'
+      - '.github/workflows/windows-desktop.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 22
+      - name: Test desktop boundaries
+        run: npm test
+      - name: Verify release tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          if ($env:GITHUB_REF_NAME -ne "v$version") { throw "Release tag must match desktop/package.json version." }
+      - name: Install build tools
+        run: npm ci --no-audit --no-fund
+      - name: Build Windows x64 installer
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npm run dist
+      - name: Upload installer
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: VAL-Windows-x64
+          path: |
+            desktop/dist/VAL-Setup-*.exe
+            desktop/dist/VAL-Setup-*.exe.blockmap
+            desktop/dist/latest.yml
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+    needs: windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: VAL-Windows-x64
+          path: release
+      - name: Publish installer and update metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VAL_RELEASE_VERSION=$(node -p "require('./desktop/package.json').version")
+          VAL_RELEASE_TAG="v$VAL_RELEASE_VERSION"
+          if gh release view "$VAL_RELEASE_TAG" >/dev/null 2>&1; then
+            echo "This release already exists; keeping its published assets."
+          else
+            gh release create "$VAL_RELEASE_TAG" release/* --target "$GITHUB_SHA" --latest --title "VAL for Windows $VAL_RELEASE_VERSION" --notes-file desktop/RELEASE-NOTES.md
+          fi

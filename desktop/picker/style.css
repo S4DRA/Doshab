@@ -1,0 +1,10 @@
+:root { color-scheme: dark; font-family: system-ui,sans-serif; background: #171717; color: #fafafa; }
+body { margin: 0; padding: 24px; } header span { color: #ff713b; font-size: 12px; font-weight: 800; letter-spacing: .1em; }
+h1 { font-size: 25px; margin: 10px 0; } p { color: #bcbcbc; font-size: 14px; }
+main { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin: 20px 0 100px; }
+button { font: inherit; cursor: pointer; border: 2px solid #505050; background: #222; color: #fff; padding: 12px; }
+.source { text-align: left; overflow: hidden; } .source img { width: 100%; height: 135px; object-fit: contain; background: #111; }
+.source span { display: block; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.source[aria-pressed="true"], button:focus-visible { border-color: #ff713b; outline: 2px solid #ff713b; outline-offset: 2px; }
+footer { position: fixed; bottom: 0; left: 0; right: 0; padding: 16px 24px; background: #171717; border-top: 1px solid #444; display: flex; gap: 20px; align-items: center; justify-content: flex-end; }
+label { font-size: 12px; } #share { background: #f55105; border-color: #f55105; font-weight: 700; } #share:disabled { opacity: .45; cursor: default; }

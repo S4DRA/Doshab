@@ -45,6 +45,9 @@ jobs:
       - name: Media lifecycle tests
         run: npm run test:media
 
+      - name: Session and Windows download tests
+        run: npm run test:session && npm run test:download
+
       - name: Chat links and viewport tests
         run: npm run test:chat
 

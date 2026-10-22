@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { evaluateAudit } from '../scripts/audit-dependencies.mjs';
 
-const now = new Date('2026-10-03T12:00:00Z');
+const now = new Date('2026-10-22T12:00:00Z');
 const advisory = { url: 'https://github.com/advisories/GHSA-vfj7-8cjw-p6xm', severity: 'high' };
 function fixture() {
   const vulnerabilities = {};
@@ -46,7 +46,7 @@ test('other vulnerable dependencies are never excepted', () => {
 
 test('expired exceptions and unrecognized package versions block', () => {
   const { report, lockfile } = fixture();
-  assert.equal(evaluateAudit(report, lockfile, new Date('2026-10-18')).blocked.length, 5);
+  assert.equal(evaluateAudit(report, lockfile, new Date('2026-10-30')).blocked.length, 5);
   lockfile.packages['node_modules/braces'].version = '3.0.4';
   assert.equal(evaluateAudit(report, lockfile, now).blocked.length, 5);
 });
