@@ -1,0 +1,48 @@
+/* Desktop-only rendering reductions. No media, input or network behavior changes. */
+/* A frameless window needs a real drag region. Keep every interactive header
+   control out of it, including the call form and custom accessible widgets. */
+:root[data-val-desktop-performance] :is(.dashboard-shell-header, .val-hero-overline) {
+  -webkit-app-region: drag !important;
+  app-region: drag !important;
+  user-select: none;
+}
+:root[data-val-desktop-performance] :is(.dashboard-shell-header, .val-hero-overline)
+  :is(a, button, input, textarea, select, form, label, summary, [role="button"], [role="link"],
+      [role="menu"], [role="dialog"], [role="slider"], [contenteditable], [tabindex]) {
+  -webkit-app-region: no-drag !important;
+  app-region: no-drag !important;
+  user-select: auto;
+}
+:root[data-val-desktop-performance] :is([role="dialog"], [aria-modal="true"]) {
+  -webkit-app-region: no-drag !important;
+  app-region: no-drag !important;
+}
+/* Keep wheel, touchpad, keyboard and touch scrolling; hide only the chrome. */
+:root[data-val-desktop-performance],
+:root[data-val-desktop-performance] * {
+  scrollbar-width: none !important;
+}
+:root[data-val-desktop-performance]::-webkit-scrollbar,
+:root[data-val-desktop-performance] *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+:root[data-val-desktop-performance] :is(.chat-composer, .val-command-backdrop) {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+:root[data-val-desktop-performance] .val-command-backdrop::before,
+:root[data-val-desktop-performance] .val-command-backdrop::after {
+  filter: none !important;
+}
+:root[data-val-desktop-performance] .dashboard-main-sidebar .val-command-button,
+:root[data-val-desktop-performance] .landing-voice-dot {
+  animation: none !important;
+  will-change: auto !important;
+}
+:root[data-val-desktop-hidden] *,
+:root[data-val-desktop-hidden] *::before,
+:root[data-val-desktop-hidden] *::after {
+  animation-play-state: paused !important;
+}

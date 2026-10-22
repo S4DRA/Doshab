@@ -1,0 +1,48 @@
+{
+  "name": "val-desktop",
+  "productName": "VAL",
+  "version": "0.1.6",
+  "description": "VAL for Windows",
+  "author": "Rootonset",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/*.test.cjs",
+    "setup:build": "node scripts/build-setup-ui.cjs",
+    "setup:preview": "installer\\bin\\VAL-Setup-UI.exe --preview",
+    "predist": "node scripts/check-release.cjs && node scripts/build-setup-ui.cjs",
+    "release:draft": "node scripts/release.cjs",
+    "dist": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "43.8.3",
+    "electron-builder": "26.18.0"
+  },
+  "dependencies": { "electron-updater": "6.8.9" },
+  "build": {
+    "appId": "com.rootonset.val",
+    "asar": true,
+    "directories": { "output": "dist" },
+    "files": ["main.cjs", "policy.cjs", "persistent-login.cjs", "updates.cjs", "window-preload.cjs", "desktop-effects.css", "picker/**", "assets/**", "offline.html", "package.json"],
+    "publish": [{ "provider": "github", "owner": "S4DRA", "repo": "Doshab", "releaseType": "release" }],
+    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }], "icon": "assets/val.ico", "artifactName": "VAL-Setup-${version}.${ext}" },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "deleteAppDataOnUninstall": false,
+      "include": "installer/val-installer.nsh",
+      "installerIcon": "assets/val.ico",
+      "uninstallerIcon": "assets/val.ico",
+      "installerSidebar": "installer/sidebar.bmp",
+      "uninstallerSidebar": "installer/sidebar.bmp",
+      "installerHeader": "installer/header.bmp",
+      "uninstallDisplayName": "VAL",
+      "uninstallUrlInfoAbout": "https://doshab.vercel.app",
+      "multiLanguageInstaller": false,
+      "installerLanguages": ["en_US"]
+    }
+  }
+}

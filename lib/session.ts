@@ -1,49 +1,10 @@
 import "server-only";
 
-import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
-
-export const sessionCookieName = "doshab_session";
-
-const sessionDurationMs = 1000 * 60 * 60 * 8;
-
-type SessionPayload = {
-  userId: string;
-};
-
-function getSessionSecret() {
-  // Server-only: SESSION_SECRET/AUTH_SECRET signs legacy VAL JWT cookies.
-  const secret = process.env.SESSION_SECRET ?? process.env.AUTH_SECRET;
-
-  if (!secret || secret.length < 32) {
-    throw new Error("SESSION_SECRET must be set to at least 32 characters.");
-  }
-
-  return new TextEncoder().encode(secret);
-}
-
-export async function createSessionToken(payload: SessionPayload) {
-  return new SignJWT(payload)
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("8h")
-    .sign(getSessionSecret());
-}
-
-export async function verifySessionToken(token: string) {
-  try {
-    const { payload } = await jwtVerify(token, getSessionSecret());
-
-    if (typeof payload.userId !== "string") {
-      return null;
-    }
-
-    return { userId: payload.userId };
-  } catch {
-    return null;
-  }
-}
+import { createSessionToken, verifySessionToken, sessionCookieName, sessionDurationSeconds } from "@/lib/session-token";
+export { createSessionToken, verifySessionToken, sessionCookieName } from "@/lib/session-token";
+const sessionDurationMs = sessionDurationSeconds * 1000;
 
 export async function setSessionCookie(userId: string) {
   const token = await createSessionToken({ userId });
@@ -55,6 +16,7 @@ export async function setSessionCookie(userId: string) {
     secure: process.env.NODE_ENV === "production",
     path: "/",
     expires: new Date(Date.now() + sessionDurationMs),
+    maxAge: sessionDurationSeconds,
   });
 }
 
@@ -70,6 +32,7 @@ export async function setSessionCookieOnResponse(
     secure: process.env.NODE_ENV === "production",
     path: "/",
     expires: new Date(Date.now() + sessionDurationMs),
+    maxAge: sessionDurationSeconds,
   });
 }
 

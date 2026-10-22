@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:download": "node --test tests/desktop-download.test.mjs",
     "dev": "next dev",
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
@@ -11,6 +12,7 @@
     "audit:dependencies": "node scripts/audit-dependencies.mjs",
     "test:audit": "node --test tests/dependency-audit.test.mjs",
     "test:media": "node --test tests/media-client.test.mjs",
+    "test:session": "node --test tests/session-token.test.mjs",
     "test:chat": "node --test tests/chat-presentation.test.mjs tests/message-send.test.mjs",
     "test:mobile": "node --test tests/mobile-experience.test.mjs",
     "test:music": "node --test tests/music-session.test.mjs",
