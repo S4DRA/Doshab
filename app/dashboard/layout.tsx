@@ -1,7 +1,7 @@
-import { Big_Shoulders } from "next/font/google";
 import "./val-design.css";
 import "./mobile.css";
 import "./settings-media.css";
+import "./doshab-comfort.css";
 import { MobileNavigationProvider, MobileShell } from "@/components/mobile/mobile-shell";
 import { MobileNavbarPreferencesProvider } from "@/components/mobile/mobile-navbar-preferences";
 import { MessageDraftsProvider } from "@/components/chat/message-drafts-provider";
@@ -23,15 +23,6 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-const editorial = Big_Shoulders({
-  variable: "--font-val-display",
-  subsets: ["latin", "latin-ext"],
-  weight: ["700", "900"],
-  display: "swap",
-  adjustFontFallback: false,
-  fallback: ["Arial Narrow", "Arial", "sans-serif"],
-});
-
 export default async function DashboardLayout({
   children,
 }: {
@@ -49,7 +40,7 @@ export default async function DashboardLayout({
   const sidebarData = await getInitialSidebarData(auth.user.id);
 
   return (
-    <div id="val-app" className={`val-app ${editorial.variable}`}>
+    <div id="val-app" className="val-app">
       <ValViewport />
       <ThemePreferences />
       <DashboardPeopleProvider currentUserId={auth.user.id} initialFriends={sidebarData.friends}>
