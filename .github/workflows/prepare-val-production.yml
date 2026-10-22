@@ -1,0 +1,28 @@
+name: Prepare reviewed VAL production source
+
+on:
+  push:
+    branches: ['codex/val-doshab-website']
+    paths: ['.github/workflows/prepare-val-production.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+      - name: Verify and apply the exact reviewed source
+        shell: bash
+        run: |
+          echo '0d00db3e0bf8230ee99d7afa2c8dc59b375d84cf6f354222f53027371c022c5f  val-reviewed-source.patch' | sha256sum --check --strict
+          cp val-reviewed-source.patch "$RUNNER_TEMP/val-reviewed-source.patch"
+          git checkout --detach 7c1e1e3e44b023dddd181dc32619b87da1c10ac4
+          git apply --index --binary "$RUNNER_TEMP/val-reviewed-source.patch"
+          git diff --cached --stat
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Apply reviewed VAL Windows app and Doshab website'
+          git push origin HEAD:refs/heads/codex/val-production-release
