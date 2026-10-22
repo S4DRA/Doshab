@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Big_Shoulders, Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./public-design.css";
 import {
@@ -16,15 +16,6 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin", "latin-ext"],
-});
-
-const editorial = Big_Shoulders({
-  variable: "--font-val-display",
-  subsets: ["latin", "latin-ext"],
-  weight: ["700", "900"],
-  display: "swap",
-  adjustFontFallback: false,
-  fallback: ["Arial Narrow", "Arial", "sans-serif"],
 });
 
 const metadataBase = new URL(
@@ -108,7 +99,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${editorial.variable} h-screen antialiased overflow-hidden`}
+      className={`${geistSans.variable} ${geistMono.variable} h-screen antialiased overflow-hidden`}
       data-scroll-behavior="smooth"
       data-mode={DEFAULT_DOSHAB_THEME_MODE}
       data-palette={DEFAULT_DOSHAB_PALETTE_ID}

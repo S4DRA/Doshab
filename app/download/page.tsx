@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PublicFooter, PublicHeader, Arrow, WindowsIcon } from "@/components/layout/public-shell";
+import { PublicFooter, PublicHeader, Arrow, WindowsIcon, publicFontClass } from "@/components/layout/public-shell";
 import { getWindowsRelease, windowsReleasesUrl } from "@/lib/desktop-download";
 
 export const metadata: Metadata = { title: "Download VAL for Windows", description: "Bring your VAL spaces, messages, and voice rooms to your Windows desktop." };
 
 export default async function DownloadPage({ searchParams }: { searchParams: Promise<{ unavailable?: string }> }) {
   const [release, params] = await Promise.all([getWindowsRelease(), searchParams]);
-  return <div className="val-public val-download-page">
+  return <div className={`val-public val-download-page ${publicFontClass}`}>
     <a className="val-skip-link" href="#download-content">Skip to content</a><PublicHeader download />
     <main id="download-content" className="val-public-wrap">
       <div className="val-public-overline"><span>VAL / Windows desktop</span><Link href="/">Back to VAL ↗</Link></div>

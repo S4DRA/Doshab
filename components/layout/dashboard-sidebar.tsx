@@ -1894,9 +1894,6 @@ export function DashboardSidebar({
       </nav>
 
       <div className="val-sidebar-utilities hidden shrink-0 items-center gap-1.5 sm:flex sm:flex-col sm:gap-2">
-        <a className="dashboard-nav-icon" href="/download" target="_blank" rel="noopener noreferrer" aria-label="Download VAL for Windows (opens a new tab)" title="Download VAL for Windows">
-          <svg aria-hidden="true" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg><span className="val-nav-label">Get Windows app</span>
-        </a>
         <div className="relative">
           <button
             aria-expanded={notificationsOpen}

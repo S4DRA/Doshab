@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PublicFooter, PublicHeader, Arrow, WindowsIcon } from "@/components/layout/public-shell";
+import { PublicFooter, PublicHeader, Arrow, WindowsIcon, publicFontClass } from "@/components/layout/public-shell";
 import { WorkspacePreview } from "@/components/layout/workspace-preview";
 
 const features = [
@@ -10,7 +10,7 @@ const features = [
 
 export default function Home() {
   return (
-    <div className="val-public" id="public-top">
+    <div className={`val-public ${publicFontClass}`} id="public-top">
       <a className="val-skip-link" href="#home-content">Skip to content</a>
       <PublicHeader />
       <main id="home-content">
