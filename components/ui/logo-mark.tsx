@@ -9,8 +9,8 @@ type LogoMarkProps = {
   sizes?: string;
 };
 
-const primaryLogoSrc = "/brand/val-echo-dark-256.png";
-const primaryLogoSrcSet = "/brand/val-echo-dark-256.png 256w, /brand/val-echo-dark.png 1254w";
+const primaryLogoSrc = "/brand/val-mark-256.png";
+const primaryLogoSrcSet = "/brand/val-mark-256.png 256w, /brand/val-mark-512.png 512w";
 const fallbackLogoSrc = "/brand/val-echo-dark.png";
 
 export function LogoMark({
