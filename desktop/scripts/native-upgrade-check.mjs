@@ -89,7 +89,7 @@ try{
   assert.equal(await fs.readFile(path.join(userData,'val-upgrade-marker.txt'),'utf8'),'preserve-me');
   pass('Existing cookie, renderer local settings and profile files preserved across upgrade');await stop();
   feed=fixture;delayInstaller=true;await launch();
-  assert.ok((await evaluate(`${page}.getURL()`)).startsWith('file:'));pass('Startup gate shows local update page while a newer installer downloads');socket.close();
+  await until(()=>evaluate(`(${page}?.getURL() || '').endsWith('/startup.html')`),'local startup update page',10_000);pass('Startup gate shows local update page while a newer installer downloads');socket.close();
   await waitReplacement(fixture.version);await stop();
   feed=fixture;delayInstaller=false;await launch();assert.equal(await version(),fixture.version);await platform();
   assert.equal(await fs.readFile(path.join(userData,'val-upgrade-marker.txt'),'utf8'),'preserve-me');pass('Higher-version fixture passes no-update gate and retains profile');
