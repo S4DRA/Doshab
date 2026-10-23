@@ -31,7 +31,7 @@ export function createNavigationPreparation({ prefetch, allowed, current, schedu
   let disposed = false;
   let windowStart = now();
   let issuedInWindow = 0;
-  const prepared = new Set<string>();
+  const prepared = new Map<string, object>();
   const metrics = { intents: 0, issued: 0, reused: 0, suppressed: 0, cancelled: 0, useful: 0, invalidatedUnused: 0, errors: 0 };
   const clear = () => { if (timer !== undefined) { cancel(timer); timer = undefined; metrics.cancelled++; } };
   return {
@@ -46,9 +46,12 @@ export function createNavigationPreparation({ prefetch, allowed, current, schedu
         if (prepared.has(href)) { metrics.reused++; return; }
         if (now() - windowStart >= 60_000) { windowStart = now(); issuedInWindow = 0; }
         if (reserved || issuedInWindow >= 4) { metrics.suppressed++; return; }
-        reserved = href; prepared.add(href); issuedInWindow++; metrics.issued++;
+        const generation = {};
+        reserved = href; prepared.set(href, generation); issuedInWindow++; metrics.issued++;
         try {
           prefetch(href, { onInvalidate: () => {
+            // A visited destination may be prepared again before an older callback runs.
+            if (prepared.get(href) !== generation) return;
             if (prepared.delete(href)) metrics.invalidatedUnused++;
             if (reserved === href) reserved = null;
           } });

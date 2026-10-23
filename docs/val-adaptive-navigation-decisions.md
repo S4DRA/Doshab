@@ -29,7 +29,7 @@ The small coordinator has one cancellable timer, one unconsumed destination and 
 
 It stops issuing work while hidden, offline, on reported reduced-data/2G/3G connections, during an active call or in Game-Safe Mode. Unknown network information does not invent device pressure. The resource policy is checked again immediately before dispatch.
 
-Next's installed `router.prefetch` returns no completion promise or cancellation handle. Therefore a timer must not be treated as proof that network work completed. A reservation is released when the destination is visited or Next invalidates it. Already-issued transport work remains Next's responsibility. The counters distinguish issued preparations, repeat intents, visits, suppressions and unused invalidations; they are not a claim to observe Next's internal cache-hit rate or every network request.
+Next's installed `router.prefetch` returns no completion promise or cancellation handle. Therefore a timer must not be treated as proof that network work completed. A reservation is released when the destination is visited or Next invalidates it. Invalidation is matched to that preparation instance, so a delayed callback cannot release a newer reservation for the same destination. Already-issued transport work remains Next's responsibility. The counters distinguish issued preparations, repeat intents, visits, suppressions and unused invalidations; they are not a claim to observe Next's internal cache-hit rate or every network request.
 
 The installed Next 16.4.2 type requires `PrefetchKind.AUTO` when passing options, although its bundled public guide omits that requirement. The adapter uses that installed enum in one place. Typecheck/build must accompany future Next upgrades.
 

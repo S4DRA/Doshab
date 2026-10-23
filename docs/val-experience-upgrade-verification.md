@@ -74,9 +74,9 @@ Next's internal cache-hit ratio is not exposed through the current API. The new 
 
 | Command/check | Result |
 | --- | --- |
-| `node --test tests/*.test.mjs` | 138 passed; 0 failed/skipped |
+| `node --test tests/*.test.mjs` | 139 passed; 0 failed/skipped, including the final stale-invalidation regression |
 | `node --test desktop/tests/*.test.cjs` | 45 passed; 0 failed/skipped on the companion candidate |
-| Combined web/desktop unit run | 183 passed |
+| Combined web/desktop unit run | 184 passed after the invalidation follow-up, with the companion desktop candidate |
 | `npm run lint` | Passed; no errors/warnings |
 | `npx tsc --noEmit --incremental false` | Passed |
 | `npm run build` | Passed with Prisma client generation and production route compilation; no production migration |
