@@ -5,7 +5,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { spawn, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { inflateRawSync } from 'node:zlib';
+import { gunzipSync } from 'node:zlib';
 import assert from 'node:assert/strict';
 if (process.env.GITHUB_ACTIONS !== 'true' || process.env.RUNNER_OS !== 'Windows' || process.env.RUNNER_ENVIRONMENT !== 'github-hosted') throw new Error('Run only on an ephemeral GitHub-hosted Windows runner. Never on an existing user installation.');
 const root = path.resolve(process.env.RUNNER_TEMP, 'val-upgrade-check');
@@ -22,7 +22,7 @@ async function verify(dir) {
   const filename = `VAL-Setup-${version}.exe`;
   const hash = createHash('sha512'); for await (const part of createReadStream(path.join(dir,filename))) hash.update(part);
   assert.equal(hash.digest('base64'),yaml.match(/sha512: (\S+)/)[1]);
-  const map=JSON.parse(inflateRawSync(await fs.readFile(path.join(dir,`${filename}.blockmap`))));
+  const map=JSON.parse(gunzipSync(await fs.readFile(path.join(dir,`${filename}.blockmap`))));
   assert.ok(map.files.length); for(const file of map.files)assert.equal(file.sizes.length,file.checksums.length);
   pass(`Installer SHA-512 and blockmap verified: ${version}`);return {dir,yaml,version,filename};
 }
