@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import { useState } from "react";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import type { DashboardNotification } from "@/types";

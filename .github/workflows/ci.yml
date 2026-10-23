@@ -60,6 +60,9 @@ jobs:
       - name: Interaction foundation tests
         run: npm run test:interaction
 
+      - name: Adaptive navigation and resource lifecycle tests
+        run: npm run test:experience
+
       - name: Appearance preference tests
         run: npm run test:appearance
 

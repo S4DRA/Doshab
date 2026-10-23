@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import { useState } from "react";
 import { ChannelList } from "@/components/groups/channel-list";
 import { PeopleRail } from "@/components/layout/people-rail";

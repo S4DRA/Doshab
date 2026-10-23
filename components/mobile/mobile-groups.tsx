@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import { useState } from "react";
 import { matchesSearch } from "@/lib/mobile-navigation";
 import type { DashboardGroup } from "@/types";

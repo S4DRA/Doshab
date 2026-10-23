@@ -3,7 +3,7 @@ import { MobileHome } from "@/components/mobile/mobile-home";
 import { MobileGroups } from "@/components/mobile/mobile-groups";
 import { MobileSpace, ChannelHistory } from "@/components/mobile/mobile-space";
 import { PeopleRail } from "@/components/layout/people-rail";
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 
 import { ChannelHeaderActions } from "@/components/chat/channel-header-actions";
 import { RealtimeMessagePanel } from "@/components/chat/realtime-message-panel";

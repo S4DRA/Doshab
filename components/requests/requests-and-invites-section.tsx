@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import { Suspense } from "react";
 
 import { FriendRequestList } from "@/components/friends/friend-request-list";

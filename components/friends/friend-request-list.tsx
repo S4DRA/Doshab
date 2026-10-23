@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { SubmitButton } from "@/components/ui/submit-button";

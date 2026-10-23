@@ -1,0 +1,20 @@
+/* Opt-in comfort rules. Resting surfaces, typography, brand and mobile targets stay intact. */
+/* Grouped-message timestamps need the existing stronger muted-text token for AA contrast. */
+html[data-theme] #val-app .message-group-time { color: var(--text-muted, #606766) !important; }
+html[data-val-game-safe='true'] #val-app :is(.val-command-button, .val-command-backdrop, .val-command-backdrop::before, .val-command-backdrop::after) {
+  animation: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+html[data-val-game-safe='true'] #val-app .chat-composer { backdrop-filter: none !important; }
+html[data-val-reduced-motion='true'] #val-app *,
+html[data-val-reduced-motion='true'] #val-app *::before,
+html[data-val-reduced-motion='true'] #val-app *::after {
+  animation: none !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+@media (min-width: 1025px) and (pointer: fine) {
+  html[data-val-density='compact'] #val-app .message-stack .message-row { padding-block: 4px; }
+  html[data-val-density='compact'] #val-app .val-participant-row { padding-block: 6px; }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import { useEffect, useState } from "react";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { Alert } from "@/components/ui/alert";

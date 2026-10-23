@@ -35,6 +35,8 @@ type DeviceEncryptedEnvelope = {
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 const identityStorageKey = "doshab-e2ee-device";
+let identityCreation: Promise<DeviceIdentity> | null = null;
+let registration: { accountId: string; deviceId: string; expiresAt: number; pending: Promise<void> } | null = null;
 
 function bytesToBase64(bytes: Uint8Array) {
   let binary = "";
@@ -106,6 +108,12 @@ export async function getOrCreateDeviceIdentity() {
     return JSON.parse(storedIdentity) as DeviceIdentity;
   }
 
+  // Initial decryption and registration may request the same identity concurrently.
+  identityCreation ??= createDeviceIdentity().finally(() => { identityCreation = null; });
+  return identityCreation;
+}
+
+async function createDeviceIdentity() {
   const keyPair = await window.crypto.subtle.generateKey(
     {
       namedCurve: "P-256",
@@ -130,13 +138,26 @@ export async function getOrCreateDeviceIdentity() {
   return identity;
 }
 
-export async function registerDeviceKey() {
+export async function registerDeviceKey(accountId: string) {
   const identity = await getOrCreateDeviceIdentity();
 
-  await fetch("/api/e2ee/device-key", {
+  if (registration?.accountId === accountId && registration.deviceId === identity.deviceId && registration.expiresAt > Date.now()) {
+    await registration.pending;
+    return identity;
+  }
+  const entry = { accountId, deviceId: identity.deviceId, expiresAt: Number.POSITIVE_INFINITY, pending: registerPublicKey(identity.deviceId, identity.publicKey) };
+  registration = entry;
+  try { await entry.pending; entry.expiresAt = Date.now() + 60_000; }
+  catch (error) { if (registration === entry) registration = null; throw error; }
+  return identity;
+}
+
+async function registerPublicKey(deviceId: string, publicKey: string) {
+  const response = await fetch("/api/e2ee/device-key", {
+    signal: AbortSignal.timeout(10_000),
     body: JSON.stringify({
-      deviceId: identity.deviceId,
-      publicKey: identity.publicKey,
+      deviceId,
+      publicKey,
     }),
     headers: {
       "content-type": "application/json",
@@ -144,7 +165,7 @@ export async function registerDeviceKey() {
     method: "POST",
   });
 
-  return identity;
+  if (!response.ok) throw new Error("Could not register this device for encrypted chat.");
 }
 
 export async function fetchChannelDeviceKeys(channelId: string) {

@@ -1,7 +1,7 @@
 import { getWindowsRelease } from "@/lib/desktop-download";
 
 export async function GET(request: Request) {
-  const release = await getWindowsRelease();
+  const release = await getWindowsRelease(true);
   return new Response(null, {
     status: release ? 307 : 303,
     headers: {

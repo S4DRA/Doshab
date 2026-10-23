@@ -6,6 +6,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -23,6 +24,8 @@ import {
 } from "@/lib/e2ee-message.client";
 import type { ChatMessage } from "@/types";
 import { createMessagePresentation, establishMessage } from "@/lib/message-send";
+import { useExperience } from "@/components/layout/experience-provider";
+import { readInteractionPreferences } from "@/lib/interaction/preferences";
 
 type RealtimeMessagePanelProps = {
   canPinMessages?: boolean;
@@ -49,6 +52,10 @@ export function RealtimeMessagePanel({
   const [encryptedMessages, setEncryptedMessages] = useState(initialMessages);
   const [decryptedMessages, setDecryptedMessages] = useState<ChatMessage[]>([]);
   const draftKey = `${currentUser?.id ?? ""}:${channelId}`;
+  const experience = useExperience();
+  const positions = experience?.positions;
+  const positionRestored = useRef(false);
+  const latestVisibleMessage = useRef<string | undefined>(undefined);
   const [draft, setDraft] = useMessageDraft(draftKey);
   const { drafts, sends, snapshot } = useMessageSend(draftKey);
   const [presentMessages] = useState(createMessagePresentation);
@@ -63,7 +70,11 @@ export function RealtimeMessagePanel({
   const [pollSending, setPollSending] = useState(false);
   const pollSendingRef = useRef(false);
   const [composerTools, setComposerTools] = useState<"tools" | "emoji" | null>(null);
-  const [newMessageCount, setNewMessageCount] = useState(0);
+  const [newMessageCount, setNewMessageCount] = useState(() => {
+    const saved = positions?.get(draftKey);
+    const previousLatest = saved && !saved.following ? initialMessages.findIndex((message) => message.id === saved.latestId) : -1;
+    return previousLatest >= 0 ? initialMessages.length - previousLatest - 1 : 0;
+  });
   const [pollOpen, setPollOpen] = useState(false);
   const [pollOptions, setPollOptions] = useState(["", ""]);
   const [pollQuestion, setPollQuestion] = useState("");
@@ -103,12 +114,35 @@ export function RealtimeMessagePanel({
     textareaRef.current?.focus({ preventScroll: true });
   }, [setReplyTarget]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const feed = feedRef.current;
+    if (!feed || (!displayedMessages.length && initialMessages.length)) return;
+    latestVisibleMessage.current = displayedMessages.at(-1)?.id;
+    if (!positionRestored.current) {
+      const saved = positions?.get(draftKey);
+      followingLatestRef.current = saved?.following ?? true;
+      if (saved && !saved.following) {
+        feed.scrollTop = saved.top;
+        const anchor = saved.anchorId ? document.getElementById(saved.anchorId) : null;
+        if (anchor && feed.contains(anchor)) feed.scrollTop += anchor.getBoundingClientRect().top - feed.getBoundingClientRect().top - (saved.anchorOffset ?? 0);
+      } else feed.scrollTop = feed.scrollHeight;
+      positionRestored.current = true;
+      previousCountRef.current = displayedMessages.length;
+      return;
+    }
     if (followingLatestRef.current && feed) feed.scrollTop = feed.scrollHeight;
     else setNewMessageCount((count) => count + Math.max(0, displayedMessages.length - previousCountRef.current));
     previousCountRef.current = displayedMessages.length;
-  }, [displayedMessages.length]);
+  }, [displayedMessages, initialMessages.length, positions, draftKey]);
+  useLayoutEffect(() => {
+    const feed = feedRef.current;
+    return () => {
+      if (!feed || !positionRestored.current) return;
+      const top = feed.getBoundingClientRect().top;
+      const anchor = Array.from(feed.querySelectorAll<HTMLElement>('[id^="message-"]')).find((element) => element.getBoundingClientRect().bottom >= top);
+      positions?.set(draftKey, { top: feed.scrollTop, following: followingLatestRef.current, anchorId: anchor?.id, anchorOffset: anchor ? anchor.getBoundingClientRect().top - top : undefined, latestId: latestVisibleMessage.current });
+    };
+  }, [positions, draftKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -150,8 +184,9 @@ export function RealtimeMessagePanel({
     let cancelled = false;
 
     async function prepareEncryption() {
+      if (!currentUser?.id) return;
       try {
-        await registerDeviceKey();
+        await registerDeviceKey(currentUser.id);
 
         if (!cancelled) {
           setEncryptionReady(true);
@@ -170,7 +205,7 @@ export function RealtimeMessagePanel({
     return () => {
       cancelled = true;
     };
-  }, [encryptionAttempt]);
+  }, [encryptionAttempt, currentUser?.id]);
 
   useEffect(() => {
     const eventSource = new EventSource(
@@ -445,7 +480,7 @@ export function RealtimeMessagePanel({
         />
         <div ref={messagesEndRef} />
       </div>
-      {newMessageCount > 0 && <button className="val-jump-latest" type="button" onClick={() => { followingLatestRef.current = true; setNewMessageCount(0); feedRef.current?.scrollTo({ top: feedRef.current.scrollHeight, behavior: "smooth" }); }}>{newMessageCount} new {newMessageCount === 1 ? "message" : "messages"} · Jump to latest ↓</button>}
+      {newMessageCount > 0 && <button className="val-jump-latest" type="button" onClick={() => { followingLatestRef.current = true; setNewMessageCount(0); feedRef.current?.scrollTo({ top: feedRef.current.scrollHeight, behavior: readInteractionPreferences().reducedMotion ? "auto" : "smooth" }); }}>{newMessageCount} new {newMessageCount === 1 ? "message" : "messages"} · Jump to latest ↓</button>}
 
       <div className="chat-composer sticky bottom-0 z-10 min-w-0 shrink-0 overflow-hidden border-t border-white/10 bg-[#070907]/95 pb-[max(calc(var(--dashboard-bottom-nav-height,4rem)+0.25rem),0.25rem)] pt-3 backdrop-blur md:pb-[max(env(safe-area-inset-bottom),0.25rem)]">
         <div className="mx-auto w-full max-w-[min(100%,82rem)]">
@@ -790,7 +825,7 @@ function PollDialog({
 function scrollToMessage(messageId: string) {
   document.getElementById(`message-${messageId}`)?.scrollIntoView({
     block: "center",
-    behavior: "smooth",
+    behavior: readInteractionPreferences().reducedMotion ? "auto" : "smooth",
   });
 }
 

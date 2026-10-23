@@ -182,7 +182,9 @@ test("actual composer consumes the draft once, permits new typing, and failure n
     fetch: async (_url, options) => { const job = deferred(); jobs.push({ ...job, body: JSON.parse(options.body) }); return job.promise; },
   }, mocks: {
     react: { useState: (initial) => { const index = slot++; return [index === 4 ? true : typeof initial === "function" ? initial() : initial, () => {}]; },
-      useCallback: (fn) => fn, useMemo: (fn) => fn(), useEffect: () => {}, useRef: (value) => ({ current: value }) },
+      useCallback: (fn) => fn, useMemo: (fn) => fn(), useEffect: () => {}, useLayoutEffect: () => {}, useRef: (value) => ({ current: value }) },
+    "@/components/layout/experience-provider": { useExperience: () => null },
+    "@/lib/interaction/preferences": { readInteractionPreferences: () => ({ reducedMotion: false }) },
     "react-dom": { flushSync: (fn) => fn() },
     "@/components/chat/message-list": { MessageList: "test-message-list" },
     "@/components/chat/message-drafts-provider": {
@@ -217,6 +219,7 @@ test("actual composer consumes the draft once, permits new typing, and failure n
 
 test("real message rows retain their React key and expose state without server actions before confirmation", () => {
   const { MessageList } = interactionModule("components/chat/message-list.tsx", { mocks: {
+    "@/lib/interaction/preferences": { readInteractionPreferences: () => ({ reducedMotion: false }) },
     react: { memo: (component) => component, useState: (value) => [value, () => {}], useEffect: () => {}, useRef: (value) => ({ current: value }) },
     "@/components/ui/avatar-initials": { AvatarInitials: "test-avatar" },
     "@/lib/chat-constants": { reactionEmojis: [] }, "@/lib/chat-presentation": { messageSegments: (text) => [{ text }] },

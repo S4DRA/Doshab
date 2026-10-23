@@ -14,7 +14,7 @@ function load(file, globals = {}, mocks = {}) {
   return loadedModule.exports;
 }
 function release(overrides = {}) {
-  return { draft: false, prerelease: false, tag_name: "v0.1.6", assets: [{ name: "VAL-Setup-0.1.6.exe", state: "uploaded", size: 114017989, browser_download_url: "https://github.com/S4DRA/Doshab/releases/download/v0.1.6/VAL-Setup-0.1.6.exe" }], ...overrides };
+  return { draft: false, prerelease: false, tag_name: "v0.1.6", assets: ["VAL-Setup-0.1.6.exe", "VAL-Setup-0.1.6.exe.blockmap", "latest.yml"].map((name) => ({ name, state: "uploaded", size: 114017989, browser_download_url: `https://github.com/S4DRA/Doshab/releases/download/v0.1.6/${name}` })), ...overrides };
 }
 const { parseWindowsRelease } = load("lib/desktop-download.ts");
 
@@ -55,10 +55,23 @@ test("missing releases, rate limits, invalid JSON and network failures remain us
 
 test("download redirects use the current asset and recover gracefully when it disappears", async () => {
   for (const available of [true, false]) {
-    const { GET } = load("app/download/windows/route.ts", {}, { "@/lib/desktop-download": { getWindowsRelease: async () => available ? parseWindowsRelease(release()) : null } });
+    const { GET } = load("app/download/windows/route.ts", {}, { "@/lib/desktop-download": { getWindowsRelease: async (fresh) => { assert.equal(fresh, true); return available ? parseWindowsRelease(release()) : null; } } });
     const response = await GET(new Request("https://doshab.vercel.app/download/windows"));
     assert.equal(response.status, available ? 307 : 303);
     assert.equal(response.headers.get("Location"), available ? release().assets[0].browser_download_url : "https://doshab.vercel.app/download?unavailable=1");
     assert.equal(response.headers.get("Cache-Control"), "no-store");
   }
+});
+
+test("partial releases cannot replace the website installer link", () => {
+  for (const name of ["latest.yml", "VAL-Setup-0.1.6.exe.blockmap"]) {
+    assert.equal(parseWindowsRelease(release({ assets: release().assets.filter((asset) => asset.name !== name) })), null);
+  }
+});
+
+test("download clicks bypass the displayed release metadata cache", async () => {
+  const { getWindowsRelease } = load("lib/desktop-download.ts", { fetch: async (_url, options) => {
+    assert.equal(options.cache, "no-store"); assert.equal(options.next, undefined); return Response.json(release());
+  } });
+  assert.equal((await getWindowsRelease(true)).version, "0.1.6");
 });

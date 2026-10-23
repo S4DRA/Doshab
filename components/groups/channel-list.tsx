@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import { useId, useState } from "react";
 import { NavigationPending } from "@/components/ui/navigation-pending";
 
-import { ChannelRoutePrefetcher } from "@/components/groups/channel-route-prefetcher";
 import { VoiceChannelJoinButton } from "@/components/groups/voice-channel-join-button";
 import { VoiceChannelPresence } from "@/components/groups/voice-channel-presence";
 import { useOptionalPersistentCall } from "@/components/calls/persistent-call-provider";
@@ -32,13 +31,9 @@ export function ChannelList({
 }: ChannelListProps) {
   const textChannels = channels.filter((channel) => channel.type === "TEXT");
   const voiceChannels = channels.filter((channel) => channel.type === "VOICE");
-  const channelHrefs = textChannels.map(
-    (channel) => `/dashboard/groups/${groupId}/channels/${channel.id}`,
-  );
 
   return (
     <div className="val-channel-list flex h-full min-h-0 min-w-0 flex-col gap-5 overflow-y-auto px-0 py-2 pr-1 min-[1180px]:gap-4" data-tour-target="channels-list">
-      <ChannelRoutePrefetcher hrefs={channelHrefs} />
       <ChannelSection
         channels={textChannels}
         canManageChannels={canManageChannels}

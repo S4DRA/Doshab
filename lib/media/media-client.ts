@@ -3,6 +3,7 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { createSupabaseBrowserClientFromRuntimeConfig } from "@/lib/supabase/client";
 import type { LocalMedia, MediaConnectionState, MediaParticipant, MediaSource, RemoteMedia } from "./types";
+import { summarizeMediaStats } from "./diagnostics";
 
 type Identity = { email: string; id: string; name: string };
 type Credential = { participant: Identity; signalingRoomId: string; iceServers?: RTCIceServer[] };
@@ -48,6 +49,10 @@ export class MediaClient {
     }));
     return { state: this.state, error: this.error, participants, local, remote: [...this.remote.values()],
       micMuted: !this.localTracks.get("mic")?.enabled, cameraOn: this.localTracks.has("camera"), screenOn: this.localTracks.has("screen") };
+  }
+  async diagnostics() {
+    const reports = await Promise.all([...this.peers.values()].map((peer) => peer.connection.getStats()));
+    return summarizeMediaStats(reports);
   }
   private changed() { this.listeners.forEach((listener) => listener()); }
   private report(cause: unknown) {

@@ -20,13 +20,19 @@ export function parseWindowsRelease(value: unknown): WindowsRelease | null {
     return item.name === filename && item.state === "uploaded" && item.browser_download_url === expectedUrl &&
       typeof item.size === "number" && Number.isSafeInteger(item.size) && item.size > 0;
   }) as { size: number } | undefined;
-  return installer ? { version, downloadUrl: expectedUrl, size: installer.size } : null;
+  const updateFiles = [`${filename}.blockmap`, "latest.yml"];
+  const complete = updateFiles.every((name) => (release.assets as unknown[]).some((asset) => {
+    if (!asset || typeof asset !== "object") return false;
+    const item = asset as Record<string, unknown>;
+    return item.name === name && item.state === "uploaded" && typeof item.size === "number" && Number.isSafeInteger(item.size) && item.size > 0 && item.browser_download_url === `https://github.com/${repository}/releases/download/${release.tag_name}/${name}`;
+  }));
+  return installer && complete ? { version, downloadUrl: expectedUrl, size: installer.size } : null;
 }
 
-export async function getWindowsRelease(): Promise<WindowsRelease | null> {
+export async function getWindowsRelease(fresh = false): Promise<WindowsRelease | null> {
   try {
     // Public metadata only; cache lookups to stay within GitHub's public API quota.
-    const options = { headers: { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" }, signal: AbortSignal.timeout(4000), next: { revalidate: 300 } };
+    const options = { headers: { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" }, signal: AbortSignal.timeout(4000), ...(fresh ? { cache: "no-store" as const } : { next: { revalidate: 300 } }) };
     const response = await fetch(releaseApi, options);
     if (!response.ok) return null;
     return parseWindowsRelease(await response.json());
