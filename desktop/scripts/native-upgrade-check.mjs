@@ -62,7 +62,7 @@ const page=`${electron}.BrowserWindow.getAllWindows()[0]?.webContents`;
 async function version(){return evaluate(`${electron}.app.getVersion()`);}
 async function platform(){return until(()=>evaluate(`(${page}?.getURL() || '').startsWith('https://doshab.vercel.app/') && !${page}?.isLoading()`),'platform load');}
 async function stop(){socket?.close();execFileSync('powershell.exe',['-NoProfile','-Command',`Get-Process VAL -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq '${exe.replaceAll("'","''")}' } | Stop-Process -Force`],{windowsHide:true});await delay(1500);}
-async function installedVersion(){try{return execFileSync('powershell.exe',['-NoProfile','-Command',`(Get-Item -LiteralPath '${exe.replaceAll("'","''")}').VersionInfo.ProductVersion`],{encoding:'utf8',windowsHide:true}).trim();}catch{return '';}}
+async function installedVersion(){try{return execFileSync('powershell.exe',['-NoProfile','-Command',`(Get-Item -LiteralPath '${exe.replaceAll("'","''")}').VersionInfo.ProductVersion`],{encoding:'utf8',windowsHide:true}).trim().split('.').slice(0,3).join('.');}catch{return '';}}
 async function waitReplacement(target){await until(async()=> (await installedVersion()).startsWith(target),'installed '+target);await delay(5000);const running=execFileSync('powershell.exe',['-NoProfile','-Command',`@(Get-Process VAL -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq '${exe.replaceAll("'","''")}' }).Count`],{encoding:'utf8',windowsHide:true});assert.ok(Number(running.trim())>0);pass(`Real NSIS replacement and automatic relaunch: ${target}`);}
 try{
   // The previous public installer and metadata are immutable versioned assets.
