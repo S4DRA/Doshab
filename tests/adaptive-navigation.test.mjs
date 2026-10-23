@@ -32,6 +32,23 @@ test('framework invalidation permits another destination and obsolete callbacks 
   s.scheduler.intent('/dashboard/friends','focus'); s.flush(); s.requests[0].onInvalidate();
   assert.equal(s.scheduler.snapshot().reserved, 1); assert.equal(s.scheduler.snapshot().retained, 1);
 });
+
+test('an older invalidation cannot release a newer preparation for the same destination', () => {
+  const s = setup();
+  s.scheduler.intent('/dashboard/messages', 'focus'); s.flush();
+  s.scheduler.visit('/dashboard/messages');
+  s.scheduler.intent('/dashboard/messages', 'focus'); s.flush();
+  assert.equal(s.requests.length, 2);
+  s.requests[0].onInvalidate();
+  assert.equal(s.scheduler.snapshot().reserved, 1);
+  assert.equal(s.scheduler.snapshot().retained, 1);
+  assert.equal(s.scheduler.snapshot().invalidatedUnused, 0);
+  s.scheduler.intent('/dashboard/friends', 'focus'); s.flush();
+  assert.equal(s.requests.length, 2);
+  s.requests[1].onInvalidate();
+  assert.equal(s.scheduler.snapshot().reserved, 0);
+  assert.equal(s.scheduler.snapshot().invalidatedUnused, 1);
+});
 test('rate cap bounds even completed preparations, and direct navigation never waits for speculation', () => {
   const s = setup();
   for (let i = 0; i < 10; i++) { const href = `/dashboard/groups/g${i}`; s.scheduler.intent(href,'focus'); s.flush(); s.scheduler.visit(href); }
