@@ -63,7 +63,7 @@ async function version(){return evaluate(`${electron}.app.getVersion()`);}
 async function platform(){return until(()=>evaluate(`(${page}?.getURL() || '').startsWith('https://doshab.vercel.app/') && !${page}?.isLoading()`),'platform load');}
 async function stop(){socket?.close();execFileSync('powershell.exe',['-NoProfile','-Command',`$items = @(Get-Process VAL -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq '${exe.replaceAll("'","''")}' }); if ($items.Count) { $items | Stop-Process -Force -ErrorAction Stop }; exit 0`],{windowsHide:true});await delay(1500);}
 async function installedVersion(){try{return execFileSync('powershell.exe',['-NoProfile','-Command',`(Get-Item -LiteralPath '${exe.replaceAll("'","''")}').VersionInfo.ProductVersion`],{encoding:'utf8',windowsHide:true}).trim().split('.').slice(0,3).join('.');}catch{return '';}}
-async function waitReplacement(target){await until(async()=> (await installedVersion()).startsWith(target),'installed '+target);await delay(5000);const running=execFileSync('powershell.exe',['-NoProfile','-Command',`@(Get-Process VAL -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq '${exe.replaceAll("'","''")}' }).Count`],{encoding:'utf8',windowsHide:true});assert.ok(Number(running.trim())>0);pass(`Real NSIS replacement and automatic relaunch: ${target}`);}
+async function waitReplacement(target,relaunch=true){await until(async()=> (await installedVersion())===target,'installed '+target);await delay(5000);const running=execFileSync('powershell.exe',['-NoProfile','-Command',`@(Get-Process VAL -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq '${exe.replaceAll("'","''")}' }).Count`],{encoding:'utf8',windowsHide:true});assert.equal(Number(running.trim())>0,relaunch);pass(`Real NSIS replacement: ${target}; ${relaunch?'automatically relaunched':'full Quit stays closed'}`);}
 try{
   // The previous public installer and metadata are immutable versioned assets.
   const previous='0.1.6';const previousExe=path.join(root,`VAL-Setup-${previous}.exe`);
@@ -82,7 +82,7 @@ try{
   await until(()=>evaluate('globalThis.__valQaDownloaded'),'existing 30-second automatic updater',120_000);pass('0.1.6 automatically downloaded real 0.1.7 through electron-updater');
   // Use the real graceful quit path; killing a process would bypass its cookie flush.
   await evaluate(`setTimeout(()=>${electron}.app.quit(),200);true`);socket.close();
-  await waitReplacement(candidate.version);await stop();
+  await waitReplacement(candidate.version,false);await stop();
   await launch();assert.equal(await version(),candidate.version);await platform();
   assert.equal(await evaluate(`${electron}.session.fromPartition('persist:val').cookies.get({url:'https://example.invalid'}).then(items=>items.find(x=>x.name==='val-qa-preservation')?.value)`),'preserve-me');
   assert.equal(await evaluate(`${page}.executeJavaScript("localStorage.getItem('val-upgrade-qa-settings')")`),'preserve-me');
