@@ -5,10 +5,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-async function boot() {
+async function boot({ startup = Promise.resolve(true) } = {}) {
   const windows = [];
   const handlers = new Map();
   const ipcListeners = new Map();
+  let loginRestored = false;
   const ses = new EventEmitter();
   ses.setPermissionCheckHandler = (fn) => { ses.check = fn; };
   ses.setPermissionRequestHandler = (fn) => { ses.permission = fn; };
@@ -60,9 +61,10 @@ async function boot() {
     require: (name) => {
       if (name === 'electron') return electron;
       if (name === './policy.cjs') return require('../policy.cjs');
-      if (name === './persistent-login.cjs') return { createPersistentLogin: () => ({ restore: async () => ({ expired: false }), touch: async () => {}, flush: async () => {} }) };
+      if (name === './persistent-login.cjs') return { createPersistentLogin: () => ({ restore: async () => { loginRestored = true; return { expired: false }; }, touch: async () => {}, flush: async () => {} }) };
       if (name === 'electron-updater') return { autoUpdater: {} };
-      if (name === './updates.cjs') return { createUpdateController: () => ({ start() {}, stop() {} }) };
+      if (name === './updates.cjs') return { createUpdateController: () => ({ prepareStartup: () => { assert.equal(loginRestored, true); return startup; }, start() {}, stop() {} }) };
+      if (name === 'node:fs/promises') return { ...require(name), readFile: async (file) => fs.readFileSync(file, 'utf8') };
       return require(name);
     },
     __dirname: path.join(__dirname, '..'), process: { env: {}, versions: {} }, console, URL, setTimeout, clearTimeout
@@ -81,6 +83,23 @@ test('remote content uses an isolated control preload with sandboxing and backgr
   assert.equal(prefs.v8CacheOptions, 'bypassHeatCheck');
   assert.equal(path.basename(prefs.preload), 'window-preload.cjs');
   assert.equal(prefs.devTools, false);
+});
+
+test('startup gate keeps the platform closed and blocks navigation until the update check completes', async () => {
+  let finish;
+  const startup = new Promise((resolve) => { finish = resolve; });
+  const { page } = await boot({ startup });
+  assert.match(page.getURL(), /startup\.html$/);
+  let prevented = false;
+  page.emit('will-navigate', { preventDefault() { prevented = true; } }, 'https://doshab.vercel.app/dashboard');
+  assert.equal(prevented, true);
+  finish(true); await new Promise(setImmediate);
+  assert.equal(page.getURL(), 'https://doshab.vercel.app/dashboard');
+});
+
+test('installing or quitting from startup never opens the platform', async () => {
+  const { page } = await boot({ startup: Promise.resolve(false) });
+  assert.match(page.getURL(), /startup\.html$/);
 });
 test('permission denied for other origins, other contents, and subframes', async () => {
   const { page, ses } = await boot();
