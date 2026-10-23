@@ -55,6 +55,22 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Build unpublished higher-version upgrade fixture
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --win nsis --x64 --publish never --config.extraMetadata.version=0.1.8 --config.directories.output=dist-upgrade-fixture
+
+      - name: Verify real installer and updater on clean Windows runner
+        run: node scripts/native-upgrade-check.mjs
+
+      - name: Upload upgrade verification
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: VAL-Windows-upgrade-verification
+          path: desktop/dist/native-upgrade-result.json
+          if-no-files-found: warn
+
   publish:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
     needs: windows
