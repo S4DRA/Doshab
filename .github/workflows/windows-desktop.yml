@@ -58,7 +58,10 @@ jobs:
       - name: Build unpublished higher-version upgrade fixture
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-        run: npx electron-builder --win nsis --x64 --publish never --config.extraMetadata.version=0.1.8 --config.directories.output=dist-upgrade-fixture
+        run: |
+          $parts = (Get-Content package.json | ConvertFrom-Json).version.Split('.')
+          $fixtureVersion = "$($parts[0]).$($parts[1]).$([int]$parts[2] + 1)"
+          npx electron-builder --win nsis --x64 --publish never "--config.extraMetadata.version=$fixtureVersion" --config.directories.output=dist-upgrade-fixture
 
       - name: Verify real installer and updater on clean Windows runner
         run: node scripts/native-upgrade-check.mjs

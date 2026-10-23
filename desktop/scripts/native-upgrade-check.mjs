@@ -60,7 +60,7 @@ async function evaluate(expression){const id=++serial;const result=await Promise
 const electron="process.mainModule.require('electron')";
 const page=`${electron}.BrowserWindow.getAllWindows()[0]?.webContents`;
 async function version(){return evaluate(`${electron}.app.getVersion()`);}
-async function platform(){return until(()=>evaluate(`(${page}?.getURL() || '').startsWith('https://doshab.vercel.app/')`),'platform load');}
+async function platform(){return until(()=>evaluate(`(${page}?.getURL() || '').startsWith('https://doshab.vercel.app/') && !${page}?.isLoading()`),'platform load');}
 async function stop(){socket?.close();execFileSync('powershell.exe',['-NoProfile','-Command',`Get-Process VAL -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq '${exe.replaceAll("'","''")}' } | Stop-Process -Force`],{windowsHide:true});await delay(1500);}
 async function installedVersion(){try{return execFileSync('powershell.exe',['-NoProfile','-Command',`(Get-Item -LiteralPath '${exe.replaceAll("'","''")}').VersionInfo.ProductVersion`],{encoding:'utf8',windowsHide:true}).trim();}catch{return '';}}
 async function waitReplacement(target){await until(async()=> (await installedVersion()).startsWith(target),'installed '+target);await delay(5000);const running=execFileSync('powershell.exe',['-NoProfile','-Command',`@(Get-Process VAL -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq '${exe.replaceAll("'","''")}' }).Count`],{encoding:'utf8',windowsHide:true});assert.ok(Number(running.trim())>0);pass(`Real NSIS replacement and automatic relaunch: ${target}`);}
@@ -73,7 +73,7 @@ try{
   assert.equal(createHash('sha512').update(bytes).digest('base64'),previousYaml.match(/sha512: (\S+)/)[1]);await fs.writeFile(previousExe,bytes);
   const installer=spawn(previousExe,['/S',`/D=${install}`],{windowsHide:true,stdio:'inherit'});
   assert.equal(await new Promise(resolve=>installer.on('exit',resolve)),0);await until(async()=>await installedVersion()==='0.1.6','fresh 0.1.6 install');pass('Published 0.1.6 installed silently on clean runner');
-  await launch();assert.equal(await version(),previous);await platform();
+  await stop();await launch();assert.equal(await version(),previous);await platform();
   const userData=await evaluate(`${electron}.app.getPath('userData')`);
   await evaluate(`${electron}.session.fromPartition('persist:val').cookies.set({url:'https://example.invalid',name:'val-qa-preservation',value:'preserve-me',expirationDate:Date.now()/1000+86400})`);
   await evaluate(`${page}.executeJavaScript("localStorage.setItem('val-upgrade-qa-settings', 'preserve-me')")`);
