@@ -18,8 +18,10 @@ let closeNoticeShown = false;
 let persistentLogin;
 let updateController;
 let flushedForQuit = false;
+let platformReady = false;
 const grants = new Set();
 const offlineUrl = pathToFileURL(path.join(__dirname, 'offline.html')).href;
+const startupUrl = pathToFileURL(path.join(__dirname, 'startup.html')).href;
 
 function showWindow() {
   if (!window || window.isDestroyed()) return;
@@ -137,9 +139,11 @@ async function saveDiagnostics() {
   await fs.writeFile(result.filePath, JSON.stringify(snapshot, null, 2));
 }
 
-function createWindow() {
+async function createWindow() {
   const ses = session.fromPartition('persist:val');
   persistentLogin = createPersistentLogin({ session: ses, origin, statePath: path.join(app.getPath('userData'), 'desktop-session.json') });
+  // Apply inactivity expiry before an update can flush and restart this process.
+  const restoredSession = await persistentLogin.restore();
   window = new BrowserWindow({
     width: 1280, height: 840, minWidth: 800, minHeight: 560,
     title: 'VAL', icon: path.join(__dirname, 'assets/val.ico'), backgroundColor: '#151515', show: false,
@@ -152,6 +156,7 @@ function createWindow() {
   });
   page = window.webContents;
   const recordActivity = () => {
+    if (!platformReady) return;
     void persistentLogin.touch().then((result) => {
       if (result?.expired) return page.loadURL(new URL('/login?reason=inactive', startUrl).href);
     }).catch(console.warn);
@@ -172,7 +177,7 @@ function createWindow() {
   const sendWindowState = () => { if (!page.isDestroyed()) page.send('val:window-state', windowState()); };
   ipcMain.handle('val:window-action', (event, action) => {
     if (event.sender !== page || event.senderFrame !== page.mainFrame ||
-        !(trusted(page, event.senderFrame.url) || page.getURL() === offlineUrl)) throw new Error('Untrusted window control');
+        !(trusted(page, event.senderFrame.url) || page.getURL() === offlineUrl || page.getURL() === startupUrl)) throw new Error('Untrusted window control');
     switch (action) {
       case 'state': break;
       case 'minimize': window.minimize(); break;
@@ -200,11 +205,12 @@ function createWindow() {
   });
   configureSession(ses);
   page.setWindowOpenHandler(({ url }) => {
-    if (sameOrigin(url, origin)) { showWindow(); void page.loadURL(url); }
+    if (sameOrigin(url, origin)) { showWindow(); if (platformReady) void page.loadURL(url); }
     else void openExternal(url);
     return { action: 'deny' };
   });
   const navigation = (event, url) => {
+    if (!platformReady && sameOrigin(url, origin)) { event.preventDefault(); return; }
     if (!sameOrigin(url, origin)) { event.preventDefault(); void openExternal(url); }
   };
   page.on('will-navigate', navigation);
@@ -215,6 +221,7 @@ function createWindow() {
     if (mainFrame && code !== -3 && sameOrigin(url, origin)) void page.loadFile(path.join(__dirname, 'offline.html'));
   });
   page.on('render-process-gone', () => {
+    if (!platformReady) { quitting = true; app.quit(); return; }
     showWindow();
     void dialog.showMessageBox(window, { type: 'error', message: 'VAL needs to reload.', detail: 'The app process stopped. Any active call was interrupted.', buttons: ['Reload', 'Quit'] }).then(({ response }) => {
       if (response === 0) void page.loadURL(dashboardUrl); else { quitting = true; app.quit(); }
@@ -223,6 +230,7 @@ function createWindow() {
   window.once('ready-to-show', showWindow);
   window.on('close', (event) => {
     if (quitting) return;
+    if (!platformReady) { quitting = true; app.quit(); return; }
     event.preventDefault();
     window.hide();
     if (!closeNoticeShown) {
@@ -234,6 +242,7 @@ function createWindow() {
     { label: 'VAL', submenu: [
       { label: 'Open VAL', click: showWindow },
       { label: 'Reconnect / reload (ends active calls)', click: async () => {
+        if (!platformReady) { showWindow(); return; }
         const { response } = await dialog.showMessageBox(window, { type: 'question', message: 'Reload VAL?', detail: 'Any active call will disconnect.', buttons: ['Cancel', 'Reload'], defaultId: 0, cancelId: 0 });
         if (response === 1) void page.loadURL(dashboardUrl);
       } },
@@ -256,17 +265,23 @@ function createWindow() {
   tray.on('double-click', showWindow);
   if (app.isPackaged) {
     try {
+      await page.loadFile(path.join(__dirname, 'startup.html'));
       const { autoUpdater } = require('electron-updater');
       const { createUpdateController } = require('./updates.cjs');
       updateController = createUpdateController({ app, updater: autoUpdater, dialog, getWindow: () => window,
         beforeInstall: () => persistentLogin.flush(),
         notify: (title, content) => tray.displayBalloon({ title, content }),
-        onState: ({ downloaded }) => { const item = menu.getMenuItemById('val-install-update'); if (item) item.enabled = downloaded; }
+        onState: (state) => {
+          const item = menu.getMenuItemById('val-install-update'); if (item) item.enabled = state.downloaded && !state.startup;
+          if (!page.isDestroyed() && page.getURL() === startupUrl) page.send('val:startup-update', { stage: state.stage, percent: state.percent });
+        }
       });
+      if (!await updateController.prepareStartup()) return;
       updateController.start();
-    } catch (error) { console.warn('Desktop updater unavailable:', error.message); }
+    } catch (error) { console.error('Desktop updater unavailable:', error.message); dialog.showErrorBox('VAL could not check for updates', 'Please try opening VAL again, or install the latest version from the VAL download page.'); quitting = true; app.quit(); return; }
   }
-  void persistentLogin.restore().then(({ expired }) => page.loadURL(expired ? new URL('/login?reason=inactive', startUrl).href : dashboardUrl))
+  platformReady = true;
+  void page.loadURL(restoredSession.expired ? new URL('/login?reason=inactive', startUrl).href : dashboardUrl)
     .catch((error) => { dialog.showErrorBox('VAL could not restore your session', error.message); quitting = true; app.quit(); });
 }
 

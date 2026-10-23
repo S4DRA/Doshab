@@ -1,4 +1,12 @@
-VAL for Windows 0.1.6 introduces an entirely new animated Windows setup interface with a transparent Echo Sonar logo, moving signal graphics, folder and shortcut choices, installation status and a completion screen. It respects reduced motion and pauses animations when minimized. Published background updates continue through the existing installer engine.
+VAL for Windows 0.1.7 checks for stable desktop updates before opening the platform. A newer version is downloaded, installed and reopened automatically. Update failures offer Retry or Quit. Sign-in persistence and inactivity expiry remain intact, and tray navigation cannot bypass the startup check.
+
+Updates discovered while VAL is already running do not force a restart or interrupt a call. Web platform improvements continue to arrive from the hosted site. The website download route follows the latest complete stable installer and update metadata.
+
+The new startup gate applies after this seed version is installed. Earlier update-enabled versions receive it through their existing update-on-full-quit behavior; versions without an updater need the installer once.
+
+Previous 0.1.6 presentation changes:
+
+VAL for Windows 0.1.6 introduced the animated Windows setup interface with the supplied transparent Echo Sonar logo, moving signal graphics, folder and shortcut choices, installation status and a completion screen. It respects reduced motion and pauses animations when minimized.
 
 The app, taskbar, tray and installer now use transparent icons rendered from the supplied high-resolution artwork, with ten dedicated Windows sizes. Scrollbars are hidden while normal scrolling remains available. The soft-white window controls and draggable header remain integrated into VAL.
 

@@ -2,6 +2,14 @@
 
 This standalone Electron client opens the existing `https://doshab.vercel.app` deployment. It reuses production login, chat, calls, and the existing UI. It does not ship a local Next.js server or require database secrets. An internet connection is required. From 0.1.4, the client starts at the dashboard and supports published desktop updates through GitHub Releases.
 
+## Startup updates in 0.1.7
+
+Every full launch checks the stable release feed before opening the platform. If a newer desktop build exists, VAL downloads it, flushes the signed-in session, installs it and reopens. A failed check or download offers Retry or Quit; it cannot be bypassed through the tray reload command. Inactivity expiry is evaluated before update/restart can save the session. Development runs bypass this packaged-app gate.
+
+An already-running app continues to check for updates in the background without forcing a restart during a call. Closing to the tray retains that running session. The new startup behavior takes effect once a user has received 0.1.7; earlier update-enabled builds install that seed through their existing full-quit update path. Clients without the updater need the installer once.
+
+Web changes arrive through the existing hosted platform after the website is deployed. Native changes require a higher desktop version. The website's `/download/windows` route resolves the currently published complete stable release on each click; incomplete release assets are not offered.
+
 ## Build and run
 
 From this directory, with Node.js 22 or newer and internet access:
@@ -20,9 +28,9 @@ Build the Windows x64 installer:
 npm run dist
 ```
 
-Output: `dist/VAL-Setup-0.1.6.exe`, its `.blockmap`, and `latest.yml`. Install per user; no paid service is required. This installer is unsigned, so Windows may show an unknown-publisher/SmartScreen prompt.
+Output: `dist/VAL-Setup-0.1.7.exe`, its `.blockmap`, and `latest.yml`. Install per user; no paid service is required. This installer is unsigned, so Windows may show an unknown-publisher/SmartScreen prompt.
 
-The `Windows desktop installer` workflow builds the installer and all update metadata as artifacts, without publishing. The updater dependency and its generated lockfile are now present; CI uses `npm ci`. The build preflight refuses to package a client without the expected updater dependency; source tests use a mocked updater interface.
+The `Windows desktop installer` workflow builds installer artifacts for pull requests and manual runs. A validated push to main or a release tag also publishes a new version: all three artifacts upload to a draft before it becomes the latest public release. Publishing is serialized, existing published assets are retained, and an interrupted draft requires review before retrying. CI uses `npm ci`. The build preflight refuses to package a client without the expected updater dependency; source tests use a mocked updater interface.
 
 ## Updating the website and desktop
 
@@ -82,11 +90,11 @@ Right-click the VAL tray icon → Help → Save performance snapshot exports Ele
 
 ## Sharing and website downloads
 
-Send only the finished `VAL-Setup-0.1.6.exe` installer to testers. They do not need Node.js, source code, your account, or build commands. They install it, then sign in or register normally. The blockmap and latest.yml are needed on the release host for future automatic updates.
+The current candidate is `VAL-Setup-0.1.7.exe`. Use it for controlled upgrade testing before public rollout. Testers do not need Node.js, source code, your account, or build commands. They install it, then sign in or register normally. The blockmap and latest.yml are needed on the release host for future automatic updates.
 
 For a public website button, upload the installer to a public release or file host and link the button to that hosted asset. A local `C:\...` path or ChatGPT file link is not a public download URL. GitHub Releases can host the installer: if the source repository is private, use a separate public downloads repository so people can download without receiving source access. Do not make a private source repository public just to host downloads.
 
-A website button can link to `https://github.com/S4DRA/Doshab/releases/download/v0.1.6/VAL-Setup-0.1.6.exe` after that actual public release exists. This is the configured release pattern, not a claim that a release was uploaded. Once users install the update-enabled seed version, later published desktop versions can arrive automatically.
+The website button uses `/download/windows`, which resolves the newest complete stable release at click time. Keep 0.1.6 available until 0.1.7 passes controlled upgrade testing and is published. Once users install the update-enabled seed version, later published desktop versions can arrive automatically.
 
 Before calling this release ready:
 

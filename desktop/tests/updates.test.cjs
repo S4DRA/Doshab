@@ -7,6 +7,7 @@ function setup(packaged = true) {
   const updater = new EventEmitter();
   let checks = 0;
   let installs = 0;
+  let quits = 0;
   let flushed = false;
   let response = 0;
   const messages = [];
@@ -14,14 +15,14 @@ function setup(packaged = true) {
   const timers = [];
   updater.checkForUpdates = async () => { checks++; return { updateInfo: { version: '0.1.4' } }; };
   updater.quitAndInstall = () => { assert.equal(flushed, true); installs++; };
-  const controller = createUpdateController({ app: { isPackaged: packaged, getVersion: () => '0.1.4' }, updater,
+  const controller = createUpdateController({ app: { isPackaged: packaged, getVersion: () => '0.1.4', quit: () => { quits++; } }, updater,
     getWindow: () => ({}), notify: (...args) => notices.push(args),
     beforeInstall: async () => { flushed = true; },
     dialog: { showMessageBox: async (_win, options) => { messages.push(options); return { response }; } },
     schedule: (fn, delay) => { timers.push({ fn, delay }); return { unref() {} }; },
     repeat: (fn, delay) => { timers.push({ fn, delay }); return { unref() {} }; }
   });
-  return { controller, updater, messages, notices, timers, setResponse: (value) => { response = value; }, stats: () => ({ checks, installs }) };
+  return { controller, updater, messages, notices, timers, setResponse: (value) => { response = value; }, stats: () => ({ checks, installs, quits }) };
 }
 
 test('automatic checks wait 30 seconds and repeat every six hours', () => {
@@ -75,4 +76,36 @@ test('concurrent update checks coalesce', async () => {
   await controller.check();
   assert.equal(checks, 1);
   finish({ updateInfo: { version: '0.1.4' } }); await pending;
+});
+
+test('startup checks before opening and does not schedule a duplicate initial background check', async () => {
+  const {controller, updater, timers, stats} = setup();
+  updater.checkForUpdates = async () => ({isUpdateAvailable:false});
+  assert.equal(await controller.prepareStartup(),true);controller.start();
+  assert.deepEqual(timers.map(item=>item.delay),[21600000]);assert.equal(stats().installs,0);
+});
+
+test('a startup update waits for download and flushes sign-in before automatically installing', async () => {
+  const {controller, updater, stats, notices} = setup();let finish;
+  updater.checkForUpdates=async()=>({isUpdateAvailable:true,downloadPromise:new Promise(resolve=>{finish=()=>{updater.emit('update-downloaded');resolve(['installer']);};})});
+  const opening=controller.prepareStartup();await new Promise(setImmediate);
+  assert.equal(stats().installs,0);assert.equal(controller.prepareStartup(),opening);
+  finish();assert.equal(await opening,false);assert.equal(stats().installs,1);assert.equal(notices.length,0);
+});
+
+test('startup service failure offers retry or quit and never opens an outdated platform', async () => {
+  const {controller,updater,setResponse,stats,messages}=setup();setResponse(1);
+  updater.checkForUpdates=async()=>{throw new Error('offline');};
+  assert.equal(await controller.prepareStartup(),false);assert.equal(stats().quits,1);assert.equal(stats().installs,0);
+  assert.deepEqual(messages[0].buttons,['Retry','Quit VAL']);
+});
+
+test('failed download can retry successfully without opening the platform between attempts', async () => {
+  const {controller,updater,stats}=setup();let attempts=0;let cancellations=0;
+  updater.checkForUpdates=async()=>({isUpdateAvailable:true,cancellationToken:{cancel(){cancellations++;}},downloadPromise:Promise.resolve().then(()=>{if(++attempts===1)throw new Error('interrupted');updater.emit('update-downloaded');return ['installer'];})});
+  assert.equal(await controller.prepareStartup(),false);assert.equal(attempts,2);assert.equal(cancellations,1);assert.equal(stats().installs,1);
+});
+
+test('development startup bypasses the release service', async () => {
+  const {controller,stats}=setup(false);assert.equal(await controller.prepareStartup(),true);assert.equal(stats().checks,0);
 });
