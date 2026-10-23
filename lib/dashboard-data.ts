@@ -1,8 +1,10 @@
 import { cache } from "react";
 
 import { prisma } from "@/lib/prisma";
+import { isSpeculativeRequest } from "@/lib/speculative-request";
 
 export const ensureOwnedGroupMemberships = cache(async (userId: string) => {
+  if (await isSpeculativeRequest()) return;
   const ownedGroupsMissingMembership = await prisma.group.findMany({
     where: {
       isDirectMessage: false,

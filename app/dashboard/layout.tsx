@@ -2,6 +2,8 @@ import { Big_Shoulders } from "next/font/google";
 import "./val-design.css";
 import "./mobile.css";
 import "./settings-media.css";
+import "./experience.css";
+import { ExperienceProvider } from "@/components/layout/experience-provider";
 import { MobileNavigationProvider, MobileShell } from "@/components/mobile/mobile-shell";
 import { MobileNavbarPreferencesProvider } from "@/components/mobile/mobile-navbar-preferences";
 import { MessageDraftsProvider } from "@/components/chat/message-drafts-provider";
@@ -52,6 +54,7 @@ export default async function DashboardLayout({
     <div id="val-app" className={`val-app ${editorial.variable}`}>
       <ValViewport />
       <ThemePreferences />
+      <ExperienceProvider key={auth.user.id} userId={auth.user.id}>
       <DashboardPeopleProvider currentUserId={auth.user.id} initialFriends={sidebarData.friends}>
         <SidebarArtworkPreferences />
         <MessageDraftsProvider key={auth.user.id}>
@@ -78,6 +81,7 @@ export default async function DashboardLayout({
           </MobileNavigationProvider>
         </MessageDraftsProvider>
       </DashboardPeopleProvider>
+      </ExperienceProvider>
     </div>
   );
 }

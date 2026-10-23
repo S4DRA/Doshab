@@ -1,11 +1,13 @@
 ﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useExperience } from "@/components/layout/experience-provider";
 
 type AudioTrack = { track: MediaStreamTrack; userId: string; local: boolean };
 
 /** Measures actual media, draws outside React, and only publishes speaking transitions. */
 export function useCallActivity(tracks: AudioTrack[], connected: boolean, deafened: boolean) {
+  const gameSafe = useExperience()?.preferences.gameSafe ?? false;
   const localCanvas = useRef<HTMLCanvasElement>(null);
   const roomCanvas = useRef<HTMLCanvasElement>(null);
   const [speakingIds, setSpeakingIds] = useState<string[]>([]);
@@ -16,7 +18,6 @@ export function useCallActivity(tracks: AudioTrack[], connected: boolean, deafen
     const meters: { source: MediaStreamAudioSourceNode; analyser: AnalyserNode; samples: Uint8Array<ArrayBuffer>; spectrum: Uint8Array<ArrayBuffer>; entry: AudioTrack; lastActive: number }[] = [];
     const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
     let previousSpeaking: string | null = null;
-    let previousFrame = 0;
     function draw(canvas: HTMLCanvasElement | null, values: number[], muted: boolean) {
       const ctx = canvas?.getContext("2d");
       if (!ctx || !canvas) return;
@@ -28,10 +29,9 @@ export function useCallActivity(tracks: AudioTrack[], connected: boolean, deafen
         ctx.fillRect(i * 10, (40 - height) / 2, 4, height);
       }
     }
-    function tick(now: number) {
-      frame = requestAnimationFrame(tick);
-      if (now - previousFrame < 100 || document.hidden) return;
-      previousFrame = now;
+    function tick() {
+      if (document.hidden || !connected || !meters.length) return;
+      const now = performance.now();
       const localValues = Array<number>(64).fill(0);
       const roomValues = Array<number>(64).fill(0);
       const active = new Set<string>();
@@ -39,7 +39,7 @@ export function useCallActivity(tracks: AudioTrack[], connected: boolean, deafen
         const { entry, analyser } = meter;
         if (!connected || !entry.track.enabled || entry.track.muted || entry.track.readyState !== "live" || (!entry.local && deafened)) continue;
         analyser.getByteTimeDomainData(meter.samples);
-        analyser.getByteFrequencyData(meter.spectrum);
+        if (!gameSafe) analyser.getByteFrequencyData(meter.spectrum);
         let energy = 0;
         for (const sample of meter.samples) energy += ((sample - 128) / 128) ** 2;
         const rms = Math.sqrt(energy / meter.samples.length);
@@ -48,10 +48,13 @@ export function useCallActivity(tracks: AudioTrack[], connected: boolean, deafen
         const output = entry.local ? localValues : roomValues;
         for (let i = 0; i < output.length; i++) output[i] = Math.max(output[i], meter.spectrum[i]);
       }
-      draw(localCanvas.current, localValues, !connected);
-      draw(roomCanvas.current, roomValues, !connected || deafened);
+      if (!gameSafe) {
+        draw(localCanvas.current, localValues, !connected);
+        draw(roomCanvas.current, roomValues, !connected || deafened);
+      }
       const next = [...active].sort().join(",");
       if (next !== previousSpeaking) { previousSpeaking = next; setSpeakingIds([...active]); }
+      frame = window.setTimeout(tick, gameSafe ? 250 : 100);
     }
     if (tracks.length && connected) {
       try {
@@ -67,13 +70,14 @@ export function useCallActivity(tracks: AudioTrack[], connected: boolean, deafen
     }
     const resume = () => { if (context?.state === "suspended") void context.resume().catch((cause) => { console.warn("Audio analyser could not resume", cause); setUnavailable(true); }); };
     resume(); document.addEventListener("pointerdown", resume);
-    frame = requestAnimationFrame(tick);
+    const visible = () => { window.clearTimeout(frame); if (!document.hidden && connected && meters.length) tick(); };
+    visible(); document.addEventListener("visibilitychange", visible);
     return () => {
-      cancelAnimationFrame(frame); document.removeEventListener("pointerdown", resume);
+      window.clearTimeout(frame); document.removeEventListener("visibilitychange", visible); document.removeEventListener("pointerdown", resume);
       for (const meter of meters) { meter.source.disconnect(); meter.analyser.disconnect(); }
       if (context && context.state !== "closed") void context.close().catch((cause) => console.warn("Audio analyser cleanup failed", cause));
       // Never stop tracks: the persistent session owns them.
     };
-  }, [tracks, connected, deafened]);
+  }, [tracks, connected, deafened, gameSafe]);
   return { localCanvas, roomCanvas, speakingIds: connected ? speakingIds : [], unavailable };
 }

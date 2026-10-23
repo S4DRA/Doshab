@@ -126,7 +126,7 @@ test("only the Start message button opts in; its native click updates local choo
   let hook = 0;
   const { MessagesPageClient } = interactionModule("components/messages/messages-page-client.tsx", { mocks: {
     react: { useState: (initial) => { const slot = hook++; return [initial, (value) => updates.push({ slot, value })]; }, useCallback: (fn) => fn, useDeferredValue: (value) => value, useMemo: (fn) => fn(), useEffect: () => {} },
-    "@/components/layout/val-page-hero": { ValPageHero: "test-hero" }, "next/link": "a",
+    "@/components/layout/val-page-hero": { ValPageHero: "test-hero" }, "@/components/ui/adaptive-link": { AdaptiveLink: "a" },
     "@/components/ui/avatar-initials": {}, "@/lib/e2ee-message.client": {}, "@/lib/e2ee-message": {}, "@/lib/utils": {},
     "@/components/ui/dialog-surface": {}, "@/lib/interaction/recipes": recipes, "@/app/interaction-physics.css": {},
   } });

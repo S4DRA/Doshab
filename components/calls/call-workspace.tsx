@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MusicButton } from "@/components/music/music-button";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
@@ -29,6 +29,8 @@ export function CallWorkspace({ call }: { call: CallContextValue }) {
   const { localCanvas, roomCanvas, speakingIds, unavailable } = useCallActivity(tracks, snapshot?.state === "connected", call.deafened);
   const [selection, setSelection] = useState<{ mode: CallLayoutMode; pinnedId: string | null; page: number }>({ mode: "auto", pinnedId: null, page: 0 });
   const [expanded, setExpanded] = useState<{ sessionId: string; viewId: string; trackId: string } | null>(null);
+  const [diagnostics, setDiagnostics] = useState<{ sessionId: string; text: string } | null>(null);
+  const [measuring, setMeasuring] = useState(false);
   if (!session) return null;
   const { people, views } = buildCallViews(session.participant, local, remote, snapshot?.participants ?? [], snapshot?.micMuted ?? true);
   const expandedView = expanded?.sessionId === session.id ? views.find(view => view.id === expanded.viewId && view.media?.track.id === expanded.trackId && view.media.track.readyState !== "ended") : undefined;
@@ -40,7 +42,8 @@ export function CallWorkspace({ call }: { call: CallContextValue }) {
   const changeMode = (next: CallLayoutMode) => setSelection({ mode: next, pinnedId: next === "focus" ? activeView.id : null, page: 0 });
   const activePerson = activeView.person;
   const connectedPeers = new Set((snapshot?.participants ?? []).filter((person) => person.userId !== session.participant.id && person.connectionState === "connected").map((person) => person.userId)).size;
-  const state = snapshot?.state ?? "connecting";
+  const reconnecting = snapshot?.state === "connected" && snapshot.participants.some((person) => person.connectionState === "disconnected" || person.connectionState === "failed");
+  const state = reconnecting ? "reconnecting" : snapshot?.state ?? "connecting";
   const connected = state === "connected";
   return <section className="val-call-workspace" aria-label={`${session.title} ${session.kind === "group" ? "voice room" : "call"}`}>
     <header className="val-call-header val-cut-panel">
@@ -87,6 +90,15 @@ export function CallWorkspace({ call }: { call: CallContextValue }) {
           <div className="val-connection-status"><CallIcon name="globe" /><strong>{!connected ? state : people.length === 1 ? "Waiting for others" : connectedPeers === people.length - 1 ? "Connected" : "Connecting media"}</strong></div>
           <dl><div><dt>Microphone</dt><dd>{snapshot?.micMuted ? "Off" : "On"}</dd></div><div><dt>Camera</dt><dd>{snapshot?.cameraOn ? "On" : "Off"}</dd></div><div><dt>Screen share</dt><dd>{snapshot?.screenOn ? "Sharing" : "Off"}</dd></div><div><dt>Room audio</dt><dd>{call.deafened ? "Deafened" : call.audioBlocked ? "Paused by browser" : "On"}</dd></div></dl>
           <p className="val-connection-note">{!connected ? "Waiting for room connection." : people.length === 1 ? "You're the first here. Others will appear when they join." : `${connectedPeers} of ${people.length - 1} other participants connected for audio and video.`}</p>
+          <button className="app-button-secondary px-3 py-2 text-sm" type="button" disabled={measuring || !call.media} onClick={async () => {
+            setMeasuring(true);
+            try {
+              const sample = await call.media?.diagnostics();
+              if (sample) setDiagnostics({ sessionId: session.id, text: sample.peers ? `Round trip: ${sample.roundTripMs ?? "unavailable"} ms · Jitter: ${sample.jitterMs ?? "unavailable"} ms · Audio packet loss: ${sample.packetLossPercent ?? "unavailable"}%` : "Waiting for another participant before measuring media." });
+            } catch { setDiagnostics({ sessionId: session.id, text: "Media diagnostics are unavailable in this browser right now." }); }
+            finally { setMeasuring(false); }
+          }}>{measuring ? "Measuring…" : "Check connection"}</button>
+          {diagnostics?.sessionId === session.id && <p className="val-connection-note" role="status">{diagnostics.text}</p>}
         </details>
       </aside>
       <section className="val-audio-panel val-cut-panel">

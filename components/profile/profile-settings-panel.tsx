@@ -1,4 +1,5 @@
 "use client";
+import { ExperienceSettings } from "@/components/profile/experience-settings";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -291,7 +292,7 @@ export function ProfileSettingsPanel({ mobile = false }: { mobile?: boolean }) {
 
       {mobile && !categories && activeSection === "navigation" && <MobileNavbarSettings />}
 
-      {!categories && activeSection === "appearance" && <div className="grid min-w-0 gap-6"><ThemeSelector /><SidebarArtworkSettings /></div>}
+      {!categories && activeSection === "appearance" && <div className="grid min-w-0 gap-6"><ThemeSelector /><SidebarArtworkSettings /><ExperienceSettings /></div>}
 
       {!categories && activeSection === "notifications" ? (
         <div className="grid gap-3">

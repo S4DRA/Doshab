@@ -152,7 +152,7 @@ test("camera and screen clicks each open their own enlarged view and closing pre
         useState(initial) { const index = cursor++; if (!(index in state)) state[index] = typeof initial === "function" ? initial() : initial; return [state[index], value => { state[index] = typeof value === "function" ? value(state[index]) : value; }]; },
         useMemo: compute => compute(), useRef: value => ({ current: value }), useEffect() {},
       },
-      "next/link": { default: () => null },
+      "@/components/ui/adaptive-link": { AdaptiveLink: () => null },
       "@/components/music/music-button": {}, "@/components/ui/avatar-initials": {},
       "./persistent-call-provider": {}, "./use-push-to-talk": {},
       "./use-call-activity": { useCallActivity: () => ({ speakingIds: [], unavailable: false }) },

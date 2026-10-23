@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
@@ -798,25 +798,6 @@ export function DashboardSidebar({
       document.removeEventListener("pointercancel", cancelCommandHighlight);
     };
   }, [commandOpen, groups, router, runMobileCommandAction]);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const dashboardRoutes = [
-        "/dashboard",
-        "/dashboard/friends",
-        "/dashboard/channels",
-        "/dashboard/messages",
-        "/dashboard/profile",
-        ...groups.slice(0, 8).map((group) => getGroupHref(group)),
-      ];
-
-      Array.from(new Set(dashboardRoutes)).forEach((href) => {
-        router.prefetch(href);
-      });
-    }, 250);
-
-    return () => window.clearTimeout(timer);
-  }, [groups, router]);
 
   if (!pathname.startsWith("/dashboard")) {
     return null;

@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:experience": "node --test tests/adaptive-navigation.test.mjs tests/activity-resource.test.mjs tests/media-diagnostics.test.mjs tests/e2ee-device.test.mjs",
+    "analyze:navigation": "node scripts/analyze-navigation.mjs",
     "test:download": "node --test tests/desktop-download.test.mjs",
     "dev": "next dev",
     "build": "prisma generate && next build",

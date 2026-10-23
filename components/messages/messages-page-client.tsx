@@ -2,7 +2,7 @@
 
 import { ValPageHero } from "@/components/layout/val-page-hero";
 
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import {
   useCallback,
   useDeferredValue,

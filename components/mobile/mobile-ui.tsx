@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import type { MouseEventHandler, ReactNode } from "react";
 
 export function MobileIcon({ name }: { name: "home" | "spaces" | "groups" | "friends" | "search" | "profile" | "bell" | "back" | "next" | "plus" | "chat" | "voice" | "close" | "settings" }) {

@@ -11,6 +11,7 @@ import type { PresentedMessage } from "@/lib/message-send";
 import { DialogSurface } from "@/components/ui/dialog-surface";
 import { useMobileLayout } from "@/components/mobile/mobile-shell";
 import { isReplySwipe } from "@/lib/mobile-navigation";
+import { readInteractionPreferences } from "@/lib/interaction/preferences";
 
 type MessageListProps = {
   canPinMessages?: boolean;
@@ -26,7 +27,7 @@ type MessageRowProps = {
   isGrouped: boolean;
   message: PresentedMessage;
   onMessageUpdate?: (message: ChatMessage) => void;
-  onReport: () => void;
+  onReport: (message: ChatMessage) => void;
   onReply?: (message: ChatMessage) => void;
   showDateSeparator: boolean;
 };
@@ -75,7 +76,7 @@ function MessageListComponent({
               key={message.visualId ?? message.id}
               message={message}
               onMessageUpdate={onMessageUpdate}
-              onReport={() => setReportingMessage(message)}
+              onReport={setReportingMessage}
               onReply={onReply}
               showDateSeparator={showDateSeparator}
             />
@@ -433,7 +434,7 @@ const MemoMessageRow = memo(function MessageRow({
                 className="inline-flex min-h-9 items-center rounded-lg border border-white/10 px-2.5 text-xs font-semibold text-slate-400 transition hover:border-white/25 hover:text-white sm:min-h-8"
                 onClick={() => {
                   setActionsOpen(false);
-                  onReport();
+                  onReport(message);
                 }}
                 type="button"
               >
@@ -658,7 +659,7 @@ function scrollToMessage(messageId?: string) {
 
   document.getElementById(`message-${messageId}`)?.scrollIntoView({
     block: "center",
-    behavior: "smooth",
+    behavior: readInteractionPreferences().reducedMotion ? "auto" : "smooth",
   });
 }
 

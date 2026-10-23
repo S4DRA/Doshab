@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { interactionModule } from "./helpers/interaction-module.mjs";
+const diagnosticsModule = interactionModule("lib/media/diagnostics.ts");
 
 const compile = (path) => ts.transpileModule(readFileSync(new URL(path, import.meta.url), "utf8"), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
@@ -92,6 +94,7 @@ function room({ dropHello = false } = {}) {
       MediaStream: Stream, RTCPeerConnection: PeerConnection,
       navigator: { mediaDevices: { getUserMedia: (constraints) => acquire(constraints), getDisplayMedia: (constraints) => acquire(constraints, true) } },
       require(name) {
+        if (name === "./diagnostics") return diagnosticsModule;
         assert.equal(name, "@/lib/supabase/client");
         return { createSupabaseBrowserClientFromRuntimeConfig: async () => ({ channel: () => {
           channel = {

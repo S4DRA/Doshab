@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { MobileHeading, MobileIcon, MobileSection } from "./mobile-ui";
 

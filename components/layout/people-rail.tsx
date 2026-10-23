@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";

@@ -1,6 +1,6 @@
 import { ValPageHero } from "@/components/layout/val-page-hero";
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 
 import { FriendSearchForm } from "@/components/friends/friend-search-form";
 import { FriendsList } from "@/components/friends/friends-list";

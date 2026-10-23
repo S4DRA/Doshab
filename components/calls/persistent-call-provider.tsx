@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { CallWorkspace, CallControls } from "@/components/calls/call-workspace";
@@ -53,6 +53,10 @@ export function PersistentCallProvider({ children }: { children: React.ReactNode
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const pathname = usePathname();
   const router = useRouter();
+  useEffect(() => {
+    document.documentElement.dataset.valMediaActive = String(Boolean(activeCall));
+    return () => { delete document.documentElement.dataset.valMediaActive; };
+  }, [activeCall]);
   const remember = useCallback((id: string) => setEnded((current) => {
     const next = new Set(current); next.add(id);
     try { sessionStorage.setItem(endedKey, JSON.stringify([...next].slice(-50))); }

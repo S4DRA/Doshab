@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma, UserStatus } from "@/lib/generated/prisma/client";
 import { getSession } from "@/lib/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isSpeculativeRequest } from "@/lib/speculative-request";
 
 export function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -79,6 +80,8 @@ export async function getAuthState(options?: { includeImage?: boolean }): Promis
       typeof data.user.user_metadata?.name === "string"
         ? data.user.user_metadata.name
         : "";
+
+    if (await isSpeculativeRequest()) return { status: "unauthenticated" };
 
     const createdUser = await prisma.user.create({
       data: {

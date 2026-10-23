@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { AdaptiveLink as Link } from "@/components/ui/adaptive-link";
 import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useState, useSyncExternalStore, type Dispatch, type SetStateAction } from "react";
 import { mobileDestination, mobileLayoutQuery } from "@/lib/mobile-navigation";
