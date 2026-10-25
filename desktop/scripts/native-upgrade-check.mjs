@@ -53,10 +53,19 @@ async function launch(){
   child.stdout.on('data',data=>console.log(String(data).trim()));child.stderr.on('data',data=>console.log(String(data).trim()));
   const endpoint=await until(async()=>{try{return (await(await fetch('http://127.0.0.1:19319/json/list')).json())[0]?.webSocketDebuggerUrl;}catch{return null;}},'main inspector',30_000);
   socket=new WebSocket(endpoint);await new Promise((resolve,reject)=>{socket.onopen=resolve;socket.onerror=reject;});
-  socket.onmessage=event=>{const result=JSON.parse(event.data);if(result.id){waiting.get(result.id)?.(result);waiting.delete(result.id);}};
+  const connection=socket;
+  connection.onmessage=event=>{const result=JSON.parse(event.data);if(result.id){const pending=waiting.get(result.id);if(pending?.connection!==connection)return;waiting.delete(result.id);if(result.error)pending.reject(new Error(`Inspector ${result.error.code}: ${result.error.message}`));else pending.resolve(result);}};
+  connection.onclose=()=>{for(const [id,pending] of waiting){if(pending.connection===connection){waiting.delete(id);pending.reject(new Error('Native inspector connection closed during a request'));}}};
+  await command('Runtime.enable');
+  await until(async()=>{
+    try{return await evaluate(`typeof process === 'object' && !!process.mainModule && ${electron}.app.isReady()`);}
+    catch(error){if(/Cannot find (?:default execution )?context/.test(error.message))return false;throw error;}
+  },'native execution context and app readiness',30_000);
+  console.log(`Native test process ready: ${await version()}`);
   return child;
 }
-async function evaluate(expression){const id=++serial;const result=await Promise.race([new Promise(resolve=>{waiting.set(id,resolve);socket.send(JSON.stringify({id,method:'Runtime.evaluate',params:{expression,awaitPromise:true,returnByValue:true}}));}),delay(20_000).then(()=>{throw new Error('Inspector evaluation timed out');})]);if(result.result?.exceptionDetails)throw new Error(JSON.stringify(result.result.exceptionDetails));return result.result?.result?.value;}
+async function command(method,params={}){const id=++serial;let timer;try{return await new Promise((resolve,reject)=>{waiting.set(id,{resolve,reject,connection:socket});timer=setTimeout(()=>{waiting.delete(id);reject(new Error(`Inspector ${method} timed out`));},20_000);socket.send(JSON.stringify({id,method,params}));});}finally{clearTimeout(timer);waiting.delete(id);}}
+async function evaluate(expression){const result=await command('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(result.result?.exceptionDetails)throw new Error(JSON.stringify(result.result.exceptionDetails));return result.result?.result?.value;}
 const electron="process.mainModule.require('electron')";
 const page=`${electron}.BrowserWindow.getAllWindows()[0]?.webContents`;
 async function version(){return evaluate(`${electron}.app.getVersion()`);}
