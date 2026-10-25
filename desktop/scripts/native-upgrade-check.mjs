@@ -87,7 +87,8 @@ try{
   await evaluate(`${electron}.session.fromPartition('persist:val').cookies.set({url:'https://example.invalid',name:'val-qa-preservation',value:'preserve-me',expirationDate:Date.now()/1000+86400})`);
   await evaluate(`${page}.executeJavaScript("localStorage.setItem('val-upgrade-qa-settings', 'preserve-me')")`);
   await fs.writeFile(path.join(userData,'val-upgrade-marker.txt'),'preserve-me');
-  await evaluate(`globalThis.__valQaDownloaded=false;process.mainModule.require('electron-updater').autoUpdater.once('update-downloaded',()=>{globalThis.__valQaDownloaded=true})`);
+  // EventEmitter.once returns the updater itself; do not serialize that native graph.
+  await evaluate(`globalThis.__valQaDownloaded=false;process.mainModule.require('electron-updater').autoUpdater.once('update-downloaded',()=>{globalThis.__valQaDownloaded=true});true`);
   await until(()=>evaluate('globalThis.__valQaDownloaded'),'existing 30-second automatic updater',120_000);pass('0.1.6 automatically downloaded real 0.1.7 through electron-updater');
   // Use the real graceful quit path; killing a process would bypass its cookie flush.
   await evaluate(`setTimeout(()=>${electron}.app.quit(),200);true`);socket.close();
