@@ -4,13 +4,22 @@ const { ipcRenderer } = require('electron');
 
 if (process.isMainFrame) {
   const expectedOrigin = process.argv.find((value) => value.startsWith('--val-origin='))?.slice('--val-origin='.length);
-  const isOffline = location.protocol === 'file:' && location.pathname.endsWith('/offline.html');
+  const isOffline = location.protocol === 'file:' && ['/offline.html', '/startup.html'].some((file) => location.pathname.endsWith(file));
   if (location.origin === expectedOrigin || isOffline) {
     window.addEventListener('DOMContentLoaded', installControls, { once: true });
   }
 }
 
 function installControls() {
+  if (location.protocol === 'file:' && location.pathname.endsWith('/startup.html')) {
+    ipcRenderer.on('val:startup-update', (_event, state) => {
+      const status = document.getElementById('update-status');
+      const progress = document.getElementById('update-progress');
+      const labels = { checking: 'Checking for updates…', downloading: 'Downloading the latest VAL…', installing: 'Installing. VAL will reopen automatically.', error: 'Waiting to retry the update.' };
+      if (status) status.textContent = labels[state?.stage] || labels.checking;
+      if (progress) { if (state?.stage === 'downloading' && Number.isFinite(state.percent)) progress.value = state.percent; else progress.removeAttribute('value'); }
+    });
+  }
   // Capture trusted user activity at most once a minute; never store credentials.
   let lastActivitySent = 0;
   const activity = (event) => {

@@ -1,7 +1,7 @@
 {
   "name": "val-desktop",
   "productName": "VAL",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "VAL for Windows",
   "author": "Rootonset",
   "private": true,
@@ -24,7 +24,7 @@
     "appId": "com.rootonset.val",
     "asar": true,
     "directories": { "output": "dist" },
-    "files": ["main.cjs", "policy.cjs", "persistent-login.cjs", "updates.cjs", "window-preload.cjs", "desktop-effects.css", "picker/**", "assets/**", "offline.html", "package.json"],
+    "files": ["main.cjs", "policy.cjs", "persistent-login.cjs", "updates.cjs", "window-preload.cjs", "desktop-effects.css", "picker/**", "assets/**", "offline.html", "startup.html", "package.json"],
     "publish": [{ "provider": "github", "owner": "S4DRA", "repo": "Doshab", "releaseType": "release" }],
     "win": { "target": [{ "target": "nsis", "arch": ["x64"] }], "icon": "assets/val.ico", "artifactName": "VAL-Setup-${version}.${ext}" },
     "nsis": {
