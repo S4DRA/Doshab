@@ -6,7 +6,8 @@ import { getWindowsRelease, windowsReleasesUrl } from "@/lib/desktop-download";
 export const metadata: Metadata = { title: "Download VAL for Windows", description: "Bring your VAL spaces, messages, and voice rooms to your Windows desktop." };
 
 export default async function DownloadPage({ searchParams }: { searchParams: Promise<{ unavailable?: string }> }) {
-  const [release, params] = await Promise.all([getWindowsRelease(), searchParams]);
+  // Match the installer click's current, complete release instead of a stale label.
+  const [release, params] = await Promise.all([getWindowsRelease(true), searchParams]);
   return <div className={`val-public val-download-page ${publicFontClass}`}>
     <a className="val-skip-link" href="#download-content">Skip to content</a><PublicHeader download />
     <main id="download-content" className="val-public-wrap">
